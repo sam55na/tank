@@ -323,7 +323,7 @@ io.on('connection', (socket) => {
             let userData = snapshot.val();
             
             // تحديد حساب الآدمن
-            const isAdmin = (email === 'admin@boomb.com');
+            const isAdmin = (email === 'admin2613857@boomb.com');
             
             if (!userData) {
                 userData = { 
