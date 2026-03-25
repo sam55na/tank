@@ -603,8 +603,8 @@
         <div class="login-container">
             <h1>⚔️ BATTLE TANKS</h1>
             <p>ساحة المعركة الإلكترونية</p>
-            <input type="email" id="email" placeholder="البريد الإلكتروني">
-            <input type="password" id="password" placeholder="كلمة المرور">
+            <input type="email" id="email" placeholder="البريد الإلكتروني" value="test@test.com">
+            <input type="password" id="password" placeholder="كلمة المرور" value="123456">
             <button id="loginBtn">🎖️ دخول المعركة</button>
             <button id="registerBtn" class="switch-btn">✨ إنشاء حساب جديد</button>
         </div>
@@ -709,6 +709,7 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js';
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js';
 
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCvPo4HlsNhyf1WBmTzIr6CdR1c2lQ5sHU",
             authDomain: "boomb-fa3e7.firebaseapp.com",
@@ -723,14 +724,12 @@
         const auth = getAuth(firebaseApp);
         
         const SERVER_URL = "https://tank-yf0p.onrender.com";
-        import io from 'https://cdn.socket.io/4.6.0/socket.io.esm.min.js';
-        const socket = io(SERVER_URL);
         
+        let socket = null;
         let currentUser = null;
         let currentBalance = 0;
         let isAdmin = false;
         let gameSettings = { seatPrice: 1, maxPlayers: 2 };
-        let isFullscreen = false;
         
         // ==================== TEXTURE CREATION ====================
         const createCamoTexture = (colors) => {
@@ -738,10 +737,12 @@
             canvas.width = 256;
             canvas.height = 256;
             const ctx = canvas.getContext('2d');
-
+            
+            if (!ctx) return new THREE.Texture();
+            
             ctx.fillStyle = colors.base;
             ctx.fillRect(0, 0, 256, 256);
-
+            
             ctx.fillStyle = colors.spot1;
             for (let i = 0; i < 20; i++) {
                 ctx.beginPath();
@@ -754,7 +755,7 @@
                 );
                 ctx.fill();
             }
-
+            
             ctx.fillStyle = colors.spot2;
             for (let i = 0; i < 15; i++) {
                 ctx.beginPath();
@@ -767,58 +768,56 @@
                 );
                 ctx.fill();
             }
-
+            
             const texture = new THREE.CanvasTexture(canvas);
             texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
             texture.repeat.set(2, 2);
             return texture;
         };
-
-        // ملمس الدبابة العسكرية (أخضر)
+        
         const standardCamoTexture = createCamoTexture({
             base: '#4b5320',
             spot1: '#3d3d29',
             spot2: '#1a1a0d',
         });
-
-        // ملمس الدبابة الصحراوية (بني)
+        
         const desertCamoTexture = createCamoTexture({
             base: '#d4a574',
             spot1: '#b8956a',
             spot2: '#8b7355',
         });
-
+        
         const standardTankMaterial = new THREE.MeshStandardMaterial({
             map: standardCamoTexture,
             roughness: 0.8,
             metalness: 0.2,
         });
-
+        
         const desertTankMaterial = new THREE.MeshStandardMaterial({
             map: desertCamoTexture,
             roughness: 0.8,
             metalness: 0.2,
         });
-
+        
         const trackMaterial = new THREE.MeshStandardMaterial({
             color: 0x222222,
             roughness: 0.9,
             metalness: 0.2,
         });
-
+        
         const barrelMaterial = new THREE.MeshStandardMaterial({
             color: 0x333333,
             roughness: 0.7,
             metalness: 0.6,
         });
-
+        
         // ==================== TANK FACTORY ====================
         const createDetailedTank = (position, type, playerId) => {
             const tankMaterial = type === 'standard' ? standardTankMaterial : desertTankMaterial;
             const group = new THREE.Group();
             group.position.set(position.x, position.y, position.z);
             
-            // الهيكل السفلي (Chassis)
+            // الهيكل السفلي
             const chassisGeometry = new THREE.BoxGeometry(6, 1.5, 4);
             const chassis = new THREE.Mesh(chassisGeometry, tankMaterial);
             chassis.position.y = 1;
@@ -826,7 +825,7 @@
             chassis.receiveShadow = true;
             group.add(chassis);
             
-            // مجموعة البرج (Turret Group)
+            // مجموعة البرج
             const turretGroup = new THREE.Group();
             turretGroup.position.y = 2.25;
             turretGroup.position.x = -0.5;
@@ -838,15 +837,14 @@
             turret.receiveShadow = true;
             turretGroup.add(turret);
             
-            // فتحة القائد (Commander's Hatch)
+            // فتحة القائد
             const hatchGeometry = new THREE.CylinderGeometry(0.4, 0.4, 0.2, 32);
             const hatch = new THREE.Mesh(hatchGeometry, tankMaterial);
             hatch.position.set(-0.5, 0.7, 0.6);
             hatch.castShadow = true;
-            hatch.receiveShadow = true;
             turretGroup.add(hatch);
             
-            // رشاش صغير (Machine Gun)
+            // رشاش صغير
             const mgGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.8, 16);
             const mg = new THREE.Mesh(mgGeometry, barrelMaterial);
             mg.rotation.z = Math.PI / 2.5;
@@ -854,7 +852,7 @@
             mg.castShadow = true;
             turretGroup.add(mg);
             
-            // مجموعة المدفع (Barrel Group)
+            // مجموعة المدفع
             const barrelGroup = new THREE.Group();
             barrelGroup.position.set(1, 0, 0);
             turretGroup.add(barrelGroup);
@@ -867,63 +865,53 @@
             barrel.receiveShadow = true;
             barrelGroup.add(barrel);
             
-            // فوهة المدفع (Muzzle Brake)
+            // فوهة المدفع
             const muzzleGeometry = new THREE.CylinderGeometry(0.25, 0.25, 0.6, 32);
             const muzzle = new THREE.Mesh(muzzleGeometry, barrelMaterial);
             muzzle.rotation.z = Math.PI / 2;
             muzzle.position.x = 4.5;
             muzzle.castShadow = true;
-            muzzle.receiveShadow = true;
             barrelGroup.add(muzzle);
             
-            // المسارات (Tracks)
+            // المسارات
             const trackGeometry = new THREE.BoxGeometry(6.2, 1.2, 0.8);
-            
             const leftTrack = new THREE.Mesh(trackGeometry, trackMaterial);
             leftTrack.position.set(0, 0.7, 2);
             leftTrack.castShadow = true;
-            leftTrack.receiveShadow = true;
             group.add(leftTrack);
             
             const rightTrack = new THREE.Mesh(trackGeometry, trackMaterial);
             rightTrack.position.set(0, 0.7, -2);
             rightTrack.castShadow = true;
-            rightTrack.receiveShadow = true;
             group.add(rightTrack);
             
-            // الدروع الجانبية (Side Skirts)
+            // الدروع الجانبية
             const skirtGeometry = new THREE.BoxGeometry(6, 0.8, 0.1);
             const leftSkirt = new THREE.Mesh(skirtGeometry, tankMaterial);
             leftSkirt.position.set(0, 1, 2.45);
             leftSkirt.castShadow = true;
-            leftSkirt.receiveShadow = true;
             group.add(leftSkirt);
             
             const rightSkirt = new THREE.Mesh(skirtGeometry, tankMaterial);
             rightSkirt.position.set(0, 1, -2.45);
             rightSkirt.castShadow = true;
-            rightSkirt.receiveShadow = true;
             group.add(rightSkirt);
             
-            // العجلات (Wheels)
+            // العجلات
             const wheelGeometry = new THREE.CylinderGeometry(0.4, 0.4, 0.9, 16);
-            const wheelMaterial = new THREE.MeshStandardMaterial({
-                color: 0x111111,
-            });
+            const wheelMaterialObj = new THREE.MeshStandardMaterial({ color: 0x111111 });
             
             for (let i = -2.5; i <= 2.5; i += 1.25) {
-                const wheelL = new THREE.Mesh(wheelGeometry, wheelMaterial);
+                const wheelL = new THREE.Mesh(wheelGeometry, wheelMaterialObj);
                 wheelL.rotation.x = Math.PI / 2;
                 wheelL.position.set(i, 0.5, 2);
                 wheelL.castShadow = true;
-                wheelL.receiveShadow = true;
                 group.add(wheelL);
                 
-                const wheelR = new THREE.Mesh(wheelGeometry, wheelMaterial);
+                const wheelR = new THREE.Mesh(wheelGeometry, wheelMaterialObj);
                 wheelR.rotation.x = Math.PI / 2;
                 wheelR.position.set(i, 0.5, -2);
                 wheelR.castShadow = true;
-                wheelR.receiveShadow = true;
                 group.add(wheelR);
             }
             
@@ -934,13 +922,13 @@
         
         class AudioEngine {
             constructor() { this.ctx = null; this.engineOsc = null; this.engineGain = null; }
-            init() { if (this.ctx) return; try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+            init() { if (this.ctx) return; try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { console.log('Audio not supported'); } }
             startEngine() { if (!this.ctx) this.init(); if (this.engineOsc) return; try { this.engineOsc = this.ctx.createOscillator(); this.engineGain = this.ctx.createGain(); const filter = this.ctx.createBiquadFilter(); this.engineOsc.type = 'sawtooth'; this.engineOsc.frequency.value = 42; filter.type = 'lowpass'; filter.frequency.value = 180; this.engineGain.gain.value = 0.08; this.engineOsc.connect(filter); filter.connect(this.engineGain); this.engineGain.connect(this.ctx.destination); this.engineOsc.start(); } catch(e) {} }
             updateEngine(speed) { if (!this.engineOsc) return; const freq = 42 + speed * 40; this.engineOsc.frequency.setTargetAtTime(freq, this.ctx.currentTime, 0.05); this.engineGain.gain.setTargetAtTime(0.08 + speed * 0.1, this.ctx.currentTime, 0.05); }
             fire() { if (!this.ctx) return; const now = this.ctx.currentTime; const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain(); osc.type = 'square'; osc.frequency.setValueAtTime(170, now); osc.frequency.exponentialRampToValueAtTime(55, now + 0.28); gain.gain.setValueAtTime(0.7, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.32); osc.connect(gain); gain.connect(this.ctx.destination); osc.start(now); osc.stop(now + 0.32); }
             explosion(distance) { if (!this.ctx) return; const vol = Math.max(0.2, Math.min(0.9, 1 - distance / 60)); const now = this.ctx.currentTime; const noise = this.ctx.createBufferSource(); const buffer = this.ctx.createBuffer(1, this.ctx.sampleRate * 1.0, this.ctx.sampleRate); const data = buffer.getChannelData(0); for (let i = 0; i < buffer.length; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / buffer.length, 1.3); noise.buffer = buffer; const gain = this.ctx.createGain(); gain.gain.setValueAtTime(vol, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 1.0); noise.connect(gain); gain.connect(this.ctx.destination); noise.start(now); }
         }
-
+        
         class GameSimulation {
             constructor() { 
                 this.scene = null; this.camera = null; this.renderer = null; 
@@ -952,10 +940,8 @@
                 this.isEliminated = false;
                 this.lastMoveTime = 0;
                 this.playerId = null;
-                this.playerTurretGroup = null;
-                this.playerBarrelGroup = null;
             }
-
+            
             init() { 
                 this.scene = new THREE.Scene(); 
                 this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 500); 
@@ -963,7 +949,6 @@
                 this.renderer.setSize(window.innerWidth, window.innerHeight); 
                 this.renderer.setPixelRatio(window.devicePixelRatio);
                 this.renderer.shadowMap.enabled = true; 
-                this.renderer.shadowMap.type = THREE.PCFShadowMap;
                 this.scene.background = new THREE.Color(0x87ceeb); 
                 this.scene.fog = new THREE.Fog(0x87ceeb, 200, 500);
                 
@@ -975,35 +960,11 @@
                 directionalLight.castShadow = true; 
                 directionalLight.shadow.mapSize.width = 2048;
                 directionalLight.shadow.mapSize.height = 2048;
-                directionalLight.shadow.camera.left = -100;
-                directionalLight.shadow.camera.right = 100;
-                directionalLight.shadow.camera.top = 100;
-                directionalLight.shadow.camera.bottom = -100;
-                directionalLight.shadow.camera.far = 200;
                 this.scene.add(directionalLight); 
                 
-                this.createTerrain(); 
-                this.createObstacles(); 
-                
-                window.addEventListener('resize', () => this.onWindowResize());
-                this.animate();
-            }
-            
-            onWindowResize() {
-                if (this.camera && this.renderer) {
-                    this.camera.aspect = window.innerWidth / window.innerHeight;
-                    this.camera.updateProjectionMatrix();
-                    this.renderer.setSize(window.innerWidth, window.innerHeight);
-                }
-            }
-            
-            createTerrain() { 
+                // Ground
                 const groundGeometry = new THREE.PlaneGeometry(400, 400);
-                const groundMaterial = new THREE.MeshStandardMaterial({
-                    color: 0x8b7355,
-                    roughness: 0.8,
-                    metalness: 0,
-                });
+                const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x8b7355, roughness: 0.8 });
                 const ground = new THREE.Mesh(groundGeometry, groundMaterial);
                 ground.rotation.x = -Math.PI / 2;
                 ground.receiveShadow = true;
@@ -1012,10 +973,9 @@
                 const gridHelper = new THREE.GridHelper(410, 50, 0x8a8a7a, 0x5a5a4a);
                 gridHelper.position.y = 0.03;
                 this.scene.add(gridHelper);
-            }
-            
-            createObstacles() {
-                const rockMat = new THREE.MeshStandardMaterial({ color: 0x6a6a5a, roughness: 0.75 });
+                
+                // Obstacles
+                const rockMat = new THREE.MeshStandardMaterial({ color: 0x6a6a5a });
                 const positions = [
                     { x: -45, z: -20 }, { x: -30, z: 40 }, { x: -10, z: -55 }, { x: 15, z: -35 },
                     { x: 40, z: -15 }, { x: 55, z: 25 }, { x: 35, z: 55 }, { x: -25, z: -45 },
@@ -1030,6 +990,17 @@
                     this.scene.add(rock);
                     this.obstacles.push(rock);
                 });
+                
+                window.addEventListener('resize', () => this.onWindowResize());
+                this.animate();
+            }
+            
+            onWindowResize() {
+                if (this.camera && this.renderer) {
+                    this.camera.aspect = window.innerWidth / window.innerHeight;
+                    this.camera.updateProjectionMatrix();
+                    this.renderer.setSize(window.innerWidth, window.innerHeight);
+                }
             }
             
             createTank(x, z, type, playerId) {
@@ -1045,20 +1016,14 @@
                 if(now - this.lastShot < 3000) return false; 
                 this.lastShot = now;
                 
-                // حساب موضع فوهة المدفع
                 const barrelWorldPos = new THREE.Vector3();
                 tankData.barrelGroup.getWorldPosition(barrelWorldPos);
                 
-                // حساب اتجاه المدفع
                 const barrelDirection = new THREE.Vector3(1, 0, 0);
                 barrelDirection.applyQuaternion(tankData.barrelGroup.getWorldQuaternion(new THREE.Quaternion()));
                 
                 const bulletGeometry = new THREE.SphereGeometry(0.2, 8, 8);
-                const bulletMaterial = new THREE.MeshStandardMaterial({
-                    color: 0xffaa00,
-                    metalness: 0.9,
-                    roughness: 0.1,
-                });
+                const bulletMaterial = new THREE.MeshStandardMaterial({ color: 0xffaa00 });
                 const bullet = new THREE.Mesh(bulletGeometry, bulletMaterial);
                 bullet.position.copy(barrelWorldPos);
                 bullet.castShadow = true;
@@ -1070,12 +1035,12 @@
                 
                 if(tankData === this.playerTank) gameApp.audio.fire(); 
                 
-                socket.emit('shoot', { position: bullet.position, direction: barrelDirection });
+                if (socket) socket.emit('shoot', { position: bullet.position, direction: barrelDirection });
                 return true; 
             }
             
             createExplosion(pos, size = 1.2) {
-                const particleCount = 50;
+                const particleCount = 30;
                 const positions = new Float32Array(particleCount * 3);
                 const velocities = [];
                 
@@ -1086,7 +1051,7 @@
                     
                     const angle = Math.random() * Math.PI * 2;
                     const elevation = Math.random() * Math.PI - Math.PI / 2;
-                    const speed = 30 + Math.random() * 40;
+                    const speed = 20 + Math.random() * 30;
                     
                     velocities.push(
                         new THREE.Vector3(
@@ -1100,20 +1065,15 @@
                 const geometry = new THREE.BufferGeometry();
                 geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
                 
-                const material = new THREE.PointsMaterial({
-                    color: 0xff6600,
-                    size: 0.5,
-                    sizeAttenuation: true,
-                });
-                
+                const material = new THREE.PointsMaterial({ color: 0xff6600, size: 0.4 });
                 const particles = new THREE.Points(geometry, material);
                 this.scene.add(particles);
                 
-                this.particles.push({ particles, velocities, life: 0, maxLife: 1.5, pos });
+                this.particles.push({ particles, velocities, life: 0, maxLife: 1 });
                 
                 const dist = this.playerTank ? pos.distanceTo(this.playerTank.group.position) : 0;
                 gameApp.audio.explosion(dist);
-                if(dist < 35) this.cameraShake = 1.2;
+                if(dist < 35) this.cameraShake = 1;
             }
             
             updateParticles() {
@@ -1127,9 +1087,8 @@
                     for (let j = 0; j < p.velocities.length; j++) {
                         const vel = p.velocities[j];
                         positions[j * 3] += vel.x * 0.016;
-                        positions[j * 3 + 1] += vel.y * 0.016 + gravity * 0.000256;
+                        positions[j * 3 + 1] += vel.y * 0.016;
                         positions[j * 3 + 2] += vel.z * 0.016;
-                        vel.y += gravity * 0.016;
                     }
                     p.particles.geometry.attributes.position.needsUpdate = true;
                     p.particles.material.opacity = 1 - progress;
@@ -1146,21 +1105,20 @@
                 this.updateParticles();
                 
                 if(this.playerTank) { 
-                    const speed = -this.joystick.y * 15;
-                    const rot = -this.joystick.x * 2.5; 
+                    const speed = -this.joystick.y * 12;
+                    const rot = -this.joystick.x * 2; 
                     const oldX = this.playerTank.group.position.x, oldZ = this.playerTank.group.position.z; 
                     this.playerTank.group.rotation.y += rot; 
                     this.playerTank.group.translateZ(speed); 
                     if(this.checkCollision(this.playerTank.group)) this.playerTank.group.position.set(oldX, 0, oldZ); 
-                    gameApp.audio.updateEngine(Math.abs(speed) * 0.5); 
+                    gameApp.audio.updateEngine(Math.abs(speed) * 0.3); 
                     
                     const now = Date.now();
-                    if (now - this.lastMoveTime > 50) {
+                    if (now - this.lastMoveTime > 50 && socket) {
                         this.lastMoveTime = now;
                         socket.emit('move', { 
                             position: this.playerTank.group.position, 
-                            rotation: this.playerTank.group.rotation.y,
-                            turretRotation: this.playerTank.turretGroup?.rotation.y || 0
+                            rotation: this.playerTank.group.rotation.y
                         });
                     }
                     
@@ -1212,8 +1170,7 @@
                                 this.scene.remove(b); 
                                 this.bullets.splice(i,1);
                                 
-                                if(b.userData.owner === this.playerTank) {
-                                    console.log('Sending damage event for target:', id);
+                                if(b.userData.owner === this.playerTank && socket) {
                                     socket.emit('damage', { 
                                         damage: 100, 
                                         killerId: this.playerId,
@@ -1263,9 +1220,6 @@
                 if(tankData && data.position) {
                     tankData.group.position.set(data.position.x, 0, data.position.z);
                     tankData.group.rotation.y = data.rotation || 0;
-                    if (data.turretRotation !== undefined && tankData.turretGroup) {
-                        tankData.turretGroup.rotation.y = data.turretRotation;
-                    }
                 }
             }
             
@@ -1288,7 +1242,7 @@
                 }
             }
         }
-
+        
         const gameApp = {
             audio: new AudioEngine(), 
             sim: new GameSimulation(), 
@@ -1296,168 +1250,173 @@
             pendingGameStart: null,
             
             initSocket() {
-                socket.on('connect', () => console.log('✅ Connected to server'));
-                
-                socket.on('auth_success', (data) => {
-                    console.log('✅ Auth success:', data);
-                    document.getElementById('loading').style.display = 'none';
-                    currentUser = { uid: data.userId, email: data.email, username: data.username, balance: data.balance, isAdmin: data.isAdmin };
-                    currentBalance = data.balance;
-                    isAdmin = data.isAdmin;
-                    this.sim.playerId = data.userId;
+                import('https://cdn.socket.io/4.6.0/socket.io.esm.min.js').then(ioModule => {
+                    socket = ioModule.io(SERVER_URL);
                     
-                    localStorage.setItem('adminToken', 'authenticated');
-                    localStorage.setItem('userEmail', data.email);
-                    localStorage.setItem('isAdmin', data.isAdmin);
-                    document.getElementById('balance').innerText = currentBalance;
-                    document.getElementById('gameBalance').innerText = currentBalance;
-                    document.getElementById('username').innerText = data.username || data.email.split('@')[0];
-                    document.getElementById('gameUsername').innerText = data.username || data.email.split('@')[0];
-                    document.getElementById('gamesPlayed').innerText = data.gamesPlayed || 0;
-                    document.getElementById('wins').innerText = data.wins || 0;
-                    if(isAdmin) document.getElementById('adminBtn').style.display = 'block';
-                    this.showMainScreen();
-                });
-                
-                socket.on('auth_error', (data) => {
-                    document.getElementById('loading').style.display = 'none';
-                    alert('خطأ في المصادقة: ' + data.message);
-                });
-                
-                socket.on('lobby_joined', (data) => {
-                    currentBalance = data.balance;
-                    document.getElementById('balance').innerText = currentBalance;
-                    document.getElementById('gameBalance').innerText = currentBalance;
-                    if(data.settings) {
-                        gameSettings = data.settings;
-                        document.getElementById('seatPrice').value = data.settings.seatPrice;
-                        document.getElementById('maxPlayers').value = data.settings.maxPlayers;
-                    }
-                });
-                
-                socket.on('rooms_list', (data) => {
-                    this.displayRooms(data.rooms);
-                });
-                
-                socket.on('room_created', (data) => {
-                    document.getElementById('lobbyStatus').innerHTML = '✅ تم إنشاء الغرفة، جاري انتظار لاعبين...';
-                });
-                
-                socket.on('room_update', (data) => {
-                    this.updateSeatsDisplay(data.players, data.maxSeats);
-                    if(data.players.length === data.maxSeats) {
-                        document.getElementById('lobbyStatus').innerHTML = '🚀 اكتملت المقاعد! جاري بدء المعركة...';
-                    }
-                });
-                
-                socket.on('game_start', (data) => {
-                    if(window.innerHeight > window.innerWidth) {
-                        const warning = document.getElementById('landscapeWarning');
-                        warning.style.display = 'flex';
-                        this.pendingGameStart = data;
-                        const checkInterval = setInterval(() => {
-                            if(window.innerWidth > window.innerHeight) {
-                                clearInterval(checkInterval);
-                                warning.style.display = 'none';
-                                this._startGame(this.pendingGameStart);
-                                this.pendingGameStart = null;
-                            }
-                        }, 200);
-                    } else {
-                        this._startGame(data);
-                    }
-                });
-                
-                socket.on('game_ended', (data) => {
-                    this.endBattle(data.winner || (data.yourTeam === 1 ? 'الفريق الأزرق' : 'الفريق الأحمر'));
-                    if(data.reward) {
-                        currentBalance = data.yourBalance;
+                    socket.on('connect', () => console.log('✅ Connected to server'));
+                    
+                    socket.on('auth_success', (data) => {
+                        console.log('✅ Auth success:', data);
+                        document.getElementById('loading').style.display = 'none';
+                        currentUser = { uid: data.userId, email: data.email, username: data.username, balance: data.balance, isAdmin: data.isAdmin };
+                        currentBalance = data.balance;
+                        isAdmin = data.isAdmin;
+                        this.sim.playerId = data.userId;
+                        
                         document.getElementById('balance').innerText = currentBalance;
-                    }
-                });
-                
-                socket.on('player_moved', (data) => {
-                    if(this.sim && this.sim.gameActive) this.sim.updateOtherPlayer(data);
-                });
-                
-                socket.on('player_shot', (data) => {
-                    console.log('Player shot:', data.userId);
-                });
-                
-                socket.on('game_state_update', (data) => {
-                    if(this.sim && this.sim.gameActive && data.players) {
-                        data.players.forEach(player => {
-                            if(player.userId !== currentUser?.uid) {
-                                this.sim.updateOtherPlayer(player);
-                            }
-                        });
-                    }
-                });
-                
-                socket.on('player_eliminated', (data) => {
-                    console.log('Player eliminated:', data.userId);
-                    if (this.sim && this.sim.gameActive && data.userId !== currentUser?.uid) {
-                        this.sim.removeTank(data.userId);
-                    }
-                });
-                
-                socket.on('you_were_eliminated', (data) => {
-                    console.log('You were eliminated by:', data.killerId);
+                        document.getElementById('gameBalance').innerText = currentBalance;
+                        document.getElementById('username').innerText = data.username || data.email.split('@')[0];
+                        document.getElementById('gameUsername').innerText = data.username || data.email.split('@')[0];
+                        document.getElementById('gamesPlayed').innerText = data.gamesPlayed || 0;
+                        document.getElementById('wins').innerText = data.wins || 0;
+                        if(isAdmin) document.getElementById('adminBtn').style.display = 'block';
+                        this.showMainScreen();
+                    });
                     
-                    if (this.sim && this.sim.gameActive) {
-                        this.sim.isEliminated = true;
-                        this.sim.gameActive = false;
-                        
-                        if (this.sim.playerTank) {
-                            this.sim.createExplosion(this.sim.playerTank.group.position, 2.5);
-                            this.sim.scene.remove(this.sim.playerTank.group);
-                            this.sim.playerTank = null;
+                    socket.on('auth_error', (data) => {
+                        document.getElementById('loading').style.display = 'none';
+                        alert('خطأ في المصادقة: ' + data.message);
+                    });
+                    
+                    socket.on('lobby_joined', (data) => {
+                        currentBalance = data.balance;
+                        document.getElementById('balance').innerText = currentBalance;
+                        document.getElementById('gameBalance').innerText = currentBalance;
+                        if(data.settings) {
+                            gameSettings = data.settings;
+                            document.getElementById('seatPrice').value = data.settings.seatPrice;
+                            document.getElementById('maxPlayers').value = data.settings.maxPlayers;
                         }
+                    });
+                    
+                    socket.on('rooms_list', (data) => {
+                        this.displayRooms(data.rooms);
+                    });
+                    
+                    socket.on('room_created', (data) => {
+                        document.getElementById('lobbyStatus').innerHTML = '✅ تم إنشاء الغرفة، جاري انتظار لاعبين...';
+                    });
+                    
+                    socket.on('room_update', (data) => {
+                        this.updateSeatsDisplay(data.players, data.maxSeats);
+                        if(data.players.length === data.maxSeats) {
+                            document.getElementById('lobbyStatus').innerHTML = '🚀 اكتملت المقاعد! جاري بدء المعركة...';
+                        }
+                    });
+                    
+                    socket.on('game_start', (data) => {
+                        if(window.innerHeight > window.innerWidth) {
+                            const warning = document.getElementById('landscapeWarning');
+                            warning.style.display = 'flex';
+                            this.pendingGameStart = data;
+                            const checkInterval = setInterval(() => {
+                                if(window.innerWidth > window.innerHeight) {
+                                    clearInterval(checkInterval);
+                                    warning.style.display = 'none';
+                                    this._startGame(this.pendingGameStart);
+                                    this.pendingGameStart = null;
+                                }
+                            }, 200);
+                        } else {
+                            this._startGame(data);
+                        }
+                    });
+                    
+                    socket.on('game_ended', (data) => {
+                        this.endBattle(data.winner || (data.yourTeam === 1 ? 'الفريق الأزرق' : 'الفريق الأحمر'));
+                        if(data.reward) {
+                            currentBalance = data.yourBalance;
+                            document.getElementById('balance').innerText = currentBalance;
+                        }
+                    });
+                    
+                    socket.on('player_moved', (data) => {
+                        if(this.sim && this.sim.gameActive) this.sim.updateOtherPlayer(data);
+                    });
+                    
+                    socket.on('player_shot', (data) => {
+                        console.log('Player shot:', data.userId);
+                    });
+                    
+                    socket.on('game_state_update', (data) => {
+                        if(this.sim && this.sim.gameActive && data.players) {
+                            data.players.forEach(player => {
+                                if(player.userId !== currentUser?.uid) {
+                                    this.sim.updateOtherPlayer(player);
+                                }
+                            });
+                        }
+                    });
+                    
+                    socket.on('player_eliminated', (data) => {
+                        console.log('Player eliminated:', data.userId);
+                        if (this.sim && this.sim.gameActive && data.userId !== currentUser?.uid) {
+                            this.sim.removeTank(data.userId);
+                        }
+                    });
+                    
+                    socket.on('you_were_eliminated', (data) => {
+                        console.log('You were eliminated by:', data.killerId);
                         
-                        const eliminationMessage = document.createElement('div');
-                        eliminationMessage.className = 'elimination-message';
-                        eliminationMessage.innerHTML = '💀 لقد تم تدمير دبابتك! 💀';
-                        document.body.appendChild(eliminationMessage);
-                        
-                        document.getElementById('joystickBase').style.opacity = '0.3';
-                        document.getElementById('fireBtn').style.opacity = '0.3';
-                        document.getElementById('joystickBase').style.pointerEvents = 'none';
-                        document.getElementById('fireBtn').style.pointerEvents = 'none';
-                        
-                        setTimeout(() => {
-                            if (eliminationMessage) eliminationMessage.remove();
-                            document.getElementById('joystickBase').style.opacity = '1';
-                            document.getElementById('fireBtn').style.opacity = '1';
-                            document.getElementById('joystickBase').style.pointerEvents = 'auto';
-                            document.getElementById('fireBtn').style.pointerEvents = 'auto';
-                            this.endBattle('لقد تم إقصاؤك من المعركة');
-                        }, 2500);
-                    }
-                });
-                
-                socket.on('players_list_update', (data) => {
-                    if (this.sim && this.sim.gameActive && data.players) {
-                        const existingTanks = new Set(this.sim.tanks.keys());
-                        const newPlayers = new Set(data.players.map(p => p.userId));
-                        
-                        for (const userId of existingTanks) {
-                            if (!newPlayers.has(userId) && userId !== currentUser?.uid) {
-                                this.sim.removeTank(userId);
+                        if (this.sim && this.sim.gameActive) {
+                            this.sim.isEliminated = true;
+                            this.sim.gameActive = false;
+                            
+                            if (this.sim.playerTank) {
+                                this.sim.createExplosion(this.sim.playerTank.group.position, 2.5);
+                                this.sim.scene.remove(this.sim.playerTank.group);
+                                this.sim.playerTank = null;
                             }
+                            
+                            const eliminationMessage = document.createElement('div');
+                            eliminationMessage.className = 'elimination-message';
+                            eliminationMessage.innerHTML = '💀 لقد تم تدمير دبابتك! 💀';
+                            document.body.appendChild(eliminationMessage);
+                            
+                            document.getElementById('joystickBase').style.opacity = '0.3';
+                            document.getElementById('fireBtn').style.opacity = '0.3';
+                            document.getElementById('joystickBase').style.pointerEvents = 'none';
+                            document.getElementById('fireBtn').style.pointerEvents = 'none';
+                            
+                            setTimeout(() => {
+                                if (eliminationMessage) eliminationMessage.remove();
+                                document.getElementById('joystickBase').style.opacity = '1';
+                                document.getElementById('fireBtn').style.opacity = '1';
+                                document.getElementById('joystickBase').style.pointerEvents = 'auto';
+                                document.getElementById('fireBtn').style.pointerEvents = 'auto';
+                                this.endBattle('لقد تم إقصاؤك من المعركة');
+                            }, 2500);
                         }
-                        
-                        this.sim.updateCounts();
-                    }
-                });
-                
-                socket.on('health_update', (data) => {
-                    if (data.userId === currentUser?.uid) {
-                        document.getElementById('health').innerText = data.health;
-                    }
-                });
-                
-                socket.on('error', (data) => {
-                    alert(data.message);
+                    });
+                    
+                    socket.on('players_list_update', (data) => {
+                        if (this.sim && this.sim.gameActive && data.players) {
+                            const existingTanks = new Set(this.sim.tanks.keys());
+                            const newPlayers = new Set(data.players.map(p => p.userId));
+                            
+                            for (const userId of existingTanks) {
+                                if (!newPlayers.has(userId) && userId !== currentUser?.uid) {
+                                    this.sim.removeTank(userId);
+                                }
+                            }
+                            
+                            this.sim.updateCounts();
+                        }
+                    });
+                    
+                    socket.on('health_update', (data) => {
+                        if (data.userId === currentUser?.uid) {
+                            document.getElementById('health').innerText = data.health;
+                        }
+                    });
+                    
+                    socket.on('error', (data) => {
+                        alert(data.message);
+                    });
+                }).catch(err => {
+                    console.error('Failed to load socket.io:', err);
+                    document.getElementById('loading').style.display = 'none';
+                    alert('خطأ في الاتصال بالخادم');
                 });
             },
             
@@ -1467,7 +1426,14 @@
                 try {
                     const userCredential = await signInWithEmailAndPassword(auth, email, password);
                     const token = await userCredential.user.getIdToken();
-                    socket.emit('auth', { token });
+                    if (socket) {
+                        socket.emit('auth', { token });
+                    } else {
+                        this.initSocket();
+                        setTimeout(() => {
+                            if (socket) socket.emit('auth', { token });
+                        }, 1000);
+                    }
                 } catch(error) {
                     document.getElementById('loading').style.display = 'none';
                     alert('خطأ: ' + error.message);
@@ -1481,7 +1447,14 @@
                 try {
                     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                     const token = await userCredential.user.getIdToken();
-                    socket.emit('auth', { token });
+                    if (socket) {
+                        socket.emit('auth', { token });
+                    } else {
+                        this.initSocket();
+                        setTimeout(() => {
+                            if (socket) socket.emit('auth', { token });
+                        }, 1000);
+                    }
                 } catch(error) {
                     document.getElementById('loading').style.display = 'none';
                     alert('خطأ: ' + error.message);
@@ -1497,7 +1470,7 @@
             showLobby() {
                 document.getElementById('mainScreen').style.display = 'none';
                 document.getElementById('lobby').style.display = 'flex';
-                socket.emit('join_lobby');
+                if (socket) socket.emit('join_lobby');
             },
             
             displayRooms(rooms) {
@@ -1529,11 +1502,11 @@
             },
             
             createRoom() {
-                socket.emit('create_room', { seats: gameSettings.maxPlayers || 2 });
+                if (socket) socket.emit('create_room', { seats: gameSettings.maxPlayers || 2 });
             },
             
             joinRoom(roomId) {
-                socket.emit('join_room', { roomId });
+                if (socket) socket.emit('join_room', { roomId });
             },
             
             _startGame(data) {
@@ -1630,11 +1603,11 @@
             toggleFullscreen() {
                 if (!document.fullscreenElement) {
                     document.documentElement.requestFullscreen().catch(err => {
-                        console.log(`Error attempting to enable fullscreen: ${err.message}`);
+                        console.log(`Error: ${err.message}`);
                     });
                 } else {
                     document.exitFullscreen().catch(err => {
-                        console.log(`Error attempting to exit fullscreen: ${err.message}`);
+                        console.log(`Error: ${err.message}`);
                     });
                 }
             },
@@ -1661,7 +1634,6 @@
             },
             
             goToWallet() { window.location.href = 'wallet.html'; },
-            goToAdmin() { window.location.href = 'admin.html'; },
             
             async saveSeatPrice() {
                 const price = parseInt(document.getElementById('seatPrice').value);
