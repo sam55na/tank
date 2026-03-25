@@ -713,10 +713,19 @@ io.on('connection', (socket) => {
         }
     });
     
-    // إطلاق النار
+    // إطلاق النار - بث القذيفة لجميع اللاعبين
     socket.on('shoot', (data) => {
         const player = players.get(socket.id);
         if (player?.roomId) {
+            // بث القذيفة لجميع اللاعبين في الغرفة (بما فيهم اللاعب نفسه سيتم عرضها محلياً)
+            io.to(player.roomId).emit('bullet_fired', {
+                shooterId: player.userId,
+                position: data.position,
+                direction: data.direction,
+                timestamp: Date.now()
+            });
+            
+            // إرسال حدث إطلاق النار الإضافي للتتبع
             socket.to(player.roomId).emit('player_shot', {
                 userId: player.userId,
                 position: data.position,
@@ -868,6 +877,8 @@ server.listen(PORT, () => {
 ║  ⏱️  Game duration: ${globalGameSettings.gameDuration / 1000} seconds
 ║  🔐 Admin secret: ${process.env.ADMIN_SECRET ? '✅ Set' : '⚠️ Not set'}
 ║  🎯 Fixed: Elimination logic corrected
+║  🎯 Added: Bullet broadcasting for all players
+║  🎯 Added: Smooth movement interpolation
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
     `);
