@@ -732,128 +732,6 @@
         let gameSettings = { seatPrice: 1, maxPlayers: 2 };
         let isFullscreen = false;
         
-        // ============================================
-        // 🎯 نظام Smooth Movement للحركة السلسة
-        // ============================================
-        class SmoothMovement {
-            constructor() {
-                this.positionHistory = [];
-                this.targetPosition = null;
-                this.currentPosition = null;
-                this.lastUpdateTime = 0;
-                this.velocity = new THREE.Vector3(0, 0, 0);
-                this.lastVelocityUpdate = 0;
-                this.predictionEnabled = true;
-            }
-            
-            update(newPosition, timestamp, hasVelocity = false, velX = 0, velZ = 0) {
-                // تحديث السرعة إذا تم توفيرها
-                if (hasVelocity && timestamp) {
-                    this.velocity.set(velX, 0, velZ);
-                    this.lastVelocityUpdate = timestamp;
-                } 
-                // حساب السرعة من الموقعين الأخيرين
-                else if (this.targetPosition && timestamp) {
-                    const dt = (timestamp - this.lastUpdateTime) / 1000;
-                    if (dt > 0 && dt < 0.1) {
-                        this.velocity.set(
-                            (newPosition.x - this.targetPosition.x) / dt,
-                            0,
-                            (newPosition.z - this.targetPosition.z) / dt
-                        );
-                        this.lastVelocityUpdate = timestamp;
-                    }
-                }
-                
-                // إضافة الموقع الجديد للتاريخ
-                this.positionHistory.push({
-                    position: new THREE.Vector3(newPosition.x, 0, newPosition.z),
-                    timestamp: timestamp || Date.now()
-                });
-                
-                // الاحتفاظ بآخر 4 تحديثات فقط
-                while (this.positionHistory.length > 4) {
-                    this.positionHistory.shift();
-                }
-                
-                this.targetPosition = newPosition;
-                this.lastUpdateTime = timestamp || Date.now();
-                
-                // إذا كان هذا أول تحديث، اضبط الموقع فوراً
-                if (!this.currentPosition) {
-                    this.currentPosition = new THREE.Vector3(newPosition.x, 0, newPosition.z);
-                }
-            }
-            
-            interpolatePosition(now) {
-                if (this.positionHistory.length < 2 || !this.targetPosition) {
-                    return this.currentPosition;
-                }
-                
-                // استيفاء خطي بين آخر موقعين معروفين
-                const last = this.positionHistory[this.positionHistory.length - 2];
-                const current = this.positionHistory[this.positionHistory.length - 1];
-                
-                if (!last || !current) return this.currentPosition;
-                
-                const timeSinceLastUpdate = Math.min(100, now - current.timestamp);
-                // زمن الاستيفاء: 50ms هو وقت التحديث المتوقع من السيرفر
-                let t = Math.min(1, timeSinceLastUpdate / 50);
-                
-                // استيفاء سلس (Ease Out Cubic)
-                t = 1 - Math.pow(1 - t, 1.5);
-                
-                const interpolatedX = last.position.x + (current.position.x - last.position.x) * t;
-                const interpolatedZ = last.position.z + (current.position.z - last.position.z) * t;
-                
-                if (!this.currentPosition) {
-                    this.currentPosition = new THREE.Vector3(interpolatedX, 0, interpolatedZ);
-                } else {
-                    this.currentPosition.set(interpolatedX, 0, interpolatedZ);
-                }
-                
-                return this.currentPosition;
-            }
-            
-            predictPosition(now) {
-                if (!this.targetPosition) return this.currentPosition;
-                
-                const timeSinceUpdate = now - this.lastUpdateTime;
-                
-                // إذا مر وقت طويل بدون تحديث (أكثر من 100ms) واستخدم التوقع
-                if (this.predictionEnabled && timeSinceUpdate > 100 && this.velocity.length() > 0.1) {
-                    const dt = Math.min(0.5, timeSinceUpdate / 1000);
-                    const predictedX = this.targetPosition.x + this.velocity.x * dt;
-                    const predictedZ = this.targetPosition.z + this.velocity.z * dt;
-                    
-                    const predicted = new THREE.Vector3(predictedX, 0, predictedZ);
-                    
-                    // مزج بين التوقع والموقع الحالي
-                    if (this.currentPosition) {
-                        const blend = Math.min(0.3, timeSinceUpdate / 500);
-                        this.currentPosition.lerp(predicted, blend);
-                    } else {
-                        this.currentPosition = predicted;
-                    }
-                    
-                    return this.currentPosition;
-                }
-                
-                return this.interpolatePosition(now);
-            }
-            
-            getCurrentPosition(now) {
-                return this.predictPosition(now);
-            }
-            
-            // تطبيق تصحيح سلس عند وجود فرق كبير
-            smoothCorrection(correctPosition, strength = 0.15) {
-                if (this.currentPosition && correctPosition) {
-                    this.currentPosition.lerp(correctPosition, strength);
-                }
-            }
-        }
-        
         class AudioEngine {
             constructor() { this.ctx = null; this.engineOsc = null; this.engineGain = null; }
             init() { if (this.ctx) return; try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
@@ -874,7 +752,6 @@
                 this.isEliminated = false;
                 this.lastMoveTime = 0;
                 this.playerId = null;
-                this.lastFrameTime = 0;
             }
 
             init() { 
@@ -900,7 +777,6 @@
                 
                 window.addEventListener('resize', () => this.onWindowResize());
                 this.animate();
-                this.lastFrameTime = performance.now();
             }
             
             onWindowResize() {
@@ -1038,11 +914,6 @@
             
             update() { 
                 if (!this.gameActive || this.isEliminated) return;
-                
-                const now = performance.now();
-                const deltaTime = Math.min(0.033, (now - this.lastFrameTime) / 1000);
-                this.lastFrameTime = now;
-                
                 this.updateParticles();
                 
                 if(this.playerTank) { 
@@ -1054,9 +925,9 @@
                     if(this.checkCollision(this.playerTank)) this.playerTank.position.set(oldX, 0, oldZ); 
                     gameApp.audio.updateEngine(Math.abs(speed) * 3.5); 
                     
-                    const nowMs = Date.now();
-                    if (nowMs - this.lastMoveTime > 33) { // 30 مرة في الثانية
-                        this.lastMoveTime = nowMs;
+                    const now = Date.now();
+                    if (now - this.lastMoveTime > 50) {
+                        this.lastMoveTime = now;
                         socket.emit('move', { position: this.playerTank.position, rotation: this.playerTank.rotation.y });
                     }
                     
@@ -1070,16 +941,6 @@
                     this.camera.position.lerp(camTarget, 0.12); 
                     this.camera.lookAt(this.playerTank.position.clone().add(new THREE.Vector3(0, 1.2, 0))); 
                 } 
-                
-                // تحديث مواقع الخصوم باستخدام SmoothMovement
-                for (let [id, tank] of this.otherPlayers) {
-                    if (tank.userData.smoothMovement) {
-                        const smoothPos = tank.userData.smoothMovement.getCurrentPosition(performance.now());
-                        if (smoothPos) {
-                            tank.position.copy(smoothPos);
-                        }
-                    }
-                }
                 
                 for(let i = this.bullets.length-1; i >= 0; i--) { 
                     const b = this.bullets[i]; 
@@ -1099,7 +960,9 @@
                     
                     if(!hit) { 
                         for(let [id, tank] of this.tanks) {
+                            // التحقق: الرصاصة ليست من نفس الدبابة
                             const isOwner = (b.userData.owner === tank);
+                            // التحقق: الفرق مختلفة
                             const isSameTeam = tank.userData.team === b.userData.owner?.userData?.team;
                             
                             if (!isOwner && !isSameTeam && b.position.distanceTo(tank.position) < 1.9) { 
@@ -1108,7 +971,10 @@
                                 this.scene.remove(b); 
                                 this.bullets.splice(i,1);
                                 
+                                console.log('Hit detected! Shooter:', b.userData.ownerId, 'Target:', id);
+                                
                                 if(b.userData.owner === this.playerTank) {
+                                    console.log('Sending damage event for target:', id);
                                     socket.emit('damage', { 
                                         damage: 100, 
                                         killerId: this.playerId,
@@ -1147,33 +1013,17 @@
             
             updateOtherPlayer(data) {
                 if (!this.gameActive || this.isEliminated) return;
-                
                 let tank = this.otherPlayers.get(data.userId);
                 if(!tank && data.userId !== this.playerId) {
                     const color = data.team === 1 ? 0x8b5a2b : 0x4a6a8b;
                     const pos = data.position || { x: 0, z: 0 };
                     tank = this.createTank(color, pos.x, pos.z, data.team, data.userId);
-                    tank.userData.smoothMovement = new SmoothMovement();
                     this.otherPlayers.set(data.userId, tank);
                     this.tanks.set(data.userId, tank);
                 }
-                
                 if(tank && data.position) {
-                    if (!tank.userData.smoothMovement) {
-                        tank.userData.smoothMovement = new SmoothMovement();
-                    }
-                    // تحديث بيانات الحركة مع الطابع الزمني
-                    tank.userData.smoothMovement.update(
-                        data.position, 
-                        data.timestamp || Date.now(),
-                        data.velocity ? true : false,
-                        data.velocity?.x || 0,
-                        data.velocity?.z || 0
-                    );
-                    // تحديث الدوران فوراً (لا يحتاج استيفاء)
-                    if (data.rotation !== undefined) {
-                        tank.rotation.y = data.rotation;
-                    }
+                    tank.position.set(data.position.x, 0, data.position.z);
+                    tank.rotation.y = data.rotation || 0;
                 }
             }
             
@@ -1292,41 +1142,11 @@
                     console.log('Player shot:', data.userId);
                 });
                 
-                // معالجة تحديثات الحالة المحسنة (تدعم الفروقات والتحديثات الكاملة)
                 socket.on('game_state_update', (data) => {
                     if(this.sim && this.sim.gameActive && data.players) {
-                        const now = performance.now();
                         data.players.forEach(player => {
                             if(player.userId !== currentUser?.uid) {
-                                // دعم كل من التحديثات الكاملة والفروقات
-                                let position, rotation;
-                                
-                                if (player.dx !== undefined) {
-                                    // هذا فرق (delta) - نحتاج إلى تطبيقه على الموقع الحالي
-                                    const existingTank = this.sim.otherPlayers.get(player.userId);
-                                    if (existingTank && existingTank.position) {
-                                        position = {
-                                            x: existingTank.position.x + (player.dx || 0),
-                                            z: existingTank.position.z + (player.dz || 0)
-                                        };
-                                        rotation = (existingTank.rotation.y || 0) + (player.dr || 0);
-                                    } else {
-                                        position = { x: player.x || 0, z: player.z || 0 };
-                                        rotation = player.r || 0;
-                                    }
-                                } else {
-                                    // تحديث كامل
-                                    position = { x: player.x || player.position?.x || 0, z: player.z || player.position?.z || 0 };
-                                    rotation = player.r || player.rotation || 0;
-                                }
-                                
-                                this.sim.updateOtherPlayer({
-                                    userId: player.userId || player.u,
-                                    position: position,
-                                    rotation: rotation,
-                                    team: player.t || player.team,
-                                    timestamp: data.ts || Date.now()
-                                });
+                                this.sim.updateOtherPlayer(player);
                             }
                         });
                     }
@@ -1511,7 +1331,6 @@
                             const otherColor = otherTeam === 1 ? 0x8b5a2b : 0x4a6a8b;
                             const tank = this.sim.createTank(otherColor, otherPos.x, otherPos.z, otherTeam, player.userId);
                             tank.userData.playerId = player.userId;
-                            tank.userData.smoothMovement = new SmoothMovement();
                             this.sim.tanks.set(player.userId, tank);
                             this.sim.otherPlayers.set(player.userId, tank);
                         }
@@ -1764,7 +1583,7 @@
         
         window.gameApp = gameApp;
         gameApp.init();
-        console.log('🎮 Game ready with Smooth Movement System!');
+        console.log('🎮 Game ready!');
     </script>
 </body>
 </html>
