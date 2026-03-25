@@ -2,8 +2,8 @@
 // 🚀 خادم لعبة Battle Tanks - النسخة النهائية للإنتاج
 // ============================================
 // Author: Battle Tanks Team
-// Version: 3.0.0
-// Description: خادم متكامل للألعاب متعددة اللاعبين مع نظام إدارة متقدم
+// Version: 3.1.0
+// Description: خادم متكامل للألعاب متعددة اللاعبين مع نظام إدارة متقدم ومزامنة كاملة
 // ============================================
 
 const express = require('express');
@@ -149,10 +149,10 @@ function startGame(roomId) {
             return;
         }
         
-        // جمع تحديثات اللاعبين
+        // جمع تحديثات اللاعبين (اللاعبين الأحياء فقط)
         const playersUpdate = [];
         for (const player of currentRoom.players) {
-            if (player.position) {
+            if (player.position && player.health > 0) {
                 playersUpdate.push({
                     userId: player.userId,
                     position: player.position,
@@ -188,13 +188,14 @@ async function endGame(roomId, reason) {
     // تحديد الفائز (اللاعب المتبقي)
     let winnerTeam = null;
     let winnerName = null;
+    const alivePlayers = room.players.filter(p => p.health > 0);
     
-    if (room.players.length === 1) {
-        winnerTeam = room.players[0].team;
+    if (alivePlayers.length === 1) {
+        winnerTeam = alivePlayers[0].team;
         winnerName = winnerTeam === 1 ? 'الفريق الأحمر' : 'الفريق الأزرق';
-    } else if (room.players.length === 2) {
-        const player1 = room.players[0];
-        const player2 = room.players[1];
+    } else if (alivePlayers.length === 2) {
+        const player1 = alivePlayers[0];
+        const player2 = alivePlayers[1];
         const health1 = player1.health || 100;
         const health2 = player2.health || 100;
         
@@ -207,6 +208,8 @@ async function endGame(roomId, reason) {
         } else {
             winnerName = 'تعادل';
         }
+    } else if (alivePlayers.length === 0) {
+        winnerName = 'تعادل (جميع اللاعبين قضوا)';
     }
     
     const reward = 10;
@@ -217,7 +220,7 @@ async function endGame(roomId, reason) {
             const snapshot = await userRef.once('value');
             let userData = snapshot.val();
             let currentBalance = userData?.balance || 100;
-            const isWinner = (player.team === winnerTeam && winnerTeam);
+            const isWinner = (player.team === winnerTeam && winnerTeam && player.health > 0);
             
             if (isWinner) {
                 currentBalance += reward;
@@ -262,7 +265,7 @@ async function endGame(roomId, reason) {
 
 // التحقق من صحة الخادم
 app.get('/health', (req, res) => {
-    res.json({ status: 'online', timestamp: Date.now(), version: '3.0.0' });
+    res.json({ status: 'online', timestamp: Date.now(), version: '3.1.0' });
 });
 
 // الحصول على رصيد المستخدم
@@ -616,7 +619,8 @@ io.on('connection', (socket) => {
             players: [{
                 userId: player.userId,
                 socketId: socket.id,
-                email: player.email
+                email: player.email,
+                health: 100
             }],
             status: 'waiting',
             createdAt: Date.now()
@@ -668,7 +672,8 @@ io.on('connection', (socket) => {
         room.players.push({
             userId: player.userId,
             socketId: socket.id,
-            email: player.email
+            email: player.email,
+            health: 100
         });
         player.roomId = roomId;
         
@@ -693,7 +698,7 @@ io.on('connection', (socket) => {
             if (room && room.status === 'active') {
                 // تحديث موقع اللاعب في الغرفة
                 const roomPlayer = room.players.find(p => p.socketId === socket.id);
-                if (roomPlayer) {
+                if (roomPlayer && roomPlayer.health > 0) {
                     roomPlayer.position = data.position;
                     roomPlayer.rotation = data.rotation;
                 }
@@ -728,8 +733,9 @@ io.on('connection', (socket) => {
             const room = rooms.get(player.roomId);
             if (room && room.status === 'active') {
                 const roomPlayer = room.players.find(p => p.socketId === socket.id);
-                if (roomPlayer) {
-                    roomPlayer.health = Math.max(0, (roomPlayer.health || 100) - data.damage);
+                if (roomPlayer && roomPlayer.health > 0) {
+                    const oldHealth = roomPlayer.health || 100;
+                    roomPlayer.health = Math.max(0, oldHealth - data.damage);
                     
                     // إرسال تحديث الصحة للجميع
                     io.to(player.roomId).emit('health_update', {
@@ -737,20 +743,50 @@ io.on('connection', (socket) => {
                         health: roomPlayer.health
                     });
                     
+                    // إذا كان اللاعب قد مات
                     if (roomPlayer.health <= 0) {
                         roomPlayer.health = 0;
-                        io.to(player.roomId).emit('player_destroyed', {
+                        
+                        // إرسال حدث إقصاء اللاعب للجميع بما في ذلك اللاعب نفسه
+                        io.to(player.roomId).emit('player_eliminated', {
                             userId: player.userId,
                             killerId: data.killerId,
                             position: roomPlayer.position
                         });
                         
+                        console.log(`💀 Player ${player.userId} eliminated by ${data.killerId}`);
+                        
+                        // إعلام اللاعب بأنه تم إقصاؤه
+                        io.to(socket.id).emit('you_were_eliminated', {
+                            message: 'لقد تم تدمير دبابتك!',
+                            killerId: data.killerId
+                        });
+                        
                         // التحقق من انتهاء اللعبة
-                        const alivePlayers = room.players.filter(p => (p.health || 100) > 0);
+                        const alivePlayers = room.players.filter(p => p.health > 0);
                         if (alivePlayers.length <= 1) {
-                            const winner = alivePlayers[0];
-                            const winnerName = winner.team === 1 ? 'الفريق الأحمر' : 'الفريق الأزرق';
-                            endGame(player.roomId, `🎉 فوز ${winnerName}! 🎉`);
+                            if (alivePlayers.length === 1) {
+                                const winner = alivePlayers[0];
+                                const winnerName = winner.team === 1 ? 'الفريق الأحمر' : 'الفريق الأزرق';
+                                endGame(player.roomId, `🎉 فوز ${winnerName}! 🎉`);
+                            } else {
+                                endGame(player.roomId, '🤝 تعادل!');
+                            }
+                        } else {
+                            // تحديث قائمة اللاعبين للجميع
+                            const playersUpdate = [];
+                            for (const p of room.players) {
+                                if (p.position && p.health > 0) {
+                                    playersUpdate.push({
+                                        userId: p.userId,
+                                        position: p.position,
+                                        rotation: p.rotation || 0,
+                                        health: p.health || 100,
+                                        team: p.team
+                                    });
+                                }
+                            }
+                            io.to(player.roomId).emit('players_list_update', { players: playersUpdate });
                         }
                     }
                 }
@@ -779,12 +815,15 @@ io.on('connection', (socket) => {
                             rooms.delete(player.roomId);
                         } else if (room.status === 'active') {
                             // إذا كان هناك لاعب واحد متبقي، أعلن فوزه
-                            const winnerPlayer = room.players[0];
-                            const winnerTeam = winnerPlayer.team;
-                            const winnerName = winnerTeam === 1 ? 'الفريق الأحمر' : 'الفريق الأزرق';
-                            
-                            // إنهاء اللعبة للاعب المتبقي
-                            endGame(player.roomId, `🎉 فوز ${winnerName} بسبب انسحاب الخصم! 🎉`);
+                            const alivePlayers = room.players.filter(p => p.health > 0);
+                            if (alivePlayers.length === 1) {
+                                const winnerPlayer = alivePlayers[0];
+                                const winnerTeam = winnerPlayer.team;
+                                const winnerName = winnerTeam === 1 ? 'الفريق الأحمر' : 'الفريق الأزرق';
+                                endGame(player.roomId, `🎉 فوز ${winnerName} بسبب انسحاب الخصم! 🎉`);
+                            } else if (alivePlayers.length === 0) {
+                                endGame(player.roomId, 'انتهت المعركة بسبب انسحاب جميع اللاعبين');
+                            }
                         } else if (room.status === 'waiting') {
                             updateRoom(player.roomId);
                         }
