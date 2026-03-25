@@ -17,13 +17,24 @@
             font-family: 'Segoe UI', 'Cairo', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
             background: linear-gradient(145deg, #0a0f1a 0%, #05070c 100%);
-            touch-action: pan-x pan-y;
             position: fixed;
             width: 100%;
             height: 100%;
+            top: 0;
+            left: 0;
         }
 
-        /* شاشة تحذير الوضع الأفقي (تظهر فقط عند بدء المعركة في الوضع الخطأ) */
+        canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+            position: fixed;
+            top: 0;
+            left: 0;
+            object-fit: cover;
+        }
+
+        /* شاشة تحذير الوضع الأفقي */
         .landscape-warning {
             position: fixed;
             top: 0;
@@ -53,15 +64,14 @@
         }
 
         .login-screen, .main-screen, .lobby, .admin-panel, .report-screen, .hud {
-            /* سيتم التحكم في display عبر JavaScript */
-        }
-
-        .login-screen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+        }
+
+        .login-screen {
             background: radial-gradient(circle at 30% 10%, #1e2a3a, #0a0f1f);
             display: flex;
             justify-content: center;
@@ -82,7 +92,7 @@
 
         .login-container h1 {
             color: #d4af37;
-            font-size: 36px;
+            font-size: clamp(24px, 8vw, 36px);
             margin-bottom: 10px;
         }
 
@@ -127,11 +137,6 @@
         }
 
         .main-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
             background: linear-gradient(145deg, #0f1725, #070b14);
             display: none;
             flex-direction: column;
@@ -142,9 +147,11 @@
 
         .main-screen h2 {
             color: #d4af37;
-            font-size: 36px;
+            font-size: clamp(24px, 8vw, 36px);
             margin-bottom: 20px;
             text-shadow: 0 0 10px rgba(212,175,55,0.5);
+            text-align: center;
+            padding: 0 20px;
         }
 
         .btn-group {
@@ -155,28 +162,23 @@
             justify-content: center;
         }
 
-        .play-btn {
-            background: linear-gradient(135deg, #d4af37, #b8860b);
-            padding: 18px 40px;
+        .play-btn, .wallet-btn {
+            padding: clamp(12px, 4vw, 18px) clamp(25px, 8vw, 40px);
             border: none;
             border-radius: 60px;
-            font-size: 24px;
+            font-size: clamp(18px, 5vw, 24px);
             font-weight: bold;
             cursor: pointer;
             transition: transform 0.2s;
             box-shadow: 0 10px 20px rgba(0,0,0,0.3);
         }
 
+        .play-btn {
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+        }
+
         .wallet-btn {
             background: linear-gradient(135deg, #2ecc71, #27ae60);
-            padding: 18px 40px;
-            border: none;
-            border-radius: 60px;
-            font-size: 24px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
         }
 
         .admin-btn {
@@ -191,6 +193,7 @@
             right: 20px;
             display: none;
             transition: transform 0.2s;
+            z-index: 100;
         }
 
         .play-btn:active, .wallet-btn:active, .admin-btn:active {
@@ -209,6 +212,7 @@
 
         .user-card div {
             margin: 5px 0;
+            font-size: clamp(12px, 4vw, 16px);
         }
 
         .loading {
@@ -226,11 +230,6 @@
         }
 
         .lobby {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
             background: rgba(0,0,0,0.95);
             backdrop-filter: blur(10px);
             display: none;
@@ -241,7 +240,7 @@
 
         .lobby-container {
             background: linear-gradient(145deg, #111a24, #0a0f18);
-            padding: 30px;
+            padding: clamp(20px, 5vw, 30px);
             border-radius: 48px;
             width: 90%;
             max-width: 500px;
@@ -252,6 +251,7 @@
         .lobby-container h2 {
             color: #d4af37;
             margin-bottom: 20px;
+            font-size: clamp(20px, 6vw, 28px);
         }
 
         .seats-grid {
@@ -271,54 +271,42 @@
             transition: all 0.2s;
         }
 
-        .seat:hover {
-            background: rgba(255,255,255,0.15);
-            transform: scale(1.02);
-        }
-
         .seat.occupied {
             background: #2e7035;
             cursor: not-allowed;
             opacity: 0.7;
         }
 
-        .create-room-btn {
-            background: #d4af37;
+        .create-room-btn, .back-lobby-btn {
             padding: 12px 30px;
             border: none;
             border-radius: 30px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 20px;
+            margin-top: 10px;
             transition: transform 0.2s;
         }
 
-        .create-room-btn:active {
-            transform: scale(0.96);
+        .create-room-btn {
+            background: #d4af37;
         }
 
         .back-lobby-btn {
             background: #555;
             color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 30px;
-            margin-top: 15px;
-            cursor: pointer;
+        }
+
+        .create-room-btn:active, .back-lobby-btn:active {
+            transform: scale(0.96);
         }
 
         .lobby-status {
             color: #d4af37;
             margin-top: 15px;
-            font-size: 16px;
+            font-size: 14px;
         }
 
         .hud {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
             pointer-events: none;
             z-index: 100;
             display: none;
@@ -326,37 +314,37 @@
 
         .status-bar {
             position: absolute;
-            top: 20px;
-            left: 20px;
+            top: clamp(10px, 3vh, 20px);
+            left: clamp(10px, 3vw, 20px);
             background: rgba(0,0,0,0.8);
-            padding: 8px 16px;
+            padding: clamp(6px, 2vw, 8px) clamp(12px, 3vw, 16px);
             border-left: 4px solid #d4af37;
             border-radius: 16px;
             color: white;
-            font-size: 14px;
+            font-size: clamp(10px, 3vw, 14px);
             backdrop-filter: blur(4px);
         }
 
         .team-info {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: clamp(10px, 3vh, 20px);
+            right: clamp(10px, 3vw, 20px);
             background: rgba(0,0,0,0.8);
-            padding: 8px 16px;
+            padding: clamp(6px, 2vw, 8px) clamp(12px, 3vw, 16px);
             border-radius: 16px;
             text-align: right;
             color: white;
-            font-size: 14px;
+            font-size: clamp(10px, 3vw, 14px);
         }
 
         .cooldown-side {
             position: absolute;
-            top: 80px;
-            right: 20px;
+            top: clamp(60px, 10vh, 80px);
+            right: clamp(10px, 3vw, 20px);
             background: rgba(0,0,0,0.7);
             padding: 5px 12px;
             border-radius: 30px;
-            font-size: 12px;
+            font-size: clamp(10px, 3vw, 12px);
             color: #d4af37;
             font-weight: bold;
             pointer-events: none;
@@ -367,8 +355,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 36px;
-            height: 36px;
+            width: clamp(30px, 5vw, 36px);
+            height: clamp(30px, 5vw, 36px);
         }
         .crosshair::before, .crosshair::after {
             content: '';
@@ -392,17 +380,17 @@
 
         .controls {
             position: absolute;
-            bottom: 30px;
+            bottom: clamp(20px, 5vh, 30px);
             width: 100%;
             display: flex;
             justify-content: space-between;
-            padding: 0 20px;
+            padding: 0 clamp(10px, 5vw, 20px);
             pointer-events: none;
         }
 
         .joystick-base {
-            width: 120px;
-            height: 120px;
+            width: clamp(80px, 20vw, 120px);
+            height: clamp(80px, 20vw, 120px);
             background: rgba(0,0,0,0.6);
             border: 2px solid #d4af37;
             border-radius: 70px;
@@ -411,8 +399,8 @@
         }
 
         .joystick-handle {
-            width: 52px;
-            height: 52px;
+            width: clamp(35px, 10vw, 52px);
+            height: clamp(35px, 10vw, 52px);
             background: radial-gradient(circle, #d4af37, #b8860b);
             border-radius: 30px;
             position: absolute;
@@ -423,15 +411,15 @@
         }
 
         .fire-btn {
-            width: 80px;
-            height: 80px;
+            width: clamp(60px, 15vw, 80px);
+            height: clamp(60px, 15vw, 80px);
             background: radial-gradient(circle, #e55, #a22);
             border: 2px solid #d4af37;
             border-radius: 50px;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 36px;
+            font-size: clamp(28px, 6vw, 36px);
             color: white;
             cursor: pointer;
             pointer-events: auto;
@@ -444,11 +432,6 @@
         }
 
         .report-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
             background: rgba(0,0,0,0.95);
             backdrop-filter: blur(15px);
             display: none;
@@ -459,7 +442,7 @@
 
         .report-container {
             background: linear-gradient(135deg, #1a1a2e, #0a0a1a);
-            padding: 30px;
+            padding: clamp(20px, 5vw, 30px);
             border-radius: 40px;
             text-align: center;
             border: 2px solid #d4af37;
@@ -470,12 +453,14 @@
         .report-container h2 {
             color: #d4af37;
             margin-bottom: 20px;
+            font-size: clamp(20px, 6vw, 28px);
         }
 
         .report-container p {
             color: white;
             margin: 15px 0;
             line-height: 1.8;
+            font-size: clamp(14px, 4vw, 16px);
         }
 
         .back-home-btn {
@@ -490,11 +475,6 @@
         }
 
         .admin-panel {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
             background: rgba(0,0,0,0.96);
             backdrop-filter: blur(8px);
             display: none;
@@ -505,7 +485,7 @@
 
         .admin-container {
             background: linear-gradient(135deg, #121926, #080c14);
-            padding: 30px;
+            padding: clamp(20px, 5vw, 30px);
             border-radius: 40px;
             width: 90%;
             max-width: 500px;
@@ -517,7 +497,7 @@
         .admin-container h3 {
             color: #d4af37;
             margin-bottom: 20px;
-            font-size: 24px;
+            font-size: clamp(20px, 5vw, 24px);
         }
 
         .admin-container input, .admin-container select {
@@ -560,23 +540,6 @@
             overflow-y: auto;
             font-size: 12px;
         }
-
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-            position: fixed;
-            top: 0;
-            left: 0;
-        }
-
-        @media (max-width: 600px) {
-            .joystick-base { width: 100px; height: 100px; }
-            .fire-btn { width: 70px; height: 70px; font-size: 28px; }
-            .play-btn, .wallet-btn { padding: 12px 25px; font-size: 18px; }
-            .login-container { padding: 30px 20px; }
-            .login-container h1 { font-size: 28px; }
-        }
         
         .elimination-message {
             position: fixed;
@@ -585,14 +548,15 @@
             transform: translate(-50%, -50%);
             background-color: rgba(0,0,0,0.9);
             color: #ff4444;
-            padding: 20px 40px;
+            padding: clamp(15px, 4vw, 20px) clamp(25px, 6vw, 40px);
             border-radius: 30px;
-            font-size: 24px;
+            font-size: clamp(18px, 5vw, 24px);
             font-weight: bold;
             z-index: 10000;
             text-align: center;
             border: 2px solid #ff4444;
             animation: fadeInOut 3s ease-in-out;
+            white-space: nowrap;
         }
         
         @keyframes fadeInOut {
@@ -600,6 +564,13 @@
             20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
             80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
             100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        }
+
+        @media (max-width: 768px) {
+            .elimination-message {
+                white-space: normal;
+                min-width: 200px;
+            }
         }
     </style>
 </head>
@@ -755,7 +726,6 @@
         let currentUser = null;
         let currentBalance = 0;
         let isAdmin = false;
-        let currentGame = null;
         let gameSettings = { seatPrice: 1, maxPlayers: 2 };
         
         // ============================================
@@ -779,6 +749,7 @@
                 this.playerTeam = null; this.otherPlayers = new Map();
                 this.gameActive = false;
                 this.isEliminated = false;
+                this.lastMoveTime = 0;
             }
 
             init() { 
@@ -786,6 +757,7 @@
                 this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 500); 
                 this.renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
                 this.renderer.setSize(window.innerWidth, window.innerHeight); 
+                this.renderer.setPixelRatio(window.devicePixelRatio);
                 this.renderer.shadowMap.enabled = true; 
                 this.scene.background = new THREE.Color(0x1a2a3a); 
                 this.scene.fog = new THREE.FogExp2(0x1a2a3a, 0.0018);
@@ -800,7 +772,20 @@
                 
                 this.createTerrain(); 
                 this.createObstacles(); 
-                this.animate(); 
+                
+                // بدء الحلقة
+                this.animate();
+                
+                // تحديث حجم الكاميرا عند تغيير حجم النافذة
+                window.addEventListener('resize', () => this.onWindowResize());
+            }
+            
+            onWindowResize() {
+                if (this.camera && this.renderer) {
+                    this.camera.aspect = window.innerWidth / window.innerHeight;
+                    this.camera.updateProjectionMatrix();
+                    this.renderer.setSize(window.innerWidth, window.innerHeight);
+                }
             }
             
             createTerrain() { 
@@ -860,7 +845,7 @@
             }
             
             fire(tank) { 
-                if (this.isEliminated) return false;
+                if (this.isEliminated || !this.gameActive) return false;
                 
                 const now = Date.now(); 
                 if(now - this.lastShot < 3000) return false; 
@@ -869,7 +854,7 @@
                 const bullet = new THREE.Mesh(new THREE.SphereGeometry(0.26, 24, 24), new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4422, emissiveIntensity: 0.6 })); 
                 bullet.position.copy(tank.position); 
                 bullet.position.y += 1.2; 
-                bullet.userData = { velocity: dir.multiplyScalar(2.6), owner: tank, life: 200 }; 
+                bullet.userData = { velocity: dir.multiplyScalar(2.6), owner: tank, life: 200, ownerId: tank.userData.playerId || 'player' }; 
                 this.scene.add(bullet); 
                 this.bullets.push(bullet); 
                 if(tank === this.playerTank) gameApp.audio.fire(); 
@@ -941,7 +926,12 @@
                     if(this.checkCollision(this.playerTank)) this.playerTank.position.set(oldX, 0, oldZ); 
                     gameApp.audio.updateEngine(Math.abs(speed) * 3.5); 
                     
-                    socket.emit('move', { position: this.playerTank.position, rotation: this.playerTank.rotation.y });
+                    // إرسال حركة كل 50ms فقط لتقليل التحميل
+                    const now = Date.now();
+                    if (now - this.lastMoveTime > 50) {
+                        this.lastMoveTime = now;
+                        socket.emit('move', { position: this.playerTank.position, rotation: this.playerTank.rotation.y });
+                    }
                     
                     const camOffset = new THREE.Vector3(0, 5.5, -12).applyQuaternion(this.playerTank.quaternion); 
                     let camTarget = this.playerTank.position.clone().add(camOffset); 
@@ -954,11 +944,14 @@
                     this.camera.lookAt(this.playerTank.position.clone().add(new THREE.Vector3(0, 1.2, 0))); 
                 } 
                 
+                // تحديث الرصاصات
                 for(let i = this.bullets.length-1; i >= 0; i--) { 
                     const b = this.bullets[i]; 
                     b.position.add(b.userData.velocity); 
                     b.userData.life--; 
                     let hit = false; 
+                    
+                    // كشف التصادم مع العوائق
                     for(let obs of this.obstacles) { 
                         if(new THREE.Box3().setFromObject(b).intersectsBox(new THREE.Box3().setFromObject(obs))) { 
                             hit = true; 
@@ -968,15 +961,23 @@
                             break; 
                         } 
                     } 
+                    
+                    // كشف التصادم مع الدبابات
                     if(!hit) { 
                         for(let [id, tank] of this.tanks) { 
-                            if(tank !== b.userData.owner && tank.userData.team !== b.userData.owner.userData.team && b.position.distanceTo(tank.position) < 1.9) { 
+                            // التحقق: الرصاصة ليس من نفس الدبابة والفريق مختلف
+                            const isOwner = (b.userData.owner === tank);
+                            const isSameTeam = tank.userData.team === b.userData.owner?.userData?.team;
+                            
+                            if (!isOwner && !isSameTeam && b.position.distanceTo(tank.position) < 1.9) { 
                                 hit = true; 
                                 this.createExplosion(b.position, 1.5); 
                                 this.scene.remove(b); 
                                 this.bullets.splice(i,1);
                                 
+                                // إذا كان مطلق الرصاص هو اللاعب الحالي
                                 if(b.userData.owner === this.playerTank) {
+                                    console.log('Hit enemy tank!', id);
                                     socket.emit('damage', { 
                                         damage: 100, 
                                         killerId: currentUser?.uid,
@@ -987,6 +988,7 @@
                             } 
                         } 
                     } 
+                    
                     if(!hit && (b.userData.life < 0 || Math.abs(b.position.x) > 430 || Math.abs(b.position.z) > 430)) { 
                         this.scene.remove(b); 
                         this.bullets.splice(i,1); 
@@ -1002,13 +1004,18 @@
             
             updateCounts() { 
                 this.team1Count = 0; this.team2Count = 0; 
-                for(let tank of this.tanks.values()) if(tank.userData.team === 1) this.team1Count++; else this.team2Count++; 
-                document.getElementById('team1').innerText = this.team1Count; 
-                document.getElementById('team2').innerText = this.team2Count; 
+                for(let tank of this.tanks.values()) {
+                    if(tank.userData.team === 1) this.team1Count++; 
+                    else if(tank.userData.team === 2) this.team2Count++;
+                }
+                const team1El = document.getElementById('team1');
+                const team2El = document.getElementById('team2');
+                if (team1El) team1El.innerText = this.team1Count;
+                if (team2El) team2El.innerText = this.team2Count;
             }
             
             updateOtherPlayer(data) {
-                if (!this.gameActive) return;
+                if (!this.gameActive || this.isEliminated) return;
                 let tank = this.otherPlayers.get(data.userId);
                 if(!tank && data.userId !== currentUser?.uid) {
                     const color = data.team === 1 ? 0x8b5a2b : 0x4a6a8b;
@@ -1034,7 +1041,13 @@
                 }
             }
             
-            animate() { requestAnimationFrame(() => this.animate()); this.update(); if(this.renderer) this.renderer.render(this.scene, this.camera); }
+            animate() { 
+                requestAnimationFrame(() => this.animate()); 
+                this.update(); 
+                if(this.renderer && this.scene && this.camera) {
+                    this.renderer.render(this.scene, this.camera);
+                }
+            }
         }
 
         // ============================================
@@ -1046,7 +1059,6 @@
             currentUser: null, 
             gameSettings: { seatPrice: 1, maxPlayers: 2 },
             battleResult: null,
-            lobbyInterval: null,
             pendingGameStart: null,
             
             initSocket() {
@@ -1172,7 +1184,7 @@
                         
                         const eliminationMessage = document.createElement('div');
                         eliminationMessage.className = 'elimination-message';
-                        eliminationMessage.innerHTML = '💀 لقد تم تدمير دبابتك! 💀<br><small>جاري إنهاء المعركة...</small>';
+                        eliminationMessage.innerHTML = '💀 لقد تم تدمير دبابتك! 💀';
                         document.body.appendChild(eliminationMessage);
                         
                         document.getElementById('joystickBase').style.opacity = '0.3';
@@ -1187,7 +1199,7 @@
                             document.getElementById('joystickBase').style.pointerEvents = 'auto';
                             document.getElementById('fireBtn').style.pointerEvents = 'auto';
                             this.endBattle('لقد تم إقصاؤك من المعركة');
-                        }, 3000);
+                        }, 2500);
                     }
                 });
                 
@@ -1299,6 +1311,7 @@
                 
                 this.sim.isEliminated = false;
                 this.sim.gameActive = true;
+                this.sim.lastMoveTime = 0;
                 
                 document.getElementById('joystickBase').style.opacity = '1';
                 document.getElementById('fireBtn').style.opacity = '1';
@@ -1317,7 +1330,8 @@
                 
                 this.sim.playerTeam = myTeam;
                 this.sim.playerTank = this.sim.createTank(myColor, myPos.x, myPos.z, myTeam, currentUser?.uid);
-                this.sim.tanks.set('player', this.sim.playerTank);
+                this.sim.playerTank.userData.playerId = currentUser?.uid;
+                this.sim.tanks.set(currentUser?.uid, this.sim.playerTank);
                 
                 if(data.players) {
                     data.players.forEach(player => {
@@ -1326,6 +1340,7 @@
                             const otherPos = positions[otherTeam === 1 ? 0 : 1];
                             const otherColor = otherTeam === 1 ? 0x8b5a2b : 0x4a6a8b;
                             const tank = this.sim.createTank(otherColor, otherPos.x, otherPos.z, otherTeam, player.userId);
+                            tank.userData.playerId = player.userId;
                             this.sim.tanks.set(player.userId, tank);
                             this.sim.otherPlayers.set(player.userId, tank);
                         }
@@ -1337,8 +1352,10 @@
                 this.audio.startEngine();
                 this.battleResult = { startTime: new Date() };
                 
-                if(document.documentElement.requestFullscreen) {
-                    document.documentElement.requestFullscreen();
+                // ملء الشاشة
+                const element = document.documentElement;
+                if (element.requestFullscreen) {
+                    element.requestFullscreen().catch(e => console.log('Fullscreen error:', e));
                 }
             },
             
@@ -1364,7 +1381,7 @@
                 
                 let lastFire = 0;
                 const fire = () => {
-                    if(this.sim.playerTank && !this.sim.isEliminated && Date.now() - lastFire > 3000) {
+                    if(this.sim.playerTank && !this.sim.isEliminated && this.sim.gameActive && Date.now() - lastFire > 3000) {
                         lastFire = Date.now();
                         if(this.sim.fire(this.sim.playerTank)) {
                             document.getElementById('cooldownText').innerHTML = '⏱️ 3 ثواني';
