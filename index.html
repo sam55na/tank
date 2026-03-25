@@ -1425,21 +1425,51 @@
                 const duration = Math.round((new Date() - this.battleResult.startTime) / 1000);
                 const report = `🏆 الفائز: ${winner}\n⏱️ المدة: ${duration} ثانية\n\n🎮 هل تريد خوض معركة جديدة؟`;
                 document.getElementById('reportText').innerHTML = report.replace(/\n/g, '<br>');
-    
                 const backBtn = document.getElementById('backHomeBtn');
                 backBtn.innerHTML = '🎮 معركة جديدة';
                 backBtn.onclick = () => {
-        // إرسال طلب تنظيف للخادم قبل العودة للوبي
                     socket.emit('game_cleanup', {});
                     this.returnToLobby();
     };
-    
                 document.getElementById('reportScreen').style.display = 'flex';
                 document.getElementById('hud').style.display = 'none';
                 if(this.sim && this.sim.playerTank) this.sim.scene.remove(this.sim.playerTank);
                 if(this.sim && this.sim.renderer) this.sim.renderer.domElement.style.display = 'none';
 },
-            
+            returnToLobby() {
+                if(this.sim) {
+                    this.sim.gameActive = false;
+                    this.sim.isEliminated = false;
+                    this.sim.otherPlayers.clear();
+                    this.sim.tanks.clear();
+                    this.sim.targetPositions.clear();
+                    this.sim.bullets = [];
+                    this.sim.particles = [];
+                    this.sim.playerTank = null;
+    }
+                document.getElementById('reportScreen').style.display = 'none';
+                document.getElementById('hud').style.display = 'none';
+                document.getElementById('mainScreen').style.display = 'none';
+                document.getElementById('lobby').style.display = 'flex';
+                const backBtn = document.getElementById('backHomeBtn');
+                backBtn.innerHTML = '🏠 العودة للرئيسية';
+                backBtn.onclick = () => this.backToHome();
+                socket.emit('join_lobby');
+                if(this.sim && this.sim.renderer) {
+                    this.sim.renderer.domElement.style.display = 'block';
+    }
+},
+            backToHome() {
+                document.getElementById('reportScreen').style.display = 'none';
+                document.getElementById('mainScreen').style.display = 'flex';
+                if(this.sim && this.sim.scene) {
+                    this.sim.gameActive = false;
+                    this.sim.otherPlayers.clear();
+                    this.sim.tanks.clear();
+                    this.sim.targetPositions.clear();
+                    this.sim.playerTank = null;
+    }
+},
             goToWallet() { window.location.href = 'wallet.html'; },
             goToAdmin() { window.location.href = 'admin.html'; },
             
