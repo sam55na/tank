@@ -34,7 +34,6 @@
             object-fit: cover;
         }
 
-        /* شاشة تحذير الوضع الأفقي */
         .landscape-warning {
             position: fixed;
             top: 0;
@@ -572,17 +571,34 @@
                 min-width: 200px;
             }
         }
+        
+        .fullscreen-btn {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            border: 1px solid #d4af37;
+            border-radius: 30px;
+            padding: 8px 16px;
+            color: #d4af37;
+            cursor: pointer;
+            font-size: 12px;
+            z-index: 1000;
+            pointer-events: auto;
+        }
+        
+        .fullscreen-btn:active {
+            transform: scale(0.95);
+        }
     </style>
 </head>
 <body>
-    <!-- شاشة تحذير الوضع الأفقي -->
     <div class="landscape-warning" id="landscapeWarning">
         <div class="icon">🔄</div>
         <h2 style="color:#d4af37;">يرجى تدوير الجهاز</h2>
         <p style="color:#aaa;">المعركة تعمل في الوضع الأفقي فقط</p>
     </div>
 
-    <!-- شاشة تسجيل الدخول -->
     <div class="login-screen" id="loginScreen">
         <div class="login-container">
             <h1>⚔️ BATTLE TANKS</h1>
@@ -594,7 +610,6 @@
         </div>
     </div>
 
-    <!-- الشاشة الرئيسية -->
     <div class="main-screen" id="mainScreen">
         <h2>BATTLE TANKS ELITE</h2>
         <div class="btn-group">
@@ -610,7 +625,6 @@
         <button class="admin-btn" id="adminBtn">⚙️ لوحة التحكم</button>
     </div>
 
-    <!-- شاشة اللوبي -->
     <div class="lobby" id="lobby">
         <div class="lobby-container">
             <h2>🏆 لوبي المعركة</h2>
@@ -621,7 +635,6 @@
         </div>
     </div>
 
-    <!-- HUD اللعبة -->
     <div class="hud" id="hud">
         <div class="status-bar">
             <div>🎮 <span id="gameUsername">اللاعب</span></div>
@@ -638,11 +651,11 @@
             <div class="joystick-base" id="joystickBase"><div class="joystick-handle" id="joystickHandle"></div></div>
             <div class="fire-btn" id="fireBtn">💥</div>
         </div>
+        <div class="fullscreen-btn" id="fullscreenBtn">🗔 ملء الشاشة</div>
     </div>
 
     <canvas id="canvas"></canvas>
 
-    <!-- شاشة النتائج -->
     <div class="report-screen" id="reportScreen">
         <div class="report-container">
             <h2>📊 تقرير المعركة</h2>
@@ -651,7 +664,6 @@
         </div>
     </div>
 
-    <!-- لوحة التحكم -->
     <div class="admin-panel" id="adminPanel">
         <div class="admin-container">
             <h3>⚙️ لوحة التحكم</h3>
@@ -697,9 +709,6 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js';
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js';
 
-        // ============================================
-        // 🔥 Firebase Configuration
-        // ============================================
         const firebaseConfig = {
             apiKey: "AIzaSyCvPo4HlsNhyf1WBmTzIr6CdR1c2lQ5sHU",
             authDomain: "boomb-fa3e7.firebaseapp.com",
@@ -713,24 +722,16 @@
         const firebaseApp = initializeApp(firebaseConfig);
         const auth = getAuth(firebaseApp);
         
-        // ============================================
-        // 🌐 Server Connection
-        // ============================================
         const SERVER_URL = "https://tank-yf0p.onrender.com";
         import io from 'https://cdn.socket.io/4.6.0/socket.io.esm.min.js';
         const socket = io(SERVER_URL);
         
-        // ============================================
-        // 🎮 Game State
-        // ============================================
         let currentUser = null;
         let currentBalance = 0;
         let isAdmin = false;
         let gameSettings = { seatPrice: 1, maxPlayers: 2 };
+        let isFullscreen = false;
         
-        // ============================================
-        // 🎨 Three.js Game Engine
-        // ============================================
         class AudioEngine {
             constructor() { this.ctx = null; this.engineOsc = null; this.engineGain = null; }
             init() { if (this.ctx) return; try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
@@ -750,6 +751,7 @@
                 this.gameActive = false;
                 this.isEliminated = false;
                 this.lastMoveTime = 0;
+                this.playerId = null;
             }
 
             init() { 
@@ -773,11 +775,8 @@
                 this.createTerrain(); 
                 this.createObstacles(); 
                 
-                // بدء الحلقة
-                this.animate();
-                
-                // تحديث حجم الكاميرا عند تغيير حجم النافذة
                 window.addEventListener('resize', () => this.onWindowResize());
+                this.animate();
             }
             
             onWindowResize() {
@@ -926,7 +925,6 @@
                     if(this.checkCollision(this.playerTank)) this.playerTank.position.set(oldX, 0, oldZ); 
                     gameApp.audio.updateEngine(Math.abs(speed) * 3.5); 
                     
-                    // إرسال حركة كل 50ms فقط لتقليل التحميل
                     const now = Date.now();
                     if (now - this.lastMoveTime > 50) {
                         this.lastMoveTime = now;
@@ -944,14 +942,12 @@
                     this.camera.lookAt(this.playerTank.position.clone().add(new THREE.Vector3(0, 1.2, 0))); 
                 } 
                 
-                // تحديث الرصاصات
                 for(let i = this.bullets.length-1; i >= 0; i--) { 
                     const b = this.bullets[i]; 
                     b.position.add(b.userData.velocity); 
                     b.userData.life--; 
                     let hit = false; 
                     
-                    // كشف التصادم مع العوائق
                     for(let obs of this.obstacles) { 
                         if(new THREE.Box3().setFromObject(b).intersectsBox(new THREE.Box3().setFromObject(obs))) { 
                             hit = true; 
@@ -962,11 +958,11 @@
                         } 
                     } 
                     
-                    // كشف التصادم مع الدبابات
                     if(!hit) { 
-                        for(let [id, tank] of this.tanks) { 
-                            // التحقق: الرصاصة ليس من نفس الدبابة والفريق مختلف
+                        for(let [id, tank] of this.tanks) {
+                            // التحقق: الرصاصة ليست من نفس الدبابة
                             const isOwner = (b.userData.owner === tank);
+                            // التحقق: الفرق مختلفة
                             const isSameTeam = tank.userData.team === b.userData.owner?.userData?.team;
                             
                             if (!isOwner && !isSameTeam && b.position.distanceTo(tank.position) < 1.9) { 
@@ -975,12 +971,13 @@
                                 this.scene.remove(b); 
                                 this.bullets.splice(i,1);
                                 
-                                // إذا كان مطلق الرصاص هو اللاعب الحالي
+                                console.log('Hit detected! Shooter:', b.userData.ownerId, 'Target:', id);
+                                
                                 if(b.userData.owner === this.playerTank) {
-                                    console.log('Hit enemy tank!', id);
+                                    console.log('Sending damage event for target:', id);
                                     socket.emit('damage', { 
                                         damage: 100, 
-                                        killerId: currentUser?.uid,
+                                        killerId: this.playerId,
                                         targetId: id 
                                     });
                                 }
@@ -1017,7 +1014,7 @@
             updateOtherPlayer(data) {
                 if (!this.gameActive || this.isEliminated) return;
                 let tank = this.otherPlayers.get(data.userId);
-                if(!tank && data.userId !== currentUser?.uid) {
+                if(!tank && data.userId !== this.playerId) {
                     const color = data.team === 1 ? 0x8b5a2b : 0x4a6a8b;
                     const pos = data.position || { x: 0, z: 0 };
                     tank = this.createTank(color, pos.x, pos.z, data.team, data.userId);
@@ -1050,14 +1047,9 @@
             }
         }
 
-        // ============================================
-        // 🎮 Game App Controller
-        // ============================================
         const gameApp = {
             audio: new AudioEngine(), 
             sim: new GameSimulation(), 
-            currentUser: null, 
-            gameSettings: { seatPrice: 1, maxPlayers: 2 },
             battleResult: null,
             pendingGameStart: null,
             
@@ -1067,10 +1059,11 @@
                 socket.on('auth_success', (data) => {
                     console.log('✅ Auth success:', data);
                     document.getElementById('loading').style.display = 'none';
-                    this.currentUser = { uid: data.userId, email: data.email, username: data.username, balance: data.balance, isAdmin: data.isAdmin };
-                    currentUser = this.currentUser;
+                    currentUser = { uid: data.userId, email: data.email, username: data.username, balance: data.balance, isAdmin: data.isAdmin };
                     currentBalance = data.balance;
                     isAdmin = data.isAdmin;
+                    this.sim.playerId = data.userId;
+                    
                     localStorage.setItem('adminToken', 'authenticated');
                     localStorage.setItem('userEmail', data.email);
                     localStorage.setItem('isAdmin', data.isAdmin);
@@ -1094,7 +1087,7 @@
                     document.getElementById('balance').innerText = currentBalance;
                     document.getElementById('gameBalance').innerText = currentBalance;
                     if(data.settings) {
-                        this.gameSettings = data.settings;
+                        gameSettings = data.settings;
                         document.getElementById('seatPrice').value = data.settings.seatPrice;
                         document.getElementById('maxPlayers').value = data.settings.maxPlayers;
                     }
@@ -1134,9 +1127,6 @@
                 });
                 
                 socket.on('game_ended', (data) => {
-                    if(document.exitFullscreen) {
-                        document.exitFullscreen();
-                    }
                     this.endBattle(data.winner || (data.yourTeam === 1 ? 'الفريق الأزرق' : 'الفريق الأحمر'));
                     if(data.reward) {
                         currentBalance = data.yourBalance;
@@ -1164,7 +1154,7 @@
                 
                 socket.on('player_eliminated', (data) => {
                     console.log('Player eliminated:', data.userId);
-                    if (this.sim && this.sim.gameActive) {
+                    if (this.sim && this.sim.gameActive && data.userId !== currentUser?.uid) {
                         this.sim.removeTank(data.userId);
                     }
                 });
@@ -1209,7 +1199,7 @@
                         const newPlayers = new Set(data.players.map(p => p.userId));
                         
                         for (const userId of existingTanks) {
-                            if (!newPlayers.has(userId) && userId !== 'player') {
+                            if (!newPlayers.has(userId) && userId !== currentUser?.uid) {
                                 this.sim.removeTank(userId);
                             }
                         }
@@ -1297,7 +1287,7 @@
             },
             
             createRoom() {
-                socket.emit('create_room', { seats: this.gameSettings.maxPlayers || 2 });
+                socket.emit('create_room', { seats: gameSettings.maxPlayers || 2 });
             },
             
             joinRoom(roomId) {
@@ -1351,12 +1341,6 @@
                 this.setupControls();
                 this.audio.startEngine();
                 this.battleResult = { startTime: new Date() };
-                
-                // ملء الشاشة
-                const element = document.documentElement;
-                if (element.requestFullscreen) {
-                    element.requestFullscreen().catch(e => console.log('Fullscreen error:', e));
-                }
             },
             
             setupControls() {
@@ -1402,6 +1386,18 @@
                 document.getElementById('fireBtn').addEventListener('touchstart', e => { e.preventDefault(); fire(); });
             },
             
+            toggleFullscreen() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        console.log(`Error attempting to enable fullscreen: ${err.message}`);
+                    });
+                } else {
+                    document.exitFullscreen().catch(err => {
+                        console.log(`Error attempting to exit fullscreen: ${err.message}`);
+                    });
+                }
+            },
+            
             endBattle(winner) {
                 if(this.sim) {
                     this.sim.gameActive = false;
@@ -1438,7 +1434,7 @@
                     const data = await response.json();
                     if(data.success) {
                         alert(`تم تغيير سعر المقعد إلى ${price}$`);
-                        this.gameSettings.seatPrice = price;
+                        gameSettings.seatPrice = price;
                     } else {
                         alert(data.error);
                     }
@@ -1457,7 +1453,7 @@
                     const data = await response.json();
                     if(data.success) {
                         alert(`تم تغيير عدد اللاعبين إلى ${maxPlayers}`);
-                        this.gameSettings.maxPlayers = maxPlayers;
+                        gameSettings.maxPlayers = maxPlayers;
                     } else {
                         alert(data.error);
                     }
@@ -1581,6 +1577,7 @@
                 document.getElementById('adminWithdrawBtn').onclick = () => this.adminWithdraw();
                 document.getElementById('resetDataBtn').onclick = () => this.resetAllData();
                 document.getElementById('refreshStatsBtn').onclick = () => this.refreshStats();
+                document.getElementById('fullscreenBtn').onclick = () => this.toggleFullscreen();
             }
         };
         
