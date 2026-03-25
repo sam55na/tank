@@ -699,7 +699,8 @@
     <script type="importmap">
         {
             "imports": {
-                "three": "https://unpkg.com/three@0.128.0/build/three.module.js"
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "socket.io-client": "https://cdn.socket.io/4.6.0/socket.io.esm.min.js"
             }
         }
     </script>
@@ -708,6 +709,7 @@
         import * as THREE from 'three';
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js';
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js';
+        import io from 'socket.io-client';
 
         const firebaseConfig = {
             apiKey: "AIzaSyCvPo4HlsNhyf1WBmTzIr6CdR1c2lQ5sHU",
@@ -722,13 +724,17 @@
         const firebaseApp = initializeApp(firebaseConfig);
         const auth = getAuth(firebaseApp);
         
+        // استخدام HTTPS/WSS
         const SERVER_URL = "https://tank-yf0p.onrender.com";
-        import io from 'https://cdn.socket.io/4.6.0/socket.io.esm.min.js';
+        
         const socket = io(SERVER_URL, {
             transports: ['websocket', 'polling'],
             reconnection: true,
-            reconnectionAttempts: 5,
-            reconnectionDelay: 1000
+            reconnectionAttempts: 10,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000,
+            timeout: 20000,
+            secure: true
         });
         
         let currentUser = null;
@@ -1296,7 +1302,16 @@
             pendingGameStart: null,
             
             initSocket() {
-                socket.on('connect', () => console.log('✅ Connected to server'));
+                socket.on('connect', () => {
+                    console.log('✅ Connected to server');
+                    document.getElementById('loading').style.display = 'none';
+                });
+                
+                socket.on('connect_error', (error) => {
+                    console.error('❌ Connection error:', error);
+                    document.getElementById('loading').style.display = 'none';
+                    alert('جاري محاولة الاتصال بالخادم...');
+                });
                 
                 socket.on('auth_success', (data) => {
                     console.log('✅ Auth success:', data);
