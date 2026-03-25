@@ -16,48 +16,29 @@
         body {
             font-family: 'Segoe UI', 'Cairo', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
-            background: #0a0f1a;
+            background: linear-gradient(145deg, #0a0f1a 0%, #05070c 100%);
             touch-action: pan-x pan-y;
             position: fixed;
             width: 100%;
             height: 100%;
         }
 
-        /* وضع الشاشة الأفقي الإجباري */
-        .landscape-required {
+        .game-landscape-lock {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #0a0f1a, #05070c);
-            display: flex;
+            background: #000000dd;
+            backdrop-filter: blur(20px);
+            color: white;
+            display: none;
             justify-content: center;
             align-items: center;
             z-index: 10000;
             text-align: center;
             flex-direction: column;
             gap: 20px;
-            backdrop-filter: blur(20px);
-        }
-
-        .landscape-required.hidden {
-            display: none;
-        }
-
-        .landscape-icon {
-            font-size: 80px;
-            animation: rotate 1.5s ease-in-out infinite;
-        }
-
-        @keyframes rotate {
-            0% { transform: rotate(0deg); }
-            50% { transform: rotate(90deg); }
-            100% { transform: rotate(90deg); }
-        }
-
-        .login-screen, .main-screen, .lobby, .admin-panel, .report-screen, .hud {
-            display: none;
         }
 
         .login-screen {
@@ -71,6 +52,7 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            overflow-y: auto;
         }
 
         .login-container {
@@ -86,27 +68,33 @@
         }
 
         .login-container h1 {
+            margin-bottom: 20px;
             color: #d4af37;
             font-size: 36px;
-            margin-bottom: 10px;
+            font-weight: 800;
             text-shadow: 0 0 15px rgba(212,175,55,0.4);
         }
 
-        .login-container p {
-            color: #8a9aa8;
+        .login-sub {
+            color: #9aa6b5;
             margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin: 20px 0;
         }
 
         .login-container input {
             width: 100%;
             padding: 16px 20px;
-            margin: 10px 0;
+            border: 1.5px solid rgba(212, 175, 55, 0.4);
             border-radius: 60px;
-            background: rgba(20, 28, 40, 0.8);
-            border: 1px solid rgba(212, 175, 55, 0.4);
-            color: white;
             font-size: 16px;
+            background: rgba(20, 28, 40, 0.8);
+            color: white;
             outline: none;
+            transition: all 0.2s;
         }
 
         .login-container input:focus {
@@ -117,8 +105,9 @@
         .login-container button {
             width: 100%;
             padding: 16px;
-            margin-top: 15px;
+            margin-top: 20px;
             background: linear-gradient(105deg, #d4af37, #b8860b);
+            color: #0a0a1a;
             border: none;
             border-radius: 60px;
             font-size: 18px;
@@ -131,98 +120,6 @@
             transform: scale(0.97);
         }
 
-        .switch-btn {
-            background: transparent !important;
-            border: 1px solid #d4af37 !important;
-            color: #d4af37 !important;
-            margin-top: 10px;
-        }
-
-        .main-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(145deg, #0f1725, #070b14);
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 900;
-        }
-
-        .main-screen h2 {
-            color: #d4af37;
-            font-size: 42px;
-            margin-bottom: 20px;
-            text-shadow: 0 0 20px rgba(212,175,55,0.5);
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 25px;
-            margin: 30px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .play-btn, .wallet-btn {
-            padding: 18px 45px;
-            border: none;
-            border-radius: 60px;
-            font-size: 24px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
-
-        .play-btn {
-            background: linear-gradient(135deg, #d4af37, #b8860b);
-        }
-
-        .wallet-btn {
-            background: linear-gradient(135deg, #2ecc71, #27ae60);
-        }
-
-        .admin-btn {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            padding: 12px 24px;
-            border: none;
-            border-radius: 40px;
-            font-weight: bold;
-            cursor: pointer;
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            display: none;
-            z-index: 100;
-        }
-
-        .play-btn:active, .wallet-btn:active, .admin-btn:active {
-            transform: scale(0.96);
-        }
-
-        .user-card {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            padding: 20px 40px;
-            border-radius: 60px;
-            margin-top: 30px;
-            text-align: center;
-            color: white;
-            border: 1px solid rgba(212,175,55,0.3);
-        }
-
-        .user-card div {
-            margin: 8px 0;
-        }
-
-        .user-card span {
-            color: #d4af37;
-            font-weight: bold;
-        }
-
         .loading {
             position: fixed;
             top: 50%;
@@ -232,9 +129,185 @@
             padding: 20px 40px;
             border-radius: 60px;
             color: #d4af37;
-            display: none;
-            z-index: 10001;
             font-size: 18px;
+            z-index: 10001;
+            display: none;
+            text-align: center;
+        }
+
+        .main-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(145deg, #0f1725, #070b14);
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            flex-direction: column;
+            z-index: 900;
+            padding: 30px 20px 50px;
+            overflow-y: auto;
+        }
+
+        .main-header {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .main-header h2 {
+            color: #d4af37;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .main-header p {
+            color: #8e9aaf;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .game-icon {
+            width: 220px;
+            height: 220px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            margin: 20px auto;
+            background: linear-gradient(145deg, #1e2a32, #10161f);
+            border-radius: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 20px 35px -10px black, 0 0 0 2px rgba(212,175,55,0.3);
+        }
+
+        .game-icon img {
+            width: 85%;
+            height: 85%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.6));
+        }
+
+        .game-icon:active {
+            transform: scale(0.96);
+        }
+
+        .play-btn {
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            padding: 16px 42px;
+            border: none;
+            border-radius: 60px;
+            font-size: 26px;
+            font-weight: bold;
+            color: #111;
+            cursor: pointer;
+            display: none;
+            transition: all 0.2s;
+            margin: 15px auto;
+            width: 80%;
+            max-width: 280px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .play-btn:active {
+            transform: scale(0.96);
+        }
+
+        .user-info-card {
+            background: rgba(20, 28, 40, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            padding: 14px 24px;
+            width: 90%;
+            max-width: 320px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(212,175,55,0.4);
+            margin: 20px auto 0;
+        }
+
+        .user-info-card span {
+            color: #d4af37;
+            font-weight: bold;
+        }
+
+        .admin-icon {
+            background: rgba(212, 175, 55, 0.2);
+            border-radius: 50px;
+            padding: 10px 18px;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 20px;
+            border: 1px solid #d4af37;
+            color: #d4af37;
+            transition: 0.2s;
+            margin-bottom: 10px;
+        }
+
+        .admin-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.96);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .admin-container {
+            background: linear-gradient(135deg, #121926, #080c14);
+            padding: 30px;
+            border-radius: 40px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 85vh;
+            overflow-y: auto;
+            border: 1px solid #d4af37;
+        }
+
+        .admin-container h3 {
+            color: #d4af37;
+            margin-bottom: 20px;
+            font-size: 26px;
+        }
+
+        .admin-container input, .admin-container select {
+            width: 100%;
+            padding: 14px;
+            margin: 12px 0;
+            border-radius: 40px;
+            border: 1px solid #d4af37;
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .admin-container button {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            background: #d4af37;
+            border: none;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .stats-box {
+            background: rgba(0,0,0,0.5);
+            padding: 15px;
+            border-radius: 24px;
+            margin: 15px 0;
+            max-height: 200px;
+            overflow-y: auto;
+            color: white;
         }
 
         .lobby {
@@ -243,85 +316,74 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.95);
-            backdrop-filter: blur(10px);
+            background: rgba(5, 8, 15, 0.98);
+            z-index: 2000;
+            display: none;
             justify-content: center;
             align-items: center;
-            z-index: 2000;
+            overflow-y: auto;
         }
 
         .lobby-container {
             background: linear-gradient(145deg, #111a24, #0a0f18);
-            padding: 35px;
+            padding: 25px;
             border-radius: 48px;
-            width: 90%;
-            max-width: 550px;
+            width: 92%;
+            max-width: 700px;
             text-align: center;
             border: 2px solid #d4af37;
-        }
-
-        .lobby-container h2 {
-            color: #d4af37;
-            margin-bottom: 25px;
+            margin: 20px;
         }
 
         .seats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            margin: 30px 0;
+            gap: 14px;
+            margin: 25px 0;
         }
 
         .seat {
             background: rgba(255,255,255,0.08);
-            padding: 20px;
+            padding: 12px 6px;
             border-radius: 28px;
             cursor: pointer;
             border: 1px solid #d4af37;
             color: white;
-            transition: all 0.2s;
-        }
-
-        .seat:hover {
-            background: rgba(255,255,255,0.15);
-            transform: scale(1.02);
+            transition: 0.1s;
+            font-size: 13px;
         }
 
         .seat.occupied {
             background: linear-gradient(135deg, #2e7035, #1c4a21);
             cursor: not-allowed;
+            border-color: #7cb342;
+        }
+
+        .lobby-info {
+            color: #d4af37;
+            margin-top: 15px;
+            font-size: 20px;
+            font-weight: bold;
         }
 
         .create-room-btn {
             background: #d4af37;
-            padding: 14px 35px;
+            padding: 12px 30px;
             border: none;
-            border-radius: 35px;
+            border-radius: 30px;
             font-weight: bold;
-            font-size: 18px;
             cursor: pointer;
             margin-top: 20px;
-            transition: transform 0.2s;
-        }
-
-        .create-room-btn:active {
-            transform: scale(0.96);
         }
 
         .back-lobby-btn {
             background: #555;
             color: white;
-            padding: 12px 25px;
+            padding: 10px 20px;
             border: none;
             border-radius: 30px;
-            margin-top: 20px;
+            margin-top: 15px;
             cursor: pointer;
-        }
-
-        .lobby-status {
-            color: #d4af37;
-            margin-top: 20px;
-            font-size: 16px;
         }
 
         .hud {
@@ -332,43 +394,41 @@
             height: 100%;
             pointer-events: none;
             z-index: 100;
+            display: none;
         }
 
         .status-bar {
             position: absolute;
             top: 20px;
             left: 20px;
-            background: rgba(0,0,0,0.75);
-            backdrop-filter: blur(8px);
-            padding: 12px 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 8px 16px;
             border-left: 4px solid #d4af37;
-            border-radius: 20px;
+            border-radius: 16px;
             color: white;
-            font-size: 14px;
-            pointer-events: none;
+            font-size: 13px;
+            backdrop-filter: blur(4px);
         }
 
         .team-info {
             position: absolute;
             top: 20px;
             right: 20px;
-            background: rgba(0,0,0,0.75);
-            backdrop-filter: blur(8px);
-            padding: 12px 20px;
-            border-radius: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 8px 16px;
+            border-radius: 16px;
             text-align: right;
             color: white;
-            pointer-events: none;
         }
 
         .cooldown-side {
             position: absolute;
-            bottom: 140px;
-            right: 30px;
+            top: 80px;
+            right: 20px;
             background: rgba(0,0,0,0.7);
-            padding: 8px 18px;
+            padding: 5px 12px;
             border-radius: 30px;
-            font-size: 14px;
+            font-size: 12px;
             color: #d4af37;
             font-weight: bold;
             pointer-events: none;
@@ -379,15 +439,13 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 44px;
-            height: 44px;
-            pointer-events: none;
+            width: 36px;
+            height: 36px;
         }
         .crosshair::before, .crosshair::after {
             content: '';
             position: absolute;
-            background: rgba(255,255,255,0.9);
-            box-shadow: 0 0 4px rgba(0,0,0,0.5);
+            background: rgba(255,255,240,0.85);
         }
         .crosshair::before {
             top: 50%;
@@ -403,16 +461,6 @@
             height: 100%;
             transform: translateX(-50%);
         }
-        .crosshair .dot {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 4px;
-            height: 4px;
-            background: red;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-        }
 
         .controls {
             position: absolute;
@@ -420,53 +468,51 @@
             width: 100%;
             display: flex;
             justify-content: space-between;
-            padding: 0 25px;
+            padding: 0 20px;
             pointer-events: none;
         }
 
         .joystick-base {
-            width: 130px;
-            height: 130px;
-            background: rgba(0,0,0,0.5);
+            width: 120px;
+            height: 120px;
+            background: rgba(0,0,0,0.6);
             border: 2px solid #d4af37;
-            border-radius: 65px;
+            border-radius: 70px;
             position: relative;
             pointer-events: auto;
-            backdrop-filter: blur(5px);
         }
 
         .joystick-handle {
-            width: 55px;
-            height: 55px;
+            width: 52px;
+            height: 52px;
             background: radial-gradient(circle, #d4af37, #b8860b);
-            border-radius: 27.5px;
+            border-radius: 30px;
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             pointer-events: none;
-            box-shadow: 0 0 15px rgba(212,175,55,0.5);
         }
 
         .fire-btn {
-            width: 85px;
-            height: 85px;
+            width: 80px;
+            height: 80px;
             background: radial-gradient(circle, #e55, #a22);
             border: 2px solid #d4af37;
-            border-radius: 42.5px;
+            border-radius: 50px;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 40px;
+            font-size: 36px;
             color: white;
             cursor: pointer;
             pointer-events: auto;
-            box-shadow: 0 0 20px rgba(255,0,0,0.5);
+            box-shadow: 0 0 12px rgba(255,0,0,0.4);
             transition: transform 0.05s;
         }
 
         .fire-btn:active {
-            transform: scale(0.92);
+            transform: scale(0.95);
         }
 
         .report-screen {
@@ -476,217 +522,116 @@
             width: 100%;
             height: 100%;
             background: rgba(0,0,0,0.95);
-            backdrop-filter: blur(15px);
+            z-index: 3000;
+            display: none;
             justify-content: center;
             align-items: center;
-            z-index: 3000;
+            flex-direction: column;
         }
 
         .report-container {
-            background: linear-gradient(145deg, #1a2a3a, #0f1a24);
-            padding: 40px;
-            border-radius: 48px;
+            background: linear-gradient(135deg, #1a1a2e, #0a0a1a);
+            padding: 30px;
+            border-radius: 40px;
             text-align: center;
             border: 2px solid #d4af37;
-            max-width: 450px;
-            width: 90%;
+            width: 85%;
+            max-width: 400px;
         }
 
         .report-container h2 {
             color: #d4af37;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
         .report-container p {
             color: white;
-            margin: 15px 0;
-            line-height: 1.8;
+            margin: 10px 0;
             font-size: 16px;
+            line-height: 1.8;
         }
 
         .back-home-btn {
             margin-top: 25px;
-            padding: 12px 35px;
+            padding: 12px 30px;
             background: linear-gradient(135deg, #d4af37, #b8860b);
             border: none;
-            border-radius: 35px;
-            font-size: 16px;
+            border-radius: 40px;
+            font-size: 18px;
             font-weight: bold;
+            color: #111;
             cursor: pointer;
-        }
-
-        .admin-panel {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.96);
-            backdrop-filter: blur(8px);
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-        }
-
-        .admin-container {
-            background: linear-gradient(135deg, #121926, #080c14);
-            padding: 35px;
-            border-radius: 48px;
-            width: 90%;
-            max-width: 550px;
-            max-height: 85vh;
-            overflow-y: auto;
-            border: 1px solid #d4af37;
-        }
-
-        .admin-container h3 {
-            color: #d4af37;
-            margin-bottom: 25px;
-            font-size: 26px;
-        }
-
-        .admin-container input {
-            width: 100%;
-            padding: 14px;
-            margin: 10px 0;
-            border-radius: 35px;
-            border: 1px solid #d4af37;
-            background: rgba(255,255,255,0.1);
-            color: white;
-        }
-
-        .admin-container button {
-            width: 100%;
-            padding: 14px;
-            margin: 10px 0;
-            background: #d4af37;
-            border: none;
-            border-radius: 35px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .admin-container button:active {
-            transform: scale(0.97);
-        }
-
-        .admin-stats {
-            background: rgba(0,0,0,0.5);
-            padding: 15px;
-            border-radius: 25px;
-            margin: 15px 0;
-            max-height: 200px;
-            overflow-y: auto;
-            font-size: 12px;
-            color: #ccc;
         }
 
         canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            display: block;
         }
 
         @media (max-width: 600px) {
             .joystick-base { width: 100px; height: 100px; }
-            .fire-btn { width: 70px; height: 70px; font-size: 32px; }
-            .play-btn, .wallet-btn { padding: 12px 30px; font-size: 20px; }
-            .login-container h1 { font-size: 28px; }
-            .main-screen h2 { font-size: 32px; }
+            .fire-btn { width: 70px; height: 70px; font-size: 28px; }
+            .cooldown-side { top: 70px; font-size: 10px; }
         }
     </style>
 </head>
 <body>
-    <div class="landscape-required" id="landscapeRequired">
-        <div class="landscape-icon">🔄</div>
-        <h2 style="color:#d4af37;">يرجى تدوير الجهاز</h2>
-        <p style="color:#aaa;">المعركة تعمل في الوضع الأفقي فقط</p>
+    <div class="game-landscape-lock" id="gameLandscapeLock">
+        <h2>🔄 يرجى تدوير الجهاز</h2>
+        <p>المعركة تعمل في الوضع الأفقي فقط</p>
+        <div style="font-size: 50px;">↻</div>
     </div>
 
     <div class="login-screen" id="loginScreen">
         <div class="login-container">
             <h1>⚔️ BATTLE TANKS</h1>
-            <p>ساحة المعركة الإلكترونية الاحترافية</p>
-            <input type="email" id="email" placeholder="البريد الإلكتروني">
-            <input type="password" id="password" placeholder="كلمة المرور">
+            <div class="login-sub">ساحة المعركة الإلكترونية</div>
+            <div class="input-group">
+                <input type="email" id="email" placeholder="البريد الإلكتروني">
+            </div>
+            <div class="input-group">
+                <input type="password" id="password" placeholder="كلمة المرور">
+            </div>
             <button id="loginBtn">🎖️ دخول المعركة</button>
-            <button id="registerBtn" class="switch-btn">✨ إنشاء حساب جديد</button>
+            <button id="registerBtn" class="switch-btn" style="background:transparent; border:1px solid #d4af37; margin-top:10px;">✨ إنشاء حساب جديد</button>
         </div>
     </div>
+
+    <div class="loading" id="loading">⏳ جاري التحميل...</div>
 
     <div class="main-screen" id="mainScreen">
-        <h2>BATTLE TANKS ELITE</h2>
-        <div class="btn-group">
-            <button class="play-btn" id="playBtn">🎮 العب الآن</button>
-            <button class="wallet-btn" id="walletBtn">💰 المحفظة</button>
+        <div class="main-header">
+            <h2>BATTLE TANKS ELITE</h2>
+            <p>أفضل لعبة دبابات جماعية</p>
         </div>
-        <div class="user-card">
-            <div>👤 <span id="username">اللاعب</span></div>
-            <div>💰 <span id="balance">0</span> $</div>
-            <div>🏆 <span id="gamesPlayed">0</span> مباراة</div>
-            <div>⭐ <span id="wins">0</span> فوز</div>
+        <div class="game-icon" id="gameIcon">
+            <img id="gameIconImg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='20' y='40' width='60' height='30' fill='%23d4af37'/%3E%3Crect x='35' y='30' width='30' height='20' fill='%23d4af37'/%3E%3Ccircle cx='30' cy='55' r='8' fill='%23333'/%3E%3Ccircle cx='70' cy='55' r='8' fill='%23333'/%3E%3C/svg%3E" alt="Tank">
         </div>
-        <button class="admin-btn" id="adminBtn">⚙️ لوحة التحكم</button>
-    </div>
-
-    <div class="lobby" id="lobby">
-        <div class="lobby-container">
-            <h2>🏆 لوبي المعركة</h2>
-            <div class="seats-grid" id="seatsGrid"></div>
-            <button class="create-room-btn" id="createRoomBtn">➕ إنشاء غرفة جديدة</button>
-            <div class="lobby-status" id="lobbyStatus"></div>
-            <button class="back-lobby-btn" id="backFromLobbyBtn">🏠 العودة للرئيسية</button>
+        <button class="play-btn" id="playBtn">🎮 العب الآن</button>
+        <div class="user-info-card">
+            <span>👤 <span id="mainUsername">اللاعب</span></span>
+            <span>💰 <span id="mainBalance">100</span> $</span>
         </div>
-    </div>
-
-    <div class="hud" id="hud">
-        <div class="status-bar">
-            <div>🎮 <span id="gameUsername">اللاعب</span></div>
-            <div>💰 <span id="gameBalance">0</span> $</div>
-            <div>❤️ <span id="health">100</span>%</div>
-        </div>
-        <div class="team-info">
-            <div style="color:#ff8888;">🔴 الأحمر: <span id="team1">0</span></div>
-            <div style="color:#88aaff;">🔵 الأزرق: <span id="team2">0</span></div>
-        </div>
-        <div class="cooldown-side" id="cooldownText">✅ جاهز</div>
-        <div class="crosshair">
-            <div class="dot"></div>
-        </div>
-        <div class="controls">
-            <div class="joystick-base" id="joystickBase">
-                <div class="joystick-handle" id="joystickHandle"></div>
-            </div>
-            <div class="fire-btn" id="fireBtn">💥</div>
-        </div>
-    </div>
-
-    <canvas id="canvas"></canvas>
-
-    <div class="report-screen" id="reportScreen">
-        <div class="report-container">
-            <h2>📊 تقرير المعركة</h2>
-            <p id="reportText"></p>
-            <button class="back-home-btn" id="backHomeBtn">🏠 العودة للرئيسية</button>
-        </div>
+        <div class="admin-icon" id="adminIcon">⚙️ إدارة</div>
     </div>
 
     <div class="admin-panel" id="adminPanel">
         <div class="admin-container">
             <h3>⚙️ لوحة التحكم</h3>
-            <div class="admin-stats" id="adminStats">جاري التحميل...</div>
+            <div class="stats-box" id="adminStats">جاري التحميل...</div>
             <label>سعر المقعد ($):</label>
-            <input type="number" id="seatPrice" value="1" min="1">
+            <input type="number" id="seatPrice" value="1">
             <button id="saveSeatPriceBtn">💾 حفظ</button>
             <label>عدد اللاعبين (2-16):</label>
             <input type="number" id="maxPlayers" value="2" min="2" max="16">
             <button id="saveMaxPlayersBtn">💾 حفظ</button>
             <hr style="margin: 15px 0; border-color: #d4af37;">
-            <input type="email" id="targetEmail" placeholder="بريد اللاعب">
+            <label>تعديل رصيد لاعب:</label>
+            <input type="email" id="targetEmail" placeholder="البريد الإلكتروني">
             <input type="number" id="amount" placeholder="المبلغ">
             <button id="adminDepositBtn">➕ إيداع</button>
             <button id="adminWithdrawBtn" style="background:#e74c3c;">➖ سحب</button>
@@ -697,7 +642,42 @@
         </div>
     </div>
 
-    <div class="loading" id="loading">⏳ جاري التحميل...</div>
+    <div class="lobby" id="lobby">
+        <div class="lobby-container">
+            <h2 style="color:#d4af37;">🏆 لوبي المعركة</h2>
+            <div class="seats-grid" id="seatsGrid"></div>
+            <button class="create-room-btn" id="createRoomBtn">➕ إنشاء غرفة جديدة</button>
+            <div class="lobby-info" id="lobbyStatus"></div>
+            <button class="back-lobby-btn" id="backFromLobbyBtn">🏠 العودة للرئيسية</button>
+        </div>
+    </div>
+
+    <div class="report-screen" id="reportScreen">
+        <div class="report-container">
+            <h2>📊 تقرير المعركة</h2>
+            <p id="reportText"></p>
+            <button class="back-home-btn" id="backHomeBtn">🏠 العودة للرئيسية</button>
+        </div>
+    </div>
+
+    <div class="hud" id="hud">
+        <div class="status-bar">
+            <div>🎮 <span id="username">اللاعب</span></div>
+            <div>💰 <span id="balance">100</span> $</div>
+            <div>❤️ <span id="health">100</span>%</div>
+        </div>
+        <div class="team-info">
+            <div style="color:#ff8888;">🔴 الأحمر: <span id="team1">0</span></div>
+            <div style="color:#88aaff;">🔵 الأزرق: <span id="team2">0</span></div>
+        </div>
+        <div class="cooldown-side" id="cooldownText">✅ جاهز</div>
+        <div class="crosshair"></div>
+        <div class="controls">
+            <div class="joystick-base" id="joystickBase"><div class="joystick-handle" id="joystickHandle"></div></div>
+            <div class="fire-btn" id="fireBtn">💥</div>
+        </div>
+    </div>
+    <canvas id="canvas"></canvas>
 
     <script type="importmap">
         {
@@ -713,9 +693,7 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js';
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js';
 
-        // ============================================
-        // 🔥 Firebase Configuration
-        // ============================================
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCvPo4HlsNhyf1WBmTzIr6CdR1c2lQ5sHU",
             authDomain: "boomb-fa3e7.firebaseapp.com",
@@ -729,25 +707,17 @@
         const firebaseApp = initializeApp(firebaseConfig);
         const auth = getAuth(firebaseApp);
         
-        // ============================================
-        // 🌐 Server Connection
-        // ============================================
+        // Server Connection
         const SERVER_URL = "https://tank-yf0p.onrender.com";
         import io from 'https://cdn.socket.io/4.6.0/socket.io.esm.min.js';
         const socket = io(SERVER_URL);
         
-        // ============================================
-        // 🎮 Game State
-        // ============================================
         let currentUser = null;
         let currentBalance = 0;
         let isAdmin = false;
         let gameSettings = { seatPrice: 1, maxPlayers: 2 };
         
-        // ============================================
-        // 🎨 Professional 3D Game Engine
-        // ============================================
-        
+        // Audio Engine
         class AudioEngine {
             constructor() { this.ctx = null; this.engineOsc = null; this.engineGain = null; }
             init() { if (this.ctx) return; try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
@@ -757,6 +727,7 @@
             explosion(distance) { if (!this.ctx) return; const vol = Math.max(0.2, Math.min(0.9, 1 - distance / 60)); const now = this.ctx.currentTime; const noise = this.ctx.createBufferSource(); const buffer = this.ctx.createBuffer(1, this.ctx.sampleRate * 1.0, this.ctx.sampleRate); const data = buffer.getChannelData(0); for (let i = 0; i < buffer.length; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / buffer.length, 1.3); noise.buffer = buffer; const gain = this.ctx.createGain(); gain.gain.setValueAtTime(vol, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 1.0); noise.connect(gain); gain.connect(this.ctx.destination); noise.start(now); }
         }
         
+        // Professional Game Engine with Advanced Tank Models
         class ProfessionalGameEngine {
             constructor() {
                 this.scene = null;
@@ -776,16 +747,15 @@
                 this.playerTeam = null;
                 this.otherPlayers = new Map();
                 this.gameActive = false;
-                this.terrainMeshes = [];
             }
             
             init() {
                 this.scene = new THREE.Scene();
                 this.scene.background = new THREE.Color(0x0a1030);
-                this.scene.fog = new THREE.FogExp2(0x0a1030, 0.002);
+                this.scene.fog = new THREE.FogExp2(0x0a1030, 0.0015);
                 
                 this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 500);
-                this.camera.position.set(25, 18, 25);
+                this.camera.position.set(20, 15, 20);
                 
                 this.renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -804,256 +774,138 @@
             }
             
             createLighting() {
-                const ambientLight = new THREE.AmbientLight(0x404060, 0.6);
-                this.scene.add(ambientLight);
+                const ambient = new THREE.AmbientLight(0x404060, 0.6);
+                this.scene.add(ambient);
                 
                 const mainLight = new THREE.DirectionalLight(0xfff5e6, 1.2);
                 mainLight.position.set(50, 80, 30);
                 mainLight.castShadow = true;
-                mainLight.receiveShadow = true;
                 mainLight.shadow.mapSize.width = 2048;
                 mainLight.shadow.mapSize.height = 2048;
-                mainLight.shadow.camera.left = -100;
-                mainLight.shadow.camera.right = 100;
-                mainLight.shadow.camera.top = 100;
-                mainLight.shadow.camera.bottom = -100;
-                mainLight.shadow.camera.far = 200;
                 this.scene.add(mainLight);
                 
                 const fillLight = new THREE.PointLight(0x4466cc, 0.3);
                 fillLight.position.set(-30, 40, -20);
                 this.scene.add(fillLight);
-                
-                const backLight = new THREE.PointLight(0xffaa66, 0.2);
-                backLight.position.set(0, 30, -50);
-                this.scene.add(backLight);
             }
             
             createAdvancedTerrain() {
-                const groundGeometry = new THREE.PlaneGeometry(500, 500, 128, 128);
+                const groundGeometry = new THREE.PlaneGeometry(450, 450, 80, 80);
                 const vertices = groundGeometry.attributes.position.array;
                 
                 for (let i = 0; i < vertices.length; i += 3) {
                     const x = vertices[i];
                     const z = vertices[i+2];
-                    let y = 0;
-                    
-                    y += Math.sin(x * 0.05) * Math.cos(z * 0.05) * 0.8;
-                    y += Math.sin(x * 0.15) * 0.3;
-                    y += Math.cos(z * 0.15) * 0.3;
-                    y += Math.sin((x * 0.3 + z * 0.2) * 1.5) * 0.2;
-                    
+                    let y = Math.sin(x * 0.05) * Math.cos(z * 0.05) * 0.5;
+                    y += Math.sin(x * 0.15) * 0.2;
+                    y += Math.cos(z * 0.15) * 0.2;
                     vertices[i+1] = y;
                 }
                 
                 groundGeometry.computeVertexNormals();
                 
-                const groundMaterial = new THREE.MeshStandardMaterial({
-                    color: 0x5c4a3a,
-                    roughness: 0.85,
-                    metalness: 0.05,
-                    flatShading: false
-                });
-                
-                const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+                const groundMat = new THREE.MeshStandardMaterial({ color: 0x5c4a3a, roughness: 0.85, metalness: 0.05 });
+                const ground = new THREE.Mesh(groundGeometry, groundMat);
                 ground.rotation.x = -Math.PI / 2;
                 ground.receiveShadow = true;
                 this.scene.add(ground);
-                this.terrainMeshes.push(ground);
                 
-                const grassGeometry = new THREE.PlaneGeometry(500, 500, 64, 64);
-                const grassMaterial = new THREE.MeshStandardMaterial({
-                    color: 0x6a8a5a,
-                    roughness: 0.9,
-                    transparent: true,
-                    opacity: 0.4
-                });
-                const grassLayer = new THREE.Mesh(grassGeometry, grassMaterial);
-                grassLayer.rotation.x = -Math.PI / 2;
-                grassLayer.position.y = 0.05;
-                grassLayer.receiveShadow = true;
-                this.scene.add(grassLayer);
-                
-                const gridHelper = new THREE.GridHelper(520, 40, 0xd4af37, 0x8a7a5a);
-                gridHelper.position.y = 0.02;
+                const gridHelper = new THREE.GridHelper(480, 40, 0xd4af37, 0x8a7a5a);
+                gridHelper.position.y = 0.03;
                 gridHelper.material.transparent = true;
                 gridHelper.material.opacity = 0.4;
                 this.scene.add(gridHelper);
             }
             
             createProfessionalObstacles() {
-                const rockMat = new THREE.MeshStandardMaterial({ color: 0x7a6a5a, roughness: 0.7, metalness: 0.05 });
+                const rockMat = new THREE.MeshStandardMaterial({ color: 0x7a6a5a, roughness: 0.7 });
                 const concreteMat = new THREE.MeshStandardMaterial({ color: 0x8a8a8a, roughness: 0.6 });
-                const woodMat = new THREE.MeshStandardMaterial({ color: 0xad8a6a, roughness: 0.8 });
                 
                 const rockPositions = [
                     { x: -48, z: -35, scale: 2.2 }, { x: -32, z: 28, scale: 2.5 }, { x: -15, z: -48, scale: 2.0 },
                     { x: 12, z: -42, scale: 2.3 }, { x: 38, z: -22, scale: 2.1 }, { x: 52, z: 18, scale: 2.4 },
                     { x: 32, z: 48, scale: 2.2 }, { x: -28, z: -52, scale: 2.3 }, { x: -58, z: 8, scale: 2.5 },
-                    { x: 8, z: 55, scale: 2.0 }, { x: 65, z: -32, scale: 2.2 }, { x: -65, z: -45, scale: 2.4 },
-                    { x: -45, z: 58, scale: 2.1 }, { x: 22, z: -68, scale: 2.3 }, { x: 48, z: 38, scale: 2.2 }
+                    { x: 8, z: 55, scale: 2.0 }, { x: 65, z: -32, scale: 2.2 }, { x: -65, z: -45, scale: 2.4 }
                 ];
                 
                 rockPositions.forEach(pos => {
-                    const rockGroup = new THREE.Group();
-                    const mainRock = new THREE.Mesh(new THREE.DodecahedronGeometry(1.4), rockMat);
-                    mainRock.scale.set(1.8, 1.4, 1.6);
-                    mainRock.position.y = 0.8;
-                    rockGroup.add(mainRock);
-                    
-                    const smallRock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.8), rockMat);
-                    smallRock.scale.set(1.2, 1.0, 1.1);
-                    smallRock.position.set(1.2, 0.4, 0.8);
-                    rockGroup.add(smallRock);
-                    
-                    rockGroup.position.set(pos.x, 0, pos.z);
-                    rockGroup.scale.set(pos.scale, pos.scale, pos.scale);
-                    rockGroup.castShadow = true;
-                    rockGroup.receiveShadow = true;
-                    this.scene.add(rockGroup);
-                    this.obstacles.push(rockGroup);
+                    const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(1.4), rockMat);
+                    rock.scale.set(pos.scale * 1.2, pos.scale * 0.8, pos.scale * 1.1);
+                    rock.position.set(pos.x, 0.7, pos.z);
+                    rock.castShadow = true;
+                    this.scene.add(rock);
+                    this.obstacles.push(rock);
                 });
                 
                 const concretePositions = [
-                    { x: -72, z: -18, rot: 0, width: 4, height: 2.5 },
-                    { x: -65, z: -32, rot: 0.8, width: 3.5, height: 2.2 },
-                    { x: -48, z: -75, rot: 1.2, width: 5, height: 2.8 },
-                    { x: -25, z: -85, rot: 0.5, width: 4.5, height: 2.4 },
-                    { x: 2, z: -82, rot: 1.3, width: 4, height: 2.3 },
-                    { x: 28, z: -75, rot: 0.3, width: 5, height: 2.6 },
-                    { x: 52, z: -62, rot: 0, width: 4.2, height: 2.4 },
-                    { x: 72, z: -42, rot: 1.1, width: 4.8, height: 2.7 },
-                    { x: 82, z: -18, rot: 0.6, width: 4, height: 2.2 },
-                    { x: 78, z: 8, rot: 0, width: 4.5, height: 2.5 },
-                    { x: 65, z: 28, rot: 1.2, width: 5, height: 2.8 },
-                    { x: 45, z: 48, rot: 0.7, width: 4.2, height: 2.4 },
-                    { x: 18, z: 65, rot: 0, width: 4.5, height: 2.5 },
-                    { x: -12, z: 72, rot: 1.4, width: 4, height: 2.3 },
-                    { x: -38, z: 62, rot: 0.4, width: 4.8, height: 2.6 },
-                    { x: -58, z: 42, rot: 0.9, width: 4.2, height: 2.4 },
-                    { x: -75, z: 18, rot: 0, width: 4.5, height: 2.5 }
+                    { x: -70, z: -18, rot: 0 }, { x: -60, z: -32, rot: 0.8 }, { x: -45, z: -70, rot: 1.2 },
+                    { x: -20, z: -80, rot: 0.5 }, { x: 5, z: -75, rot: 1.3 }, { x: 30, z: -68, rot: 0.3 },
+                    { x: 55, z: -55, rot: 0 }, { x: 75, z: -35, rot: 1.0 }, { x: 82, z: -12, rot: 0.5 },
+                    { x: 75, z: 12, rot: 0 }, { x: 58, z: 32, rot: 1.2 }, { x: 38, z: 52, rot: 0.7 },
+                    { x: 12, z: 68, rot: 0 }, { x: -15, z: 72, rot: 1.3 }, { x: -38, z: 62, rot: 0.4 }
                 ];
                 
                 concretePositions.forEach(pos => {
-                    const wall = new THREE.Mesh(new THREE.BoxGeometry(pos.width, pos.height, 1.2), concreteMat);
-                    wall.position.set(pos.x, pos.height / 2, pos.z);
+                    const wall = new THREE.Mesh(new THREE.BoxGeometry(4.2, 2.5, 1.2), concreteMat);
+                    wall.position.set(pos.x, 1.25, pos.z);
                     wall.rotation.y = pos.rot;
                     wall.castShadow = true;
-                    wall.receiveShadow = true;
                     this.scene.add(wall);
                     this.obstacles.push(wall);
                 });
-                
-                for(let i = 0; i < 35; i++) {
-                    const treeGroup = new THREE.Group();
-                    const trunkMat = new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.9 });
-                    const foliageMat = new THREE.MeshStandardMaterial({ color: 0x3a7a2a, roughness: 0.7 });
-                    
-                    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.8, 1.5, 8), trunkMat);
-                    trunk.position.y = 0.75;
-                    trunk.castShadow = true;
-                    treeGroup.add(trunk);
-                    
-                    const foliage1 = new THREE.Mesh(new THREE.ConeGeometry(1.0, 1.2, 8), foliageMat);
-                    foliage1.position.y = 1.5;
-                    foliage1.castShadow = true;
-                    treeGroup.add(foliage1);
-                    
-                    const foliage2 = new THREE.Mesh(new THREE.ConeGeometry(0.8, 1.0, 8), foliageMat);
-                    foliage2.position.y = 2.3;
-                    foliage2.castShadow = true;
-                    treeGroup.add(foliage2);
-                    
-                    let x = (Math.random() - 0.5) * 350;
-                    let z = (Math.random() - 0.5) * 350;
-                    if(Math.abs(x) < 90 && Math.abs(z) < 90) continue;
-                    if(Math.abs(x) > 180 || Math.abs(z) > 180) continue;
-                    
-                    treeGroup.position.set(x, 0, z);
-                    this.scene.add(treeGroup);
-                    this.obstacles.push(treeGroup);
-                }
-                
-                for(let i = 0; i < 25; i++) {
-                    const barrel = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.5, 1.8, 12), woodMat);
-                    let x = (Math.random() - 0.5) * 280;
-                    let z = (Math.random() - 0.5) * 280;
-                    if(Math.abs(x) < 100 && Math.abs(z) < 100) continue;
-                    barrel.position.set(x, 0.9, z);
-                    barrel.castShadow = true;
-                    this.scene.add(barrel);
-                    this.obstacles.push(barrel);
-                }
             }
             
             createProfessionalTank(color, x, z, team, playerId = null) {
                 const group = new THREE.Group();
                 
                 const bodyMat = new THREE.MeshStandardMaterial({ color: color, metalness: 0.7, roughness: 0.4 });
-                const body = new THREE.Mesh(new THREE.BoxGeometry(2.8, 1.0, 4.0), bodyMat);
-                body.position.y = 0.6;
+                const body = new THREE.Mesh(new THREE.BoxGeometry(2.6, 1.0, 3.8), bodyMat);
+                body.position.y = 0.55;
                 body.castShadow = true;
-                body.receiveShadow = true;
                 group.add(body);
                 
-                const frontArmor = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.6, 0.8), bodyMat);
-                frontArmor.position.set(0, 0.9, 2.2);
-                frontArmor.castShadow = true;
-                group.add(frontArmor);
-                
-                const trackMat = new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.3 });
-                const trackGeo = new THREE.BoxGeometry(3.0, 0.6, 0.6);
-                const leftTrack = new THREE.Mesh(trackGeo, trackMat);
-                leftTrack.position.set(-1.6, 0.4, 0);
+                const trackMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
+                const leftTrack = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.5, 0.7), trackMat);
+                leftTrack.position.set(-1.5, 0.4, 0);
                 leftTrack.castShadow = true;
                 group.add(leftTrack);
                 
-                const rightTrack = new THREE.Mesh(trackGeo, trackMat);
-                rightTrack.position.set(1.6, 0.4, 0);
+                const rightTrack = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.5, 0.7), trackMat);
+                rightTrack.position.set(1.5, 0.4, 0);
                 rightTrack.castShadow = true;
                 group.add(rightTrack);
                 
                 for(let i = -1.2; i <= 1.2; i += 0.8) {
-                    const wheelGeo = new THREE.CylinderGeometry(0.45, 0.45, 0.5, 16);
-                    const wheelMat = new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.5 });
+                    const wheelGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.5, 16);
+                    const wheelMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
                     const wheelL = new THREE.Mesh(wheelGeo, wheelMat);
                     wheelL.rotation.z = Math.PI / 2;
-                    wheelL.position.set(-1.7, 0.4, i);
+                    wheelL.position.set(-1.6, 0.4, i);
                     wheelL.castShadow = true;
                     group.add(wheelL);
                     
                     const wheelR = new THREE.Mesh(wheelGeo, wheelMat);
                     wheelR.rotation.z = Math.PI / 2;
-                    wheelR.position.set(1.7, 0.4, i);
+                    wheelR.position.set(1.6, 0.4, i);
                     wheelR.castShadow = true;
                     group.add(wheelR);
                 }
                 
                 const turretMat = new THREE.MeshStandardMaterial({ color: color, metalness: 0.75 });
-                const turretBase = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.5, 0.7, 24), turretMat);
-                turretBase.position.y = 1.1;
-                turretBase.castShadow = true;
-                group.add(turretBase);
-                
-                const turretTop = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.2, 0.5, 24), turretMat);
-                turretTop.position.y = 1.5;
-                turretTop.castShadow = true;
-                group.add(turretTop);
+                const turret = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 1.4, 0.7, 24), turretMat);
+                turret.position.y = 1.0;
+                turret.castShadow = true;
+                group.add(turret);
                 
                 const barrelMat = new THREE.MeshStandardMaterial({ color: 0x4a4a4a, metalness: 0.8 });
-                const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.35, 3.2, 24), barrelMat);
+                const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.35, 3.0, 24), barrelMat);
                 barrel.rotation.x = 0.05;
-                barrel.position.set(1.4, 1.25, 0);
+                barrel.position.set(1.3, 1.05, 0);
                 barrel.castShadow = true;
                 group.add(barrel);
                 
-                const muzzle = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.38, 0.5, 16), barrelMat);
-                muzzle.position.set(2.9, 1.25, 0);
-                muzzle.castShadow = true;
-                group.add(muzzle);
-                
                 const hatch = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.15, 12), new THREE.MeshStandardMaterial({ color: 0xccaa66 }));
-                hatch.position.set(-0.6, 1.7, 0.4);
+                hatch.position.set(-0.5, 1.45, 0.4);
                 hatch.castShadow = true;
                 group.add(hatch);
                 
@@ -1074,9 +926,9 @@
                     new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4422, emissiveIntensity: 0.8 })
                 );
                 bullet.position.copy(tank.position);
-                bullet.position.y += 1.4;
+                bullet.position.y += 1.3;
                 const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(tank.quaternion);
-                bullet.position.add(forward.multiplyScalar(1.5));
+                bullet.position.add(forward.multiplyScalar(1.8));
                 bullet.userData = { velocity: dir.multiplyScalar(3.2), owner: tank, life: 200 };
                 this.scene.add(bullet);
                 this.bullets.push(bullet);
@@ -1088,49 +940,32 @@
             
             createExplosion(pos, size = 1.2) {
                 const explosionGroup = new THREE.Group();
-                const flash = new THREE.Mesh(
-                    new THREE.SphereGeometry(size * 0.8, 16, 16),
-                    new THREE.MeshStandardMaterial({ color: 0xffaa66, emissive: 0xff4422, emissiveIntensity: 1.5 })
-                );
+                const flash = new THREE.Mesh(new THREE.SphereGeometry(size * 0.7, 16, 16), new THREE.MeshStandardMaterial({ color: 0xffaa66, emissive: 0xff4422, emissiveIntensity: 1.5 }));
                 explosionGroup.add(flash);
                 explosionGroup.position.copy(pos);
                 this.scene.add(explosionGroup);
                 
-                for(let i = 0; i < 60; i++) {
-                    const particle = new THREE.Mesh(
-                        new THREE.SphereGeometry(0.15, 6, 6),
-                        new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4422 })
-                    );
+                for(let i = 0; i < 50; i++) {
+                    const particle = new THREE.Mesh(new THREE.SphereGeometry(0.14, 6, 6), new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4422 }));
                     particle.position.copy(pos);
                     particle.userData = {
-                        vel: new THREE.Vector3((Math.random() - 0.5) * 1.5, Math.random() * 2 + 0.5, (Math.random() - 0.5) * 1.5),
-                        life: 1.2, gravity: 0.04
+                        vel: new THREE.Vector3((Math.random() - 0.5) * 1.4, Math.random() * 1.8 + 0.5, (Math.random() - 0.5) * 1.4),
+                        life: 1.2, gravity: 0.035
                     };
                     this.scene.add(particle);
                     this.particles.push(particle);
                 }
                 
-                for(let i = 0; i < 20; i++) {
-                    const smoke = new THREE.Mesh(
-                        new THREE.SphereGeometry(0.25, 8, 8),
-                        new THREE.MeshStandardMaterial({ color: 0x886666, emissive: 0x442222, transparent: true, opacity: 0.7 })
-                    );
-                    smoke.position.copy(pos);
-                    smoke.userData = { vel: new THREE.Vector3((Math.random() - 0.5) * 0.5, Math.random() * 1.2, (Math.random() - 0.5) * 0.5), life: 1.5 };
-                    this.scene.add(smoke);
-                    this.particles.push(smoke);
-                }
-                
-                setTimeout(() => this.scene.remove(explosionGroup), 250);
+                setTimeout(() => this.scene.remove(explosionGroup), 220);
                 const dist = this.playerTank ? pos.distanceTo(this.playerTank.position) : 0;
                 gameApp.audio.explosion(dist);
-                if(dist < 40) this.cameraShake = 1.5;
+                if(dist < 38) this.cameraShake = 1.4;
             }
             
             updateParticles() {
                 for(let i = this.particles.length-1; i >= 0; i--) {
                     const p = this.particles[i];
-                    p.userData.life -= 0.02;
+                    p.userData.life -= 0.022;
                     if(p.userData.life <= 0) {
                         this.scene.remove(p);
                         this.particles.splice(i,1);
@@ -1139,10 +974,7 @@
                         p.position.z += p.userData.vel.z;
                         p.position.y += p.userData.vel.y;
                         if(p.userData.gravity) p.userData.vel.y -= p.userData.gravity;
-                        if(p.material) {
-                            p.material.emissiveIntensity = p.userData.life * 0.8;
-                            p.scale.setScalar(p.userData.life);
-                        }
+                        p.scale.setScalar(p.userData.life * 1.2);
                     }
                 }
             }
@@ -1152,13 +984,13 @@
                 this.updateParticles();
                 
                 if(this.playerTank) {
-                    const speed = -this.joystick.y * 0.28;
-                    const rot = -this.joystick.x * 0.05;
+                    const speed = -this.joystick.y * 0.26;
+                    const rot = -this.joystick.x * 0.048;
                     const oldX = this.playerTank.position.x, oldZ = this.playerTank.position.z;
                     this.playerTank.rotation.y += rot;
                     this.playerTank.translateZ(speed);
                     if(this.checkCollision(this.playerTank)) this.playerTank.position.set(oldX, 0, oldZ);
-                    gameApp.audio.updateEngine(Math.abs(speed) * 4);
+                    gameApp.audio.updateEngine(Math.abs(speed) * 3.8);
                     
                     socket.emit('move', { position: this.playerTank.position, rotation: this.playerTank.rotation.y });
                     
@@ -1193,16 +1025,14 @@
                     
                     if(!hit) {
                         for(let [id, tank] of this.tanks) {
-                            if(tank !== b.userData.owner && tank.userData.team !== b.userData.owner.userData.team && b.position.distanceTo(tank.position) < 2.2) {
+                            if(tank !== b.userData.owner && tank.userData.team !== b.userData.owner.userData.team && b.position.distanceTo(tank.position) < 2.0) {
                                 hit = true;
-                                this.createExplosion(b.position, 1.8);
+                                this.createExplosion(b.position, 1.6);
                                 this.scene.remove(b);
                                 this.bullets.splice(i,1);
                                 this.scene.remove(tank);
                                 this.tanks.delete(id);
                                 this.updateCounts();
-                                
-                                socket.emit('damage', { damage: 25, killerId: this.playerTank?.userData.playerId, targetId: tank.userData.playerId });
                                 
                                 if(tank === this.playerTank) {
                                     gameApp.endBattle(this.team1Count === 0 ? 'الفريق الأزرق' : 'الفريق الأحمر');
@@ -1214,7 +1044,7 @@
                             }
                         }
                     }
-                    if(!hit && (b.userData.life < 0 || Math.abs(b.position.x) > 450 || Math.abs(b.position.z) > 450)) {
+                    if(!hit && (b.userData.life < 0 || Math.abs(b.position.x) > 440 || Math.abs(b.position.z) > 440)) {
                         this.scene.remove(b);
                         this.bullets.splice(i,1);
                     }
@@ -1259,9 +1089,6 @@
             }
         }
         
-        // ============================================
-        // 🎮 Game App Controller
-        // ============================================
         const gameApp = {
             audio: new AudioEngine(),
             engine: new ProfessionalGameEngine(),
@@ -1287,9 +1114,7 @@
                     document.getElementById('gameBalance').innerText = currentBalance;
                     document.getElementById('username').innerText = data.username || data.email.split('@')[0];
                     document.getElementById('gameUsername').innerText = data.username || data.email.split('@')[0];
-                    document.getElementById('gamesPlayed').innerText = data.gamesPlayed || 0;
-                    document.getElementById('wins').innerText = data.wins || 0;
-                    if(isAdmin) document.getElementById('adminBtn').style.display = 'block';
+                    if(isAdmin) document.getElementById('adminIcon').style.display = 'flex';
                     this.showMainScreen();
                 });
                 
@@ -1534,32 +1359,25 @@
                 }
             },
             
-            goToWallet() { window.location.href = 'wallet.html'; },
-            goToAdmin() { window.location.href = 'admin.html'; },
-            
             checkLandscape() {
-                const checkOrientation = () => {
+                const check = () => {
                     const isLandscape = window.innerWidth > window.innerHeight;
-                    const landscapeDiv = document.getElementById('landscapeRequired');
-                    const loginScreen = document.getElementById('loginScreen');
-                    
+                    const lockDiv = document.getElementById('gameLandscapeLock');
+                    const loginDiv = document.getElementById('loginScreen');
                     if(!isLandscape) {
-                        landscapeDiv.classList.remove('hidden');
-                        loginScreen.style.display = 'none';
+                        lockDiv.style.display = 'flex';
+                        loginDiv.style.display = 'none';
                         document.getElementById('mainScreen').style.display = 'none';
-                        document.getElementById('lobby').style.display = 'none';
-                        document.getElementById('hud').style.display = 'none';
                     } else {
-                        landscapeDiv.classList.add('hidden');
-                        if(document.getElementById('loginScreen').style.display !== 'none') {
-                            loginScreen.style.display = 'flex';
+                        lockDiv.style.display = 'none';
+                        if(loginDiv.style.display !== 'none') {
+                            loginDiv.style.display = 'flex';
                         }
                     }
                 };
-                
-                checkOrientation();
-                window.addEventListener('resize', checkOrientation);
-                window.addEventListener('orientationchange', checkOrientation);
+                check();
+                window.addEventListener('resize', check);
+                window.addEventListener('orientationchange', check);
             },
             
             async saveSeatPrice() {
@@ -1700,17 +1518,20 @@
                     this.register(email, password);
                 };
                 document.getElementById('playBtn').onclick = () => this.showLobby();
-                document.getElementById('walletBtn').onclick = () => this.goToWallet();
-                document.getElementById('adminBtn').onclick = () => {
-                    document.getElementById('adminPanel').style.display = 'flex';
-                    this.refreshStats();
-                };
                 document.getElementById('createRoomBtn').onclick = () => this.createRoom();
                 document.getElementById('backFromLobbyBtn').onclick = () => {
                     document.getElementById('lobby').style.display = 'none';
                     document.getElementById('mainScreen').style.display = 'flex';
                 };
                 document.getElementById('backHomeBtn').onclick = () => this.backToHome();
+                document.getElementById('adminIcon').onclick = () => {
+                    if(isAdmin) {
+                        document.getElementById('adminPanel').style.display = 'flex';
+                        this.refreshStats();
+                    } else {
+                        alert('غير مصرح لك');
+                    }
+                };
                 document.getElementById('closeAdminBtn').onclick = () => document.getElementById('adminPanel').style.display = 'none';
                 document.getElementById('saveSeatPriceBtn').onclick = () => this.saveSeatPrice();
                 document.getElementById('saveMaxPlayersBtn').onclick = () => this.saveMaxPlayers();
@@ -1718,6 +1539,10 @@
                 document.getElementById('adminWithdrawBtn').onclick = () => this.adminWithdraw();
                 document.getElementById('resetDataBtn').onclick = () => this.resetAllData();
                 document.getElementById('refreshStatsBtn').onclick = () => this.refreshStats();
+                
+                document.getElementById('gameIcon').addEventListener('click', () => {
+                    document.getElementById('playBtn').style.display = 'block';
+                });
             }
         };
         
