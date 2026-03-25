@@ -231,7 +231,7 @@
 
         .seats {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 15px;
             margin: 30px 0;
         }
@@ -686,7 +686,7 @@
             if (!seatsContainer) return;
             
             if (!rooms || rooms.length === 0) {
-                seatsContainer.innerHTML = '<div style="color:white; grid-column:span 4; text-align:center;">لا توجد غرف متاحة، اضغط "إنشاء غرفة جديدة"</div>';
+                seatsContainer.innerHTML = '<div style="color:white; grid-column:span 2; text-align:center;">لا توجد غرف متاحة، اضغط "إنشاء غرفة جديدة"</div>';
                 return;
             }
             
@@ -718,7 +718,7 @@
         }
         
         function createRoom() {
-            socket.emit('create_room', { seats: 8 });
+            socket.emit('create_room', { seats: 2 });
         }
         
         function joinRoom(roomId) {
