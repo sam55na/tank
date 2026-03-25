@@ -913,16 +913,6 @@
                 }
             }
             
-            updateSmoothMovements() {
-                for (let [id, tank] of this.otherPlayers) {
-                    const target = this.targetPositions.get(id);
-                    if (target && tank) {
-                        tank.position.lerp(target.position, 0.25);
-                        tank.rotation.y += (target.rotation - tank.rotation.y) * 0.2;
-                    }
-                }
-            }
-            
             update() { 
                 if (!this.gameActive || this.isEliminated) return;
                 this.updateSmoothMovements();
@@ -972,7 +962,9 @@
                     
                     if(!hit) { 
                         for(let [id, tank] of this.tanks) {
+                            // التحقق: الرصاصة ليست من نفس الدبابة
                             const isOwner = (b.userData.owner === tank);
+                            // التحقق: الفرق مختلفة
                             const isSameTeam = tank.userData.team === b.userData.owner?.userData?.team;
                             
                             if (!isOwner && !isSameTeam && b.position.distanceTo(tank.position) < 1.9) { 
@@ -1030,15 +1022,24 @@
                     tank = this.createTank(color, pos.x, pos.z, data.team, data.userId);
                     this.otherPlayers.set(data.userId, tank);
                     this.tanks.set(data.userId, tank);
-                }
+    }
                 if(tank && data.position) {
+        // تخزين الموقع المستهدف للتنعيم بدلاً من التعيين المباشر
                     this.targetPositions.set(data.userId, { 
                         position: new THREE.Vector3(data.position.x, 0, data.position.z),
                         rotation: data.rotation || 0 
-                    });
-                }
-            }
-            
+        });
+    }
+}
+            updateSmoothMovements() {
+                for (let [id, tank] of this.otherPlayers) {
+                    const target = this.targetPositions.get(id);
+                    if (target && tank) {
+                        tank.position.lerp(target.position, 0.25);
+                        tank.rotation.y += (target.rotation - tank.rotation.y) * 0.2;
+        }
+    }
+}
             removeTank(userId) {
                 const tank = this.tanks.get(userId);
                 if (tank) {
@@ -1046,10 +1047,10 @@
                     this.scene.remove(tank);
                     this.tanks.delete(userId);
                     this.otherPlayers.delete(userId);
-                    this.targetPositions.delete(userId);
+                    this.targetPositions.delete(userId); // <-- أضف هذا السطر
                     this.updateCounts();
-                }
-            }
+    }
+}
             
             animate() { 
                 requestAnimationFrame(() => this.animate()); 
@@ -1308,19 +1309,10 @@
             },
             
             _startGame(data) {
-                if(this.sim && this.sim.renderer) {
-                    this.sim.renderer.domElement.style.display = 'block';
-                }
-                
                 document.getElementById('lobby').style.display = 'none';
                 document.getElementById('hud').style.display = 'block';
                 document.getElementById('health').innerText = '100';
                 
-                this.sim.otherPlayers.clear();
-                this.sim.tanks.clear();
-                this.sim.targetPositions.clear();
-                this.sim.bullets = [];
-                this.sim.particles = [];
                 this.sim.isEliminated = false;
                 this.sim.gameActive = true;
                 this.sim.lastMoveTime = 0;
@@ -1429,60 +1421,24 @@
                     this.sim.targetPositions.clear();
                     this.sim.bullets = [];
                     this.sim.particles = [];
-                }
+    }
                 const duration = Math.round((new Date() - this.battleResult.startTime) / 1000);
                 const report = `🏆 الفائز: ${winner}\n⏱️ المدة: ${duration} ثانية\n\n🎮 هل تريد خوض معركة جديدة؟`;
                 document.getElementById('reportText').innerHTML = report.replace(/\n/g, '<br>');
-                
+    
                 const backBtn = document.getElementById('backHomeBtn');
                 backBtn.innerHTML = '🎮 معركة جديدة';
-                backBtn.onclick = () => this.returnToLobby();
-                
+                backBtn.onclick = () => {
+        // إرسال طلب تنظيف للخادم قبل العودة للوبي
+                    socket.emit('game_cleanup', {});
+                    this.returnToLobby();
+    };
+    
                 document.getElementById('reportScreen').style.display = 'flex';
                 document.getElementById('hud').style.display = 'none';
                 if(this.sim && this.sim.playerTank) this.sim.scene.remove(this.sim.playerTank);
                 if(this.sim && this.sim.renderer) this.sim.renderer.domElement.style.display = 'none';
-            },
-            
-            returnToLobby() {
-                if(this.sim) {
-                    this.sim.gameActive = false;
-                    this.sim.isEliminated = false;
-                    this.sim.otherPlayers.clear();
-                    this.sim.tanks.clear();
-                    this.sim.targetPositions.clear();
-                    this.sim.bullets = [];
-                    this.sim.particles = [];
-                    this.sim.playerTank = null;
-                }
-                
-                document.getElementById('reportScreen').style.display = 'none';
-                document.getElementById('hud').style.display = 'none';
-                document.getElementById('mainScreen').style.display = 'none';
-                document.getElementById('lobby').style.display = 'flex';
-                
-                const backBtn = document.getElementById('backHomeBtn');
-                backBtn.innerHTML = '🏠 العودة للرئيسية';
-                backBtn.onclick = () => this.backToHome();
-                
-                socket.emit('join_lobby');
-                
-                if(this.sim && this.sim.renderer) {
-                    this.sim.renderer.domElement.style.display = 'block';
-                }
-            },
-            
-            backToHome() {
-                document.getElementById('reportScreen').style.display = 'none';
-                document.getElementById('mainScreen').style.display = 'flex';
-                if(this.sim && this.sim.scene) {
-                    this.sim.gameActive = false;
-                    this.sim.otherPlayers.clear();
-                    this.sim.tanks.clear();
-                    this.sim.targetPositions.clear();
-                    this.sim.playerTank = null;
-                }
-            },
+},
             
             goToWallet() { window.location.href = 'wallet.html'; },
             goToAdmin() { window.location.href = 'admin.html'; },
