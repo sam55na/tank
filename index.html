@@ -727,7 +727,10 @@
                 this.obstacles = []; this.particles = []; this.team1Count = 0; this.team2Count = 0;
                 this.playerTeam = null; this.otherPlayers = new Map();
                 this.gameActive = false;
-                this.controls = null;
+                // متغيرات الكاميرا
+                this.cameraDistance = 12;
+                this.cameraHeight = 5;
+                this.cameraAngle = 0;
             }
 
             init() { 
@@ -750,14 +753,6 @@
                 
                 this.createTerrain(); 
                 this.createObstacles(); 
-                
-                this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-                this.controls.enableDamping = true;
-                this.controls.dampingFactor = 0.05;
-                this.controls.zoomSpeed = 0.5;
-                this.controls.enableZoom = true;
-                this.controls.target.set(0, 0, 0);
-                
                 this.animate(); 
             }
             
@@ -886,40 +881,68 @@
                 }
             }
             
+            updateCamera() {
+                if (!this.playerTank) return;
+                
+                // حساب موقع الكاميرا خلف الدبابة
+                const tankPos = this.playerTank.position;
+                const tankRot = this.playerTank.rotation.y;
+                
+                // زاوية الكاميرا (ثابتة خلف الدبابة)
+                const camX = tankPos.x - Math.sin(tankRot) * this.cameraDistance;
+                const camZ = tankPos.z - Math.cos(tankRot) * this.cameraDistance;
+                const camY = tankPos.y + this.cameraHeight;
+                
+                // تأثير الاهتزاز
+                let shakeX = 0, shakeY = 0;
+                if (this.cameraShake > 0) {
+                    shakeX = (Math.random() - 0.5) * this.cameraShake;
+                    shakeY = (Math.random() - 0.5) * this.cameraShake * 0.5;
+                    this.cameraShake *= 0.92;
+                }
+                
+                this.camera.position.set(camX + shakeX, camY + shakeY, camZ + shakeX);
+                this.camera.lookAt(tankPos);
+            }
+            
             update() { 
                 if (!this.gameActive) return;
                 this.updateParticles();
                 
                 if(this.playerTank) { 
-                    const speed = -this.joystick.y * 0.22;
-                    const rot = -this.joystick.x * 0.045; 
-                    const oldX = this.playerTank.position.x, oldZ = this.playerTank.position.z; 
-                    this.playerTank.rotation.y += rot; 
-                    this.playerTank.translateZ(speed); 
-                    if(this.checkCollision(this.playerTank)) this.playerTank.position.set(oldX, 0, oldZ); 
-                    gameApp.audio.updateEngine(Math.abs(speed) * 3.5); 
+                    const speed = -this.joystick.y * 0.28;
+                    const rot = -this.joystick.x * 0.055;
+                    const oldX = this.playerTank.position.x, oldZ = this.playerTank.position.z;
                     
-                    socket.emit('move', { position: this.playerTank.position, rotation: this.playerTank.rotation.y });
+                    // تطبيق الحركة والدوران
+                    this.playerTank.rotation.y += rot;
+                    this.playerTank.translateZ(speed);
                     
-                    if(this.controls) {
-                        this.controls.target.copy(this.playerTank.position);
-                        if(this.cameraShake > 0) { 
-                            const shakeX = (Math.random() - 0.5) * this.cameraShake;
-                            const shakeY = (Math.random() - 0.5) * this.cameraShake;
-                            this.camera.position.x += shakeX * 0.3;
-                            this.camera.position.y += shakeY * 0.2;
-                            this.cameraShake *= 0.92;
-                        }
-                        this.controls.update();
+                    // تصحيح التصادم
+                    if(this.checkCollision(this.playerTank)) {
+                        this.playerTank.position.set(oldX, 0, oldZ);
                     }
+                    
+                    gameApp.audio.updateEngine(Math.abs(speed) * 4);
+                    
+                    // إرسال الحركة للخادم
+                    socket.emit('move', { 
+                        position: this.playerTank.position, 
+                        rotation: this.playerTank.rotation.y 
+                    });
+                    
+                    // تحديث الكاميرا
+                    this.updateCamera();
                 } 
                 
+                // تحديث الرصاصات
                 for(let i = this.bullets.length-1; i >= 0; i--) { 
                     const b = this.bullets[i]; 
                     b.position.add(b.userData.velocity); 
                     b.userData.life--; 
                     let hit = false; 
                     
+                    // اصطدام بالعوائق
                     for(let obs of this.obstacles) { 
                         if(new THREE.Box3().setFromObject(b).intersectsBox(new THREE.Box3().setFromObject(obs))) { 
                             hit = true; 
@@ -930,6 +953,7 @@
                         } 
                     } 
                     
+                    // اصطدام بالدبابات
                     if(!hit) { 
                         for(let [id, tank] of this.tanks) { 
                             if(tank !== b.userData.owner && tank.userData.team !== b.userData.owner.userData.team && b.position.distanceTo(tank.position) < 1.9) { 
@@ -943,7 +967,7 @@
                                 
                                 if(tank === this.playerTank) {
                                     document.getElementById('health').innerText = tank.userData.health;
-                                    socket.emit('damage', { damage: damage, targetId: this.playerTank?.userData.playerId });
+                                    socket.emit('damage', { damage: damage });
                                 } else {
                                     socket.emit('damage', { damage: damage, targetId: tank.userData.playerId });
                                 }
@@ -1377,7 +1401,7 @@
         
         window.gameApp = gameApp;
         gameApp.init();
-        console.log('🎮 Game ready!');
+        console.log('🎮 Game ready with third-person camera!');
     </script>
 </body>
 </html>
