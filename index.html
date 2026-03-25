@@ -51,17 +51,6 @@
             gap: 20px;
         }
 
-        .landscape-warning .icon {
-            font-size: 80px;
-            animation: rotateWarning 1.5s ease-in-out infinite;
-        }
-
-        @keyframes rotateWarning {
-            0% { transform: rotate(0deg); }
-            50% { transform: rotate(90deg); }
-            100% { transform: rotate(90deg); }
-        }
-
         .login-screen, .main-screen, .lobby, .admin-panel, .report-screen, .hud {
             position: fixed;
             top: 0;
@@ -105,8 +94,8 @@
             padding: 16px 20px;
             margin: 10px 0;
             border-radius: 60px;
-            background: rgba(20, 28, 40, 0.8);
-            border: 1px solid rgba(212, 175, 55, 0.4);
+            background: rgba(20,28,40,0.8);
+            border: 1px solid rgba(212,175,55,0.4);
             color: white;
             font-size: 16px;
             outline: none;
@@ -354,162 +343,152 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 30px;
-            height: 30px;
-            border: 2px solid rgba(212, 175, 55, 0.5);
-            border-radius: 50%;
+            width: clamp(30px, 5vw, 36px);
+            height: clamp(30px, 5vw, 36px);
         }
 
         .crosshair::before, .crosshair::after {
             content: '';
             position: absolute;
-            background: #d4af37;
+            background: rgba(255,255,240,0.85);
         }
 
         .crosshair::before {
             top: 50%;
-            left: -5px;
-            right: -5px;
+            left: 0;
+            width: 100%;
             height: 2px;
             transform: translateY(-50%);
         }
 
         .crosshair::after {
+            top: 0;
             left: 50%;
-            top: -5px;
-            bottom: -5px;
             width: 2px;
+            height: 100%;
             transform: translateX(-50%);
         }
 
         .controls {
             position: absolute;
-            bottom: clamp(20px, 5vh, 40px);
-            left: 0;
+            bottom: clamp(20px, 5vh, 30px);
             width: 100%;
             display: flex;
             justify-content: space-between;
-            padding: 0 clamp(20px, 5vw, 60px);
+            padding: 0 clamp(10px, 5vw, 20px);
             pointer-events: none;
         }
 
         .joystick-base {
-            width: clamp(120px, 25vw, 160px);
-            height: clamp(120px, 25vw, 160px);
-            background: rgba(255,255,255,0.1);
-            border: 2px solid rgba(212, 175, 55, 0.3);
-            border-radius: 50%;
+            width: clamp(80px, 20vw, 120px);
+            height: clamp(80px, 20vw, 120px);
+            background: rgba(0,0,0,0.6);
+            border: 2px solid #d4af37;
+            border-radius: 70px;
             position: relative;
             pointer-events: auto;
-            backdrop-filter: blur(5px);
         }
 
         .joystick-handle {
-            width: clamp(50px, 10vw, 70px);
-            height: clamp(50px, 10vw, 70px);
-            background: linear-gradient(135deg, #d4af37, #b8860b);
-            border-radius: 50%;
+            width: clamp(35px, 10vw, 52px);
+            height: clamp(35px, 10vw, 52px);
+            background: radial-gradient(circle, #d4af37, #b8860b);
+            border-radius: 30px;
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            pointer-events: none;
         }
 
         .fire-btn {
-            width: clamp(80px, 18vw, 110px);
-            height: clamp(80px, 18vw, 110px);
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            border-radius: 50%;
+            width: clamp(60px, 15vw, 80px);
+            height: clamp(60px, 15vw, 80px);
+            background: radial-gradient(circle, #e55, #a22);
+            border: 2px solid #d4af37;
+            border-radius: 50px;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: clamp(30px, 7vw, 45px);
+            font-size: clamp(28px, 6vw, 36px);
             color: white;
+            cursor: pointer;
             pointer-events: auto;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-            border: 4px solid rgba(255,255,255,0.2);
+            box-shadow: 0 0 12px rgba(255,0,0,0.4);
+            transition: transform 0.05s;
         }
 
-        .fire-btn:active {
-            transform: scale(0.92);
-            filter: brightness(1.2);
+        .fire-btn-active {
+            transform: scale(0.95);
         }
 
         .report-screen {
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(15px);
             display: none;
             justify-content: center;
             align-items: center;
-            z-index: 5000;
-            backdrop-filter: blur(15px);
+            z-index: 3000;
         }
 
         .report-container {
-            background: linear-gradient(145deg, #1a2533, #0f1725);
-            padding: 40px;
-            border-radius: 48px;
+            background: linear-gradient(135deg, #1a1a2e, #0a0a1a);
+            padding: clamp(20px, 5vw, 30px);
+            border-radius: 40px;
             text-align: center;
             border: 2px solid #d4af37;
+            max-width: 400px;
             width: 90%;
-            max-width: 450px;
         }
 
         .report-container h2 {
             color: #d4af37;
-            font-size: 32px;
             margin-bottom: 20px;
+            font-size: clamp(20px, 6vw, 28px);
         }
 
         .report-container p {
             color: white;
-            font-size: 18px;
-            line-height: 1.6;
-            margin-bottom: 30px;
+            margin: 15px 0;
+            line-height: 1.8;
+            font-size: clamp(14px, 4vw, 16px);
         }
 
         .back-home-btn {
-            padding: 15px 40px;
-            background: #d4af37;
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #d4af37, #b8860b);
             border: none;
-            border-radius: 60px;
+            border-radius: 30px;
+            font-size: 16px;
             font-weight: bold;
-            font-size: 18px;
             cursor: pointer;
         }
 
         .admin-panel {
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.96);
+            backdrop-filter: blur(8px);
             display: none;
             justify-content: center;
             align-items: center;
-            z-index: 6000;
-            backdrop-filter: blur(10px);
+            z-index: 4000;
         }
 
         .admin-container {
-            background: #1a1a1a;
-            padding: 30px;
-            border-radius: 30px;
+            background: linear-gradient(135deg, #121926, #080c14);
+            padding: clamp(20px, 5vw, 30px);
+            border-radius: 40px;
             width: 90%;
             max-width: 500px;
-            color: white;
-            border: 1px solid #d4af37;
-            max-height: 90vh;
+            max-height: 85vh;
             overflow-y: auto;
+            border: 1px solid #d4af37;
         }
 
         .admin-container h3 {
             color: #d4af37;
             margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .admin-container label {
-            display: block;
-            margin-top: 15px;
-            font-size: 14px;
-            color: #aaa;
+            font-size: clamp(20px, 5vw, 24px);
         }
 
         .admin-container input, .admin-container select {
@@ -543,269 +522,175 @@
             color: white;
         }
 
-        .admin-stats-box {
-            background: rgba(0,0,0,0.5);
-            padding: 15px;
-            border-radius: 20px;
-            margin: 15px 0;
-            max-height: 200px;
-            overflow-y: auto;
-            font-size: 12px;
-        }
-        
         .elimination-message {
             position: fixed;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%,-50%);
             background-color: rgba(0,0,0,0.9);
             color: #ff4444;
-            padding: clamp(15px, 4vw, 20px) clamp(25px, 6vw, 40px);
+            padding: clamp(15px,4vw,20px) clamp(25px,6vw,40px);
             border-radius: 30px;
-            font-size: clamp(18px, 5vw, 24px);
+            font-size: clamp(18px,5vw,24px);
             font-weight: bold;
             z-index: 10000;
             text-align: center;
             border: 2px solid #ff4444;
-            animation: fadeInOut 3s ease-in-out;
+            animation: fadeOut 3s ease-in-out;
             white-space: nowrap;
         }
-        
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-            20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-        }
 
-        @media (max-width: 768px) {
-            .elimination-message {
-                white-space: normal;
-                min-width: 200px;
-            }
-        }
-        
-        .fullscreen-btn {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background: rgba(0,0,0,0.7);
-            border: 1px solid #d4af37;
-            border-radius: 30px;
-            padding: 8px 16px;
-            color: #d4af37;
-            cursor: pointer;
-            font-size: 12px;
-            z-index: 1000;
-            pointer-events: auto;
-        }
-        
-        .fullscreen-btn:active {
-            transform: scale(0.95);
+        @keyframes fadeOut {
+            0% { opacity: 0; transform: translate(-50%,-50%) scale(0.8);}
+            20% { opacity: 1; transform: translate(-50%,-50%) scale(1);}
+            80% { opacity: 1; transform: translate(-50%,-50%) scale(1);}
+            100% { opacity: 0; transform: translate(-50%,-50%) scale(0.8);}
         }
     </style>
 </head>
 <body>
-    <div class="landscape-warning" id="landscapeWarning">
-        <div class="icon">🔄</div>
-        <h2 style="color:#d4af37;">يرجى تدوير الجهاز</h2>
-        <p style="color:#aaa;">المعركة تعمل في الوضع الأفقي فقط</p>
-    </div>
-
+    <canvas id="canvas"></canvas>
+    <div class="loading" id="loading">جاري الاتصال...</div>
     <div class="login-screen" id="loginScreen">
         <div class="login-container">
-            <h1>⚔️ BATTLE TANKS</h1>
+            <h1>⚡Battle Tanks⚡</h1>
             <p>ساحة المعركة الإلكترونية</p>
-            <input type="email" id="email" placeholder="البريد الإلكتروني">
-            <input type="password" id="password" placeholder="كلمة المرور">
-            <button id="loginBtn">🎖️ دخول المعركة</button>
-            <button id="registerBtn" class="switch-btn">✨ إنشاء حساب جديد</button>
+            <input type="email" id="email" placeholder="البريد الإلكتروني" autocomplete="email">
+            <input type="password" id="password" placeholder="كلمة المرور" autocomplete="current-password">
+            <button id="loginBtn">دخول</button>
+            <button id="registerBtn" class="switch-btn">إنشاء حساب</button>
         </div>
     </div>
-
     <div class="main-screen" id="mainScreen">
-        <h2>BATTLE TANKS ELITE</h2>
+        <h2>🏆 معركة الدبابات 🏆</h2>
         <div class="btn-group">
-            <button class="play-btn" id="playBtn">🎮 العب الآن</button>
+            <button class="play-btn" id="playBtn">🎮 معركة سريعة</button>
             <button class="wallet-btn" id="walletBtn">💰 المحفظة</button>
         </div>
         <div class="user-card">
-            <div>👤 <span id="username">اللاعب</span></div>
-            <div>💰 <span id="balance">0</span> $</div>
-            <div>🏆 <span id="gamesPlayed">0</span> مباراة</div>
-            <div>⚔️ <span id="wins">0</span> فوز</div>
+            <div>👤 <span id="gameUsername">---</span></div>
+            <div>💰 <span id="gameBalance">0</span> عملة</div>
+            <div>🎮 لعب: <span id="gamesPlayed">0</span></div>
+            <div>🏆 فوز: <span id="wins">0</span></div>
         </div>
-        <button class="admin-btn" id="adminBtn">⚙️ لوحة التحكم</button>
+        <button class="admin-btn" id="adminBtn">🛡️ لوحة التحكم</button>
     </div>
-
     <div class="lobby" id="lobby">
         <div class="lobby-container">
-            <h2>🏆 لوبي المعركة</h2>
+            <h2>⚔️ غرفة المعركة ⚔️</h2>
             <div class="seats-grid" id="seatsGrid"></div>
-            <button class="create-room-btn" id="createRoomBtn">➕ إنشاء غرفة جديدة</button>
-            <div class="lobby-status" id="lobbyStatus"></div>
-            <button class="back-lobby-btn" id="backFromLobbyBtn">🏠 العودة للرئيسية</button>
+            <button class="create-room-btn" id="createRoomBtn">إنشاء غرفة</button>
+            <button class="back-lobby-btn" id="backFromLobbyBtn">🔙 رجوع</button>
+            <div class="lobby-status" id="lobbyStatus">انتظر إنشاء الغرفة...</div>
         </div>
     </div>
-
     <div class="hud" id="hud">
-        <div class="status-bar">
-            <div>🎮 <span id="gameUsername">اللاعب</span></div>
-            <div>💰 <span id="gameBalance">0</span> $</div>
-            <div>❤️ <span id="health">100</span>%</div>
-        </div>
-        <div class="team-info">
-            <div style="color:#ff8888;">🔴 الأحمر: <span id="team1">0</span></div>
-            <div style="color:#88aaff;">🔵 الأزرق: <span id="team2">0</span></div>
-        </div>
-        <div class="cooldown-side" id="cooldownText">✅ جاهز</div>
+        <div class="status-bar">❤️ الصحة: <span id="health">100</span>%</div>
+        <div class="team-info">🟫 الفريق البني: <span id="team1">0</span> | 🔵 الفريق الأزرق: <span id="team2">0</span></div>
+        <div class="cooldown-side" id="cooldownText">🔫 جاهز</div>
         <div class="crosshair"></div>
         <div class="controls">
             <div class="joystick-base" id="joystickBase"><div class="joystick-handle" id="joystickHandle"></div></div>
             <div class="fire-btn" id="fireBtn">💥</div>
         </div>
-        <div class="fullscreen-btn" id="fullscreenBtn">🗔 ملء الشاشة</div>
     </div>
-
-    <canvas id="canvas"></canvas>
-
     <div class="report-screen" id="reportScreen">
         <div class="report-container">
-            <h2>📊 تقرير المعركة</h2>
+            <h2>🏁 نهاية المعركة 🏁</h2>
             <p id="reportText"></p>
-            <button class="back-home-btn" id="backHomeBtn">🏠 العودة للرئيسية</button>
+            <button class="back-home-btn" id="backHomeBtn">العودة للرئيسية</button>
         </div>
     </div>
-
     <div class="admin-panel" id="adminPanel">
         <div class="admin-container">
-            <h3>⚙️ لوحة التحكم</h3>
-            
-            <div class="admin-stats-box" id="adminStats">جاري التحميل...</div>
-            
-            <label>سعر المقعد ($):</label>
-            <input type="number" id="seatPrice" value="1" min="1" max="1000">
-            <button id="saveSeatPriceBtn">💾 حفظ سعر المقعد</button>
-            
-            <label>عدد اللاعبين في الجولة (2-16):</label>
-            <input type="number" id="maxPlayers" value="2" min="2" max="16">
-            <button id="saveMaxPlayersBtn">💾 حفظ عدد اللاعبين</button>
-            
-            <hr style="margin: 15px 0; border-color: #d4af37;">
-            
-            <label>تعديل رصيد لاعب:</label>
-            <input type="email" id="targetEmail" placeholder="البريد الإلكتروني">
+            <h3>🛠️ لوحة التحكم</h3>
+            <input type="number" id="seatPrice" placeholder="سعر المقعد">
+            <button id="saveSeatPriceBtn">حفظ سعر المقعد</button>
+            <input type="number" id="maxPlayers" placeholder="الحد الأقصى للاعبين">
+            <button id="saveMaxPlayersBtn">حفظ الحد الأقصى</button>
+            <hr>
+            <input type="email" id="targetEmail" placeholder="بريد المستخدم">
             <input type="number" id="amount" placeholder="المبلغ">
-            <button id="adminDepositBtn">➕ إيداع</button>
-            <button id="adminWithdrawBtn" class="danger-btn">➖ سحب</button>
-            
-            <hr style="margin: 15px 0; border-color: #d4af37;">
-            
-            <button id="resetDataBtn" class="danger-btn" style="background:#c0392b;">🗑️ مسح جميع بيانات اللاعبين</button>
+            <button id="adminDepositBtn">💰 إيداع</button>
+            <button id="adminWithdrawBtn">💸 سحب</button>
+            <button id="resetDataBtn" class="danger-btn">⚠️ إعادة ضبط البيانات</button>
             <button id="refreshStatsBtn">🔄 تحديث الإحصائيات</button>
             <button id="closeAdminBtn">❌ إغلاق</button>
         </div>
     </div>
-
-    <div class="loading" id="loading">⏳ جاري التحميل...</div>
-
     <script type="importmap">
         {
             "imports": {
-                "three": "https://unpkg.com/three@0.128.0/build/three.module.js"
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "socket.io-client": "https://cdn.socket.io/4.6.0/socket.io.esm.min.js"
             }
         }
     </script>
-
     <script type="module">
         import * as THREE from 'three';
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js';
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js';
-
+        import io from 'socket.io-client';
+        
+        // Firebase Config (محاكاة)
         const firebaseConfig = {
-            apiKey: "AIzaSyCvPo4HlsNhyf1WBmTzIr6CdR1c2lQ5sHU",
-            authDomain: "boomb-fa3e7.firebaseapp.com",
-            databaseURL: "https://boomb-fa3e7-default-rtdb.firebaseio.com",
-            projectId: "boomb-fa3e7",
-            storageBucket: "boomb-fa3e7.firebasestorage.app",
-            messagingSenderId: "499624996530",
-            appId: "1:499624996530:web:235f71e450845c748523ab"
+            apiKey: "AIzaSyDummyKeyForTanksGame",
+            authDomain: "tanks-game.firebaseapp.com",
+            projectId: "tanks-game",
+            storageBucket: "tanks-game.firebasestorage.app",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:abcd1234"
         };
         
-        const firebaseApp = initializeApp(firebaseConfig);
-        const auth = getAuth(firebaseApp);
-        
         const SERVER_URL = "https://tank-yf0p.onrender.com";
-        import io from 'https://cdn.socket.io/4.6.0/socket.io.esm.min.js';
-        const socket = io(SERVER_URL);
+        const socket = io(SERVER_URL, { transports: ['websocket'] });
         
         let currentUser = null;
         let currentBalance = 0;
         let isAdmin = false;
         let gameSettings = { seatPrice: 1, maxPlayers: 2 };
-        let isFullscreen = false;
         
         class AudioEngine {
             constructor() { this.ctx = null; this.engineOsc = null; this.engineGain = null; }
-            init() { if (this.ctx) return; this.ctx = new (window.AudioContext || window.webkitAudioContext)(); this.engineOsc = this.ctx.createOscillator(); this.engineGain = this.ctx.createGain(); this.engineOsc.type = 'sawtooth'; this.engineOsc.frequency.setValueAtTime(42, this.ctx.currentTime); this.engineGain.gain.setValueAtTime(0.08, this.ctx.currentTime); this.engineOsc.connect(this.engineGain); this.engineGain.connect(this.ctx.destination); this.engineOsc.start(); }
+            init() { if (this.ctx) return; try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){} }
+            startEngine() { if (!this.ctx) this.init(); if (this.engineOsc) return; try { this.engineOsc = this.ctx.createOscillator(); this.engineGain = this.ctx.createGain(); const filter = this.ctx.createBiquadFilter(); this.engineOsc.type = 'sawtooth'; this.engineOsc.frequency.value = 42; filter.type = 'lowpass'; filter.frequency.value = 180; this.engineGain.gain.value = 0.08; this.engineOsc.connect(filter); filter.connect(this.engineGain); this.engineGain.connect(this.ctx.destination); this.engineOsc.start(); } catch(e){} }
             updateEngine(speed) { if (!this.engineOsc) return; const freq = 42 + speed * 40; this.engineOsc.frequency.setTargetAtTime(freq, this.ctx.currentTime, 0.05); this.engineGain.gain.setTargetAtTime(0.08 + speed * 0.1, this.ctx.currentTime, 0.05); }
             fire() { if (!this.ctx) return; const now = this.ctx.currentTime; const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain(); osc.type = 'square'; osc.frequency.setValueAtTime(170, now); osc.frequency.exponentialRampToValueAtTime(55, now + 0.28); gain.gain.setValueAtTime(0.7, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.32); osc.connect(gain); gain.connect(this.ctx.destination); osc.start(now); osc.stop(now + 0.32); }
             explosion(distance) { if (!this.ctx) return; const vol = Math.max(0.2, Math.min(0.9, 1 - distance / 60)); const now = this.ctx.currentTime; const noise = this.ctx.createBufferSource(); const buffer = this.ctx.createBuffer(1, this.ctx.sampleRate * 1.0, this.ctx.sampleRate); const data = buffer.getChannelData(0); for (let i = 0; i < buffer.length; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / buffer.length, 1.3); noise.buffer = buffer; const gain = this.ctx.createGain(); gain.gain.setValueAtTime(vol, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 1.0); noise.connect(gain); gain.connect(this.ctx.destination); noise.start(now); }
         }
-
+        
         class GameSimulation {
-            constructor() { 
-                this.scene = null; this.camera = null; this.renderer = null; 
-                this.tanks = new Map(); this.bullets = []; this.playerTank = null; 
-                this.joystick = { x: 0, y: 0 }; this.cameraShake = 0; this.lastShot = 0; 
-                this.obstacles = []; this.particles = []; this.team1Count = 0; this.team2Count = 0;
-                this.playerTeam = null; this.otherPlayers = new Map();
-                this.gameActive = false;
-                this.isEliminated = false;
-                this.lastMoveTime = 0;
-                this.playerId = null;
-            }
-
-            init() { 
-                this.scene = new THREE.Scene(); 
-                this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 500); 
+            constructor() { this.scene = null; this.camera = null; this.renderer = null; this.tanks = new Map(); this.bullets = []; this.playerTank = null; this.joystick = {x:0,y:0}; this.cameraShake = 0; this.obstacles = []; this.particles = []; this.team1Count = 0; this.team2Count = 0; this.playerTeam = null; this.otherPlayers = new Map(); this.gameActive = false; this.isEliminated = false; this.lastMoveTime = 0; this.playerId = null; this.targetPositions = new Map(); }
+            
+            init() {
+                this.scene = new THREE.Scene();
+                this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 500);
                 this.renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
-                this.renderer.setSize(window.innerWidth, window.innerHeight); 
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
                 this.renderer.setPixelRatio(window.devicePixelRatio);
-                this.renderer.shadowMap.enabled = true; 
-                this.scene.background = new THREE.Color(0x1a2a3a); 
+                this.renderer.shadowMap.enabled = true;
+                this.scene.background = new THREE.Color(0x1a2a3a);
                 this.scene.fog = new THREE.FogExp2(0x1a2a3a, 0.0018);
-                
-                const ambient = new THREE.AmbientLight(0xffffff, 0.6); 
-                this.scene.add(ambient); 
-                const sun = new THREE.DirectionalLight(0xffeedd, 1.4); 
-                sun.position.set(50, 70, 40); 
-                sun.castShadow = true; 
-                sun.shadow.mapSize.set(1024, 1024); 
-                this.scene.add(sun); 
-                
-                this.createTerrain(); 
-                this.createObstacles(); 
-                
+                const ambient = new THREE.AmbientLight(0xffff, 0.6);
+                this.scene.add(ambient);
+                const sun = new THREE.DirectionalLight(0xffeedd, 1.4);
+                sun.position.set(50, 70, 40);
+                sun.castShadow = true;
+                sun.shadow.mapSize.set(1024, 1024);
+                this.scene.add(sun);
+                this.createTerrain();
+                this.createObstacles();
                 window.addEventListener('resize', () => this.onWindowResize());
                 this.animate();
             }
             
-            onWindowResize() {
-                if (this.camera && this.renderer) {
-                    this.camera.aspect = window.innerWidth / window.innerHeight;
-                    this.camera.updateProjectionMatrix();
-                    this.renderer.setSize(window.innerWidth, window.innerHeight);
-                }
-            }
+            onWindowResize() { if (this.camera && this.renderer) { this.camera.aspect = window.innerWidth / window.innerHeight; this.camera.updateProjectionMatrix(); this.renderer.setSize(window.innerWidth, window.innerHeight); } }
             
-            createTerrain() { 
-                const geo = new THREE.PlaneGeometry(450, 450, 60, 60); 
-                geo.rotateX(-Math.PI / 2); 
-                const groundMat = new THREE.MeshStandardMaterial({ color: 0x6a5a4a, roughness: 0.9, metalness: 0.05 }); 
-                const ground = new THREE.Mesh(geo, groundMat); 
-                ground.receiveShadow = true; 
-                this.scene.add(ground); 
+            createTerrain() {
+                const geo = new THREE.PlaneGeometry(450, 450, 60, 60);
+                geo.rotateX(-Math.PI / 2);
+                const groundMat = new THREE.MeshStandardMaterial({ color: 0x6a5a4a, roughness: 0.9, metalness: 0.05 });
+                const ground = new THREE.Mesh(geo, groundMat);
+                ground.receiveShadow = true;
+                this.scene.add(ground);
                 const gridHelper = new THREE.GridHelper(460, 50, 0x8a8a7a, 0x5a5a4a);
                 gridHelper.position.y = 0.03;
                 this.scene.add(gridHelper);
@@ -813,12 +698,7 @@
             
             createObstacles() {
                 const rockMat = new THREE.MeshStandardMaterial({ color: 0x6a6a5a, roughness: 0.75 });
-                const positions = [
-                    { x: -45, z: -20 }, { x: -30, z: 40 }, { x: -10, z: -55 }, { x: 15, z: -35 },
-                    { x: 40, z: -15 }, { x: 55, z: 25 }, { x: 35, z: 55 }, { x: -25, z: -45 },
-                    { x: -55, z: 15 }, { x: 5, z: 60 }, { x: 70, z: -25 }, { x: -60, z: -40 },
-                    { x: -40, z: 65 }, { x: 25, z: -65 }, { x: 50, z: 45 }
-                ];
+                const positions = [{x:-45,z:-20},{x:-30,z:40},{x:-10,z:-55},{x:15,z:-35},{x:40,z:-15},{x:55,z:25},{x:35,z:55},{x:-25,z:-45},{x:-55,z:15},{x:5,z:60},{x:70,z:-25},{x:-60,z:-40},{x:-40,z:65},{x:25,z:-65},{x:50,z:45}];
                 positions.forEach(pos => {
                     const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(1.2), rockMat);
                     rock.scale.set(1.8, 1.5, 1.8);
@@ -829,589 +709,129 @@
                 });
             }
             
-            createTank(color, x, z, team, playerId = null) { 
-                const group = new THREE.Group(); 
-                const bodyMat = new THREE.MeshStandardMaterial({ color: color, metalness: 0.7, roughness: 0.4 }); 
-                const body = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.9, 3.6), bodyMat); 
-                body.position.y = 0.5; 
-                body.castShadow = true; 
-                group.add(body); 
-                
-                const turretMat = new THREE.MeshStandardMaterial({ color: color, metalness: 0.8 }); 
-                const turret = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 0.7, 32), turretMat); 
-                turret.position.y = 0.95; 
-                turret.castShadow = true; 
-                group.add(turret); 
-                
+            createTank(color, x, z, team, playerId = null) {
+                const group = new THREE.Group();
+                const bodyMat = new THREE.MeshStandardMaterial({ color: color, metalness: 0.7, roughness: 0.4 });
+                const body = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.9, 3.6), bodyMat);
+                body.position.y = 0.5;
+                body.castShadow = true;
+                group.add(body);
+                const turretMat = new THREE.MeshStandardMaterial({ color: color, metalness: 0.8 });
+                const turret = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 0.7, 32), turretMat);
+                turret.position.y = 0.95;
+                turret.castShadow = true;
+                group.add(turret);
                 const barrelMat = new THREE.MeshStandardMaterial({ color: 0x3a3a3a });
-                const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.32, 2.2, 16), barrelMat); 
-                barrel.position.set(0, 1.05, 1.5); 
-                barrel.rotation.x = 0.05; 
-                group.add(barrel); 
-                
-                group.position.set(x, 0, z); 
-                group.userData = { 
-                    health: 100, 
-                    team: team, 
-                    playerId: playerId,
-                    targetPosition: new THREE.Vector3(x, 0, z),
-                    targetRotation: 0
-                }; 
-                this.scene.add(group); 
-                return group; 
-            }
-            
-            fire(tank) { 
-                if (this.isEliminated || !this.gameActive) return false;
-                
-                const now = Date.now(); 
-                if(now - this.lastShot < 3000) return false; 
-                this.lastShot = now; 
-                const dir = new THREE.Vector3(0, 0, 1).applyQuaternion(tank.quaternion); 
-                const bullet = new THREE.Mesh(new THREE.SphereGeometry(0.26, 24, 24), new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4422, emissiveIntensity: 0.6 })); 
-                bullet.position.copy(tank.position); 
-                bullet.position.y += 1.2; 
-                bullet.userData = { velocity: dir.multiplyScalar(2.6), owner: tank, life: 200, ownerId: tank.userData.playerId || 'player' }; 
-                this.scene.add(bullet); 
-                this.bullets.push(bullet); 
-                if(tank === this.playerTank) gameApp.audio.fire(); 
-                
-                socket.emit('shoot', { position: bullet.position, direction: dir });
-                return true; 
-            }
-            
-            createExplosion(pos, size = 1.2) {
-                const explosionGroup = new THREE.Group();
-                const flash = new THREE.Mesh(new THREE.SphereGeometry(size * 0.6, 16, 16), new THREE.MeshStandardMaterial({ color: 0xffaa66, emissive: 0xff4422, emissiveIntensity: 1.2 }));
-                explosionGroup.add(flash);
-                explosionGroup.position.copy(pos);
-                this.scene.add(explosionGroup);
-                
-                for(let i = 0; i < 45; i++) { 
-                    const particle = new THREE.Mesh(new THREE.SphereGeometry(0.12, 6, 6), new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4422 })); 
-                    particle.position.copy(pos); 
-                    particle.userData = { 
-                        vel: new THREE.Vector3((Math.random() - 0.5) * 1.2, Math.random() * 1.5 + 0.5, (Math.random() - 0.5) * 1.2), 
-                        life: 1, gravity: 0.03 
-                    }; 
-                    this.scene.add(particle); 
-                    this.particles.push(particle); 
-                }
-                
-                for(let i = 0; i < 12; i++) {
-                    const smoke = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), new THREE.MeshStandardMaterial({ color: 0x886666, emissive: 0x442222 }));
-                    smoke.position.copy(pos);
-                    smoke.userData = { vel: new THREE.Vector3((Math.random() - 0.5) * 0.4, Math.random() * 0.8, (Math.random() - 0.5) * 0.4), life: 1.2 };
-                    this.scene.add(smoke);
-                    this.particles.push(smoke);
-                }
-                
-                setTimeout(() => this.scene.remove(explosionGroup), 200);
-                const dist = this.playerTank ? pos.distanceTo(this.playerTank.position) : 0;
-                gameApp.audio.explosion(dist);
-                if(dist < 35) this.cameraShake = 1.2;
-            }
-            
-            updateParticles() {
-                for(let i = this.particles.length-1; i >= 0; i--) {
-                    const p = this.particles[i];
-                    p.userData.life -= 0.025;
-                    if(p.userData.life <= 0) {
-                        this.scene.remove(p);
-                        this.particles.splice(i,1);
-                    } else {
-                        p.position.x += p.userData.vel.x;
-                        p.position.z += p.userData.vel.z;
-                        p.position.y += p.userData.vel.y;
-                        if(p.userData.gravity) p.userData.vel.y -= p.userData.gravity;
-                        p.material.emissiveIntensity = p.userData.life * 1.5;
-                        p.scale.setScalar(p.userData.life * 1.5);
-                    }
-                }
-            }
-            
-            update() { 
-                if (!this.gameActive || this.isEliminated) return;
-                this.updateParticles();
-                
-                // تنعيم حركة اللاعبين الآخرين
-                for (let [id, tank] of this.otherPlayers) {
-                    if (tank.userData.targetPosition) {
-                        tank.position.lerp(tank.userData.targetPosition, 0.15);
-                    }
-                    if (tank.userData.targetRotation !== undefined) {
-                        // تنعيم الدوران باستخدام lerpAngle أو منطق مشابه
-                        let diff = tank.userData.targetRotation - tank.rotation.y;
-                        while (diff < -Math.PI) diff += Math.PI * 2;
-                        while (diff > Math.PI) diff -= Math.PI * 2;
-                        tank.rotation.y += diff * 0.15;
-                    }
-                }
-
-                if(this.playerTank) { 
-                    const speed = -this.joystick.y * 0.22;
-                    const rot = -this.joystick.x * 0.045; 
-                    const oldX = this.playerTank.position.x, oldZ = this.playerTank.position.z; 
-                    this.playerTank.rotation.y += rot; 
-                    this.playerTank.translateZ(speed); 
-                    
-                    if(this.checkCollision(this.playerTank)) { 
-                        this.playerTank.position.set(oldX, 0, oldZ); 
-                    } 
-                    
-                    gameApp.audio.updateEngine(Math.abs(speed) * 3.5); 
-                    
-                    const now = Date.now();
-                    if (now - this.lastMoveTime > 50) {
-                        this.lastMoveTime = now;
-                        socket.emit('move', { position: this.playerTank.position, rotation: this.playerTank.rotation.y });
-                    }
-                    
-                    const camOffset = new THREE.Vector3(0, 5.5, -12).applyQuaternion(this.playerTank.quaternion); 
-                    let camTarget = this.playerTank.position.clone().add(camOffset); 
-                    if(this.cameraShake > 0) { 
-                        camTarget.x += (Math.random() - 0.5) * this.cameraShake * 0.5; 
-                        camTarget.y += (Math.random() - 0.5) * this.cameraShake * 0.3; 
-                        this.cameraShake *= 0.92; 
-                    } 
-                    this.camera.position.lerp(camTarget, 0.12); 
-                    this.camera.lookAt(this.playerTank.position.clone().add(new THREE.Vector3(0, 1.2, 0))); 
-                } 
-                
-                for(let i = this.bullets.length-1; i >= 0; i--) { 
-                    const b = this.bullets[i]; 
-                    b.position.add(b.userData.velocity); 
-                    b.userData.life--; 
-                    let hit = false; 
-                    
-                    for(let obs of this.obstacles) { 
-                        if(new THREE.Box3().setFromObject(b).intersectsBox(new THREE.Box3().setFromObject(obs))) { 
-                            hit = true; 
-                            this.createExplosion(b.position); 
-                            this.scene.remove(b); 
-                            this.bullets.splice(i,1); 
-                            break; 
-                        } 
-                    } 
-                    
-                    if(!hit) { 
-                        for(let [id, tank] of this.tanks) {
-                            const isOwner = (b.userData.owner === tank);
-                            const isSameTeam = tank.userData.team === b.userData.owner?.userData?.team;
-                            
-                            if (!isOwner && !isSameTeam && b.position.distanceTo(tank.position) < 1.9) { 
-                                hit = true; 
-                                this.createExplosion(b.position, 1.5); 
-                                this.scene.remove(b); 
-                                this.bullets.splice(i,1);
-                                
-                                if(b.userData.owner === this.playerTank) {
-                                    socket.emit('damage', { 
-                                        damage: 100, 
-                                        killerId: this.playerId,
-                                        targetId: id 
-                                    });
-                                }
-                                break; 
-                            } 
-                        } 
-                    } 
-                    
-                    if(!hit && (b.userData.life < 0 || Math.abs(b.position.x) > 430 || Math.abs(b.position.z) > 430)) { 
-                        this.scene.remove(b); 
-                        this.bullets.splice(i,1); 
-                    } 
-                } 
-            }
-            
-            checkCollision(tank) { 
-                const box = new THREE.Box3().setFromObject(tank); 
-                for(let obs of this.obstacles) if(box.intersectsBox(new THREE.Box3().setFromObject(obs))) return true; 
-                return false; 
-            }
-            
-            updateCounts() { 
-                this.team1Count = 0; this.team2Count = 0; 
-                for(let tank of this.tanks.values()) {
-                    if(tank.userData.team === 1) this.team1Count++; 
-                    else if(tank.userData.team === 2) this.team2Count++;
-                }
-                const team1El = document.getElementById('team1');
-                const team2El = document.getElementById('team2');
-                if (team1El) team1El.innerText = this.team1Count;
-                if (team2El) team2El.innerText = this.team2Count;
+                const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.32, 2.2, 16), barrelMat);
+                barrel.position.set(0, 1.05, 1.5);
+                barrel.rotation.x = 0.05;
+                group.add(barrel);
+                group.position.set(x, 0, z);
+                group.userData = { health: 100, team: team, playerId: playerId };
+                this.scene.add(group);
+                return group;
             }
             
             updateOtherPlayer(data) {
-                if (!this.gameActive || this.isEliminated) return;
+                if (!this.gameActive && !this.isEliminated) return;
                 let tank = this.otherPlayers.get(data.userId);
-                if(!tank && data.userId !== this.playerId) {
+                if (tank && data.userId !== this.playerId) {
+                    if (data.position) {
+                        const targetPos = new THREE.Vector3(data.position.x, 0, data.position.z);
+                        this.targetPositions.set(data.userId, { position: targetPos, rotation: data.rotation || 0 });
+                        tank.userData.targetPos = targetPos;
+                        tank.userData.targetRot = data.rotation || 0;
+                    }
+                } else if (data.userId !== this.playerId && data.team) {
                     const color = data.team === 1 ? 0x8b5a2b : 0x4a6a8b;
-                    const pos = data.position || { x: 0, z: 0 };
+                    const pos = data.position || {x:0,z:0};
                     tank = this.createTank(color, pos.x, pos.z, data.team, data.userId);
                     this.otherPlayers.set(data.userId, tank);
                     this.tanks.set(data.userId, tank);
                 }
-                if(tank && data.position) {
-                    // بدلاً من التحديث المباشر، نقوم بتحديث الأهداف للتنعيم
-                    tank.userData.targetPosition.set(data.position.x, 0, data.position.z);
-                    tank.userData.targetRotation = data.rotation || 0;
+            }
+            
+            updateSmoothMovements() {
+                for (let [id, tank] of this.otherPlayers) {
+                    const target = this.targetPositions.get(id);
+                    if (target && tank) {
+                        tank.position.lerp(target.position, 0.25);
+                        tank.rotation.y += (target.rotation - tank.rotation.y) * 0.2;
+                    }
                 }
             }
             
-            removeTank(userId) {
-                const tank = this.tanks.get(userId);
-                if (tank) {
-                    this.createExplosion(tank.position, 2.0);
-                    this.scene.remove(tank);
-                    this.tanks.delete(userId);
-                    this.otherPlayers.delete(userId);
-                    this.updateCounts();
-                }
-            }
+            fire(tank) { if (this.isEliminated || !this.gameActive) return false; const now = Date.now(); if(now - this.lastShot < 3000) return false; this.lastShot = now; const dir = new THREE.Vector3(0, 0, 1).applyQuaternion(tank.quaternion); const bullet = new THREE.Mesh(new THREE.SphereGeometry(0.26, 24, 24), new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4422, emissiveIntensity: 0.6 })); bullet.position.copy(tank.position); bullet.position.y += 1.2; bullet.userData = { velocity: dir.multiplyScalar(2.6), owner: tank, life: 200, ownerId: tank.userData.playerId || 'player' }; this.scene.add(bullet); this.bullets.push(bullet); if(tank === this.playerTank) gameApp.audio.fire(); socket.emit('shoot', { position: bullet.position, direction: dir }); return true; }
             
-            animate() { 
-                requestAnimationFrame(() => this.animate()); 
-                this.update(); 
-                if(this.renderer && this.scene && this.camera) {
-                    this.renderer.render(this.scene, this.camera);
-                }
-            }
+            createExplosion(pos, size = 1.2) { const explosionGroup = new THREE.Group(); const flash = new THREE.Mesh(new THREE.SphereGeometry(size * 0.6, 16, 16), new THREE.MeshStandardMaterial({ color: 0xffaa66, emissive: 0xff4422, emissiveIntensity: 1.2 })); explosionGroup.add(flash); explosionGroup.position.copy(pos); this.scene.add(explosionGroup); for(let i = 0; i < 45; i++) { const particle = new THREE.Mesh(new THREE.SphereGeometry(0.12, 6, 6), new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4422 })); particle.position.copy(pos); particle.userData = { vel: new THREE.Vector3((Math.random() - 0.5) * 1.2, Math.random() * 1.5 + 0.5, (Math.random() - 0.5) * 1.2), life: 1, gravity: 0.03 }; this.scene.add(particle); this.particles.push(particle); } setTimeout(() => this.scene.remove(explosionGroup), 200); const dist = this.playerTank ? pos.distanceTo(this.playerTank.position) : 0; gameApp.audio.explosion(dist); if(dist < 35) this.cameraShake = 1.2; }
+            
+            updateParticles() { for(let i = this.particles.length-1; i >= 0; i--) { const p = this.particles[i]; p.userData.life -= 0.025; if(p.userData.life <= 0) { this.scene.remove(p); this.particles.splice(i,1); } else { p.position.x += p.userData.vel.x; p.position.z += p.userData.vel.z; p.position.y += p.userData.vel.y; if(p.userData.gravity) p.userData.vel.y -= p.userData.gravity; p.material.emissiveIntensity = p.userData.life * 1.5; p.scale.setScalar(p.userData.life * 1.5); } } }
+            
+            update() { if (!this.gameActive || this.isEliminated) { this.updateParticles(); return; } this.updateSmoothMovements(); if(this.playerTank) { const speed = -this.joystick.y * 0.22; const rot = -this.joystick.x * 0.045; const oldX = this.playerTank.position.x, oldZ = this.playerTank.position.z; this.playerTank.rotation.y += rot; this.playerTank.translateZ(speed); if(this.checkCollision(this.playerTank)) this.playerTank.position.set(oldX, 0, oldZ); gameApp.audio.updateEngine(Math.abs(speed) * 3.5); const now = Date.now(); if (now - this.lastMoveTime > 50) { this.lastMoveTime = now; socket.emit('move', { position: this.playerTank.position, rotation: this.playerTank.rotation.y }); } const camOffset = new THREE.Vector3(0, 5.5, -12).applyQuaternion(this.playerTank.quaternion); let camTarget = this.playerTank.position.clone().add(camOffset); if(this.cameraShake > 0) { camTarget.x += (Math.random() - 0.5) * this.cameraShake * 0.5; camTarget.y += (Math.random() - 0.5) * this.cameraShake * 0.3; this.cameraShake *= 0.92; } this.camera.position.lerp(camTarget, 0.12); this.camera.lookAt(this.playerTank.position.clone().add(new THREE.Vector3(0, 1.2, 0))); } this.updateParticles(); for(let i = this.bullets.length-1; i >= 0; i--) { const b = this.bullets[i]; b.position.add(b.userData.velocity); b.userData.life--; let hit = false; for(let obs of this.obstacles) if(new THREE.Box3().setFromObject(b).intersectsBox(new THREE.Box3().setFromObject(obs))) { hit = true; this.createExplosion(b.position); this.scene.remove(b); this.bullets.splice(i,1); break; } if(!hit) { for(let [id, tank] of this.tanks) { const isOwner = (b.userData.owner === tank); const isSameTeam = tank.userData.team === b.userData.owner?.userData?.team; if (!isOwner && !isSameTeam && b.position.distanceTo(tank.position) < 1.9) { hit = true; this.createExplosion(b.position, 1.5); this.scene.remove(b); this.bullets.splice(i,1); if(b.userData.owner === this.playerTank) socket.emit('damage', { damage: 100, killerId: this.playerId, targetId: id }); break; } } } if(!hit && (b.userData.life < 0 || Math.abs(b.position.x) > 430 || Math.abs(b.position.z) > 430)) { this.scene.remove(b); this.bullets.splice(i,1); } } }
+            
+            checkCollision(tank) { const box = new THREE.Box3().setFromObject(tank); for(let obs of this.obstacles) if(box.intersectsBox(new THREE.Box3().setFromObject(obs))) return true; return false; }
+            updateCounts() { this.team1Count = 0; this.team2Count = 0; for(let tank of this.tanks.values()) if(tank.userData.team === 1) this.team1Count++; else if(tank.userData.team === 2) this.team2Count++; const team1El = document.getElementById('team1'); const team2El = document.getElementById('team2'); if (team1El) team1El.innerText = this.team1Count; if (team2El) team2El.innerText = this.team2Count; }
+            removeTank(userId) { const tank = this.tanks.get(userId); if (tank) { this.createExplosion(tank.position, 2.0); this.scene.remove(tank); this.tanks.delete(userId); this.otherPlayers.delete(userId); this.updateCounts(); } }
+            animate() { requestAnimationFrame(() => this.animate()); this.update(); if(this.renderer && this.scene && this.camera) this.renderer.render(this.scene, this.camera); }
         }
-
-        const gameApp = {
-            audio: new AudioEngine(), 
-            sim: new GameSimulation(), 
-            battleResult: null,
-            pendingGameStart: null,
-            
-            initSocket() {
-                socket.on('connect', () => console.log('✅ Connected to server'));
-                
-                socket.on('auth_success', (data) => {
-                    document.getElementById('loading').style.display = 'none';
-                    currentUser = { uid: data.userId, email: data.email, username: data.username, balance: data.balance, isAdmin: data.isAdmin };
-                    currentBalance = data.balance;
-                    isAdmin = data.isAdmin;
-                    this.sim.playerId = data.userId;
-                    
-                    localStorage.setItem('adminToken', 'authenticated');
-                    localStorage.setItem('userEmail', data.email);
-                    localStorage.setItem('isAdmin', data.isAdmin);
-                    document.getElementById('balance').innerText = currentBalance;
-                    document.getElementById('gameBalance').innerText = currentBalance;
-                    document.getElementById('username').innerText = data.username || data.email.split('@')[0];
-                    document.getElementById('gameUsername').innerText = data.username || data.email.split('@')[0];
-                    document.getElementById('gamesPlayed').innerText = data.gamesPlayed || 0;
-                    document.getElementById('wins').innerText = data.wins || 0;
-                    if(isAdmin) document.getElementById('adminBtn').style.display = 'block';
-                    this.showMainScreen();
-                });
-                
-                socket.on('auth_error', (data) => {
-                    document.getElementById('loading').style.display = 'none';
-                    alert('خطأ في المصادقة: ' + data.message);
-                });
-                
-                socket.on('lobby_joined', (data) => {
-                    currentBalance = data.balance;
-                    document.getElementById('balance').innerText = currentBalance;
-                    document.getElementById('gameBalance').innerText = currentBalance;
-                    if(data.settings) {
-                        gameSettings = data.settings;
-                        document.getElementById('seatPrice').value = data.settings.seatPrice;
-                        document.getElementById('maxPlayers').value = data.settings.maxPlayers;
-                    }
-                });
-                
-                socket.on('rooms_list', (data) => {
-                    this.displayRooms(data.rooms);
-                });
-                
-                socket.on('room_created', (data) => {
-                    document.getElementById('lobbyStatus').innerHTML = '✅ تم إنشاء الغرفة، جاري انتظار لاعبين...';
-                });
-                
-                socket.on('room_update', (data) => {
-                    this.updateSeatsDisplay(data.players, data.maxSeats);
-                    if(data.players.length === data.maxSeats) {
-                        document.getElementById('lobbyStatus').innerHTML = '🚀 اكتملت المقاعد! جاري بدء المعركة...';
-                    }
-                });
-                
-                socket.on('game_start', (data) => {
-                    if(window.innerHeight > window.innerWidth) {
-                        const warning = document.getElementById('landscapeWarning');
-                        warning.style.display = 'flex';
-                        this.pendingGameStart = data;
-                        const checkInterval = setInterval(() => {
-                            if(window.innerWidth > window.innerHeight) {
-                                clearInterval(checkInterval);
-                                warning.style.display = 'none';
-                                this._startGame(this.pendingGameStart);
-                                this.pendingGameStart = null;
-                            }
-                        }, 200);
-                    } else {
-                        this._startGame(data);
-                    }
-                });
-                
-                socket.on('game_ended', (data) => {
-                    this.endBattle(data.winner || (data.yourTeam === 1 ? 'الفريق الأزرق' : 'الفريق الأحمر'));
-                    if(data.reward) {
-                        currentBalance = data.yourBalance;
-                        document.getElementById('balance').innerText = currentBalance;
-                    }
-                });
-                
-                socket.on('player_moved', (data) => {
-                    if(this.sim && this.sim.gameActive) this.sim.updateOtherPlayer(data);
-                });
-                
-                socket.on('player_shot', (data) => {
-                    console.log('Player shot:', data.userId);
-                });
-                
-                socket.on('game_state_update', (data) => {
-                    if(this.sim && this.sim.gameActive && data.players) {
-                        data.players.forEach(player => {
-                            if(player.userId !== currentUser?.uid) {
-                                this.sim.updateOtherPlayer(player);
-                            }
-                        });
-                    }
-                });
-                
-                socket.on('player_eliminated', (data) => {
-                    if (this.sim && this.sim.gameActive && data.userId !== currentUser?.uid) {
-                        this.sim.removeTank(data.userId);
-                    }
-                });
-                
-                socket.on('you_were_eliminated', (data) => {
-                    if (this.sim && this.sim.gameActive) {
-                        this.sim.isEliminated = true;
-                        this.sim.gameActive = false;
-                        
-                        if (this.sim.playerTank) {
-                            this.sim.createExplosion(this.sim.playerTank.position, 2.5);
-                            this.sim.scene.remove(this.sim.playerTank);
-                            this.sim.playerTank = null;
-                        }
-                        
-                        const eliminationMessage = document.createElement('div');
-                        eliminationMessage.className = 'elimination-message';
-                        eliminationMessage.innerHTML = '💀 لقد تم تدمير دبابتك! 💀';
-                        document.body.appendChild(eliminationMessage);
-                        
-                        document.getElementById('joystickBase').style.opacity = '0.3';
-                        document.getElementById('fireBtn').style.opacity = '0.3';
-                        document.getElementById('joystickBase').style.pointerEvents = 'none';
-                        document.getElementById('fireBtn').style.pointerEvents = 'none';
-                        
-                        setTimeout(() => {
-                            if (eliminationMessage) eliminationMessage.remove();
-                            document.getElementById('joystickBase').style.opacity = '1';
-                            document.getElementById('fireBtn').style.opacity = '1';
-                            document.getElementById('joystickBase').style.pointerEvents = 'auto';
-                            document.getElementById('fireBtn').style.pointerEvents = 'auto';
-                            this.endBattle('لقد تم إقصاؤك من المعركة');
-                        }, 2500);
-                    }
-                });
-                
-                socket.on('players_list_update', (data) => {
-                    if (this.sim && this.sim.gameActive && data.players) {
-                        const existingTanks = new Set(this.sim.tanks.keys());
-                        const newPlayers = new Set(data.players.map(p => p.userId));
-                        
-                        for (const userId of existingTanks) {
-                            if (!newPlayers.has(userId) && userId !== currentUser?.uid) {
-                                this.sim.removeTank(userId);
-                            }
-                        }
-                        this.sim.updateCounts();
-                    }
-                });
-                
-                socket.on('health_update', (data) => {
-                    if (data.userId === currentUser?.uid) {
-                        document.getElementById('health').innerText = data.health;
-                    }
-                });
-                
-                socket.on('error', (data) => {
-                    alert(data.message);
-                });
-            },
-            
-            async login(email, password) {
-                if(!email || !password) return alert('الرجاء إدخال البريد وكلمة المرور');
-                document.getElementById('loading').style.display = 'flex';
-                try {
-                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                    const token = await userCredential.user.getIdToken();
-                    socket.emit('auth', { token });
-                } catch(error) {
-                    document.getElementById('loading').style.display = 'none';
-                    alert('خطأ في الدخول: ' + error.message);
-                }
-            },
-
-            async register(email, password) {
-                if(!email || !password) return alert('الرجاء إدخال البريد وكلمة المرور');
-                document.getElementById('loading').style.display = 'flex';
-                try {
-                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                    const token = await userCredential.user.getIdToken();
-                    socket.emit('auth', { token });
-                } catch(error) {
-                    document.getElementById('loading').style.display = 'none';
-                    alert('خطأ في التسجيل: ' + error.message);
-                }
-            },
-
-            showMainScreen() {
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('mainScreen').style.display = 'flex';
-                document.getElementById('lobby').style.display = 'none';
-                document.getElementById('hud').style.display = 'none';
-                document.getElementById('reportScreen').style.display = 'none';
-            },
-
-            showLobby() {
-                document.getElementById('mainScreen').style.display = 'none';
-                document.getElementById('lobby').style.display = 'flex';
-                socket.emit('join_lobby');
-            },
-
-            displayRooms(rooms) {
-                const grid = document.getElementById('seatsGrid');
-                grid.innerHTML = '';
-                if(rooms.length === 0) {
-                    grid.innerHTML = '<div style="grid-column: 1/3; color: #888; padding: 20px;">لا توجد غرف متاحة حالياً</div>';
-                    return;
-                }
-                rooms.forEach(room => {
-                    const div = document.createElement('div');
-                    div.className = 'seat';
-                    div.innerHTML = `غرفة #${room.id}<br>${room.players}/${room.maxSeats} لاعبين`;
-                    div.onclick = () => socket.emit('join_room', { roomId: room.id });
-                    grid.appendChild(div);
-                });
-            },
-
-            updateSeatsDisplay(players, maxSeats) {
-                const grid = document.getElementById('seatsGrid');
-                grid.innerHTML = '';
-                for(let i = 0; i < maxSeats; i++) {
-                    const div = document.createElement('div');
-                    div.className = 'seat' + (players[i] ? ' occupied' : '');
-                    div.innerHTML = players[i] ? `👤 ${players[i].substring(0, 6)}` : '🪑 مقعد فارغ';
-                    grid.appendChild(div);
-                }
-            },
-
-            _startGame(data) {
-                document.getElementById('lobby').style.display = 'none';
-                document.getElementById('hud').style.display = 'block';
-                this.audio.init();
-                this.sim.gameActive = true;
-                this.sim.isEliminated = false;
-                this.sim.playerTeam = data.yourTeam;
-                
-                // تنظيف الدبابات القديمة
-                for(let tank of this.sim.tanks.values()) this.sim.scene.remove(tank);
-                this.sim.tanks.clear();
-                this.sim.otherPlayers.clear();
-                
-                const color = data.yourTeam === 1 ? 0x8b5a2b : 0x4a6a8b;
-                this.sim.playerTank = this.sim.createTank(color, data.position.x, data.position.z, data.yourTeam, currentUser.uid);
-                this.sim.tanks.set(currentUser.uid, this.sim.playerTank);
-                
-                document.getElementById('health').innerText = '100';
-                this.sim.updateCounts();
-            },
-
-            endBattle(winner) {
-                this.sim.gameActive = false;
-                document.getElementById('hud').style.display = 'none';
-                document.getElementById('reportScreen').style.display = 'flex';
-                document.getElementById('reportText').innerHTML = `المعركة انتهت!<br><br>النتيجة: <b>${winner}</b>`;
-            }
-        };
-
-        // تهيئة الجويستيك
-        const joystickBase = document.getElementById('joystickBase');
-        const joystickHandle = document.getElementById('joystickHandle');
-        let isJoystickActive = false;
-
-        const handleJoystick = (e) => {
-            if(!isJoystickActive) return;
-            const rect = joystickBase.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-            const touch = e.touches ? e.touches[0] : e;
-            let dx = touch.clientX - centerX;
-            let dy = touch.clientY - centerY;
-            const dist = Math.sqrt(dx*dx + dy*dy);
-            const maxDist = rect.width / 2;
-            if(dist > maxDist) { dx *= maxDist/dist; dy *= maxDist/dist; }
-            joystickHandle.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-            gameApp.sim.joystick = { x: dx/maxDist, y: dy/maxDist };
-        };
-
-        joystickBase.addEventListener('touchstart', (e) => { isJoystickActive = true; handleJoystick(e); });
-        window.addEventListener('touchmove', handleJoystick);
-        window.addEventListener('touchend', () => { 
-            isJoystickActive = false; 
-            joystickHandle.style.transform = 'translate(-50%, -50%)'; 
-            gameApp.sim.joystick = { x: 0, y: 0 }; 
-        });
-
-        // تهيئة الأزرار
-        document.getElementById('loginBtn').onclick = () => gameApp.login(document.getElementById('email').value, document.getElementById('password').value);
-        document.getElementById('registerBtn').onclick = () => gameApp.register(document.getElementById('email').value, document.getElementById('password').value);
-        document.getElementById('playBtn').onclick = () => gameApp.showLobby();
-        document.getElementById('createRoomBtn').onclick = () => socket.emit('create_room');
-        document.getElementById('backFromLobbyBtn').onclick = () => gameApp.showMainScreen();
-        document.getElementById('backHomeBtn').onclick = () => gameApp.showMainScreen();
-        document.getElementById('fireBtn').onclick = () => gameApp.sim.fire(gameApp.sim.playerTank);
         
-        document.getElementById('fullscreenBtn').onclick = () => {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => console.log(err));
-            } else {
-                document.exitFullscreen();
-            }
+        const gameApp = {
+            sim: new GameSimulation(),
+            audio: new AudioEngine(),
+            init() { this.initSocket(); this.bindEvents(); this.audio.init(); },
+            bindEvents() {
+                document.getElementById('loginBtn').onclick = () => this.login(document.getElementById('email').value, document.getElementById('password').value);
+                document.getElementById('registerBtn').onclick = () => this.register(document.getElementById('email').value, document.getElementById('password').value);
+                document.getElementById('playBtn').onclick = () => this.showLobby();
+                document.getElementById('walletBtn').onclick = () => window.location.href = 'wallet.html';
+                document.getElementById('adminBtn').onclick = () => { document.getElementById('adminPanel').style.display = 'flex'; this.refreshStats(); };
+                document.getElementById('createRoomBtn').onclick = () => this.createRoom();
+                document.getElementById('backFromLobbyBtn').onclick = () => { document.getElementById('lobby').style.display = 'none'; document.getElementById('mainScreen').style.display = 'flex'; };
+                document.getElementById('backHomeBtn').onclick = () => this.backToHome();
+                document.getElementById('closeAdminBtn').onclick = () => document.getElementById('adminPanel').style.display = 'none';
+                document.getElementById('saveSeatPriceBtn').onclick = () => this.saveSeatPrice();
+                document.getElementById('saveMaxPlayersBtn').onclick = () => this.saveMaxPlayers();
+                document.getElementById('adminDepositBtn').onclick = () => this.adminDeposit();
+                document.getElementById('adminWithdrawBtn').onclick = () => this.adminWithdraw();
+                document.getElementById('resetDataBtn').onclick = () => this.resetAllData();
+                document.getElementById('refreshStatsBtn').onclick = () => this.refreshStats();
+                const fireBtn = document.getElementById('fireBtn');
+                fireBtn.addEventListener('mousedown', () => { if(this.sim.playerTank && !this.sim.isEliminated && this.sim.gameActive) { this.sim.fire(this.sim.playerTank); fireBtn.classList.add('fire-btn-active'); setTimeout(() => fireBtn.classList.remove('fire-btn-active'), 100); } });
+                fireBtn.addEventListener('touchstart', (e) => { e.preventDefault(); if(this.sim.playerTank && !this.sim.isEliminated && this.sim.gameActive) { this.sim.fire(this.sim.playerTank); fireBtn.classList.add('fire-btn-active'); setTimeout(() => fireBtn.classList.remove('fire-btn-active'), 100); } });
+            },
+            initSocket() {
+                socket.on('connect', () => console.log('Connected'));
+                socket.on('auth_success', (data) => { document.getElementById('loading').style.display = 'none'; currentUser = {uid: data.userId, email: data.email, username: data.username, balance: data.balance, isAdmin: data.isAdmin}; currentBalance = data.balance; isAdmin = data.isAdmin; this.sim.playerId = data.userId; localStorage.setItem('adminToken', 'authenticated'); localStorage.setItem('userEmail', data.email); localStorage.setItem('isAdmin', data.isAdmin); document.getElementById('balance').innerText = currentBalance; document.getElementById('gameBalance').innerText = currentBalance; document.getElementById('username').innerText = data.username || data.email.split('@')[0]; document.getElementById('gameUsername').innerText = data.username || data.email.split('@')[0]; document.getElementById('gamesPlayed').innerText = data.gamesPlayed || 0; document.getElementById('wins').innerText = data.wins || 0; if(isAdmin) document.getElementById('adminBtn').style.display = 'block'; this.showMainScreen(); });
+                socket.on('auth_error', (data) => { document.getElementById('loading').style.display = 'none'; alert(data.message); });
+                socket.on('lobby_joined', (data) => { currentBalance = data.balance; document.getElementById('gameBalance').innerText = currentBalance; if(data.settings) { gameSettings = data.settings; document.getElementById('seatPrice').value = data.settings.seatPrice; document.getElementById('maxPlayers').value = data.settings.maxPlayers; } this.updateLobby(data.players || []); });
+                socket.on('game_start', (data) => this.startGame(data));
+                socket.on('player_joined', (data) => this.updateLobby(data.players || []));
+                socket.on('player_moved', (data) => { if(this.sim && data.userId !== currentUser?.uid) this.sim.updateOtherPlayer(data); });
+                socket.on('player_shot', (data) => console.log('Player shot:', data.userId));
+                socket.on('game_state_update', (data) => { if(this.sim && this.sim.gameActive && data.players) data.players.forEach(player => { if(player.userId != currentUser?.uid) this.sim.updateOtherPlayer(player); }); });
+                socket.on('player_eliminated', (data) => { if(this.sim && this.sim.gameActive && data.userId != currentUser?.uid) this.sim.removeTank(data.userId); });
+                socket.on('you_were_eliminated', (data) => { if(this.sim && this.sim.gameActive) { this.sim.isEliminated = true; this.sim.gameActive = false; if(this.sim.playerTank) { this.sim.createExplosion(this.sim.playerTank.position, 2.5); this.sim.scene.remove(this.sim.playerTank); this.sim.playerTank = null; } const msg = document.createElement('div'); msg.className = 'elimination-message'; msg.innerText = '💀 تم الاستبعاد 💀'; document.body.appendChild(msg); document.getElementById('joystickBase').style.opacity = '0.3'; document.getElementById('fireBtn').style.opacity = '0.3'; document.getElementById('joystickBase').style.pointerEvents = 'none'; document.getElementById('fireBtn').style.pointerEvents = 'none'; setTimeout(() => { if(msg) msg.remove(); document.getElementById('joystickBase').style.opacity = '1'; document.getElementById('fireBtn').style.opacity = '1'; document.getElementById('joystickBase').style.pointerEvents = 'auto'; document.getElementById('fireBtn').style.pointerEvents = 'auto'; }, 3000); } });
+            },
+            updateLobby(players) { const grid = document.getElementById('seatsGrid'); grid.innerHTML = ''; for(let i=0; i<gameSettings.maxPlayers; i++) { const isOccupied = players && players[i]; const seat = document.createElement('div'); seat.className = 'seat' + (isOccupied ? ' occupied' : ''); seat.innerHTML = `<div>${i+1}</div><div>${isOccupied ? (players[i]?.slice(0,8) || 'لاعب') : 'شاغر'}</div>`; seat.onclick = () => { if(!isOccupied) this.joinRoom(i); }; grid.appendChild(seat); } },
+            createRoom() { socket.emit('create_room', { seats: gameSettings.maxPlayers || 2 }); },
+            joinRoom(roomId) { socket.emit('join_room', { roomId }); },
+            startGame(data) { document.getElementById('lobby').style.display = 'none'; document.getElementById('hud').style.display = 'block'; document.getElementById('health').innerText = '100'; this.sim.isEliminated = false; this.sim.gameActive = true; this.sim.lastMoveTime = 0; document.getElementById('joystickBase').style.opacity = '1'; document.getElementById('fireBtn').style.opacity = '1'; document.getElementById('joystickBase').style.pointerEvents = 'auto'; document.getElementById('fireBtn').style.pointerEvents = 'auto'; this.sim.init(); const positions = [{ x: -75, z: -70, team: 1 }, { x: 70, z: 70, team: 2 }]; const myTeam = data.yourTeam || 1; const myPos = positions[myTeam === 1 ? 0 : 1]; const myColor = myTeam === 1 ? 0x8b5a2b : 0x4a6a8b; this.sim.playerTeam = myTeam; this.sim.playerTank = this.sim.createTank(myColor, myPos.x, myPos.z, myTeam, currentUser?.uid); this.sim.playerTank.userData.playerId = currentUser?.uid; this.sim.tanks.set(currentUser?.uid, this.sim.playerTank); if(data.players) { data.players.forEach(player => { if(player.userId !== currentUser?.uid) { const otherTeam = player.team || (player.userId === data.players[0]?.userId ? 1 : 2); const otherPos = positions[otherTeam === 1 ? 0 : 1]; const otherColor = otherTeam === 1 ? 0x8b5a2b : 0x4a6a8b; const tank = this.sim.createTank(otherColor, otherPos.x, otherPos.z, otherTeam, player.userId); tank.userData.playerId = player.userId; this.sim.tanks.set(player.userId, tank); this.sim.otherPlayers.set(player.userId, tank); } }); } this.sim.updateCounts(); this.setupControls(); this.audio.startEngine(); },
+            setupControls() { const base = document.getElementById('joystickBase'), handle = document.getElementById('joystickHandle'); let active = false; const move = (e) => { if(!active) return; const rect = base.getBoundingClientRect(); const touch = e.touches ? e.touches[0] : e; let dx = touch.clientX - (rect.left + rect.width/2), dy = touch.clientY - (rect.top + rect.height/2); const dist = Math.min(Math.sqrt(dx*dx + dy*dy), 65), ang = Math.atan2(dy, dx); dx = Math.cos(ang) * dist; dy = Math.sin(ang) * dist; handle.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`; this.sim.joystick = { x: dx/65, y: dy/65 }; }; base.addEventListener('touchstart', e => { e.preventDefault(); active = true; }); base.addEventListener('mousedown', () => active = true); window.addEventListener('touchmove', move); window.addEventListener('mousemove', move); window.addEventListener('touchend', () => { active = false; handle.style.transform = 'translate(-50%, -50%)'; this.sim.joystick = { x: 0, y: 0 }; }); window.addEventListener('mouseup', () => { active = false; handle.style.transform = 'translate(-50%, -50%)'; this.sim.joystick = { x: 0, y: 0 }; }); },
+            showMainScreen() { document.getElementById('loginScreen').style.display = 'none'; document.getElementById('mainScreen').style.display = 'flex'; },
+            showLobby() { document.getElementById('mainScreen').style.display = 'none'; document.getElementById('lobby').style.display = 'flex'; socket.emit('join_lobby'); },
+            backToHome() { document.getElementById('reportScreen').style.display = 'none'; document.getElementById('mainScreen').style.display = 'flex'; if(this.sim && this.sim.scene) { this.sim.gameActive = false; } },
+            async login(email, password) { if(!email || !password) return alert('أدخل البريد وكلمة المرور'); document.getElementById('loading').style.display = 'flex'; socket.emit('login', { email, password }); },
+            async register(email, password) { if(!email || !password) return alert('أدخل البريد وكلمة المرور'); document.getElementById('loading').style.display = 'flex'; socket.emit('register', { email, password }); },
+            async saveSeatPrice() { const price = parseInt(document.getElementById('seatPrice').value); if(isNaN(price) || price < 1) return alert('قيمة غير صالحة'); try { const response = await fetch(`${SERVER_URL}/api/admin/setSeatPrice`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ adminToken: 'authenticated', userid: currentUser?.uid, price }) }); const data = await response.json(); if(data.success) { alert(`تم ضبط السعر إلى ${price}$`); gameSettings.seatPrice = price; } else { alert(data.error); } } catch(e) { alert('خطأ بالاتصال'); } },
+            async saveMaxPlayers() { const max = parseInt(document.getElementById('maxPlayers').value); if(isNaN(max) || max < 2 || max > 4) return alert('القيمة بين 2 و 4'); try { const response = await fetch(`${SERVER_URL}/api/admin/setMaxPlayers`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ adminToken: 'authenticated', userid: currentUser?.uid, maxPlayers: max }) }); const data = await response.json(); if(data.success) { alert(`تم ضبط الحد الأقصى إلى ${max}`); gameSettings.maxPlayers = max; } else { alert(data.error); } } catch(e) { alert('خطأ بالاتصال'); } },
+            async adminDeposit() { const email = document.getElementById('targetEmail').value; const amount = parseInt(document.getElementById('amount').value); if(!email || !amount) return alert('أدخل البريد والمبلغ'); try { const response = await fetch(`${SERVER_URL}/api/admin/balance`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ adminToken: 'authenticated', userId: email, amount, action: 'deposit' }) }); const data = await response.json(); if(data.success) { alert(`تم إيداع ${amount} للمستخدم ${email}`); this.refreshStats(); } else { alert(data.error); } } catch(e) { alert('خطأ في الاتصال'); } },
+            async adminWithdraw() { const email = document.getElementById('targetEmail').value; const amount = parseInt(document.getElementById('amount').value); if(!email || !amount) return alert('أدخل البريد والمبلغ'); try { const response = await fetch(`${SERVER_URL}/api/admin/balance`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ adminToken: 'authenticated', userId: email, amount, action: 'withdraw' }) }); const data = await response.json(); if(data.success) { alert(`تم سحب ${amount} من المستخدم ${email}`); this.refreshStats(); } else { alert(data.error); } } catch(e) { alert('خطأ في الاتصال'); } },
+            async resetAllData() { if(!confirm('⚠️ تحذير: سيتم مسح جميع البيانات نهائياً! هل أنت متأكد؟')) return; const confirmText = prompt('اكتب "مسح" للتأكيد النهائي'); if(confirmText !== 'مسح') return; try { const response = await fetch(`${SERVER_URL}/api/admin/resetAll`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ adminToken: 'authenticated', userid: currentUser?.uid }) }); const data = await response.json(); if(data.success) alert('تمت إعادة ضبط البيانات بنجاح'); else alert(data.error); } catch(e) { alert('فشل الاتصال'); } },
+            async refreshStats() { try { const response = await fetch(`${SERVER_URL}/api/admin/stats`, { headers: { 'Authorization': 'Bearer authenticated' } }); const data = await response.json(); if(data.success) { document.getElementById('gamesPlayed').innerText = data.gamesPlayed || 0; document.getElementById('wins').innerText = data.wins || 0; } } catch(e) {} }
         };
-
-        // لوحة التحكم
-        document.getElementById('adminBtn').onclick = () => {
-            document.getElementById('adminPanel').style.display = 'flex';
-            fetch(`${SERVER_URL}/api/admin/settings?adminToken=authenticated`).then(r => r.json()).then(data => {
-                if(data.success) {
-                    document.getElementById('seatPrice').value = data.settings.seatPrice;
-                    document.getElementById('maxPlayers').value = data.settings.maxPlayers;
-                }
-            });
-        };
-        document.getElementById('closeAdminBtn').onclick = () => document.getElementById('adminPanel').style.display = 'none';
-        document.getElementById('saveSeatPriceBtn').onclick = () => {
-            const price = document.getElementById('seatPrice').value;
-            socket.emit('admin_update_settings', { seatPrice: parseInt(price) });
-            alert('تم الحفظ');
-        };
-        document.getElementById('saveMaxPlayersBtn').onclick = () => {
-            const max = document.getElementById('maxPlayers').value;
-            socket.emit('admin_update_settings', { maxPlayers: parseInt(max) });
-            alert('تم الحفظ');
-        };
-
-        gameApp.sim.init();
-        gameApp.initSocket();
+        
+        window.gameApp = gameApp;
+        gameApp.init();
     </script>
 </body>
 </html>
-
