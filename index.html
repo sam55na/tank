@@ -732,6 +732,54 @@
         let gameSettings = { seatPrice: 1, maxPlayers: 2 };
         let isFullscreen = false;
         
+        // ============= نظام التحديث السلس للاعبين الآخرين =============
+        class SmoothPosition {
+            constructor() {
+                this.targetPos = null;
+                this.currentPos = null;
+                this.targetRot = null;
+                this.currentRot = null;
+                this.lastUpdate = 0;
+                this.updateSpeed = 0.2;
+            }
+            
+            update(targetPos, targetRot) {
+                if (!this.currentPos) {
+                    this.currentPos = { x: targetPos.x, z: targetPos.z };
+                    this.currentRot = targetRot;
+                    this.targetPos = { x: targetPos.x, z: targetPos.z };
+                } else {
+                    this.targetPos = { x: targetPos.x, z: targetPos.z };
+                    this.targetRot = targetRot;
+                }
+                this.lastUpdate = Date.now();
+            }
+            
+            getCurrentPosition() {
+                if (!this.targetPos || !this.currentPos) return null;
+                
+                const now = Date.now();
+                const timeDiff = Math.min(1, (now - this.lastUpdate) / 45);
+                
+                const newX = this.currentPos.x + (this.targetPos.x - this.currentPos.x) * Math.min(1, timeDiff * this.updateSpeed);
+                const newZ = this.currentPos.z + (this.targetPos.z - this.currentPos.z) * Math.min(1, timeDiff * this.updateSpeed);
+                
+                this.currentPos.x = newX;
+                this.currentPos.z = newZ;
+                
+                return { x: newX, z: newZ };
+            }
+            
+            getCurrentRotation() {
+                if (this.targetRot !== undefined && this.currentRot !== undefined) {
+                    const now = Date.now();
+                    const timeDiff = Math.min(1, (now - this.lastUpdate) / 45);
+                    return this.currentRot + (this.targetRot - this.currentRot) * Math.min(1, timeDiff * this.updateSpeed);
+                }
+                return this.targetRot || 0;
+            }
+        }
+        
         class AudioEngine {
             constructor() { this.ctx = null; this.engineOsc = null; this.engineGain = null; }
             init() { if (this.ctx) return; try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
@@ -752,6 +800,7 @@
                 this.isEliminated = false;
                 this.lastMoveTime = 0;
                 this.playerId = null;
+                this.smoothPlayers = new Map();
             }
 
             init() { 
@@ -862,6 +911,15 @@
                 return true; 
             }
             
+            createRemoteBullet(position, direction, shooterId) {
+                const dir = new THREE.Vector3(direction.x, direction.y, direction.z);
+                const bullet = new THREE.Mesh(new THREE.SphereGeometry(0.26, 24, 24), new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4422, emissiveIntensity: 0.6 }));
+                bullet.position.copy(position);
+                bullet.userData = { velocity: dir.multiplyScalar(2.6), owner: null, life: 200, ownerId: shooterId, isRemote: true };
+                this.scene.add(bullet);
+                this.bullets.push(bullet);
+            }
+            
             createExplosion(pos, size = 1.2) {
                 const explosionGroup = new THREE.Group();
                 const flash = new THREE.Mesh(new THREE.SphereGeometry(size * 0.6, 16, 16), new THREE.MeshStandardMaterial({ color: 0xffaa66, emissive: 0xff4422, emissiveIntensity: 1.2 }));
@@ -926,7 +984,7 @@
                     gameApp.audio.updateEngine(Math.abs(speed) * 3.5); 
                     
                     const now = Date.now();
-                    if (now - this.lastMoveTime > 50) {
+                    if (now - this.lastMoveTime > 35) {
                         this.lastMoveTime = now;
                         socket.emit('move', { position: this.playerTank.position, rotation: this.playerTank.rotation.y });
                     }
@@ -941,6 +999,22 @@
                     this.camera.position.lerp(camTarget, 0.12); 
                     this.camera.lookAt(this.playerTank.position.clone().add(new THREE.Vector3(0, 1.2, 0))); 
                 } 
+                
+                // تحديث مواقع اللاعبين الآخرين بشكل سلس
+                if (this.smoothPlayers) {
+                    for (let [userId, smooth] of this.smoothPlayers) {
+                        const tank = this.otherPlayers.get(userId);
+                        if (tank) {
+                            const newPos = smooth.getCurrentPosition();
+                            if (newPos) {
+                                tank.position.x = newPos.x;
+                                tank.position.z = newPos.z;
+                            }
+                            const newRot = smooth.getCurrentRotation();
+                            if (newRot !== undefined) tank.rotation.y = newRot;
+                        }
+                    }
+                }
                 
                 for(let i = this.bullets.length-1; i >= 0; i--) { 
                     const b = this.bullets[i]; 
@@ -960,10 +1034,9 @@
                     
                     if(!hit) { 
                         for(let [id, tank] of this.tanks) {
-                            // التحقق: الرصاصة ليست من نفس الدبابة
+                            if (!tank) continue;
                             const isOwner = (b.userData.owner === tank);
-                            // التحقق: الفرق مختلفة
-                            const isSameTeam = tank.userData.team === b.userData.owner?.userData?.team;
+                            const isSameTeam = tank.userData && b.userData.owner && tank.userData.team === b.userData.owner.userData?.team;
                             
                             if (!isOwner && !isSameTeam && b.position.distanceTo(tank.position) < 1.9) { 
                                 hit = true; 
@@ -971,10 +1044,7 @@
                                 this.scene.remove(b); 
                                 this.bullets.splice(i,1);
                                 
-                                console.log('Hit detected! Shooter:', b.userData.ownerId, 'Target:', id);
-                                
                                 if(b.userData.owner === this.playerTank) {
-                                    console.log('Sending damage event for target:', id);
                                     socket.emit('damage', { 
                                         damage: 100, 
                                         killerId: this.playerId,
@@ -1002,8 +1072,10 @@
             updateCounts() { 
                 this.team1Count = 0; this.team2Count = 0; 
                 for(let tank of this.tanks.values()) {
-                    if(tank.userData.team === 1) this.team1Count++; 
-                    else if(tank.userData.team === 2) this.team2Count++;
+                    if(tank && tank.userData) {
+                        if(tank.userData.team === 1) this.team1Count++; 
+                        else if(tank.userData.team === 2) this.team2Count++;
+                    }
                 }
                 const team1El = document.getElementById('team1');
                 const team2El = document.getElementById('team2');
@@ -1020,10 +1092,20 @@
                     tank = this.createTank(color, pos.x, pos.z, data.team, data.userId);
                     this.otherPlayers.set(data.userId, tank);
                     this.tanks.set(data.userId, tank);
+                    
+                    // إنشاء كائن التحديث السلس
+                    const smooth = new SmoothPosition();
+                    smooth.update(pos, data.rotation || 0);
+                    this.smoothPlayers.set(data.userId, smooth);
                 }
                 if(tank && data.position) {
-                    tank.position.set(data.position.x, 0, data.position.z);
-                    tank.rotation.y = data.rotation || 0;
+                    let smooth = this.smoothPlayers.get(data.userId);
+                    if (!smooth) {
+                        smooth = new SmoothPosition();
+                        this.smoothPlayers.set(data.userId, smooth);
+                    }
+                    smooth.update(data.position, data.rotation || 0);
+                    tank.userData.lastRotation = data.rotation || 0;
                 }
             }
             
@@ -1034,6 +1116,7 @@
                     this.scene.remove(tank);
                     this.tanks.delete(userId);
                     this.otherPlayers.delete(userId);
+                    this.smoothPlayers.delete(userId);
                     this.updateCounts();
                 }
             }
@@ -1131,6 +1214,16 @@
                     if(data.reward) {
                         currentBalance = data.yourBalance;
                         document.getElementById('balance').innerText = currentBalance;
+                    }
+                });
+                
+                // استقبال القذائف من اللاعبين الآخرين
+                socket.on('bullet_fired', (data) => {
+                    if (!this.sim || !this.sim.gameActive) return;
+                    if (data.shooterId === currentUser?.uid) return;
+                    const shooterTank = this.sim.tanks.get(data.shooterId);
+                    if (shooterTank) {
+                        this.sim.createRemoteBullet(data.position, data.direction, data.shooterId);
                     }
                 });
                 
@@ -1302,6 +1395,7 @@
                 this.sim.isEliminated = false;
                 this.sim.gameActive = true;
                 this.sim.lastMoveTime = 0;
+                this.sim.smoothPlayers.clear();
                 
                 document.getElementById('joystickBase').style.opacity = '1';
                 document.getElementById('fireBtn').style.opacity = '1';
@@ -1333,6 +1427,10 @@
                             tank.userData.playerId = player.userId;
                             this.sim.tanks.set(player.userId, tank);
                             this.sim.otherPlayers.set(player.userId, tank);
+                            
+                            const smooth = new SmoothPosition();
+                            smooth.update(otherPos, 0);
+                            this.sim.smoothPlayers.set(player.userId, smooth);
                         }
                     });
                 }
@@ -1583,7 +1681,7 @@
         
         window.gameApp = gameApp;
         gameApp.init();
-        console.log('🎮 Game ready!');
+        console.log('🎮 Game ready with smooth interpolation and remote bullets!');
     </script>
 </body>
 </html>
