@@ -1,5 +1,5 @@
 // ============================================
-// 🚀 خادم لعبة Battle Tanks - النسخة الاحترافية
+// 🚀 خادم لعبة Battle Tanks - النسخة الاحترافية الكاملة
 // ============================================
 
 const express = require('express');
@@ -53,134 +53,19 @@ const io = socketIo(server, {
 });
 
 // ============================================
-// 📦 API Routes
-// ============================================
-
-// التحقق من صحة الخادم
-app.get('/health', (req, res) => {
-    res.json({ status: 'online', timestamp: Date.now() });
-});
-
-// الحصول على رصيد المستخدم
-app.get('/api/balance/:userId', async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const snapshot = await db.ref(`users/${userId}`).once('value');
-        const userData = snapshot.val();
-        res.json({ success: true, balance: userData?.balance || 100 });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// إيداع رصيد (للاستخدام من قبل الآدمن)
-app.post('/api/deposit', async (req, res) => {
-    try {
-        const { adminToken, userId, amount } = req.body;
-        
-        // التحقق من صلاحية الآدمن
-        if (adminToken !== process.env.ADMIN_SECRET) {
-            return res.status(403).json({ success: false, error: 'Unauthorized' });
-        }
-        
-        const userRef = db.ref(`users/${userId}`);
-        const snapshot = await userRef.once('value');
-        let currentBalance = snapshot.val()?.balance || 100;
-        currentBalance += amount;
-        await userRef.update({ balance: currentBalance });
-        
-        // تسجيل المعاملة
-        const transactionRef = db.ref(`transactions/${userId}`).push();
-        await transactionRef.set({
-            type: 'deposit',
-            amount: amount,
-            balanceAfter: currentBalance,
-            timestamp: Date.now(),
-            admin: true
-        });
-        
-        res.json({ success: true, newBalance: currentBalance });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// سحب رصيد (للاستخدام من قبل الآدمن)
-app.post('/api/withdraw', async (req, res) => {
-    try {
-        const { adminToken, userId, amount } = req.body;
-        
-        if (adminToken !== process.env.ADMIN_SECRET) {
-            return res.status(403).json({ success: false, error: 'Unauthorized' });
-        }
-        
-        const userRef = db.ref(`users/${userId}`);
-        const snapshot = await userRef.once('value');
-        let currentBalance = snapshot.val()?.balance || 100;
-        
-        if (currentBalance < amount) {
-            return res.json({ success: false, error: 'Insufficient balance' });
-        }
-        
-        currentBalance -= amount;
-        await userRef.update({ balance: currentBalance });
-        
-        const transactionRef = db.ref(`transactions/${userId}`).push();
-        await transactionRef.set({
-            type: 'withdraw',
-            amount: amount,
-            balanceAfter: currentBalance,
-            timestamp: Date.now(),
-            admin: true
-        });
-        
-        res.json({ success: true, newBalance: currentBalance });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// الحصول على إحصائيات اللاعبين (للآدمن)
-app.get('/api/admin/stats', async (req, res) => {
-    try {
-        const { adminToken } = req.query;
-        if (adminToken !== process.env.ADMIN_SECRET) {
-            return res.status(403).json({ success: false, error: 'Unauthorized' });
-        }
-        
-        const snapshot = await db.ref('users').once('value');
-        const users = snapshot.val();
-        const stats = {
-            totalUsers: users ? Object.keys(users).length : 0,
-            totalBalance: 0,
-            usersList: []
-        };
-        
-        if (users) {
-            for (const [id, data] of Object.entries(users)) {
-                stats.totalBalance += data.balance || 0;
-                stats.usersList.push({
-                    id: id,
-                    email: data.email,
-                    balance: data.balance || 100,
-                    username: data.username,
-                    isAdmin: data.isAdmin || false
-                });
-            }
-        }
-        
-        res.json({ success: true, stats });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// ============================================
 // 📦 تخزين البيانات المؤقتة
 // ============================================
 const players = new Map();
 const rooms = new Map();
+let globalGameSettings = {
+    seatPrice: 1,
+    maxPlayers: 2,  // تغيير إلى 2 لاعبين فقط
+    gameDuration: 5 * 60 * 1000 // 5 دقائق
+};
 
+// ============================================
+// 🔧 دوال مساعدة
+// ============================================
 function generateId() {
     return Math.random().toString(36).substr(2, 8);
 }
@@ -214,6 +99,7 @@ function updateRoom(roomId) {
     }
 }
 
+// بدء اللعبة مع إعدادات الفرق والمواقع
 function startGame(roomId) {
     const room = rooms.get(roomId);
     if (!room || room.status !== 'waiting') return;
@@ -222,70 +108,385 @@ function startGame(roomId) {
     room.startTime = Date.now();
     
     const playersList = room.players;
-    const half = Math.floor(playersList.length / 2);
-    const team1 = playersList.slice(0, half);
-    const team2 = playersList.slice(half);
+    const positions = [
+        { x: -70, z: -70, team: 1 },  // الفريق الأحمر (الموقع الأيسر)
+        { x: 70, z: 70, team: 2 }      // الفريق الأزرق (الموقع الأيمن)
+    ];
     
+    // تعيين الفرق والمواقع لكل لاعب
+    for (let i = 0; i < playersList.length; i++) {
+        const pos = positions[i % positions.length];
+        playersList[i].team = pos.team;
+        playersList[i].position = { x: pos.x, z: pos.z, y: 0 };
+        playersList[i].rotation = 0;
+        playersList[i].health = 100;
+    }
+    
+    // إرسال بدء اللعبة لكل لاعب مع معلوماته
     for (const player of playersList) {
-        const team = team1.includes(player) ? 1 : 2;
         io.to(player.socketId).emit('game_start', {
             roomId: roomId,
-            players: playersList.map(p => p.userId),
-            yourTeam: team,
-            startTime: room.startTime
+            players: playersList.map(p => ({ userId: p.userId, team: p.team })),
+            yourTeam: player.team,
+            startTime: room.startTime,
+            position: player.position,
+            health: player.health
         });
     }
     
     console.log(`🎮 Game started in room ${roomId} with ${playersList.length} players`);
     
+    // بدء بث حالة اللعبة كل 50ms (20 مرة في الثانية)
+    const gameInterval = setInterval(() => {
+        const currentRoom = rooms.get(roomId);
+        if (!currentRoom || currentRoom.status !== 'active') {
+            clearInterval(gameInterval);
+            return;
+        }
+        
+        // جمع تحديثات اللاعبين
+        const playersUpdate = [];
+        for (const player of currentRoom.players) {
+            if (player.position) {
+                playersUpdate.push({
+                    userId: player.userId,
+                    position: player.position,
+                    rotation: player.rotation || 0,
+                    health: player.health || 100,
+                    team: player.team
+                });
+            }
+        }
+        
+        // بث التحديثات لجميع اللاعبين في الغرفة
+        io.to(roomId).emit('game_state_update', { players: playersUpdate });
+    }, 50);
+    
+    room.gameInterval = gameInterval;
+    
+    // جدولة نهاية اللعبة
     setTimeout(() => {
         endGame(roomId, 'انتهت مدة المعركة!');
-    }, 5 * 60 * 1000);
+    }, globalGameSettings.gameDuration);
 }
 
+// إنهاء اللعبة وتوزيع المكافآت
 async function endGame(roomId, reason) {
     const room = rooms.get(roomId);
     if (!room || room.status === 'ended') return;
     
     room.status = 'ended';
+    if (room.gameInterval) clearInterval(room.gameInterval);
+    
     const duration = Math.floor((Date.now() - (room.startTime || Date.now())) / 1000);
     const reward = 10;
+    
+    // تحديد الفائز (الفريق الذي بقي فيه لاعبون)
+    let winnerTeam = null;
+    let winnerName = null;
+    
+    if (room.players.length === 1) {
+        winnerTeam = room.players[0].team;
+        winnerName = winnerTeam === 1 ? 'الفريق الأحمر' : 'الفريق الأزرق';
+    } else if (room.players.length === 2) {
+        // مقارنة الصحة لتحديد الفائز
+        const player1 = room.players[0];
+        const player2 = room.players[1];
+        if (player1.health > player2.health) {
+            winnerTeam = player1.team;
+            winnerName = winnerTeam === 1 ? 'الفريق الأحمر' : 'الفريق الأزرق';
+        } else if (player2.health > player1.health) {
+            winnerTeam = player2.team;
+            winnerName = winnerTeam === 1 ? 'الفريق الأحمر' : 'الفريق الأزرق';
+        } else {
+            winnerName = 'تعادل';
+        }
+    }
     
     for (const player of room.players) {
         try {
             const userRef = db.ref(`users/${player.userId}`);
             const snapshot = await userRef.once('value');
             let currentBalance = snapshot.val()?.balance || 100;
-            currentBalance += reward;
+            const isWinner = (player.team === winnerTeam);
+            
+            // إضافة مكافأة للفائز فقط
+            if (isWinner && winnerTeam) {
+                currentBalance += reward;
+            }
+            
             await userRef.update({ 
                 balance: currentBalance,
                 lastGame: Date.now(),
-                gamesPlayed: (snapshot.val()?.gamesPlayed || 0) + 1
+                gamesPlayed: (snapshot.val()?.gamesPlayed || 0) + 1,
+                wins: (snapshot.val()?.wins || 0) + (isWinner ? 1 : 0)
             });
             
             io.to(player.socketId).emit('game_ended', {
                 message: reason || 'انتهت المعركة!',
-                reward: reward,
+                reward: isWinner ? reward : 0,
                 duration: duration,
-                yourBalance: currentBalance
+                yourBalance: currentBalance,
+                winner: winnerName,
+                yourTeam: player.team === 1 ? 'الأحمر' : 'الأزرق'
             });
         } catch (error) {
             console.error('Error updating balance:', error);
             io.to(player.socketId).emit('game_ended', {
                 message: 'انتهت المعركة!',
-                reward: reward,
+                reward: 0,
                 duration: duration
             });
         }
     }
     
-    console.log(`🏆 Game ended in room ${roomId}, reward: ${reward}$ each`);
+    console.log(`🏆 Game ended in room ${roomId}, winner: ${winnerName}`);
     
     setTimeout(() => {
         rooms.delete(roomId);
         broadcastRoomsList();
     }, 10000);
 }
+
+// ============================================
+// 📊 دوال إدارة المدير (Admin Functions)
+// ============================================
+
+// التحقق من صلاحية المدير
+async function isAdminUser(userId) {
+    const snapshot = await db.ref(`users/${userId}`).once('value');
+    const userData = snapshot.val();
+    return userData?.isAdmin === true;
+}
+
+// تغيير سعر المقعد
+async function setSeatPrice(userId, price) {
+    if (!await isAdminUser(userId)) return { success: false, error: 'Unauthorized' };
+    if (price < 1) price = 1;
+    if (price > 1000) price = 1000;
+    globalGameSettings.seatPrice = price;
+    return { success: true, seatPrice: price };
+}
+
+// تغيير عدد اللاعبين في الجولة
+async function setMaxPlayers(userId, maxPlayers) {
+    if (!await isAdminUser(userId)) return { success: false, error: 'Unauthorized' };
+    if (maxPlayers < 2) maxPlayers = 2;
+    if (maxPlayers > 16) maxPlayers = 16;
+    globalGameSettings.maxPlayers = maxPlayers;
+    return { success: true, maxPlayers: maxPlayers };
+}
+
+// الحصول على تقرير كامل عن اللاعبين
+async function getFullReport(userId) {
+    if (!await isAdminUser(userId)) return { success: false, error: 'Unauthorized' };
+    
+    const snapshot = await db.ref('users').once('value');
+    const users = snapshot.val();
+    const report = {
+        totalUsers: 0,
+        totalBalance: 0,
+        totalGames: 0,
+        totalWins: 0,
+        users: []
+    };
+    
+    if (users) {
+        for (const [id, data] of Object.entries(users)) {
+            report.totalUsers++;
+            report.totalBalance += data.balance || 0;
+            report.totalGames += data.gamesPlayed || 0;
+            report.totalWins += data.wins || 0;
+            report.users.push({
+                id: id,
+                email: data.email,
+                username: data.username,
+                balance: data.balance || 100,
+                gamesPlayed: data.gamesPlayed || 0,
+                wins: data.wins || 0,
+                isAdmin: data.isAdmin || false,
+                createdAt: data.createdAt,
+                lastGame: data.lastGame
+            });
+        }
+    }
+    
+    return { success: true, report };
+}
+
+// مسح جميع بيانات اللاعبين (تهيئة قاعدة البيانات)
+async function resetAllData(userId, adminSecret) {
+    if (adminSecret !== process.env.ADMIN_SECRET) {
+        return { success: false, error: 'Invalid admin secret' };
+    }
+    if (!await isAdminUser(userId)) {
+        return { success: false, error: 'Unauthorized' };
+    }
+    
+    try {
+        // حذف جميع المستخدمين
+        await db.ref('users').remove();
+        await db.ref('transactions').remove();
+        
+        // إنشاء مستخدم المدير الافتراضي
+        const adminEmail = 'admin@boomb.com';
+        const adminUser = {
+            email: adminEmail,
+            username: 'Admin',
+            balance: 9999,
+            isAdmin: true,
+            createdAt: Date.now(),
+            gamesPlayed: 0,
+            wins: 0
+        };
+        
+        // الحصول على UID من Firebase Auth للمدير (يتم إنشاؤه عند التسجيل)
+        await db.ref('users/admin_default').set(adminUser);
+        
+        console.log('🗑️ All user data has been reset');
+        return { success: true, message: 'تم مسح جميع بيانات اللاعبين بنجاح' };
+    } catch (error) {
+        console.error('Reset error:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// ============================================
+// 📡 API Routes للإدارة
+// ============================================
+
+app.get('/health', (req, res) => {
+    res.json({ status: 'online', timestamp: Date.now() });
+});
+
+app.get('/api/balance/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const snapshot = await db.ref(`users/${userId}`).once('value');
+        const userData = snapshot.val();
+        res.json({ success: true, balance: userData?.balance || 100 });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// API للمدير: تعديل رصيد لاعب
+app.post('/api/admin/balance', async (req, res) => {
+    try {
+        const { adminToken, userId, amount, action } = req.body;
+        
+        if (adminToken !== process.env.ADMIN_SECRET) {
+            return res.status(403).json({ success: false, error: 'Unauthorized' });
+        }
+        
+        const userRef = db.ref(`users/${userId}`);
+        const snapshot = await userRef.once('value');
+        let currentBalance = snapshot.val()?.balance || 100;
+        
+        if (action === 'deposit') {
+            currentBalance += amount;
+        } else if (action === 'withdraw') {
+            if (currentBalance < amount) {
+                return res.json({ success: false, error: 'Insufficient balance' });
+            }
+            currentBalance -= amount;
+        } else {
+            return res.json({ success: false, error: 'Invalid action' });
+        }
+        
+        await userRef.update({ balance: currentBalance });
+        
+        res.json({ success: true, newBalance: currentBalance });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// API للمدير: الحصول على إحصائيات
+app.get('/api/admin/stats', async (req, res) => {
+    try {
+        const { adminToken, userId } = req.query;
+        
+        if (adminToken !== process.env.ADMIN_SECRET) {
+            return res.status(403).json({ success: false, error: 'Unauthorized' });
+        }
+        
+        const result = await getFullReport(userId);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// API للمدير: تغيير سعر المقعد
+app.post('/api/admin/setSeatPrice', async (req, res) => {
+    try {
+        const { adminToken, userId, price } = req.body;
+        
+        if (adminToken !== process.env.ADMIN_SECRET) {
+            return res.status(403).json({ success: false, error: 'Unauthorized' });
+        }
+        
+        const result = await setSeatPrice(userId, price);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// API للمدير: تغيير عدد اللاعبين
+app.post('/api/admin/setMaxPlayers', async (req, res) => {
+    try {
+        const { adminToken, userId, maxPlayers } = req.body;
+        
+        if (adminToken !== process.env.ADMIN_SECRET) {
+            return res.status(403).json({ success: false, error: 'Unauthorized' });
+        }
+        
+        const result = await setMaxPlayers(userId, maxPlayers);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// API للمدير: مسح جميع البيانات
+app.post('/api/admin/resetData', async (req, res) => {
+    try {
+        const { adminToken, userId } = req.body;
+        
+        if (adminToken !== process.env.ADMIN_SECRET) {
+            return res.status(403).json({ success: false, error: 'Unauthorized' });
+        }
+        
+        const result = await resetAllData(userId, adminToken);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// API للمدير: الحصول على الإعدادات الحالية
+app.get('/api/admin/settings', async (req, res) => {
+    try {
+        const { adminToken } = req.query;
+        
+        if (adminToken !== process.env.ADMIN_SECRET) {
+            return res.status(403).json({ success: false, error: 'Unauthorized' });
+        }
+        
+        res.json({ 
+            success: true, 
+            settings: {
+                seatPrice: globalGameSettings.seatPrice,
+                maxPlayers: globalGameSettings.maxPlayers,
+                gameDuration: globalGameSettings.gameDuration
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
 
 // ============================================
 // 🔌 أحداث Socket.io
@@ -300,6 +501,7 @@ io.on('connection', (socket) => {
         connectedAt: Date.now()
     });
     
+    // المصادقة
     socket.on('auth', async (data) => {
         try {
             const { token } = data;
@@ -323,7 +525,7 @@ io.on('connection', (socket) => {
             let userData = snapshot.val();
             
             // تحديد حساب الآدمن
-            const isAdmin = (email === 'admin2613857@boomb.com');
+            const isAdmin = (email === 'admin@boomb.com');
             
             if (!userData) {
                 userData = { 
@@ -337,7 +539,6 @@ io.on('connection', (socket) => {
                 };
                 await userRef.set(userData);
             } else if (isAdmin && !userData.isAdmin) {
-                // تحديث صلاحية الآدمن إذا كان البريد مطابقاً
                 await userRef.update({ isAdmin: true });
                 userData.isAdmin = true;
             }
@@ -347,7 +548,8 @@ io.on('connection', (socket) => {
                 email: email,
                 balance: userData.balance || 100,
                 username: userData.username,
-                isAdmin: userData.isAdmin || false
+                isAdmin: userData.isAdmin || false,
+                gamesPlayed: userData.gamesPlayed || 0
             });
             
             console.log(`✅ User authenticated: ${email} (Admin: ${userData.isAdmin || false})`);
@@ -358,6 +560,7 @@ io.on('connection', (socket) => {
         }
     });
     
+    // الانضمام إلى اللوبي
     socket.on('join_lobby', async () => {
         const player = players.get(socket.id);
         if (!player?.userId) {
@@ -374,7 +577,11 @@ io.on('connection', (socket) => {
             socket.emit('lobby_joined', {
                 balance: balance,
                 userId: player.userId,
-                isAdmin: userData?.isAdmin || false
+                isAdmin: userData?.isAdmin || false,
+                settings: {
+                    seatPrice: globalGameSettings.seatPrice,
+                    maxPlayers: globalGameSettings.maxPlayers
+                }
             });
             
             broadcastRoomsList();
@@ -389,6 +596,7 @@ io.on('connection', (socket) => {
         broadcastRoomsList();
     });
     
+    // إنشاء غرفة جديدة
     socket.on('create_room', (data) => {
         const player = players.get(socket.id);
         if (!player?.userId) {
@@ -402,7 +610,7 @@ io.on('connection', (socket) => {
         }
         
         const roomId = generateId();
-        const maxSeats = data.seats || 8;
+        const maxSeats = data.seats || globalGameSettings.maxPlayers;
         
         const room = {
             id: roomId,
@@ -428,6 +636,7 @@ io.on('connection', (socket) => {
         console.log(`📦 Room created: ${roomId} by ${player.email}`);
     });
     
+    // الانضمام إلى غرفة
     socket.on('join_room', (data) => {
         const player = players.get(socket.id);
         if (!player?.userId) {
@@ -474,27 +683,65 @@ io.on('connection', (socket) => {
         console.log(`👥 ${player.email} joined room ${roomId}`);
     });
     
+    // حركة اللاعب (مع تحديث الموقع في الغرفة)
     socket.on('move', (data) => {
         const player = players.get(socket.id);
         if (player?.roomId) {
-            socket.to(player.roomId).emit('player_moved', {
-                userId: player.userId,
-                position: data,
-                timestamp: Date.now()
-            });
+            const room = rooms.get(player.roomId);
+            if (room && room.status === 'active') {
+                // تحديث موقع اللاعب في الغرفة
+                const roomPlayer = room.players.find(p => p.socketId === socket.id);
+                if (roomPlayer) {
+                    roomPlayer.position = data.position;
+                    roomPlayer.rotation = data.rotation;
+                }
+                // إرسال حركة اللاعب لجميع اللاعبين الآخرين في الغرفة
+                socket.to(player.roomId).emit('player_moved', {
+                    userId: player.userId,
+                    position: data.position,
+                    rotation: data.rotation,
+                    timestamp: Date.now()
+                });
+            }
         }
     });
     
+    // إطلاق النار
     socket.on('shoot', (data) => {
         const player = players.get(socket.id);
         if (player?.roomId) {
             socket.to(player.roomId).emit('player_shot', {
                 userId: player.userId,
+                position: data.position,
+                direction: data.direction,
                 timestamp: Date.now()
             });
         }
     });
     
+    // تحديث الصحة بعد الضرر
+    socket.on('damage', (data) => {
+        const player = players.get(socket.id);
+        if (player?.roomId) {
+            const room = rooms.get(player.roomId);
+            if (room && room.status === 'active') {
+                const roomPlayer = room.players.find(p => p.socketId === socket.id);
+                if (roomPlayer) {
+                    roomPlayer.health = (roomPlayer.health || 100) - data.damage;
+                    if (roomPlayer.health <= 0) {
+                        // اللاعب مات
+                        roomPlayer.health = 0;
+                        io.to(player.roomId).emit('player_destroyed', {
+                            userId: player.userId,
+                            killerId: data.killerId
+                        });
+                    }
+                }
+            }
+        }
+    });
+    
+    // انقطاع الاتصال
     socket.on('disconnect', () => {
         const player = players.get(socket.id);
         if (player) {
@@ -509,7 +756,12 @@ io.on('connection', (socket) => {
                         });
                         
                         if (room.players.length === 0) {
+                            if (room.gameInterval) clearInterval(room.gameInterval);
                             rooms.delete(player.roomId);
+                        } else if (room.status === 'active') {
+                            // إذا كان اللاعب في لعبة وانسحب، أعلن فوز الخصم
+                            const winnerTeam = room.players[0]?.team === 1 ? 2 : 1;
+                            endGame(player.roomId, `الفريق ${winnerTeam === 1 ? 'الأحمر' : 'الأزرق'} فوز بسبب انسحاب الخصم`);
                         } else if (room.status === 'waiting') {
                             updateRoom(player.roomId);
                         }
@@ -532,5 +784,7 @@ server.listen(PORT, () => {
     console.log(`📡 WebSocket ready`);
     console.log(`🔥 Firebase connected`);
     console.log(`👑 Admin email: admin@boomb.com`);
+    console.log(`💰 Seat price: ${globalGameSettings.seatPrice}$`);
+    console.log(`👥 Max players per game: ${globalGameSettings.maxPlayers}`);
     console.log(`🔐 Admin secret: ${process.env.ADMIN_SECRET || 'set-in-env'}`);
 });
