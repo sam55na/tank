@@ -567,6 +567,13 @@
             document.getElementById('loading').style.display = 'none';
             currentBalance = data.balance;
             isAdmin = data.isAdmin || false;
+            
+            // حفظ بيانات الجلسة في localStorage
+            localStorage.setItem('adminToken', data.token || 'authenticated');
+            localStorage.setItem('userEmail', data.email);
+            localStorage.setItem('isAdmin', isAdmin);
+            localStorage.setItem('userId', data.userId);
+            
             document.getElementById('balance').innerText = currentBalance;
             document.getElementById('gameBalance').innerText = currentBalance;
             document.getElementById('gamesPlayed').innerText = data.gamesPlayed || 0;

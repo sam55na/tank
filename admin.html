@@ -242,12 +242,12 @@
             <div class="users-table">
                 <table id="usersTable">
                     <thead>
-                        <tr><th>البريد الإلكتروني</th><th>اسم المستخدم</th><th>الرصيد</th><th>مباريات</th><th>مدير</th><th>إجراءات</th></tr>
+                        <tr><th>البريد الإلكتروني</th><th>اسم المستخدم</th><th>الرصيد</th><th>مباريات</th><th>مدير</th><th>إجراءات</th>\
                     </thead>
                     <tbody id="usersList">
-                        <tr><td colspan="6" class="loading">جاري التحميل...</td></tr>
+                        <tr><td colspan="6" class="loading">جاري التحميل...</td>\
                     </tbody>
-                </table>
+                 \\
             </div>
         </div>
     </div>
@@ -418,11 +418,16 @@
         // التحقق من صلاحية الآدمن
         async function checkAdmin() {
             const token = getAdminToken();
-            if (!token) {
+            const isAdmin = localStorage.getItem('isAdmin');
+            
+            console.log('Checking admin access:', { hasToken: !!token, isAdmin });
+            
+            if (!token || isAdmin !== 'true') {
+                console.log('Not admin, redirecting to login');
                 window.location.href = 'index.html';
                 return;
             }
-            // يمكن إضافة تحقق إضافي هنا
+            
             fetchStats();
         }
 
