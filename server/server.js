@@ -2,7 +2,7 @@
 // 🚀 خادم لعبة Battle Tanks - النسخة النهائية للإنتاج
 // ============================================
 // Author: Battle Tanks Team
-// Version: 3.1.0
+// Version: 3.2.0
 // Description: خادم متكامل للألعاب متعددة اللاعبين مع نظام إدارة متقدم ومزامنة كاملة
 // ============================================
 
@@ -265,7 +265,7 @@ async function endGame(roomId, reason) {
 
 // التحقق من صحة الخادم
 app.get('/health', (req, res) => {
-    res.json({ status: 'online', timestamp: Date.now(), version: '3.1.0' });
+    res.json({ status: 'online', timestamp: Date.now(), version: '3.2.0' });
 });
 
 // الحصول على رصيد المستخدم
@@ -726,44 +726,53 @@ io.on('connection', (socket) => {
         }
     });
     
-    // تحديث الصحة بعد الضرر
+    // تحديث الصحة بعد الضرر - التعديل الأساسي لإصلاح مشكلة الإقصاء
     socket.on('damage', (data) => {
         const player = players.get(socket.id);
         if (player?.roomId) {
             const room = rooms.get(player.roomId);
             if (room && room.status === 'active') {
-                const roomPlayer = room.players.find(p => p.socketId === socket.id);
-                if (roomPlayer && roomPlayer.health > 0) {
-                    const oldHealth = roomPlayer.health || 100;
-                    roomPlayer.health = Math.max(0, oldHealth - data.damage);
+                // البحث عن اللاعب المستهدف باستخدام targetId
+                const targetPlayer = room.players.find(p => p.userId === data.targetId);
+                
+                if (targetPlayer && targetPlayer.health > 0) {
+                    const oldHealth = targetPlayer.health || 100;
+                    targetPlayer.health = Math.max(0, oldHealth - data.damage);
+                    
+                    console.log(`💥 Damage dealt: ${data.damage} to ${targetPlayer.userId} by ${player.userId}. Health: ${oldHealth} -> ${targetPlayer.health}`);
                     
                     // إرسال تحديث الصحة للجميع
                     io.to(player.roomId).emit('health_update', {
-                        userId: player.userId,
-                        health: roomPlayer.health
+                        userId: targetPlayer.userId,
+                        health: targetPlayer.health
                     });
                     
-                    // إذا كان اللاعب قد مات
-                    if (roomPlayer.health <= 0) {
-                        roomPlayer.health = 0;
+                    // إذا كان اللاعب المستهدف قد مات
+                    if (targetPlayer.health <= 0) {
+                        targetPlayer.health = 0;
                         
-                        // إرسال حدث إقصاء اللاعب للجميع بما في ذلك اللاعب نفسه
+                        // إرسال حدث إقصاء اللاعب للجميع
                         io.to(player.roomId).emit('player_eliminated', {
-                            userId: player.userId,
-                            killerId: data.killerId,
-                            position: roomPlayer.position
+                            userId: targetPlayer.userId,
+                            killerId: player.userId,
+                            position: targetPlayer.position
                         });
                         
-                        console.log(`💀 Player ${player.userId} eliminated by ${data.killerId}`);
+                        console.log(`💀 Player ${targetPlayer.userId} eliminated by ${player.userId}`);
                         
-                        // إعلام اللاعب بأنه تم إقصاؤه
-                        io.to(socket.id).emit('you_were_eliminated', {
-                            message: 'لقد تم تدمير دبابتك!',
-                            killerId: data.killerId
-                        });
+                        // إعلام اللاعب المستهدف بأنه تم إقصاؤه
+                        const targetSocket = io.sockets.sockets.get(targetPlayer.socketId);
+                        if (targetSocket) {
+                            targetSocket.emit('you_were_eliminated', {
+                                message: 'لقد تم تدمير دبابتك!',
+                                killerId: player.userId
+                            });
+                        }
                         
                         // التحقق من انتهاء اللعبة
                         const alivePlayers = room.players.filter(p => p.health > 0);
+                        console.log(`Alive players: ${alivePlayers.length}`);
+                        
                         if (alivePlayers.length <= 1) {
                             if (alivePlayers.length === 1) {
                                 const winner = alivePlayers[0];
@@ -789,6 +798,8 @@ io.on('connection', (socket) => {
                             io.to(player.roomId).emit('players_list_update', { players: playersUpdate });
                         }
                     }
+                } else {
+                    console.log(`⚠️ Target player not found or already eliminated: ${data.targetId}`);
                 }
             }
         }
@@ -856,6 +867,7 @@ server.listen(PORT, () => {
 ║  👥 Max players: ${globalGameSettings.maxPlayers}
 ║  ⏱️  Game duration: ${globalGameSettings.gameDuration / 1000} seconds
 ║  🔐 Admin secret: ${process.env.ADMIN_SECRET ? '✅ Set' : '⚠️ Not set'}
+║  🎯 Fixed: Elimination logic corrected
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
     `);
