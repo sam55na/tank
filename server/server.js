@@ -89,6 +89,22 @@ function broadcastRoomsList() {
     io.emit('rooms_list', { rooms: roomsList });
 }
 
+function updateRoom(roomId) {
+    const room = rooms.get(roomId);
+    if (!room) return;
+    
+    io.to(roomId).emit('room_update', {
+        players: room.players.map(p => p.userId),
+        maxSeats: room.maxSeats,
+        count: room.players.length
+    });
+    
+    if (room.players.length === room.maxSeats && room.status === 'waiting') {
+        startGame(roomId);
+    }
+}
+
+// بدء اللعبة مع إعدادات الفرق والمواقع
 function startGame(roomId) {
     const room = rooms.get(roomId);
     if (!room || room.status !== 'waiting') return;
@@ -125,7 +141,7 @@ function startGame(roomId) {
     
     console.log(`🎮 Game started in room ${roomId} with ${playersList.length} players`);
     
-    // بدء بث حالة اللعبة كل 16.67ms (60 مرة في الثانية)
+    // بدء بث حالة اللعبة كل 50ms (20 مرة في الثانية)
     const gameInterval = setInterval(() => {
         const currentRoom = rooms.get(roomId);
         if (!currentRoom || currentRoom.status !== 'active') {
@@ -149,7 +165,7 @@ function startGame(roomId) {
         
         // بث التحديثات لجميع اللاعبين في الغرفة
         io.to(roomId).emit('game_state_update', { players: playersUpdate });
-    }, 1000 / 60); // 60 FPS (16.67ms)
+    }, 50);
     
     room.gameInterval = gameInterval;
     
@@ -158,6 +174,7 @@ function startGame(roomId) {
         endGame(roomId, 'انتهت مدة المعركة!');
     }, globalGameSettings.gameDuration);
 }
+
 // إنهاء اللعبة وتوزيع المكافآت
 async function endGame(roomId, reason) {
     const room = rooms.get(roomId);
