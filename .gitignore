@@ -1,0 +1,6 @@
+# Ignore sensitive files
+server/serviceAccountKey.json
+*.key
+*.pem
+.env
+node_modules/
