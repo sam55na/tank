@@ -51,6 +51,10 @@
             100% { transform: rotate(90deg); }
         }
 
+        .login-screen, .main-screen, .lobby, .admin-panel, .report-screen, .hud {
+            /* سيتم التحكم في display عبر JavaScript */
+        }
+
         .login-screen {
             position: fixed;
             top: 0;
@@ -684,9 +688,6 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js';
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js';
 
-        // ============================================
-        // 🔥 Firebase Configuration
-        // ============================================
         const firebaseConfig = {
             apiKey: "AIzaSyCvPo4HlsNhyf1WBmTzIr6CdR1c2lQ5sHU",
             authDomain: "boomb-fa3e7.firebaseapp.com",
@@ -700,25 +701,15 @@
         const firebaseApp = initializeApp(firebaseConfig);
         const auth = getAuth(firebaseApp);
         
-        // ============================================
-        // 🌐 Server Connection
-        // ============================================
         const SERVER_URL = "https://tank-yf0p.onrender.com";
         import io from 'https://cdn.socket.io/4.6.0/socket.io.esm.min.js';
         const socket = io(SERVER_URL);
         
-        // ============================================
-        // 🎮 Game State
-        // ============================================
         let currentUser = null;
         let currentBalance = 0;
         let isAdmin = false;
-        let currentGame = null;
         let gameSettings = { seatPrice: 1, maxPlayers: 2 };
         
-        // ============================================
-        // 🎨 Three.js Game Engine with Full Sync
-        // ============================================
         class AudioEngine {
             constructor() { this.ctx = null; this.engineOsc = null; this.engineGain = null; }
             init() { if (this.ctx) return; try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
@@ -737,7 +728,6 @@
                 this.playerTeam = null; this.otherPlayers = new Map();
                 this.gameActive = false;
                 this.controls = null;
-                this.animationId = null;
             }
 
             init() { 
@@ -756,147 +746,70 @@
                 sun.position.set(50, 70, 40); 
                 sun.castShadow = true; 
                 sun.shadow.mapSize.set(1024, 1024); 
-                this.scene.add(sun);
-                
-                // إضافة ضوء خلفي
-                const backLight = new THREE.PointLight(0x4466aa, 0.3);
-                backLight.position.set(-30, 40, -50);
-                this.scene.add(backLight);
+                this.scene.add(sun); 
                 
                 this.createTerrain(); 
-                this.createObstacles();
+                this.createObstacles(); 
                 
-                // إعداد OrbitControls للتتبع
                 this.controls = new OrbitControls(this.camera, this.renderer.domElement);
                 this.controls.enableDamping = true;
                 this.controls.dampingFactor = 0.05;
                 this.controls.zoomSpeed = 0.5;
                 this.controls.enableZoom = true;
-                this.controls.zoomSpeed = 0.5;
+                this.controls.target.set(0, 0, 0);
                 
                 this.animate(); 
             }
             
             createTerrain() { 
-                const geo = new THREE.PlaneGeometry(450, 450, 80, 80);
-                const vertices = geo.attributes.position.array;
-                
-                // إضافة تضاريس بسيطة
-                for (let i = 0; i < vertices.length; i += 3) {
-                    const x = vertices[i];
-                    const z = vertices[i+2];
-                    let y = Math.sin(x * 0.05) * Math.cos(z * 0.05) * 0.5;
-                    y += Math.sin(x * 0.15) * 0.2;
-                    y += Math.cos(z * 0.15) * 0.2;
-                    vertices[i+1] = y;
-                }
-                geo.computeVertexNormals();
-                
+                const geo = new THREE.PlaneGeometry(450, 450, 60, 60); 
                 geo.rotateX(-Math.PI / 2); 
                 const groundMat = new THREE.MeshStandardMaterial({ color: 0x6a5a4a, roughness: 0.9, metalness: 0.05 }); 
                 const ground = new THREE.Mesh(geo, groundMat); 
                 ground.receiveShadow = true; 
                 this.scene.add(ground); 
-                
-                const gridHelper = new THREE.GridHelper(460, 50, 0xd4af37, 0x8a7a5a);
-                gridHelper.position.y = 0.05;
-                gridHelper.material.transparent = true;
-                gridHelper.material.opacity = 0.4;
+                const gridHelper = new THREE.GridHelper(460, 50, 0x8a8a7a, 0x5a5a4a);
+                gridHelper.position.y = 0.03;
                 this.scene.add(gridHelper);
             }
             
             createObstacles() {
-                const rockMat = new THREE.MeshStandardMaterial({ color: 0x7a6a5a, roughness: 0.75 });
-                const concreteMat = new THREE.MeshStandardMaterial({ color: 0x8a8a8a, roughness: 0.6 });
-                
+                const rockMat = new THREE.MeshStandardMaterial({ color: 0x6a6a5a, roughness: 0.75 });
                 const positions = [
-                    { x: -45, z: -20, scale: 1.8 }, { x: -30, z: 40, scale: 2.0 }, { x: -10, z: -55, scale: 1.6 },
-                    { x: 15, z: -35, scale: 1.9 }, { x: 40, z: -15, scale: 1.7 }, { x: 55, z: 25, scale: 2.1 },
-                    { x: 35, z: 55, scale: 1.8 }, { x: -25, z: -45, scale: 1.9 }, { x: -55, z: 15, scale: 2.0 },
-                    { x: 5, z: 60, scale: 1.7 }, { x: 70, z: -25, scale: 1.8 }, { x: -60, z: -40, scale: 1.9 },
-                    { x: -40, z: 65, scale: 1.6 }, { x: 25, z: -65, scale: 1.8 }, { x: 50, z: 45, scale: 2.0 }
+                    { x: -45, z: -20 }, { x: -30, z: 40 }, { x: -10, z: -55 }, { x: 15, z: -35 },
+                    { x: 40, z: -15 }, { x: 55, z: 25 }, { x: 35, z: 55 }, { x: -25, z: -45 },
+                    { x: -55, z: 15 }, { x: 5, z: 60 }, { x: 70, z: -25 }, { x: -60, z: -40 },
+                    { x: -40, z: 65 }, { x: 25, z: -65 }, { x: 50, z: 45 }
                 ];
                 positions.forEach(pos => {
                     const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(1.2), rockMat);
-                    rock.scale.set(pos.scale * 1.2, pos.scale * 0.8, pos.scale * 1.1);
-                    rock.position.set(pos.x, 0.7, pos.z);
+                    rock.scale.set(1.8, 1.5, 1.8);
+                    rock.position.set(pos.x, 0.6, pos.z);
                     rock.castShadow = true;
                     this.scene.add(rock);
                     this.obstacles.push(rock);
-                });
-                
-                // جدران خرسانية
-                const wallPositions = [
-                    { x: -70, z: -18, rot: 0 }, { x: -60, z: -32, rot: 0.8 }, { x: -45, z: -70, rot: 1.2 },
-                    { x: -20, z: -80, rot: 0.5 }, { x: 5, z: -75, rot: 1.3 }, { x: 30, z: -68, rot: 0.3 },
-                    { x: 55, z: -55, rot: 0 }, { x: 75, z: -35, rot: 1.0 }, { x: 82, z: -12, rot: 0.5 },
-                    { x: 75, z: 12, rot: 0 }, { x: 58, z: 32, rot: 1.2 }, { x: 38, z: 52, rot: 0.7 },
-                    { x: 12, z: 68, rot: 0 }, { x: -15, z: 72, rot: 1.3 }, { x: -38, z: 62, rot: 0.4 }
-                ];
-                wallPositions.forEach(pos => {
-                    const wall = new THREE.Mesh(new THREE.BoxGeometry(4.5, 2.5, 1.2), concreteMat);
-                    wall.position.set(pos.x, 1.25, pos.z);
-                    wall.rotation.y = pos.rot;
-                    wall.castShadow = true;
-                    this.scene.add(wall);
-                    this.obstacles.push(wall);
                 });
             }
             
             createTank(color, x, z, team, playerId = null) { 
                 const group = new THREE.Group(); 
                 const bodyMat = new THREE.MeshStandardMaterial({ color: color, metalness: 0.7, roughness: 0.4 }); 
-                const body = new THREE.Mesh(new THREE.BoxGeometry(2.6, 1.0, 3.8), bodyMat); 
-                body.position.y = 0.55; 
+                const body = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.9, 3.6), bodyMat); 
+                body.position.y = 0.5; 
                 body.castShadow = true; 
                 group.add(body); 
                 
-                // المسارات
-                const trackMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
-                const leftTrack = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.5, 0.7), trackMat);
-                leftTrack.position.set(-1.5, 0.4, 0);
-                leftTrack.castShadow = true;
-                group.add(leftTrack);
-                
-                const rightTrack = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.5, 0.7), trackMat);
-                rightTrack.position.set(1.5, 0.4, 0);
-                rightTrack.castShadow = true;
-                group.add(rightTrack);
-                
-                // العجلات
-                const wheelMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
-                for(let i = -1.2; i <= 1.2; i += 0.8) {
-                    const wheelGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.5, 16);
-                    const wheelL = new THREE.Mesh(wheelGeo, wheelMat);
-                    wheelL.rotation.z = Math.PI / 2;
-                    wheelL.position.set(-1.6, 0.4, i);
-                    wheelL.castShadow = true;
-                    group.add(wheelL);
-                    
-                    const wheelR = new THREE.Mesh(wheelGeo, wheelMat);
-                    wheelR.rotation.z = Math.PI / 2;
-                    wheelR.position.set(1.6, 0.4, i);
-                    wheelR.castShadow = true;
-                    group.add(wheelR);
-                }
-                
-                const turretMat = new THREE.MeshStandardMaterial({ color: color, metalness: 0.75 }); 
-                const turret = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 1.4, 0.7, 24), turretMat); 
-                turret.position.y = 1.0; 
+                const turretMat = new THREE.MeshStandardMaterial({ color: color, metalness: 0.8 }); 
+                const turret = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 0.7, 32), turretMat); 
+                turret.position.y = 0.95; 
                 turret.castShadow = true; 
                 group.add(turret); 
                 
-                const barrelMat = new THREE.MeshStandardMaterial({ color: 0x4a4a4a, metalness: 0.8 });
-                const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.35, 3.0, 24), barrelMat); 
-                barrel.rotation.x = 0.05;
-                barrel.position.set(1.3, 1.05, 0); 
-                barrel.castShadow = true; 
+                const barrelMat = new THREE.MeshStandardMaterial({ color: 0x3a3a3a });
+                const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.32, 2.2, 16), barrelMat); 
+                barrel.position.set(0, 1.05, 1.5); 
+                barrel.rotation.x = 0.05; 
                 group.add(barrel); 
-                
-                const hatch = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.15, 12), new THREE.MeshStandardMaterial({ color: 0xccaa66 }));
-                hatch.position.set(-0.5, 1.45, 0.4);
-                hatch.castShadow = true;
-                group.add(hatch);
                 
                 group.position.set(x, 0, z); 
                 group.userData = { health: 100, team: team, playerId: playerId }; 
@@ -909,57 +822,56 @@
                 if(now - this.lastShot < 3000) return false; 
                 this.lastShot = now; 
                 const dir = new THREE.Vector3(0, 0, 1).applyQuaternion(tank.quaternion); 
-                const bullet = new THREE.Mesh(new THREE.SphereGeometry(0.32, 24, 24), new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4422, emissiveIntensity: 0.8 })); 
+                const bullet = new THREE.Mesh(new THREE.SphereGeometry(0.3, 24, 24), new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4422, emissiveIntensity: 0.8 })); 
                 bullet.position.copy(tank.position); 
-                bullet.position.y += 1.3; 
+                bullet.position.y += 1.2; 
                 const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(tank.quaternion);
-                bullet.position.add(forward.multiplyScalar(1.5));
-                bullet.userData = { velocity: dir.multiplyScalar(3.2), owner: tank, life: 200, damage: 25 }; 
+                bullet.position.add(forward.multiplyScalar(1.2));
+                bullet.userData = { velocity: dir.multiplyScalar(3.0), owner: tank, life: 200, damage: 25 }; 
                 this.scene.add(bullet); 
                 this.bullets.push(bullet); 
                 if(tank === this.playerTank) gameApp.audio.fire(); 
                 
-                // إرسال حدث الإطلاق للخادم مع موقع الرصاصة
-                socket.emit('shoot', { position: bullet.position, direction: dir, timestamp: now });
+                socket.emit('shoot', { position: bullet.position, direction: dir, damage: 25 });
                 return true; 
             }
             
             createExplosion(pos, size = 1.2) {
                 const explosionGroup = new THREE.Group();
-                const flash = new THREE.Mesh(new THREE.SphereGeometry(size * 0.7, 16, 16), new THREE.MeshStandardMaterial({ color: 0xffaa66, emissive: 0xff4422, emissiveIntensity: 1.5 }));
+                const flash = new THREE.Mesh(new THREE.SphereGeometry(size * 0.6, 16, 16), new THREE.MeshStandardMaterial({ color: 0xffaa66, emissive: 0xff4422, emissiveIntensity: 1.2 }));
                 explosionGroup.add(flash);
                 explosionGroup.position.copy(pos);
                 this.scene.add(explosionGroup);
                 
-                for(let i = 0; i < 50; i++) { 
-                    const particle = new THREE.Mesh(new THREE.SphereGeometry(0.14, 6, 6), new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4422 })); 
+                for(let i = 0; i < 45; i++) { 
+                    const particle = new THREE.Mesh(new THREE.SphereGeometry(0.12, 6, 6), new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4422 })); 
                     particle.position.copy(pos); 
                     particle.userData = { 
-                        vel: new THREE.Vector3((Math.random() - 0.5) * 1.4, Math.random() * 1.8 + 0.5, (Math.random() - 0.5) * 1.4), 
-                        life: 1.2, gravity: 0.035 
+                        vel: new THREE.Vector3((Math.random() - 0.5) * 1.2, Math.random() * 1.5 + 0.5, (Math.random() - 0.5) * 1.2), 
+                        life: 1, gravity: 0.03 
                     }; 
                     this.scene.add(particle); 
                     this.particles.push(particle); 
                 }
                 
-                for(let i = 0; i < 15; i++) {
-                    const smoke = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 8), new THREE.MeshStandardMaterial({ color: 0x886666, emissive: 0x442222, transparent: true }));
+                for(let i = 0; i < 12; i++) {
+                    const smoke = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), new THREE.MeshStandardMaterial({ color: 0x886666, emissive: 0x442222 }));
                     smoke.position.copy(pos);
-                    smoke.userData = { vel: new THREE.Vector3((Math.random() - 0.5) * 0.5, Math.random() * 1.0, (Math.random() - 0.5) * 0.5), life: 1.5 };
+                    smoke.userData = { vel: new THREE.Vector3((Math.random() - 0.5) * 0.4, Math.random() * 0.8, (Math.random() - 0.5) * 0.4), life: 1.2 };
                     this.scene.add(smoke);
                     this.particles.push(smoke);
                 }
                 
-                setTimeout(() => this.scene.remove(explosionGroup), 250);
+                setTimeout(() => this.scene.remove(explosionGroup), 200);
                 const dist = this.playerTank ? pos.distanceTo(this.playerTank.position) : 0;
                 gameApp.audio.explosion(dist);
-                if(dist < 40) this.cameraShake = 1.5;
+                if(dist < 35) this.cameraShake = 1.2;
             }
             
             updateParticles() {
                 for(let i = this.particles.length-1; i >= 0; i--) {
                     const p = this.particles[i];
-                    p.userData.life -= 0.022;
+                    p.userData.life -= 0.025;
                     if(p.userData.life <= 0) {
                         this.scene.remove(p);
                         this.particles.splice(i,1);
@@ -968,10 +880,8 @@
                         p.position.z += p.userData.vel.z;
                         p.position.y += p.userData.vel.y;
                         if(p.userData.gravity) p.userData.vel.y -= p.userData.gravity;
-                        if(p.material) {
-                            p.material.opacity = p.userData.life;
-                            p.scale.setScalar(p.userData.life * 1.2);
-                        }
+                        p.material.emissiveIntensity = p.userData.life * 1.5;
+                        p.scale.setScalar(p.userData.life * 1.5);
                     }
                 }
             }
@@ -980,14 +890,14 @@
                 if (!this.gameActive) return;
                 this.updateParticles();
                 
-                if(this.playerTank && this.playerTank.parent) { 
-                    const speed = -this.joystick.y * 0.26;
-                    const rot = -this.joystick.x * 0.048; 
+                if(this.playerTank) { 
+                    const speed = -this.joystick.y * 0.22;
+                    const rot = -this.joystick.x * 0.045; 
                     const oldX = this.playerTank.position.x, oldZ = this.playerTank.position.z; 
                     this.playerTank.rotation.y += rot; 
                     this.playerTank.translateZ(speed); 
                     if(this.checkCollision(this.playerTank)) this.playerTank.position.set(oldX, 0, oldZ); 
-                    gameApp.audio.updateEngine(Math.abs(speed) * 3.8); 
+                    gameApp.audio.updateEngine(Math.abs(speed) * 3.5); 
                     
                     socket.emit('move', { position: this.playerTank.position, rotation: this.playerTank.rotation.y });
                     
@@ -1022,20 +932,20 @@
                     
                     if(!hit) { 
                         for(let [id, tank] of this.tanks) { 
-                            if(tank !== b.userData.owner && tank.userData.team !== b.userData.owner.userData.team && b.position.distanceTo(tank.position) < 2.0) { 
+                            if(tank !== b.userData.owner && tank.userData.team !== b.userData.owner.userData.team && b.position.distanceTo(tank.position) < 1.9) { 
                                 hit = true; 
-                                this.createExplosion(b.position, 1.6); 
+                                this.createExplosion(b.position, 1.5); 
                                 this.scene.remove(b); 
                                 this.bullets.splice(i,1); 
                                 
-                                // تطبيق الضرر
                                 const damage = b.userData.damage || 25;
                                 tank.userData.health = Math.max(0, (tank.userData.health || 100) - damage);
                                 
                                 if(tank === this.playerTank) {
                                     document.getElementById('health').innerText = tank.userData.health;
-                                    // إرسال حدث الضرر للخادم
-                                    socket.emit('damage', { damage: damage, killerId: this.playerTank?.userData.playerId });
+                                    socket.emit('damage', { damage: damage, targetId: this.playerTank?.userData.playerId });
+                                } else {
+                                    socket.emit('damage', { damage: damage, targetId: tank.userData.playerId });
                                 }
                                 
                                 if(tank.userData.health <= 0) {
@@ -1045,7 +955,6 @@
                                         gameApp.endBattle(this.team1Count === 0 ? 'الفريق الأزرق' : 'الفريق الأحمر'); 
                                     } else { 
                                         this.otherPlayers.delete(tank.userData.playerId);
-                                        // إرسال حدث تدمير للخادم
                                         socket.emit('player_destroyed', { targetId: tank.userData.playerId });
                                     }
                                     this.updateCounts(); 
@@ -1059,7 +968,7 @@
                             } 
                         } 
                     } 
-                    if(!hit && (b.userData.life < 0 || Math.abs(b.position.x) > 440 || Math.abs(b.position.z) > 440)) { 
+                    if(!hit && (b.userData.life < 0 || Math.abs(b.position.x) > 430 || Math.abs(b.position.z) > 430)) { 
                         this.scene.remove(b); 
                         this.bullets.splice(i,1); 
                     } 
@@ -1097,60 +1006,40 @@
             }
             
             animate() { 
-                this.animationId = requestAnimationFrame(() => this.animate()); 
+                requestAnimationFrame(() => this.animate()); 
                 this.update(); 
                 if(this.renderer && this.scene && this.camera) {
                     this.renderer.render(this.scene, this.camera);
                 }
             }
-            
-            dispose() {
-                if (this.animationId) {
-                    cancelAnimationFrame(this.animationId);
-                }
-            }
         }
 
-        // ============================================
-        // 🎮 Game App Controller
-        // ============================================
         const gameApp = {
             audio: new AudioEngine(), 
             sim: new GameSimulation(), 
             currentUser: null, 
             gameSettings: { seatPrice: 1, maxPlayers: 2 },
             battleResult: null,
-            lobbyInterval: null,
             pendingGameStart: null,
             
             initSocket() {
-                socket.on('connect', () => console.log('✅ Connected to server'));
+                socket.on('connect', () => console.log('✅ Connected'));
                 
                 socket.on('auth_success', (data) => {
-                    console.log('✅ Auth success:', data);
                     document.getElementById('loading').style.display = 'none';
                     this.currentUser = { uid: data.userId, email: data.email, username: data.username, balance: data.balance, isAdmin: data.isAdmin };
                     currentUser = this.currentUser;
                     currentBalance = data.balance;
                     isAdmin = data.isAdmin;
-                    localStorage.setItem('adminToken', 'authenticated');
-                    localStorage.setItem('userEmail', data.email);
-                    localStorage.setItem('isAdmin', data.isAdmin);
                     document.getElementById('balance').innerText = currentBalance;
                     document.getElementById('gameBalance').innerText = currentBalance;
                     document.getElementById('username').innerText = data.username || data.email.split('@')[0];
                     document.getElementById('gameUsername').innerText = data.username || data.email.split('@')[0];
-                    document.getElementById('gamesPlayed').innerText = data.gamesPlayed || 0;
-                    document.getElementById('wins').innerText = data.wins || 0;
                     if(isAdmin) document.getElementById('adminBtn').style.display = 'block';
                     this.showMainScreen();
                 });
                 
-                socket.on('auth_error', (data) => {
-                    document.getElementById('loading').style.display = 'none';
-                    alert('خطأ في المصادقة: ' + data.message);
-                });
-                
+                socket.on('auth_error', (data) => { document.getElementById('loading').style.display = 'none'; alert(data.message); });
                 socket.on('lobby_joined', (data) => {
                     currentBalance = data.balance;
                     document.getElementById('balance').innerText = currentBalance;
@@ -1161,25 +1050,13 @@
                         document.getElementById('maxPlayers').value = data.settings.maxPlayers;
                     }
                 });
-                
-                socket.on('rooms_list', (data) => {
-                    this.displayRooms(data.rooms);
-                });
-                
-                socket.on('room_created', (data) => {
-                    document.getElementById('lobbyStatus').innerHTML = '✅ تم إنشاء الغرفة، جاري انتظار لاعبين...';
-                });
-                
+                socket.on('rooms_list', (data) => this.displayRooms(data.rooms));
+                socket.on('room_created', (data) => document.getElementById('lobbyStatus').innerHTML = '✅ تم إنشاء الغرفة');
                 socket.on('room_update', (data) => {
                     this.updateSeatsDisplay(data.players, data.maxSeats);
-                    if(data.players.length === data.maxSeats) {
-                        document.getElementById('lobbyStatus').innerHTML = '🚀 اكتملت المقاعد! جاري بدء المعركة...';
-                    }
+                    if(data.players.length === data.maxSeats) document.getElementById('lobbyStatus').innerHTML = '🚀 اكتملت المقاعد!';
                 });
-                
                 socket.on('game_start', (data) => {
-                    console.log('Game start received:', data);
-                    // التحقق من وضع الشاشة قبل بدء المعركة
                     if(window.innerHeight > window.innerWidth) {
                         const warning = document.getElementById('landscapeWarning');
                         warning.style.display = 'flex';
@@ -1196,81 +1073,41 @@
                         this._startGame(data);
                     }
                 });
-                
                 socket.on('game_ended', (data) => {
-                    // الخروج من وضع ملء الشاشة عند انتهاء المعركة
-                    if(document.exitFullscreen) {
-                        document.exitFullscreen();
-                    }
+                    if(document.exitFullscreen) document.exitFullscreen();
                     this.endBattle(data.winner || (data.yourTeam === 1 ? 'الفريق الأزرق' : 'الفريق الأحمر'));
-                    if(data.reward) {
-                        currentBalance = data.yourBalance;
-                        document.getElementById('balance').innerText = currentBalance;
-                    }
+                    if(data.reward) currentBalance = data.yourBalance;
                 });
-                
-                socket.on('player_moved', (data) => {
-                    if(this.sim && this.sim.gameActive) this.sim.updateOtherPlayer(data);
-                });
-                
-                socket.on('player_shot', (data) => {
-                    console.log('Player shot from server:', data.userId);
-                });
-                
+                socket.on('player_moved', (data) => { if(this.sim?.gameActive) this.sim.updateOtherPlayer(data); });
+                socket.on('player_shot', (data) => console.log('Shot:', data.userId));
                 socket.on('game_state_update', (data) => {
-                    if(this.sim && this.sim.gameActive && data.players) {
-                        data.players.forEach(player => {
-                            if(player.userId !== currentUser?.uid) {
-                                this.sim.updateOtherPlayer(player);
-                            }
-                        });
+                    if(this.sim?.gameActive && data.players) {
+                        data.players.forEach(p => { if(p.userId !== currentUser?.uid) this.sim.updateOtherPlayer(p); });
                     }
                 });
-                
                 socket.on('health_update', (data) => {
-                    if(this.sim && this.sim.gameActive && data.userId !== currentUser?.uid) {
+                    if(this.sim?.gameActive && data.userId !== currentUser?.uid) {
                         const tank = this.sim.otherPlayers.get(data.userId);
                         if(tank) tank.userData.health = data.health;
                     }
                 });
-                
                 socket.on('player_destroyed', (data) => {
-                    if(this.sim && this.sim.gameActive && data.userId !== currentUser?.uid) {
-                        const tank = this.sim.otherPlayers.get(data.userId);
+                    if(this.sim?.gameActive && data.targetId !== currentUser?.uid) {
+                        const tank = this.sim.otherPlayers.get(data.targetId);
                         if(tank) {
                             this.sim.scene.remove(tank);
-                            this.sim.otherPlayers.delete(data.userId);
-                            this.sim.tanks.delete(data.userId);
-                            this.sim.createExplosion(data.position || tank.position);
+                            this.sim.otherPlayers.delete(data.targetId);
+                            this.sim.tanks.delete(data.targetId);
+                            this.sim.createExplosion(tank.position);
                             this.sim.updateCounts();
                         }
                     }
                 });
-                
-                socket.on('player_left', (data) => {
-                    if(this.sim && this.sim.gameActive && data.userId !== currentUser?.uid) {
-                        const tank = this.sim.otherPlayers.get(data.userId);
-                        if(tank) {
-                            this.sim.scene.remove(tank);
-                            this.sim.otherPlayers.delete(data.userId);
-                            this.sim.tanks.delete(data.userId);
-                            this.sim.updateCounts();
-                            
-                            if(this.sim.team1Count === 0 || this.sim.team2Count === 0) {
-                                const winner = this.sim.team1Count === 0 ? 'الفريق الأزرق' : 'الفريق الأحمر';
-                                this.endBattle(winner);
-                            }
-                        }
-                    }
-                });
-                
-                socket.on('error', (data) => {
-                    alert(data.message);
-                });
+                socket.on('error', (data) => alert(data.message));
             },
             
             async login(email, password) {
-                if(!email || !password) return alert('الرجاء إدخال البريد وكلمة المرور');
+                if(!email || !password) return alert('أدخل البريد وكلمة المرور');
                 document.getElementById('loading').style.display = 'flex';
                 try {
                     const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -1283,8 +1120,8 @@
             },
             
             async register(email, password) {
-                if(!email || !password) return alert('الرجاء إدخال البريد وكلمة المرور');
-                if(password.length < 6) return alert('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+                if(!email || !password) return alert('أدخل البريد وكلمة المرور');
+                if(password.length < 6) return alert('كلمة المرور 6 أحرف على الأقل');
                 document.getElementById('loading').style.display = 'flex';
                 try {
                     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -1312,15 +1149,10 @@
                 const grid = document.getElementById('seatsGrid');
                 if(!grid) return;
                 if(!rooms || rooms.length === 0) {
-                    grid.innerHTML = '<div style="grid-column:span 2; text-align:center;">لا توجد غرف، اضغط "إنشاء غرفة جديدة"</div>';
+                    grid.innerHTML = '<div style="grid-column:span 2; text-align:center;">لا توجد غرف</div>';
                     return;
                 }
-                grid.innerHTML = rooms.map(room => `
-                    <div class="seat" onclick="gameApp.joinRoom('${room.id}')">
-                        <div>🏠 غرفة</div>
-                        <div>👥 ${room.players}/${room.maxSeats}</div>
-                    </div>
-                `).join('');
+                grid.innerHTML = rooms.map(room => `<div class="seat" onclick="gameApp.joinRoom('${room.id}')"><div>🏠 غرفة</div><div>👥 ${room.players}/${room.maxSeats}</div></div>`).join('');
             },
             
             updateSeatsDisplay(players, maxSeats) {
@@ -1336,16 +1168,10 @@
                 }
             },
             
-            createRoom() {
-                socket.emit('create_room', { seats: this.gameSettings.maxPlayers || 2 });
-            },
-            
-            joinRoom(roomId) {
-                socket.emit('join_room', { roomId });
-            },
+            createRoom() { socket.emit('create_room', { seats: this.gameSettings.maxPlayers || 2 }); },
+            joinRoom(roomId) { socket.emit('join_room', { roomId }); },
             
             _startGame(data) {
-                console.log('Starting game with data:', data);
                 document.getElementById('lobby').style.display = 'none';
                 document.getElementById('hud').style.display = 'block';
                 document.getElementById('health').innerText = '100';
@@ -1353,10 +1179,7 @@
                 this.sim.init();
                 this.sim.gameActive = true;
                 
-                const positions = [
-                    { x: -75, z: -70, team: 1 },
-                    { x: 70, z: 70, team: 2 }
-                ];
+                const positions = [{ x: -75, z: -70, team: 1 }, { x: 70, z: 70, team: 2 }];
                 const myTeam = data.yourTeam || 1;
                 const myPos = positions[myTeam === 1 ? 0 : 1];
                 const myColor = myTeam === 1 ? 0x8b5a2b : 0x4a6a8b;
@@ -1365,11 +1188,10 @@
                 this.sim.playerTank = this.sim.createTank(myColor, myPos.x, myPos.z, myTeam, currentUser?.uid);
                 this.sim.tanks.set('player', this.sim.playerTank);
                 
-                // إنشاء دبابات اللاعبين الآخرين
                 if(data.players) {
                     data.players.forEach(player => {
                         if(player.userId !== currentUser?.uid) {
-                            const otherTeam = player.team || (player.userId === data.players[0]?.userId ? 1 : 2);
+                            const otherTeam = player.team || 1;
                             const otherPos = positions[otherTeam === 1 ? 0 : 1];
                             const otherColor = otherTeam === 1 ? 0x8b5a2b : 0x4a6a8b;
                             const tank = this.sim.createTank(otherColor, otherPos.x, otherPos.z, otherTeam, player.userId);
@@ -1384,19 +1206,8 @@
                 this.audio.startEngine();
                 this.battleResult = { startTime: new Date() };
                 
-                // ملء الشاشة بعد بدء المعركة
                 setTimeout(() => {
-                    if(document.documentElement.requestFullscreen) {
-                        document.documentElement.requestFullscreen();
-                    }
-                    // ضبط الكاميرا بعد ملء الشاشة
-                    setTimeout(() => {
-                        if(this.sim.camera) {
-                            this.sim.camera.aspect = window.innerWidth / window.innerHeight;
-                            this.sim.camera.updateProjectionMatrix();
-                            this.sim.renderer.setSize(window.innerWidth, window.innerHeight);
-                        }
-                    }, 100);
+                    if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
                 }, 100);
             },
             
@@ -1429,12 +1240,8 @@
                             let count = 3;
                             const interval = setInterval(() => {
                                 count--;
-                                if(count <= 0) {
-                                    clearInterval(interval);
-                                    document.getElementById('cooldownText').innerHTML = '✅ جاهز';
-                                } else {
-                                    document.getElementById('cooldownText').innerHTML = `⏱️ ${count} ثواني`;
-                                }
+                                if(count <= 0) { clearInterval(interval); document.getElementById('cooldownText').innerHTML = '✅ جاهز'; }
+                                else document.getElementById('cooldownText').innerHTML = `⏱️ ${count} ثواني`;
                             }, 1000);
                         }
                     }
@@ -1444,27 +1251,17 @@
             },
             
             endBattle(winner) {
-                if(this.sim) {
-                    this.sim.gameActive = false;
-                    this.sim.dispose();
-                    if(document.exitFullscreen) {
-                        document.exitFullscreen();
-                    }
-                }
+                if(this.sim) this.sim.gameActive = false;
                 const duration = Math.round((new Date() - this.battleResult.startTime) / 1000);
-                const report = `🏆 الفائز: ${winner}\n⏱️ المدة: ${duration} ثانية`;
-                document.getElementById('reportText').innerHTML = report.replace(/\n/g, '<br>');
+                document.getElementById('reportText').innerHTML = `🏆 الفائز: ${winner}<br>⏱️ المدة: ${duration} ثانية`;
                 document.getElementById('reportScreen').style.display = 'flex';
                 document.getElementById('hud').style.display = 'none';
-                if(this.sim && this.sim.playerTank) this.sim.scene.remove(this.sim.playerTank);
             },
             
             backToHome() {
                 document.getElementById('reportScreen').style.display = 'none';
                 document.getElementById('mainScreen').style.display = 'flex';
-                if(this.sim && this.sim.scene) {
-                    this.sim.gameActive = false;
-                }
+                if(this.sim) this.sim.gameActive = false;
             },
             
             goToWallet() { window.location.href = 'wallet.html'; },
@@ -1472,100 +1269,70 @@
             
             async saveSeatPrice() {
                 const price = parseInt(document.getElementById('seatPrice').value);
-                if(isNaN(price) || price < 1) return alert('سعر غير صالح');
                 try {
                     const response = await fetch(`${SERVER_URL}/api/admin/setSeatPrice`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ adminToken: 'authenticated', userId: currentUser?.uid, price })
                     });
                     const data = await response.json();
-                    if(data.success) {
-                        alert(`تم تغيير سعر المقعد إلى ${price}$`);
-                        this.gameSettings.seatPrice = price;
-                    } else {
-                        alert(data.error);
-                    }
-                } catch(e) { alert('خطأ في الاتصال'); }
+                    if(data.success) alert(`تم تغيير السعر إلى ${price}$`);
+                    else alert(data.error);
+                } catch(e) { alert('خطأ'); }
             },
             
             async saveMaxPlayers() {
                 const maxPlayers = parseInt(document.getElementById('maxPlayers').value);
-                if(isNaN(maxPlayers) || maxPlayers < 2 || maxPlayers > 16) return alert('عدد غير صالح (2-16)');
                 try {
                     const response = await fetch(`${SERVER_URL}/api/admin/setMaxPlayers`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ adminToken: 'authenticated', userId: currentUser?.uid, maxPlayers })
                     });
                     const data = await response.json();
-                    if(data.success) {
-                        alert(`تم تغيير عدد اللاعبين إلى ${maxPlayers}`);
-                        this.gameSettings.maxPlayers = maxPlayers;
-                    } else {
-                        alert(data.error);
-                    }
-                } catch(e) { alert('خطأ في الاتصال'); }
+                    if(data.success) alert(`تم تغيير عدد اللاعبين إلى ${maxPlayers}`);
+                    else alert(data.error);
+                } catch(e) { alert('خطأ'); }
             },
             
             async adminDeposit() {
                 const email = document.getElementById('targetEmail').value;
                 const amount = parseInt(document.getElementById('amount').value);
-                if(!email || !amount) return alert('أدخل البريد والمبلغ');
                 try {
                     const response = await fetch(`${SERVER_URL}/api/admin/balance`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ adminToken: 'authenticated', userId: email, amount, action: 'deposit' })
                     });
                     const data = await response.json();
-                    if(data.success) {
-                        alert(`تم إيداع ${amount}$ للمستخدم ${email}`);
-                        this.refreshStats();
-                    } else {
-                        alert(data.error);
-                    }
-                } catch(e) { alert('خطأ في الاتصال'); }
+                    if(data.success) alert(`تم إيداع ${amount}$`);
+                    else alert(data.error);
+                } catch(e) { alert('خطأ'); }
             },
             
             async adminWithdraw() {
                 const email = document.getElementById('targetEmail').value;
                 const amount = parseInt(document.getElementById('amount').value);
-                if(!email || !amount) return alert('أدخل البريد والمبلغ');
                 try {
                     const response = await fetch(`${SERVER_URL}/api/admin/balance`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ adminToken: 'authenticated', userId: email, amount, action: 'withdraw' })
                     });
                     const data = await response.json();
-                    if(data.success) {
-                        alert(`تم سحب ${amount}$ من المستخدم ${email}`);
-                        this.refreshStats();
-                    } else {
-                        alert(data.error);
-                    }
-                } catch(e) { alert('خطأ في الاتصال'); }
+                    if(data.success) alert(`تم سحب ${amount}$`);
+                    else alert(data.error);
+                } catch(e) { alert('خطأ'); }
             },
             
             async resetAllData() {
-                if(!confirm('⚠️ تحذير: سيتم مسح جميع بيانات اللاعبين نهائياً! هل أنت متأكد؟')) return;
-                const confirmText = prompt('اكتب "مسح" للتأكيد النهائي');
-                if(confirmText !== 'مسح') return;
+                if(!confirm('⚠️ مسح جميع البيانات؟')) return;
+                if(prompt('اكتب "مسح" للتأكيد') !== 'مسح') return;
                 try {
                     const response = await fetch(`${SERVER_URL}/api/admin/resetData`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ adminToken: 'authenticated', userId: currentUser?.uid })
                     });
                     const data = await response.json();
-                    if(data.success) {
-                        alert('تم مسح جميع بيانات اللاعبين بنجاح');
-                        this.refreshStats();
-                    } else {
-                        alert(data.error);
-                    }
-                } catch(e) { alert('خطأ في الاتصال'); }
+                    if(data.success) alert('تم المسح بنجاح');
+                    else alert(data.error);
+                } catch(e) { alert('خطأ'); }
             },
             
             async refreshStats() {
@@ -1575,56 +1342,20 @@
                     const response = await fetch(`${SERVER_URL}/api/admin/stats?adminToken=authenticated&userId=${currentUser?.uid}`);
                     const data = await response.json();
                     if(data.success) {
-                        statsBox.innerHTML = `
-                            <strong>📊 إحصائيات عامة</strong><br>
-                            👥 إجمالي اللاعبين: ${data.report.totalUsers}<br>
-                            💰 إجمالي الأرصدة: ${data.report.totalBalance} $<br>
-                            🎮 إجمالي المباريات: ${data.report.totalGames}<br>
-                            🏆 إجمالي الانتصارات: ${data.report.totalWins}<br>
-                            <hr>
-                            <strong>👤 قائمة اللاعبين:</strong><br>
-                            ${data.report.users.map(u => `📧 ${u.email} | 💰 ${u.balance}$ | 🎮 ${u.gamesPlayed} | 🏆 ${u.wins} ${u.isAdmin ? '👑' : ''}`).join('<br>')}
-                        `;
-                    } else {
-                        statsBox.innerHTML = 'خطأ في تحميل الإحصائيات';
-                    }
-                } catch(e) {
-                    statsBox.innerHTML = 'خطأ في الاتصال بالخادم';
-                }
-            },
-            
-            handleResize() {
-                if(this.sim && this.sim.camera && this.sim.renderer) {
-                    this.sim.camera.aspect = window.innerWidth / window.innerHeight;
-                    this.sim.camera.updateProjectionMatrix();
-                    this.sim.renderer.setSize(window.innerWidth, window.innerHeight);
-                }
+                        statsBox.innerHTML = `<strong>📊 إحصائيات</strong><br>👥 ${data.report.totalUsers} لاعب<br>💰 ${data.report.totalBalance} $<br>🎮 ${data.report.totalGames} مباراة<br><hr>${data.report.users.map(u => `📧 ${u.email} | 💰 ${u.balance}$`).join('<br>')}`;
+                    } else statsBox.innerHTML = 'خطأ';
+                } catch(e) { statsBox.innerHTML = 'خطأ في الاتصال'; }
             },
             
             init() {
                 this.initSocket();
-                
-                document.getElementById('loginBtn').onclick = () => {
-                    const email = document.getElementById('email').value;
-                    const password = document.getElementById('password').value;
-                    this.login(email, password);
-                };
-                document.getElementById('registerBtn').onclick = () => {
-                    const email = document.getElementById('email').value;
-                    const password = document.getElementById('password').value;
-                    this.register(email, password);
-                };
+                document.getElementById('loginBtn').onclick = () => this.login(document.getElementById('email').value, document.getElementById('password').value);
+                document.getElementById('registerBtn').onclick = () => this.register(document.getElementById('email').value, document.getElementById('password').value);
                 document.getElementById('playBtn').onclick = () => this.showLobby();
                 document.getElementById('walletBtn').onclick = () => this.goToWallet();
-                document.getElementById('adminBtn').onclick = () => {
-                    document.getElementById('adminPanel').style.display = 'flex';
-                    this.refreshStats();
-                };
+                document.getElementById('adminBtn').onclick = () => { document.getElementById('adminPanel').style.display = 'flex'; this.refreshStats(); };
                 document.getElementById('createRoomBtn').onclick = () => this.createRoom();
-                document.getElementById('backFromLobbyBtn').onclick = () => {
-                    document.getElementById('lobby').style.display = 'none';
-                    document.getElementById('mainScreen').style.display = 'flex';
-                };
+                document.getElementById('backFromLobbyBtn').onclick = () => { document.getElementById('lobby').style.display = 'none'; document.getElementById('mainScreen').style.display = 'flex'; };
                 document.getElementById('backHomeBtn').onclick = () => this.backToHome();
                 document.getElementById('closeAdminBtn').onclick = () => document.getElementById('adminPanel').style.display = 'none';
                 document.getElementById('saveSeatPriceBtn').onclick = () => this.saveSeatPrice();
@@ -1634,13 +1365,19 @@
                 document.getElementById('resetDataBtn').onclick = () => this.resetAllData();
                 document.getElementById('refreshStatsBtn').onclick = () => this.refreshStats();
                 
-                window.addEventListener('resize', () => this.handleResize());
+                window.addEventListener('resize', () => {
+                    if(this.sim && this.sim.camera && this.sim.renderer) {
+                        this.sim.camera.aspect = window.innerWidth / window.innerHeight;
+                        this.sim.camera.updateProjectionMatrix();
+                        this.sim.renderer.setSize(window.innerWidth, window.innerHeight);
+                    }
+                });
             }
         };
         
         window.gameApp = gameApp;
         gameApp.init();
-        console.log('🎮 Game ready with full sync and landscape mode!');
+        console.log('🎮 Game ready!');
     </script>
 </body>
 </html>
