@@ -804,7 +804,21 @@ io.on('connection', (socket) => {
             }
         }
     });
-    
+    socket.on('game_cleanup', (data) => {
+        const player = players.get(socket.id);
+        if (player && player.roomId) {
+            const room = rooms.get(player.roomId);
+            if (room && room.status === 'ended') {
+                const index = room.players.findIndex(p => p.socketId === socket.id);
+                if (index !== -1) {
+                    room.players.splice(index, 1);
+                }
+                player.roomId = null;
+                socket.emit('cleanup_complete', { success: true });
+                console.log(`🧹 Player ${player.userId} cleaned up after game`);
+            }
+        }
+    });
     // ============================================
     // 🔌 انقطاع الاتصال
     // ============================================
@@ -848,6 +862,16 @@ io.on('connection', (socket) => {
     });
 });
 
+setInterval(() => {
+    const now = Date.now();
+    for (const [roomId, room] of rooms) {
+        if (room.status === 'ended' && now - (room.startTime || now) > 30000) {
+            rooms.delete(roomId);
+            console.log(`🧹 Cleaned up expired room: ${roomId}`);
+        }
+    }
+    broadcastRoomsList();
+}, 60000);
 // ============================================
 // 🚀 تشغيل الخادم
 // ============================================
