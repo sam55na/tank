@@ -699,8 +699,7 @@
     <script type="importmap">
         {
             "imports": {
-                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
-                "socket.io-client": "https://cdn.socket.io/4.6.0/socket.io.esm.min.js"
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js"
             }
         }
     </script>
@@ -709,7 +708,6 @@
         import * as THREE from 'three';
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js';
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js';
-        import io from 'socket.io-client';
 
         const firebaseConfig = {
             apiKey: "AIzaSyCvPo4HlsNhyf1WBmTzIr6CdR1c2lQ5sHU",
@@ -725,314 +723,35 @@
         const auth = getAuth(firebaseApp);
         
         const SERVER_URL = "https://tank-yf0p.onrender.com";
-        
-        const socket = io(SERVER_URL, {
-            transports: ['websocket', 'polling'],
-            reconnection: true,
-            reconnectionAttempts: 10,
-            reconnectionDelay: 1000,
-            reconnectionDelayMax: 5000,
-            timeout: 20000,
-            secure: true
-        });
+        import io from 'https://cdn.socket.io/4.6.0/socket.io.esm.min.js';
+        const socket = io(SERVER_URL);
         
         let currentUser = null;
         let currentBalance = 0;
         let isAdmin = false;
         let gameSettings = { seatPrice: 1, maxPlayers: 2 };
-        
-        // ==================== TEXTURE CREATION ====================
-        const createCamoTexture = (colors) => {
-            const canvas = document.createElement('canvas');
-            canvas.width = 512;
-            canvas.height = 512;
-            const ctx = canvas.getContext('2d');
-            
-            if (!ctx) return new THREE.Texture();
-            
-            ctx.fillStyle = colors.base;
-            ctx.fillRect(0, 0, 512, 512);
-            
-            ctx.fillStyle = colors.spot1;
-            for (let i = 0; i < 60; i++) {
-                ctx.beginPath();
-                ctx.ellipse(
-                    Math.random() * 512,
-                    Math.random() * 512,
-                    30 + Math.random() * 50,
-                    20 + Math.random() * 40,
-                    Math.random() * Math.PI * 2,
-                    0,
-                    Math.PI * 2
-                );
-                ctx.fill();
-            }
-            
-            ctx.fillStyle = colors.spot2;
-            for (let i = 0; i < 40; i++) {
-                ctx.beginPath();
-                ctx.ellipse(
-                    Math.random() * 512,
-                    Math.random() * 512,
-                    15 + Math.random() * 35,
-                    12 + Math.random() * 25,
-                    Math.random() * Math.PI * 2,
-                    0,
-                    Math.PI * 2
-                );
-                ctx.fill();
-            }
-            
-            const texture = new THREE.CanvasTexture(canvas);
-            texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-            texture.repeat.set(2, 2);
-            return texture;
-        };
-        
-        // ملمس الدبابة العسكرية (أخضر)
-        const standardCamoTexture = createCamoTexture({
-            base: '#4b5320',
-            spot1: '#3d3d29',
-            spot2: '#1a1a0d',
-        });
-        
-        // ملمس الدبابة الصحراوية (بني)
-        const desertCamoTexture = createCamoTexture({
-            base: '#d4a574',
-            spot1: '#b8956a',
-            spot2: '#8b7355',
-        });
-        
-        const standardTankMaterial = new THREE.MeshStandardMaterial({
-            map: standardCamoTexture,
-            roughness: 0.7,
-            metalness: 0.25,
-        });
-        
-        const desertTankMaterial = new THREE.MeshStandardMaterial({
-            map: desertCamoTexture,
-            roughness: 0.7,
-            metalness: 0.25,
-        });
-        
-        const trackMaterial = new THREE.MeshStandardMaterial({
-            color: 0x2a2a2a,
-            roughness: 0.85,
-            metalness: 0.15,
-        });
-        
-        const barrelMaterial = new THREE.MeshStandardMaterial({
-            color: 0x3a3a3a,
-            roughness: 0.5,
-            metalness: 0.7,
-        });
-        
-        const wheelMaterial = new THREE.MeshStandardMaterial({
-            color: 0x222222,
-            roughness: 0.7,
-            metalness: 0.4,
-        });
-        
-        // ==================== DETAILED TANK FACTORY ====================
-        const createDetailedTank = (x, z, type, playerId) => {
-            const tankMaterial = type === 'standard' ? standardTankMaterial : desertTankMaterial;
-            const group = new THREE.Group();
-            group.position.set(x, 0, z);
-            
-            // الهيكل السفلي (Chassis)
-            const chassisGeo = new THREE.BoxGeometry(2.8, 0.9, 4.2);
-            const chassis = new THREE.Mesh(chassisGeo, tankMaterial);
-            chassis.position.y = 0.6;
-            chassis.castShadow = true;
-            chassis.receiveShadow = true;
-            group.add(chassis);
-            
-            // الهيكل العلوي
-            const upperGeo = new THREE.BoxGeometry(2.4, 0.7, 3.2);
-            const upperBody = new THREE.Mesh(upperGeo, tankMaterial);
-            upperBody.position.y = 1.1;
-            upperBody.castShadow = true;
-            group.add(upperBody);
-            
-            // البرج الدوار (Turret)
-            const turretGeo = new THREE.CylinderGeometry(1.3, 1.4, 0.8, 24);
-            const turret = new THREE.Mesh(turretGeo, tankMaterial);
-            turret.position.y = 1.6;
-            turret.castShadow = true;
-            group.add(turret);
-            
-            // فتحة القائد
-            const hatchGeo = new THREE.CylinderGeometry(0.35, 0.4, 0.2, 16);
-            const hatch = new THREE.Mesh(hatchGeo, barrelMaterial);
-            hatch.position.set(-0.5, 2.0, 0.5);
-            hatch.castShadow = true;
-            group.add(hatch);
-            
-            // رشاش صغير
-            const mgGeo = new THREE.CylinderGeometry(0.08, 0.1, 0.7, 8);
-            const mg = new THREE.Mesh(mgGeo, barrelMaterial);
-            mg.rotation.x = 0.3;
-            mg.position.set(-0.6, 1.95, 1.0);
-            mg.castShadow = true;
-            group.add(mg);
-            
-            // المدفع الرئيسي (Barrel)
-            const barrelGeo = new THREE.CylinderGeometry(0.28, 0.35, 2.4, 16);
-            const barrel = new THREE.Mesh(barrelGeo, barrelMaterial);
-            barrel.rotation.x = 0.05;
-            barrel.position.set(1.3, 1.75, 0.6);
-            barrel.castShadow = true;
-            group.add(barrel);
-            
-            // فوهة المدفع
-            const muzzleGeo = new THREE.CylinderGeometry(0.32, 0.28, 0.5, 12);
-            const muzzle = new THREE.Mesh(muzzleGeo, barrelMaterial);
-            muzzle.rotation.x = 0.05;
-            muzzle.position.set(2.7, 1.75, 0.7);
-            muzzle.castShadow = true;
-            group.add(muzzle);
-            
-            // المسارات الجانبية
-            const trackGeo = new THREE.BoxGeometry(3.0, 0.5, 0.7);
-            
-            const leftTrack = new THREE.Mesh(trackGeo, trackMaterial);
-            leftTrack.position.set(-1.6, 0.4, 0);
-            leftTrack.castShadow = true;
-            group.add(leftTrack);
-            
-            const rightTrack = new THREE.Mesh(trackGeo, trackMaterial);
-            rightTrack.position.set(1.6, 0.4, 0);
-            rightTrack.castShadow = true;
-            group.add(rightTrack);
-            
-            // العجلات
-            const wheelGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.5, 24);
-            const wheelPositions = [-1.4, -0.7, 0, 0.7, 1.4];
-            
-            wheelPositions.forEach(posZ => {
-                const leftWheel = new THREE.Mesh(wheelGeo, wheelMaterial);
-                leftWheel.rotation.z = Math.PI / 2;
-                leftWheel.position.set(-1.4, 0.4, posZ);
-                leftWheel.castShadow = true;
-                group.add(leftWheel);
-                
-                const rightWheel = new THREE.Mesh(wheelGeo, wheelMaterial);
-                rightWheel.rotation.z = Math.PI / 2;
-                rightWheel.position.set(1.4, 0.4, posZ);
-                rightWheel.castShadow = true;
-                group.add(rightWheel);
-            });
-            
-            // الدروع الجانبية
-            const skirtGeo = new THREE.BoxGeometry(2.8, 0.3, 0.1);
-            const leftSkirt = new THREE.Mesh(skirtGeo, tankMaterial);
-            leftSkirt.position.set(-1.9, 0.85, 0);
-            leftSkirt.castShadow = true;
-            group.add(leftSkirt);
-            
-            const rightSkirt = new THREE.Mesh(skirtGeo, tankMaterial);
-            rightSkirt.position.set(1.9, 0.85, 0);
-            rightSkirt.castShadow = true;
-            group.add(rightSkirt);
-            
-            group.userData = { health: 100, team: type === 'standard' ? 1 : 2, playerId: playerId };
-            
-            return { group, turretGroup: turret, barrelGroup: barrel };
-        };
+        let isFullscreen = false;
         
         class AudioEngine {
-            constructor() { 
-                this.ctx = null; 
-                this.engineOsc = null; 
-                this.engineGain = null;
-            }
-            init() { 
-                if (this.ctx) return; 
-                try { 
-                    this.ctx = new (window.AudioContext || window.webkitAudioContext)(); 
-                } catch(e) { console.log('Audio not supported'); } 
-            }
-            startEngine() { 
-                if (!this.ctx) this.init(); 
-                if (this.engineOsc) return; 
-                try { 
-                    this.engineOsc = this.ctx.createOscillator(); 
-                    this.engineGain = this.ctx.createGain(); 
-                    const filter = this.ctx.createBiquadFilter(); 
-                    this.engineOsc.type = 'sawtooth'; 
-                    this.engineOsc.frequency.value = 42; 
-                    filter.type = 'lowpass'; 
-                    filter.frequency.value = 180; 
-                    this.engineGain.gain.value = 0.08; 
-                    this.engineOsc.connect(filter); 
-                    filter.connect(this.engineGain); 
-                    this.engineGain.connect(this.ctx.destination); 
-                    this.engineOsc.start(); 
-                } catch(e) {} 
-            }
-            updateEngine(speed) { 
-                if (!this.engineOsc) return; 
-                const freq = 42 + Math.min(speed, 2) * 40;
-                const gain = 0.08 + Math.min(speed, 2) * 0.1;
-                this.engineOsc.frequency.setTargetAtTime(freq, this.ctx.currentTime, 0.05); 
-                this.engineGain.gain.setTargetAtTime(gain, this.ctx.currentTime, 0.05); 
-            }
-            fire() { 
-                if (!this.ctx) return; 
-                const now = this.ctx.currentTime; 
-                const osc = this.ctx.createOscillator(); 
-                const gain = this.ctx.createGain(); 
-                osc.type = 'square'; 
-                osc.frequency.setValueAtTime(170, now); 
-                osc.frequency.exponentialRampToValueAtTime(55, now + 0.28); 
-                gain.gain.setValueAtTime(0.7, now); 
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.32); 
-                osc.connect(gain); 
-                gain.connect(this.ctx.destination); 
-                osc.start(now); 
-                osc.stop(now + 0.32); 
-            }
-            explosion(distance) { 
-                if (!this.ctx) return; 
-                const vol = Math.max(0.2, Math.min(0.9, 1 - distance / 60)); 
-                const now = this.ctx.currentTime; 
-                const noise = this.ctx.createBufferSource(); 
-                const buffer = this.ctx.createBuffer(1, this.ctx.sampleRate * 1.0, this.ctx.sampleRate); 
-                const data = buffer.getChannelData(0); 
-                for (let i = 0; i < buffer.length; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / buffer.length, 1.3); 
-                noise.buffer = buffer; 
-                const gain = this.ctx.createGain(); 
-                gain.gain.setValueAtTime(vol, now); 
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 1.0); 
-                noise.connect(gain); 
-                gain.connect(this.ctx.destination); 
-                noise.start(now); 
-            }
+            constructor() { this.ctx = null; this.engineOsc = null; this.engineGain = null; }
+            init() { if (this.ctx) return; try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+            startEngine() { if (!this.ctx) this.init(); if (this.engineOsc) return; try { this.engineOsc = this.ctx.createOscillator(); this.engineGain = this.ctx.createGain(); const filter = this.ctx.createBiquadFilter(); this.engineOsc.type = 'sawtooth'; this.engineOsc.frequency.value = 42; filter.type = 'lowpass'; filter.frequency.value = 180; this.engineGain.gain.value = 0.08; this.engineOsc.connect(filter); filter.connect(this.engineGain); this.engineGain.connect(this.ctx.destination); this.engineOsc.start(); } catch(e) {} }
+            updateEngine(speed) { if (!this.engineOsc) return; const freq = 42 + speed * 40; this.engineOsc.frequency.setTargetAtTime(freq, this.ctx.currentTime, 0.05); this.engineGain.gain.setTargetAtTime(0.08 + speed * 0.1, this.ctx.currentTime, 0.05); }
+            fire() { if (!this.ctx) return; const now = this.ctx.currentTime; const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain(); osc.type = 'square'; osc.frequency.setValueAtTime(170, now); osc.frequency.exponentialRampToValueAtTime(55, now + 0.28); gain.gain.setValueAtTime(0.7, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.32); osc.connect(gain); gain.connect(this.ctx.destination); osc.start(now); osc.stop(now + 0.32); }
+            explosion(distance) { if (!this.ctx) return; const vol = Math.max(0.2, Math.min(0.9, 1 - distance / 60)); const now = this.ctx.currentTime; const noise = this.ctx.createBufferSource(); const buffer = this.ctx.createBuffer(1, this.ctx.sampleRate * 1.0, this.ctx.sampleRate); const data = buffer.getChannelData(0); for (let i = 0; i < buffer.length; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / buffer.length, 1.3); noise.buffer = buffer; const gain = this.ctx.createGain(); gain.gain.setValueAtTime(vol, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 1.0); noise.connect(gain); gain.connect(this.ctx.destination); noise.start(now); }
         }
 
         class GameSimulation {
             constructor() { 
-                this.scene = null; 
-                this.camera = null; 
-                this.renderer = null; 
-                this.tanks = new Map(); 
-                this.bullets = []; 
-                this.playerTank = null; 
-                this.joystick = { x: 0, y: 0 }; 
-                this.cameraShake = 0; 
-                this.lastShot = 0; 
-                this.obstacles = []; 
-                this.particles = []; 
-                this.team1Count = 0; 
-                this.team2Count = 0;
-                this.playerTeam = null; 
-                this.otherPlayers = new Map();
+                this.scene = null; this.camera = null; this.renderer = null; 
+                this.tanks = new Map(); this.bullets = []; this.playerTank = null; 
+                this.joystick = { x: 0, y: 0 }; this.cameraShake = 0; this.lastShot = 0; 
+                this.obstacles = []; this.particles = []; this.team1Count = 0; this.team2Count = 0;
+                this.playerTeam = null; this.otherPlayers = new Map();
                 this.gameActive = false;
                 this.isEliminated = false;
                 this.lastMoveTime = 0;
                 this.playerId = null;
-                this.lastTime = performance.now();
-                this.deltaTime = 1 / 60;
             }
 
             init() { 
@@ -1040,31 +759,18 @@
                 this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 500); 
                 this.renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
                 this.renderer.setSize(window.innerWidth, window.innerHeight); 
-                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                this.renderer.setPixelRatio(window.devicePixelRatio);
                 this.renderer.shadowMap.enabled = true; 
-                this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
                 this.scene.background = new THREE.Color(0x1a2a3a); 
-                this.scene.fog = new THREE.FogExp2(0x1a2a3a, 0.0015);
+                this.scene.fog = new THREE.FogExp2(0x1a2a3a, 0.0018);
                 
                 const ambient = new THREE.AmbientLight(0xffffff, 0.6); 
                 this.scene.add(ambient); 
-                
                 const sun = new THREE.DirectionalLight(0xffeedd, 1.4); 
                 sun.position.set(50, 70, 40); 
                 sun.castShadow = true; 
-                sun.shadow.mapSize.width = 2048;
-                sun.shadow.mapSize.height = 2048;
-                sun.shadow.camera.near = 0.5;
-                sun.shadow.camera.far = 200;
-                sun.shadow.camera.left = -100;
-                sun.shadow.camera.right = 100;
-                sun.shadow.camera.top = 100;
-                sun.shadow.camera.bottom = -100;
+                sun.shadow.mapSize.set(1024, 1024); 
                 this.scene.add(sun); 
-                
-                const fillLight = new THREE.PointLight(0x88aaff, 0.3);
-                fillLight.position.set(0, 20, 0);
-                this.scene.add(fillLight);
                 
                 this.createTerrain(); 
                 this.createObstacles(); 
@@ -1082,157 +788,163 @@
             }
             
             createTerrain() { 
-                const geo = new THREE.PlaneGeometry(450, 450, 80, 80); 
+                const geo = new THREE.PlaneGeometry(450, 450, 60, 60); 
                 geo.rotateX(-Math.PI / 2); 
-                
-                const groundMat = new THREE.MeshStandardMaterial({ 
-                    color: 0x6a5a4a, 
-                    roughness: 0.85, 
-                    metalness: 0.05,
-                }); 
+                const groundMat = new THREE.MeshStandardMaterial({ color: 0x6a5a4a, roughness: 0.9, metalness: 0.05 }); 
                 const ground = new THREE.Mesh(geo, groundMat); 
                 ground.receiveShadow = true; 
                 this.scene.add(ground); 
-                
-                const gridHelper = new THREE.GridHelper(460, 60, 0x8a8a7a, 0x5a5a4a);
-                gridHelper.position.y = 0.05;
+                const gridHelper = new THREE.GridHelper(460, 50, 0x8a8a7a, 0x5a5a4a);
+                gridHelper.position.y = 0.03;
                 this.scene.add(gridHelper);
             }
             
             createObstacles() {
-                const rockMat = new THREE.MeshStandardMaterial({ color: 0x6a6a5a, roughness: 0.85 });
+                const rockMat = new THREE.MeshStandardMaterial({ color: 0x6a6a5a, roughness: 0.75 });
                 const positions = [
-                    { x: -45, z: -20, scale: 1.2 }, { x: -30, z: 40, scale: 1.5 }, { x: -10, z: -55, scale: 1.0 },
-                    { x: 15, z: -35, scale: 1.3 }, { x: 40, z: -15, scale: 1.1 }, { x: 55, z: 25, scale: 1.4 },
-                    { x: 35, z: 55, scale: 1.2 }, { x: -25, z: -45, scale: 1.0 }, { x: -55, z: 15, scale: 1.3 },
-                    { x: 5, z: 60, scale: 1.1 }, { x: 70, z: -25, scale: 1.5 }, { x: -60, z: -40, scale: 1.2 },
-                    { x: -40, z: 65, scale: 1.0 }, { x: 25, z: -65, scale: 1.4 }, { x: 50, z: 45, scale: 1.1 }
+                    { x: -45, z: -20 }, { x: -30, z: 40 }, { x: -10, z: -55 }, { x: 15, z: -35 },
+                    { x: 40, z: -15 }, { x: 55, z: 25 }, { x: 35, z: 55 }, { x: -25, z: -45 },
+                    { x: -55, z: 15 }, { x: 5, z: 60 }, { x: 70, z: -25 }, { x: -60, z: -40 },
+                    { x: -40, z: 65 }, { x: 25, z: -65 }, { x: 50, z: 45 }
                 ];
                 positions.forEach(pos => {
                     const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(1.2), rockMat);
-                    rock.scale.set(pos.scale, pos.scale * 0.8, pos.scale);
-                    rock.position.set(pos.x, 0.5, pos.z);
+                    rock.scale.set(1.8, 1.5, 1.8);
+                    rock.position.set(pos.x, 0.6, pos.z);
                     rock.castShadow = true;
                     this.scene.add(rock);
                     this.obstacles.push(rock);
                 });
             }
             
-            createTank(x, z, type, playerId) {
-                const tankData = createDetailedTank(x, z, type, playerId);
-                this.scene.add(tankData.group);
-                return tankData;
+            createTank(color, x, z, team, playerId = null) { 
+                const group = new THREE.Group(); 
+                const bodyMat = new THREE.MeshStandardMaterial({ color: color, metalness: 0.7, roughness: 0.4 }); 
+                const body = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.9, 3.6), bodyMat); 
+                body.position.y = 0.5; 
+                body.castShadow = true; 
+                group.add(body); 
+                
+                const turretMat = new THREE.MeshStandardMaterial({ color: color, metalness: 0.8 }); 
+                const turret = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 0.7, 32), turretMat); 
+                turret.position.y = 0.95; 
+                turret.castShadow = true; 
+                group.add(turret); 
+                
+                const barrelMat = new THREE.MeshStandardMaterial({ color: 0x3a3a3a });
+                const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.32, 2.2, 16), barrelMat); 
+                barrel.position.set(0, 1.05, 1.5); 
+                barrel.rotation.x = 0.05; 
+                group.add(barrel); 
+                
+                group.position.set(x, 0, z); 
+                group.userData = { health: 100, team: team, playerId: playerId }; 
+                this.scene.add(group); 
+                return group; 
             }
             
-            fire(tankData) { 
+            fire(tank) { 
                 if (this.isEliminated || !this.gameActive) return false;
                 
                 const now = Date.now(); 
-                if(now - this.lastShot < 2800) return false; 
+                if(now - this.lastShot < 3000) return false; 
                 this.lastShot = now; 
-                
-                const dir = new THREE.Vector3(0, 0, 1).applyQuaternion(tankData.group.quaternion); 
-                const bullet = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.28, 24, 24), 
-                    new THREE.MeshStandardMaterial({ color: 0xffaa44, emissive: 0xff4422, emissiveIntensity: 0.8 })
-                ); 
-                bullet.position.copy(tankData.group.position); 
-                bullet.position.y += 1.6; 
-                bullet.userData = { velocity: dir.multiplyScalar(3.2), owner: tankData, life: 250, ownerId: tankData.group.userData.playerId || 'player' }; 
+                const dir = new THREE.Vector3(0, 0, 1).applyQuaternion(tank.quaternion); 
+                const bullet = new THREE.Mesh(new THREE.SphereGeometry(0.26, 24, 24), new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4422, emissiveIntensity: 0.6 })); 
+                bullet.position.copy(tank.position); 
+                bullet.position.y += 1.2; 
+                bullet.userData = { velocity: dir.multiplyScalar(2.6), owner: tank, life: 200, ownerId: tank.userData.playerId || 'player' }; 
                 this.scene.add(bullet); 
                 this.bullets.push(bullet); 
-                if(tankData === this.playerTank) gameApp.audio.fire(); 
+                if(tank === this.playerTank) gameApp.audio.fire(); 
                 
                 socket.emit('shoot', { position: bullet.position, direction: dir });
                 return true; 
             }
             
             createExplosion(pos, size = 1.2) {
-                const flash = new THREE.Mesh(
-                    new THREE.SphereGeometry(size * 0.8, 16, 16), 
-                    new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4422, emissiveIntensity: 1.5 })
-                );
-                flash.position.copy(pos);
-                this.scene.add(flash);
+                const explosionGroup = new THREE.Group();
+                const flash = new THREE.Mesh(new THREE.SphereGeometry(size * 0.6, 16, 16), new THREE.MeshStandardMaterial({ color: 0xffaa66, emissive: 0xff4422, emissiveIntensity: 1.2 }));
+                explosionGroup.add(flash);
+                explosionGroup.position.copy(pos);
+                this.scene.add(explosionGroup);
                 
-                const particleCount = 50;
-                for(let i = 0; i < particleCount; i++) { 
-                    const particle = new THREE.Mesh(
-                        new THREE.SphereGeometry(0.12 + Math.random() * 0.15, 6, 6), 
-                        new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4422 })
-                    ); 
+                for(let i = 0; i < 45; i++) { 
+                    const particle = new THREE.Mesh(new THREE.SphereGeometry(0.12, 6, 6), new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4422 })); 
                     particle.position.copy(pos); 
                     particle.userData = { 
-                        vel: new THREE.Vector3((Math.random() - 0.5) * 1.5, Math.random() * 2 + 0.5, (Math.random() - 0.5) * 1.5), 
-                        life: 0.8, 
-                        gravity: 0.04
+                        vel: new THREE.Vector3((Math.random() - 0.5) * 1.2, Math.random() * 1.5 + 0.5, (Math.random() - 0.5) * 1.2), 
+                        life: 1, gravity: 0.03 
                     }; 
                     this.scene.add(particle); 
                     this.particles.push(particle); 
                 }
                 
-                setTimeout(() => this.scene.remove(flash), 200);
-                const dist = this.playerTank ? pos.distanceTo(this.playerTank.group.position) : 0;
+                for(let i = 0; i < 12; i++) {
+                    const smoke = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), new THREE.MeshStandardMaterial({ color: 0x886666, emissive: 0x442222 }));
+                    smoke.position.copy(pos);
+                    smoke.userData = { vel: new THREE.Vector3((Math.random() - 0.5) * 0.4, Math.random() * 0.8, (Math.random() - 0.5) * 0.4), life: 1.2 };
+                    this.scene.add(smoke);
+                    this.particles.push(smoke);
+                }
+                
+                setTimeout(() => this.scene.remove(explosionGroup), 200);
+                const dist = this.playerTank ? pos.distanceTo(this.playerTank.position) : 0;
                 gameApp.audio.explosion(dist);
-                if(dist < 40) this.cameraShake = 1.2;
+                if(dist < 35) this.cameraShake = 1.2;
             }
             
             updateParticles() {
-                const delta = this.deltaTime;
                 for(let i = this.particles.length-1; i >= 0; i--) {
                     const p = this.particles[i];
-                    p.userData.life -= delta;
+                    p.userData.life -= 0.025;
                     if(p.userData.life <= 0) {
                         this.scene.remove(p);
                         this.particles.splice(i,1);
                     } else {
-                        p.position.x += p.userData.vel.x * delta;
-                        p.position.z += p.userData.vel.z * delta;
-                        p.position.y += p.userData.vel.y * delta;
+                        p.position.x += p.userData.vel.x;
+                        p.position.z += p.userData.vel.z;
+                        p.position.y += p.userData.vel.y;
                         if(p.userData.gravity) p.userData.vel.y -= p.userData.gravity;
-                        if(p.material) p.material.emissiveIntensity = p.userData.life * 2;
-                        p.scale.setScalar(p.userData.life);
+                        p.material.emissiveIntensity = p.userData.life * 1.5;
+                        p.scale.setScalar(p.userData.life * 1.5);
                     }
                 }
             }
             
             update() { 
-                const now = performance.now();
-                this.deltaTime = Math.min(0.033, (now - this.lastTime) / 1000);
-                this.lastTime = now;
-                
                 if (!this.gameActive || this.isEliminated) return;
                 this.updateParticles();
                 
                 if(this.playerTank) { 
-                    const speed = -this.joystick.y * 0.28;
-                    const rot = -this.joystick.x * 0.055; 
-                    const oldX = this.playerTank.group.position.x, oldZ = this.playerTank.group.position.z; 
-                    this.playerTank.group.rotation.y += rot; 
-                    this.playerTank.group.translateZ(speed); 
-                    if(this.checkCollision(this.playerTank.group)) this.playerTank.group.position.set(oldX, 0, oldZ); 
-                    gameApp.audio.updateEngine(Math.abs(speed) * 4); 
+                    const speed = -this.joystick.y * 0.22;
+                    const rot = -this.joystick.x * 0.045; 
+                    const oldX = this.playerTank.position.x, oldZ = this.playerTank.position.z; 
+                    this.playerTank.rotation.y += rot; 
+                    this.playerTank.translateZ(speed); 
+                    if(this.checkCollision(this.playerTank)) this.playerTank.position.set(oldX, 0, oldZ); 
+                    gameApp.audio.updateEngine(Math.abs(speed) * 3.5); 
                     
-                    const nowMs = Date.now();
-                    if (nowMs - this.lastMoveTime > 45) {
-                        this.lastMoveTime = nowMs;
-                        socket.emit('move', { position: this.playerTank.group.position, rotation: this.playerTank.group.rotation.y });
+                    const now = Date.now();
+                    if (now - this.lastMoveTime > 50) {
+                        this.lastMoveTime = now;
+                        socket.emit('move', { position: this.playerTank.position, rotation: this.playerTank.rotation.y });
                     }
                     
-                    const camOffset = new THREE.Vector3(0, 6, -13).applyQuaternion(this.playerTank.group.quaternion); 
-                    let camTarget = this.playerTank.group.position.clone().add(camOffset); 
+                    const camOffset = new THREE.Vector3(0, 5.5, -12).applyQuaternion(this.playerTank.quaternion); 
+                    let camTarget = this.playerTank.position.clone().add(camOffset); 
                     if(this.cameraShake > 0) { 
-                        camTarget.x += (Math.random() - 0.5) * this.cameraShake * 0.4; 
-                        camTarget.y += (Math.random() - 0.5) * this.cameraShake * 0.25; 
-                        this.cameraShake *= 0.9; 
+                        camTarget.x += (Math.random() - 0.5) * this.cameraShake * 0.5; 
+                        camTarget.y += (Math.random() - 0.5) * this.cameraShake * 0.3; 
+                        this.cameraShake *= 0.92; 
                     } 
-                    this.camera.position.lerp(camTarget, 0.15); 
-                    this.camera.lookAt(this.playerTank.group.position.clone().add(new THREE.Vector3(0, 1.5, 0))); 
+                    this.camera.position.lerp(camTarget, 0.12); 
+                    this.camera.lookAt(this.playerTank.position.clone().add(new THREE.Vector3(0, 1.2, 0))); 
                 } 
                 
                 for(let i = this.bullets.length-1; i >= 0; i--) { 
                     const b = this.bullets[i]; 
-                    b.position.add(b.userData.velocity.clone().multiplyScalar(this.deltaTime * 30)); 
+                    b.position.add(b.userData.velocity); 
                     b.userData.life--; 
                     let hit = false; 
                     
@@ -1247,17 +959,22 @@
                     } 
                     
                     if(!hit) { 
-                        for(let [id, tankData] of this.tanks) {
-                            const isOwner = (b.userData.owner === tankData);
-                            const isSameTeam = tankData.group.userData.team === b.userData.owner?.group?.userData?.team;
+                        for(let [id, tank] of this.tanks) {
+                            // التحقق: الرصاصة ليست من نفس الدبابة
+                            const isOwner = (b.userData.owner === tank);
+                            // التحقق: الفرق مختلفة
+                            const isSameTeam = tank.userData.team === b.userData.owner?.userData?.team;
                             
-                            if (!isOwner && !isSameTeam && b.position.distanceTo(tankData.group.position) < 2.2) { 
+                            if (!isOwner && !isSameTeam && b.position.distanceTo(tank.position) < 1.9) { 
                                 hit = true; 
-                                this.createExplosion(b.position, 1.8); 
+                                this.createExplosion(b.position, 1.5); 
                                 this.scene.remove(b); 
                                 this.bullets.splice(i,1);
                                 
+                                console.log('Hit detected! Shooter:', b.userData.ownerId, 'Target:', id);
+                                
                                 if(b.userData.owner === this.playerTank) {
+                                    console.log('Sending damage event for target:', id);
                                     socket.emit('damage', { 
                                         damage: 100, 
                                         killerId: this.playerId,
@@ -1269,24 +986,24 @@
                         } 
                     } 
                     
-                    if(!hit && (b.userData.life < 0 || Math.abs(b.position.x) > 450 || Math.abs(b.position.z) > 450 || b.position.y < 0)) { 
+                    if(!hit && (b.userData.life < 0 || Math.abs(b.position.x) > 430 || Math.abs(b.position.z) > 430)) { 
                         this.scene.remove(b); 
                         this.bullets.splice(i,1); 
                     } 
                 } 
             }
             
-            checkCollision(group) { 
-                const box = new THREE.Box3().setFromObject(group); 
+            checkCollision(tank) { 
+                const box = new THREE.Box3().setFromObject(tank); 
                 for(let obs of this.obstacles) if(box.intersectsBox(new THREE.Box3().setFromObject(obs))) return true; 
                 return false; 
             }
             
             updateCounts() { 
                 this.team1Count = 0; this.team2Count = 0; 
-                for(let tankData of this.tanks.values()) {
-                    if(tankData.group.userData.team === 1) this.team1Count++; 
-                    else if(tankData.group.userData.team === 2) this.team2Count++;
+                for(let tank of this.tanks.values()) {
+                    if(tank.userData.team === 1) this.team1Count++; 
+                    else if(tank.userData.team === 2) this.team2Count++;
                 }
                 const team1El = document.getElementById('team1');
                 const team2El = document.getElementById('team2');
@@ -1296,25 +1013,25 @@
             
             updateOtherPlayer(data) {
                 if (!this.gameActive || this.isEliminated) return;
-                let tankData = this.otherPlayers.get(data.userId);
-                if(!tankData && data.userId !== this.playerId) {
-                    const type = data.team === 1 ? 'standard' : 'desert';
+                let tank = this.otherPlayers.get(data.userId);
+                if(!tank && data.userId !== this.playerId) {
+                    const color = data.team === 1 ? 0x8b5a2b : 0x4a6a8b;
                     const pos = data.position || { x: 0, z: 0 };
-                    tankData = this.createTank(pos.x, pos.z, type, data.userId);
-                    this.otherPlayers.set(data.userId, tankData);
-                    this.tanks.set(data.userId, tankData);
+                    tank = this.createTank(color, pos.x, pos.z, data.team, data.userId);
+                    this.otherPlayers.set(data.userId, tank);
+                    this.tanks.set(data.userId, tank);
                 }
-                if(tankData && data.position) {
-                    tankData.group.position.set(data.position.x, 0, data.position.z);
-                    tankData.group.rotation.y = data.rotation || 0;
+                if(tank && data.position) {
+                    tank.position.set(data.position.x, 0, data.position.z);
+                    tank.rotation.y = data.rotation || 0;
                 }
             }
             
             removeTank(userId) {
-                const tankData = this.tanks.get(userId);
-                if (tankData) {
-                    this.createExplosion(tankData.group.position, 2.2);
-                    this.scene.remove(tankData.group);
+                const tank = this.tanks.get(userId);
+                if (tank) {
+                    this.createExplosion(tank.position, 2.0);
+                    this.scene.remove(tank);
                     this.tanks.delete(userId);
                     this.otherPlayers.delete(userId);
                     this.updateCounts();
@@ -1337,14 +1054,7 @@
             pendingGameStart: null,
             
             initSocket() {
-                socket.on('connect', () => {
-                    console.log('✅ Connected to server');
-                    document.getElementById('loading').style.display = 'none';
-                });
-                
-                socket.on('connect_error', (error) => {
-                    console.error('❌ Connection error:', error);
-                });
+                socket.on('connect', () => console.log('✅ Connected to server'));
                 
                 socket.on('auth_success', (data) => {
                     console.log('✅ Auth success:', data);
@@ -1354,6 +1064,9 @@
                     isAdmin = data.isAdmin;
                     this.sim.playerId = data.userId;
                     
+                    localStorage.setItem('adminToken', 'authenticated');
+                    localStorage.setItem('userEmail', data.email);
+                    localStorage.setItem('isAdmin', data.isAdmin);
                     document.getElementById('balance').innerText = currentBalance;
                     document.getElementById('gameBalance').innerText = currentBalance;
                     document.getElementById('username').innerText = data.username || data.email.split('@')[0];
@@ -1454,8 +1167,8 @@
                         this.sim.gameActive = false;
                         
                         if (this.sim.playerTank) {
-                            this.sim.createExplosion(this.sim.playerTank.group.position, 2.5);
-                            this.sim.scene.remove(this.sim.playerTank.group);
+                            this.sim.createExplosion(this.sim.playerTank.position, 2.5);
+                            this.sim.scene.remove(this.sim.playerTank);
                             this.sim.playerTank = null;
                         }
                         
@@ -1589,7 +1302,6 @@
                 this.sim.isEliminated = false;
                 this.sim.gameActive = true;
                 this.sim.lastMoveTime = 0;
-                this.sim.lastTime = performance.now();
                 
                 document.getElementById('joystickBase').style.opacity = '1';
                 document.getElementById('fireBtn').style.opacity = '1';
@@ -1599,27 +1311,28 @@
                 this.sim.init();
                 
                 const positions = [
-                    { x: -75, z: -70, team: 1, type: 'standard' },
-                    { x: 70, z: 70, team: 2, type: 'desert' }
+                    { x: -75, z: -70, team: 1 },
+                    { x: 70, z: 70, team: 2 }
                 ];
                 const myTeam = data.yourTeam || 1;
                 const myPos = positions[myTeam === 1 ? 0 : 1];
-                const myType = myTeam === 1 ? 'standard' : 'desert';
+                const myColor = myTeam === 1 ? 0x8b5a2b : 0x4a6a8b;
                 
                 this.sim.playerTeam = myTeam;
-                const playerTankData = this.sim.createTank(myPos.x, myPos.z, myType, currentUser?.uid);
-                this.sim.playerTank = playerTankData;
-                this.sim.tanks.set(currentUser?.uid, playerTankData);
+                this.sim.playerTank = this.sim.createTank(myColor, myPos.x, myPos.z, myTeam, currentUser?.uid);
+                this.sim.playerTank.userData.playerId = currentUser?.uid;
+                this.sim.tanks.set(currentUser?.uid, this.sim.playerTank);
                 
                 if(data.players) {
                     data.players.forEach(player => {
                         if(player.userId !== currentUser?.uid) {
                             const otherTeam = player.team || (player.userId === data.players[0]?.userId ? 1 : 2);
                             const otherPos = positions[otherTeam === 1 ? 0 : 1];
-                            const otherType = otherTeam === 1 ? 'standard' : 'desert';
-                            const tankData = this.sim.createTank(otherPos.x, otherPos.z, otherType, player.userId);
-                            this.sim.tanks.set(player.userId, tankData);
-                            this.sim.otherPlayers.set(player.userId, tankData);
+                            const otherColor = otherTeam === 1 ? 0x8b5a2b : 0x4a6a8b;
+                            const tank = this.sim.createTank(otherColor, otherPos.x, otherPos.z, otherTeam, player.userId);
+                            tank.userData.playerId = player.userId;
+                            this.sim.tanks.set(player.userId, tank);
+                            this.sim.otherPlayers.set(player.userId, tank);
                         }
                     });
                 }
@@ -1652,7 +1365,7 @@
                 
                 let lastFire = 0;
                 const fire = () => {
-                    if(this.sim.playerTank && !this.sim.isEliminated && this.sim.gameActive && Date.now() - lastFire > 2800) {
+                    if(this.sim.playerTank && !this.sim.isEliminated && this.sim.gameActive && Date.now() - lastFire > 3000) {
                         lastFire = Date.now();
                         if(this.sim.fire(this.sim.playerTank)) {
                             document.getElementById('cooldownText').innerHTML = '⏱️ 3 ثواني';
@@ -1676,11 +1389,11 @@
             toggleFullscreen() {
                 if (!document.fullscreenElement) {
                     document.documentElement.requestFullscreen().catch(err => {
-                        console.log(`Error: ${err.message}`);
+                        console.log(`Error attempting to enable fullscreen: ${err.message}`);
                     });
                 } else {
                     document.exitFullscreen().catch(err => {
-                        console.log(`Error: ${err.message}`);
+                        console.log(`Error attempting to exit fullscreen: ${err.message}`);
                     });
                 }
             },
@@ -1695,7 +1408,7 @@
                 document.getElementById('reportText').innerHTML = report.replace(/\n/g, '<br>');
                 document.getElementById('reportScreen').style.display = 'flex';
                 document.getElementById('hud').style.display = 'none';
-                if(this.sim && this.sim.playerTank) this.sim.scene.remove(this.sim.playerTank.group);
+                if(this.sim && this.sim.playerTank) this.sim.scene.remove(this.sim.playerTank);
             },
             
             backToHome() {
@@ -1870,7 +1583,7 @@
         
         window.gameApp = gameApp;
         gameApp.init();
-        console.log('🎮 Game ready with detailed tanks!');
+        console.log('🎮 Game ready!');
     </script>
 </body>
 </html>
