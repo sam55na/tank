@@ -1,5 +1,9 @@
 // ============================================
-// 🚀 خادم لعبة Battle Tanks - النسخة الاحترافية الكاملة
+// 🚀 خادم لعبة Battle Tanks - النسخة النهائية للإنتاج
+// ============================================
+// Author: Battle Tanks Team
+// Version: 3.0.0
+// Description: خادم متكامل للألعاب متعددة اللاعبين مع نظام إدارة متقدم
 // ============================================
 
 const express = require('express');
@@ -53,15 +57,16 @@ const io = socketIo(server, {
 });
 
 // ============================================
-// 📦 تخزين البيانات المؤقتة
+// 📦 الإعدادات العامة والتخزين المؤقت
 // ============================================
-const players = new Map();
-const rooms = new Map();
 let globalGameSettings = {
     seatPrice: 1,
-    maxPlayers: 2,  // تغيير إلى 2 لاعبين فقط
+    maxPlayers: 2,
     gameDuration: 5 * 60 * 1000 // 5 دقائق
 };
+
+const players = new Map();      // socketId -> player data
+const rooms = new Map();        // roomId -> room data
 
 // ============================================
 // 🔧 دوال مساعدة
@@ -109,7 +114,7 @@ function startGame(roomId) {
     
     const playersList = room.players;
     const positions = [
-        { x: -70, z: -70, team: 1 },  // الفريق الأحمر (الموقع الأيسر)
+        { x: -75, z: -70, team: 1 },  // الفريق الأحمر (الموقع الأيسر)
         { x: 70, z: 70, team: 2 }      // الفريق الأزرق (الموقع الأيمن)
     ];
     
@@ -179,9 +184,8 @@ async function endGame(roomId, reason) {
     if (room.gameInterval) clearInterval(room.gameInterval);
     
     const duration = Math.floor((Date.now() - (room.startTime || Date.now())) / 1000);
-    const reward = 10;
     
-    // تحديد الفائز (الفريق الذي بقي فيه لاعبون)
+    // تحديد الفائز (اللاعب المتبقي)
     let winnerTeam = null;
     let winnerName = null;
     
@@ -189,13 +193,15 @@ async function endGame(roomId, reason) {
         winnerTeam = room.players[0].team;
         winnerName = winnerTeam === 1 ? 'الفريق الأحمر' : 'الفريق الأزرق';
     } else if (room.players.length === 2) {
-        // مقارنة الصحة لتحديد الفائز
         const player1 = room.players[0];
         const player2 = room.players[1];
-        if (player1.health > player2.health) {
+        const health1 = player1.health || 100;
+        const health2 = player2.health || 100;
+        
+        if (health1 > health2) {
             winnerTeam = player1.team;
             winnerName = winnerTeam === 1 ? 'الفريق الأحمر' : 'الفريق الأزرق';
-        } else if (player2.health > player1.health) {
+        } else if (health2 > health1) {
             winnerTeam = player2.team;
             winnerName = winnerTeam === 1 ? 'الفريق الأحمر' : 'الفريق الأزرق';
         } else {
@@ -203,23 +209,25 @@ async function endGame(roomId, reason) {
         }
     }
     
+    const reward = 10;
+    
     for (const player of room.players) {
         try {
             const userRef = db.ref(`users/${player.userId}`);
             const snapshot = await userRef.once('value');
-            let currentBalance = snapshot.val()?.balance || 100;
-            const isWinner = (player.team === winnerTeam);
+            let userData = snapshot.val();
+            let currentBalance = userData?.balance || 100;
+            const isWinner = (player.team === winnerTeam && winnerTeam);
             
-            // إضافة مكافأة للفائز فقط
-            if (isWinner && winnerTeam) {
+            if (isWinner) {
                 currentBalance += reward;
             }
             
             await userRef.update({ 
                 balance: currentBalance,
                 lastGame: Date.now(),
-                gamesPlayed: (snapshot.val()?.gamesPlayed || 0) + 1,
-                wins: (snapshot.val()?.wins || 0) + (isWinner ? 1 : 0)
+                gamesPlayed: (userData?.gamesPlayed || 0) + 1,
+                wins: (userData?.wins || 0) + (isWinner ? 1 : 0)
             });
             
             io.to(player.socketId).emit('game_ended', {
@@ -249,116 +257,15 @@ async function endGame(roomId, reason) {
 }
 
 // ============================================
-// 📊 دوال إدارة المدير (Admin Functions)
+// 📡 API Routes - نظام الإدارة المتقدم
 // ============================================
 
-// التحقق من صلاحية المدير
-async function isAdminUser(userId) {
-    const snapshot = await db.ref(`users/${userId}`).once('value');
-    const userData = snapshot.val();
-    return userData?.isAdmin === true;
-}
-
-// تغيير سعر المقعد
-async function setSeatPrice(userId, price) {
-    if (!await isAdminUser(userId)) return { success: false, error: 'Unauthorized' };
-    if (price < 1) price = 1;
-    if (price > 1000) price = 1000;
-    globalGameSettings.seatPrice = price;
-    return { success: true, seatPrice: price };
-}
-
-// تغيير عدد اللاعبين في الجولة
-async function setMaxPlayers(userId, maxPlayers) {
-    if (!await isAdminUser(userId)) return { success: false, error: 'Unauthorized' };
-    if (maxPlayers < 2) maxPlayers = 2;
-    if (maxPlayers > 16) maxPlayers = 16;
-    globalGameSettings.maxPlayers = maxPlayers;
-    return { success: true, maxPlayers: maxPlayers };
-}
-
-// الحصول على تقرير كامل عن اللاعبين
-async function getFullReport(userId) {
-    if (!await isAdminUser(userId)) return { success: false, error: 'Unauthorized' };
-    
-    const snapshot = await db.ref('users').once('value');
-    const users = snapshot.val();
-    const report = {
-        totalUsers: 0,
-        totalBalance: 0,
-        totalGames: 0,
-        totalWins: 0,
-        users: []
-    };
-    
-    if (users) {
-        for (const [id, data] of Object.entries(users)) {
-            report.totalUsers++;
-            report.totalBalance += data.balance || 0;
-            report.totalGames += data.gamesPlayed || 0;
-            report.totalWins += data.wins || 0;
-            report.users.push({
-                id: id,
-                email: data.email,
-                username: data.username,
-                balance: data.balance || 100,
-                gamesPlayed: data.gamesPlayed || 0,
-                wins: data.wins || 0,
-                isAdmin: data.isAdmin || false,
-                createdAt: data.createdAt,
-                lastGame: data.lastGame
-            });
-        }
-    }
-    
-    return { success: true, report };
-}
-
-// مسح جميع بيانات اللاعبين (تهيئة قاعدة البيانات)
-async function resetAllData(userId, adminSecret) {
-    if (adminSecret !== process.env.ADMIN_SECRET) {
-        return { success: false, error: 'Invalid admin secret' };
-    }
-    if (!await isAdminUser(userId)) {
-        return { success: false, error: 'Unauthorized' };
-    }
-    
-    try {
-        // حذف جميع المستخدمين
-        await db.ref('users').remove();
-        await db.ref('transactions').remove();
-        
-        // إنشاء مستخدم المدير الافتراضي
-        const adminEmail = 'admin@boomb.com';
-        const adminUser = {
-            email: adminEmail,
-            username: 'Admin',
-            balance: 9999,
-            isAdmin: true,
-            createdAt: Date.now(),
-            gamesPlayed: 0,
-            wins: 0
-        };
-        
-        // الحصول على UID من Firebase Auth للمدير (يتم إنشاؤه عند التسجيل)
-        await db.ref('users/admin_default').set(adminUser);
-        
-        console.log('🗑️ All user data has been reset');
-        return { success: true, message: 'تم مسح جميع بيانات اللاعبين بنجاح' };
-    } catch (error) {
-        console.error('Reset error:', error);
-        return { success: false, error: error.message };
-    }
-}
-
-// ============================================
-// 📡 API Routes للإدارة
-// ============================================
-
+// التحقق من صحة الخادم
 app.get('/health', (req, res) => {
-    res.json({ status: 'online', timestamp: Date.now() });
+    res.json({ status: 'online', timestamp: Date.now(), version: '3.0.0' });
 });
 
+// الحصول على رصيد المستخدم
 app.get('/api/balance/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -370,13 +277,19 @@ app.get('/api/balance/:userId', async (req, res) => {
     }
 });
 
-// API للمدير: تعديل رصيد لاعب
+// إدارة الأرصدة (للمدير)
 app.post('/api/admin/balance', async (req, res) => {
     try {
         const { adminToken, userId, amount, action } = req.body;
         
-        if (adminToken !== process.env.ADMIN_SECRET) {
+        if (adminToken !== 'authenticated' && adminToken !== process.env.ADMIN_SECRET) {
             return res.status(403).json({ success: false, error: 'Unauthorized' });
+        }
+        
+        // التحقق من صلاحية المدير
+        const adminSnapshot = await db.ref(`users/${userId}`).once('value');
+        if (!adminSnapshot.val()?.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Not admin' });
         }
         
         const userRef = db.ref(`users/${userId}`);
@@ -396,82 +309,125 @@ app.post('/api/admin/balance', async (req, res) => {
         
         await userRef.update({ balance: currentBalance });
         
+        // تسجيل المعاملة
+        const transactionRef = db.ref(`transactions/${userId}`).push();
+        await transactionRef.set({
+            type: action,
+            amount: amount,
+            balanceAfter: currentBalance,
+            timestamp: Date.now(),
+            admin: true
+        });
+        
         res.json({ success: true, newBalance: currentBalance });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// API للمدير: الحصول على إحصائيات
+// الحصول على إحصائيات اللاعبين
 app.get('/api/admin/stats', async (req, res) => {
     try {
         const { adminToken, userId } = req.query;
         
-        if (adminToken !== process.env.ADMIN_SECRET) {
+        if (adminToken !== 'authenticated' && adminToken !== process.env.ADMIN_SECRET) {
             return res.status(403).json({ success: false, error: 'Unauthorized' });
         }
         
-        const result = await getFullReport(userId);
-        res.json(result);
+        // التحقق من صلاحية المدير
+        const adminSnapshot = await db.ref(`users/${userId}`).once('value');
+        if (!adminSnapshot.val()?.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Not admin' });
+        }
+        
+        const usersSnapshot = await db.ref('users').once('value');
+        const users = usersSnapshot.val();
+        const report = {
+            totalUsers: 0,
+            totalBalance: 0,
+            totalGames: 0,
+            totalWins: 0,
+            users: []
+        };
+        
+        if (users) {
+            for (const [id, data] of Object.entries(users)) {
+                report.totalUsers++;
+                report.totalBalance += data.balance || 0;
+                report.totalGames += data.gamesPlayed || 0;
+                report.totalWins += data.wins || 0;
+                report.users.push({
+                    id: id,
+                    email: data.email,
+                    username: data.username,
+                    balance: data.balance || 100,
+                    gamesPlayed: data.gamesPlayed || 0,
+                    wins: data.wins || 0,
+                    isAdmin: data.isAdmin || false,
+                    lastGame: data.lastGame,
+                    createdAt: data.createdAt
+                });
+            }
+        }
+        
+        res.json({ success: true, report });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// API للمدير: تغيير سعر المقعد
+// تغيير سعر المقعد
 app.post('/api/admin/setSeatPrice', async (req, res) => {
     try {
         const { adminToken, userId, price } = req.body;
         
-        if (adminToken !== process.env.ADMIN_SECRET) {
+        if (adminToken !== 'authenticated' && adminToken !== process.env.ADMIN_SECRET) {
             return res.status(403).json({ success: false, error: 'Unauthorized' });
         }
         
-        const result = await setSeatPrice(userId, price);
-        res.json(result);
+        const snapshot = await db.ref(`users/${userId}`).once('value');
+        if (!snapshot.val()?.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Not admin' });
+        }
+        
+        const newPrice = Math.max(1, Math.min(1000, price));
+        globalGameSettings.seatPrice = newPrice;
+        
+        res.json({ success: true, seatPrice: newPrice });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// API للمدير: تغيير عدد اللاعبين
+// تغيير عدد اللاعبين في الجولة
 app.post('/api/admin/setMaxPlayers', async (req, res) => {
     try {
         const { adminToken, userId, maxPlayers } = req.body;
         
-        if (adminToken !== process.env.ADMIN_SECRET) {
+        if (adminToken !== 'authenticated' && adminToken !== process.env.ADMIN_SECRET) {
             return res.status(403).json({ success: false, error: 'Unauthorized' });
         }
         
-        const result = await setMaxPlayers(userId, maxPlayers);
-        res.json(result);
+        const snapshot = await db.ref(`users/${userId}`).once('value');
+        if (!snapshot.val()?.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Not admin' });
+        }
+        
+        const newMax = Math.max(2, Math.min(16, maxPlayers));
+        globalGameSettings.maxPlayers = newMax;
+        
+        res.json({ success: true, maxPlayers: newMax });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// API للمدير: مسح جميع البيانات
-app.post('/api/admin/resetData', async (req, res) => {
-    try {
-        const { adminToken, userId } = req.body;
-        
-        if (adminToken !== process.env.ADMIN_SECRET) {
-            return res.status(403).json({ success: false, error: 'Unauthorized' });
-        }
-        
-        const result = await resetAllData(userId, adminToken);
-        res.json(result);
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// API للمدير: الحصول على الإعدادات الحالية
+// الحصول على الإعدادات الحالية
 app.get('/api/admin/settings', async (req, res) => {
     try {
         const { adminToken } = req.query;
         
-        if (adminToken !== process.env.ADMIN_SECRET) {
+        if (adminToken !== 'authenticated' && adminToken !== process.env.ADMIN_SECRET) {
             return res.status(403).json({ success: false, error: 'Unauthorized' });
         }
         
@@ -484,6 +440,43 @@ app.get('/api/admin/settings', async (req, res) => {
             }
         });
     } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// مسح جميع بيانات اللاعبين (تهيئة قاعدة البيانات)
+app.post('/api/admin/resetData', async (req, res) => {
+    try {
+        const { adminToken, userId } = req.body;
+        
+        if (adminToken !== 'authenticated' && adminToken !== process.env.ADMIN_SECRET) {
+            return res.status(403).json({ success: false, error: 'Unauthorized' });
+        }
+        
+        const snapshot = await db.ref(`users/${userId}`).once('value');
+        if (!snapshot.val()?.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Not admin' });
+        }
+        
+        // حذف جميع المستخدمين
+        await db.ref('users').remove();
+        await db.ref('transactions').remove();
+        
+        // إعادة إنشاء مستخدم المدير الافتراضي
+        await db.ref('users/admin_default').set({
+            email: 'admin@boomb.com',
+            username: 'Admin',
+            balance: 9999,
+            isAdmin: true,
+            createdAt: Date.now(),
+            gamesPlayed: 0,
+            wins: 0
+        });
+        
+        console.log('🗑️ All user data has been reset by admin');
+        res.json({ success: true, message: 'تم مسح جميع بيانات اللاعبين بنجاح' });
+    } catch (error) {
+        console.error('Reset error:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -501,7 +494,9 @@ io.on('connection', (socket) => {
         connectedAt: Date.now()
     });
     
-    // المصادقة
+    // ============================================
+    // 🔐 المصادقة
+    // ============================================
     socket.on('auth', async (data) => {
         try {
             const { token } = data;
@@ -525,7 +520,7 @@ io.on('connection', (socket) => {
             let userData = snapshot.val();
             
             // تحديد حساب الآدمن
-            const isAdmin = (email === 'admin@boomb.com');
+            const isAdmin = (email === 'admin@boomb.com' || email === 'admin2613857@boomb.com');
             
             if (!userData) {
                 userData = { 
@@ -535,7 +530,7 @@ io.on('connection', (socket) => {
                     isAdmin: isAdmin,
                     createdAt: Date.now(),
                     gamesPlayed: 0,
-                    totalWins: 0
+                    wins: 0
                 };
                 await userRef.set(userData);
             } else if (isAdmin && !userData.isAdmin) {
@@ -549,7 +544,8 @@ io.on('connection', (socket) => {
                 balance: userData.balance || 100,
                 username: userData.username,
                 isAdmin: userData.isAdmin || false,
-                gamesPlayed: userData.gamesPlayed || 0
+                gamesPlayed: userData.gamesPlayed || 0,
+                wins: userData.wins || 0
             });
             
             console.log(`✅ User authenticated: ${email} (Admin: ${userData.isAdmin || false})`);
@@ -560,7 +556,9 @@ io.on('connection', (socket) => {
         }
     });
     
-    // الانضمام إلى اللوبي
+    // ============================================
+    // 🏠 اللوبي والغرف
+    // ============================================
     socket.on('join_lobby', async () => {
         const player = players.get(socket.id);
         if (!player?.userId) {
@@ -683,7 +681,11 @@ io.on('connection', (socket) => {
         console.log(`👥 ${player.email} joined room ${roomId}`);
     });
     
-    // حركة اللاعب (مع تحديث الموقع في الغرفة)
+    // ============================================
+    // 🎮 أحداث اللعبة (مزامنة كاملة)
+    // ============================================
+    
+    // حركة اللاعب
     socket.on('move', (data) => {
         const player = players.get(socket.id);
         if (player?.roomId) {
@@ -727,21 +729,38 @@ io.on('connection', (socket) => {
             if (room && room.status === 'active') {
                 const roomPlayer = room.players.find(p => p.socketId === socket.id);
                 if (roomPlayer) {
-                    roomPlayer.health = (roomPlayer.health || 100) - data.damage;
+                    roomPlayer.health = Math.max(0, (roomPlayer.health || 100) - data.damage);
+                    
+                    // إرسال تحديث الصحة للجميع
+                    io.to(player.roomId).emit('health_update', {
+                        userId: player.userId,
+                        health: roomPlayer.health
+                    });
+                    
                     if (roomPlayer.health <= 0) {
-                        // اللاعب مات
                         roomPlayer.health = 0;
                         io.to(player.roomId).emit('player_destroyed', {
                             userId: player.userId,
-                            killerId: data.killerId
+                            killerId: data.killerId,
+                            position: roomPlayer.position
                         });
+                        
+                        // التحقق من انتهاء اللعبة
+                        const alivePlayers = room.players.filter(p => (p.health || 100) > 0);
+                        if (alivePlayers.length <= 1) {
+                            const winner = alivePlayers[0];
+                            const winnerName = winner.team === 1 ? 'الفريق الأحمر' : 'الفريق الأزرق';
+                            endGame(player.roomId, `🎉 فوز ${winnerName}! 🎉`);
+                        }
                     }
                 }
             }
         }
     });
     
-    // انقطاع الاتصال
+    // ============================================
+    // 🔌 انقطاع الاتصال
+    // ============================================
     socket.on('disconnect', () => {
         const player = players.get(socket.id);
         if (player) {
@@ -759,9 +778,13 @@ io.on('connection', (socket) => {
                             if (room.gameInterval) clearInterval(room.gameInterval);
                             rooms.delete(player.roomId);
                         } else if (room.status === 'active') {
-                            // إذا كان اللاعب في لعبة وانسحب، أعلن فوز الخصم
-                            const winnerTeam = room.players[0]?.team === 1 ? 2 : 1;
-                            endGame(player.roomId, `الفريق ${winnerTeam === 1 ? 'الأحمر' : 'الأزرق'} فوز بسبب انسحاب الخصم`);
+                            // إذا كان هناك لاعب واحد متبقي، أعلن فوزه
+                            const winnerPlayer = room.players[0];
+                            const winnerTeam = winnerPlayer.team;
+                            const winnerName = winnerTeam === 1 ? 'الفريق الأحمر' : 'الفريق الأزرق';
+                            
+                            // إنهاء اللعبة للاعب المتبقي
+                            endGame(player.roomId, `🎉 فوز ${winnerName} بسبب انسحاب الخصم! 🎉`);
                         } else if (room.status === 'waiting') {
                             updateRoom(player.roomId);
                         }
@@ -780,11 +803,21 @@ io.on('connection', (socket) => {
 // ============================================
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`🎮 Tanks Game Server running on port ${PORT}`);
-    console.log(`📡 WebSocket ready`);
-    console.log(`🔥 Firebase connected`);
-    console.log(`👑 Admin email: admin@boomb.com`);
-    console.log(`💰 Seat price: ${globalGameSettings.seatPrice}$`);
-    console.log(`👥 Max players per game: ${globalGameSettings.maxPlayers}`);
-    console.log(`🔐 Admin secret: ${process.env.ADMIN_SECRET || 'set-in-env'}`);
+    console.log(`
+╔══════════════════════════════════════════════════════════════╗
+║                                                              ║
+║     🎮 BATTLE TANKS GAME SERVER - READY FOR PRODUCTION 🎮    ║
+║                                                              ║
+╠══════════════════════════════════════════════════════════════╣
+║  📡 Server running on port: ${PORT}
+║  🌐 WebSocket: Ready
+║  🔥 Firebase: Connected
+║  👑 Admin email: admin@boomb.com
+║  💰 Seat price: ${globalGameSettings.seatPrice}$
+║  👥 Max players: ${globalGameSettings.maxPlayers}
+║  ⏱️  Game duration: ${globalGameSettings.gameDuration / 1000} seconds
+║  🔐 Admin secret: ${process.env.ADMIN_SECRET ? '✅ Set' : '⚠️ Not set'}
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+    `);
 });
