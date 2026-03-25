@@ -1,9 +1,9 @@
 // ============================================
-// 🚀 خادم لعبة Battle Tanks - النسخة المحسنة للأداء
+// 🚀 خادم لعبة Battle Tanks - النسخة الديناميكية المتوازنة
 // ============================================
 // Author: Battle Tanks Team
 // Version: 4.0.0
-// Description: خادم محسن مع تقنيات Interpolation وضغط البيانات وتقليل الحمولة
+// Description: خادم متقدم مع تحديثات ديناميكية متوازنة تلقائياً
 // ============================================
 
 const express = require('express');
@@ -11,7 +11,6 @@ const http = require('http');
 const socketIo = require('socket.io');
 const admin = require('firebase-admin');
 const cors = require('cors');
-const compression = require('compression');
 
 // ============================================
 // 🔥 تهيئة Express و Firebase
@@ -19,7 +18,6 @@ const compression = require('compression');
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(compression()); // ضغط البيانات
 
 // Firebase Admin SDK - استخدام متغير البيئة
 let serviceAccount;
@@ -55,10 +53,7 @@ const io = socketIo(server, {
     },
     transports: ['websocket', 'polling'],
     pingTimeout: 60000,
-    pingInterval: 25000,
-    perMessageDeflate: {
-        threshold: 1024 // ضغط الرسائل الأكبر من 1KB
-    }
+    pingInterval: 25000
 });
 
 // ============================================
@@ -67,76 +62,82 @@ const io = socketIo(server, {
 let globalGameSettings = {
     seatPrice: 1,
     maxPlayers: 2,
-    gameDuration: 5 * 60 * 1000 // 5 دقائق
+    gameDuration: 5 * 60 * 1000, // 5 دقائق
+    // إعدادات التحديث الديناميكي
+    dynamicUpdate: {
+        enabled: true,
+        minRate: 16,      // 60 FPS كحد أقصى
+        maxRate: 66,      // 15 FPS كحد أدنى
+        targetFPS: 30,    // الهدف 30 FPS
+        adaptiveThreshold: 50, // عتبة التكيف (مللي ثانية)
+        networkQuality: 1.0    // جودة الشبكة (0-1)
+    },
+    // إعدادات الأداء
+    performance: {
+        maxPlayersInRoom: 16,
+        updateThrottle: false,
+        optimizeForMobile: true
+    }
 };
 
 const players = new Map();      // socketId -> player data
 const rooms = new Map();        // roomId -> room data
+const performanceStats = new Map(); // roomId -> performance stats
 
 // ============================================
-// 🎮 نظام تحسين الأداء
-// ============================================
-
-// ضغط بيانات اللاعب
-function compressPlayerData(player, includeFull = false) {
-    const compressed = {
-        u: player.userId.substring(0, 8), // اختصار ID
-        x: Math.round(player.position.x * 10) / 10,
-        z: Math.round(player.position.z * 10) / 10,
-        r: Math.round((player.rotation || 0) * 10) / 10,
-        h: Math.round(player.health || 100),
-        t: player.team
-    };
-    
-    if (includeFull) {
-        compressed.f = true; // علامة تحديث كامل
-    }
-    
-    return compressed;
-}
-
-// فك ضغط بيانات اللاعب
-function decompressPlayerData(compressed) {
-    return {
-        userId: compressed.u,
-        position: { x: compressed.x, z: compressed.z, y: 0 },
-        rotation: compressed.r,
-        health: compressed.h,
-        team: compressed.t
-    };
-}
-
-// حساب الفرق بين حالتين
-function calculateDelta(previous, current) {
-    if (!previous) return current;
-    
-    const delta = { u: current.u };
-    let hasChanges = false;
-    
-    if (previous.x !== current.x || previous.z !== current.z) {
-        delta.dx = current.x - previous.x;
-        delta.dz = current.z - previous.z;
-        hasChanges = true;
-    }
-    
-    if (previous.r !== current.r) {
-        delta.dr = current.r - previous.r;
-        hasChanges = true;
-    }
-    
-    if (previous.h !== current.h) {
-        delta.h = current.h;
-        hasChanges = true;
-    }
-    
-    return hasChanges ? delta : null;
-}
-
-// ============================================
-// 🔧 دوال مساعدة
+// 🔧 دوال مساعدة متقدمة
 // ============================================
 function generateId() {
     return Math.random().toString(36).substr(2, 8);
+}
+
+function calculateDynamicRate(roomId) {
+    const room = rooms.get(roomId);
+    if (!room || !globalGameSettings.dynamicUpdate.enabled) {
+        return 33; // القيمة الافتراضية 30 FPS
+    }
+    
+    // جمع إحصائيات الأداء
+    const stats = performanceStats.get(roomId) || {
+        avgLatency: 50,
+        playerCount: room.players.length,
+        lastCalculated: Date.now()
+    };
+    
+    // تحديث الإحصائيات كل 5 ثوانٍ
+    if (Date.now() - stats.lastCalculated > 5000) {
+        stats.playerCount = room.players.filter(p => p.health > 0).length;
+        stats.lastCalculated = Date.now();
+        performanceStats.set(roomId, stats);
+    }
+    
+    // حساب المعدل الديناميكي بناءً على:
+    // 1. عدد اللاعبين (كلما زاد العدد، قل معدل التحديث)
+    // 2. زمن الاستجابة (كلما زاد التأخير، قل معدل التحديث)
+    // 3. نشاط اللاعبين
+    
+    let playerFactor = Math.max(0.5, Math.min(1.5, 30 / Math.max(1, stats.playerCount)));
+    let latencyFactor = Math.max(0.6, Math.min(1.2, 50 / Math.max(20, stats.avgLatency)));
+    let networkFactor = globalGameSettings.dynamicUpdate.networkQuality;
+    
+    // حساب معدل التحديث الأمثل
+    let targetRate = 33; // 30 FPS أساسي
+    targetRate = targetRate / playerFactor;
+    targetRate = targetRate / latencyFactor;
+    targetRate = targetRate / networkFactor;
+    
+    // تطبيق الحدود الدنيا والعليا
+    targetRate = Math.max(
+        globalGameSettings.dynamicUpdate.minRate,
+        Math.min(globalGameSettings.dynamicUpdate.maxRate, targetRate)
+    );
+    
+    // تحسين للأجهزة المحمولة
+    if (globalGameSettings.performance.optimizeForMobile) {
+        targetRate = Math.min(targetRate, 50); // 20 FPS كحد أقصى للموبايل
+    }
+    
+    return Math.floor(targetRate);
 }
 
 function broadcastRoomsList() {
@@ -168,7 +169,51 @@ function updateRoom(roomId) {
     }
 }
 
-// بدء اللعبة مع نظام تحديث محسن
+// تحسين الأداء - تجميع التحديثات
+let updateBatch = new Map();
+
+function queueUpdate(roomId, updateType, data) {
+    if (!updateBatch.has(roomId)) {
+        updateBatch.set(roomId, []);
+    }
+    updateBatch.get(roomId).push({ type: updateType, data, timestamp: Date.now() });
+    
+    // معالجة الدفعة بعد 16ms
+    setTimeout(() => {
+        processBatch(roomId);
+    }, 16);
+}
+
+function processBatch(roomId) {
+    const batch = updateBatch.get(roomId);
+    if (!batch || batch.length === 0) return;
+    
+    const room = rooms.get(roomId);
+    if (!room || room.status !== 'active') {
+        updateBatch.delete(roomId);
+        return;
+    }
+    
+    // تجميع التحديثات من نفس النوع
+    const groupedUpdates = {};
+    for (const update of batch) {
+        if (!groupedUpdates[update.type]) {
+            groupedUpdates[update.type] = [];
+        }
+        groupedUpdates[update.type].push(update.data);
+    }
+    
+    // إرسال التحديثات المجمعة
+    for (const [type, updates] of Object.entries(groupedUpdates)) {
+        if (updates.length > 0) {
+            io.to(roomId).emit(type, { updates, count: updates.length });
+        }
+    }
+    
+    updateBatch.delete(roomId);
+}
+
+// بدء اللعبة مع نظام تحديث ديناميكي
 function startGame(roomId) {
     const room = rooms.get(roomId);
     if (!room || room.status !== 'waiting') return;
@@ -176,8 +221,8 @@ function startGame(roomId) {
     room.status = 'active';
     room.startTime = Date.now();
     room.lastUpdateTime = Date.now();
-    room.lastStates = new Map(); // تخزين الحالات السابقة للفروقات
-    room.updateCounter = 0;
+    room.frameCount = 0;
+    room.lastFrameRate = 0;
     
     const playersList = room.players;
     const positions = [
@@ -192,10 +237,20 @@ function startGame(roomId) {
         playersList[i].position = { x: pos.x, z: pos.z, y: 0 };
         playersList[i].rotation = 0;
         playersList[i].health = 100;
-        playersList[i].lastSentState = null;
+        playersList[i].lastUpdate = Date.now();
+        playersList[i].movementHistory = []; // لتتبع الحركة
     }
     
-    // إرسال بدء اللعبة لكل لاعب مع معلوماته
+    // تهيئة إحصائيات الأداء
+    performanceStats.set(roomId, {
+        avgLatency: 50,
+        playerCount: playersList.length,
+        lastCalculated: Date.now(),
+        updateRates: [],
+        networkQuality: 1.0
+    });
+    
+    // إرسال بدء اللعبة لكل لاعب
     for (const player of playersList) {
         io.to(player.socketId).emit('game_start', {
             roomId: roomId,
@@ -204,79 +259,126 @@ function startGame(roomId) {
             startTime: room.startTime,
             position: player.position,
             health: player.health,
-            serverConfig: {
-                updateRate: 33, // مللي ثانية بين التحديثات
-                interpolation: true
+            settings: {
+                updateRate: globalGameSettings.dynamicUpdate.targetFPS,
+                dynamicMode: globalGameSettings.dynamicUpdate.enabled
             }
         });
     }
     
     console.log(`🎮 Game started in room ${roomId} with ${playersList.length} players`);
     
-    // نظام تحديث ذكي بتردد متغير
-    const GAME_UPDATE_INTERVAL = 33; // 30 مرة في الثانية (أقل من 50 السابقة)
-    const FULL_UPDATE_INTERVAL = 6; // تحديث كامل كل 6 دورات (~200ms)
+    // نظام التحديث الديناميكي المتوازن
+    let gameLoopActive = true;
     
-    const gameInterval = setInterval(() => {
+    const gameLoop = async () => {
         const currentRoom = rooms.get(roomId);
         if (!currentRoom || currentRoom.status !== 'active') {
-            clearInterval(gameInterval);
+            gameLoopActive = false;
             return;
         }
         
-        currentRoom.updateCounter++;
-        const isFullUpdate = (currentRoom.updateCounter % FULL_UPDATE_INTERVAL === 0);
         const now = Date.now();
+        const deltaTime = now - currentRoom.lastUpdateTime;
         
-        // جمع تحديثات اللاعبين مع ضغط البيانات
-        const updates = [];
-        const deltas = [];
-        
-        for (const player of currentRoom.players) {
-            if (!player.position || player.health <= 0) continue;
+        // حساب معدل الإطارات الحالي
+        currentRoom.frameCount++;
+        if (now - currentRoom.lastFrameRate > 1000) {
+            currentRoom.lastFrameRate = now;
+            currentRoom.currentFPS = currentRoom.frameCount;
+            currentRoom.frameCount = 0;
             
-            // ضغط البيانات الحالية
-            const compressedCurrent = compressPlayerData(player, isFullUpdate);
-            
-            if (isFullUpdate) {
-                // تحديث كامل (كل 200ms)
-                updates.push(compressedCurrent);
-                player.lastSentState = compressedCurrent;
-            } else {
-                // إرسال الفروقات فقط
-                const delta = calculateDelta(player.lastSentState, compressedCurrent);
-                if (delta) {
-                    deltas.push(delta);
-                    player.lastSentState = compressedCurrent;
+            // تحديث المعدل الديناميكي
+            if (globalGameSettings.dynamicUpdate.enabled) {
+                const newRate = calculateDynamicRate(roomId);
+                if (newRate !== currentRoom.updateRate) {
+                    currentRoom.updateRate = newRate;
+                    io.to(roomId).emit('update_rate_changed', {
+                        newRate: newRate,
+                        fps: Math.floor(1000 / newRate)
+                    });
                 }
             }
         }
         
-        // إرسال التحديثات للعملاء
-        if (isFullUpdate && updates.length > 0) {
-            // تحديث كامل - يرسل كل 200ms
-            io.to(roomId).emit('game_state_update', {
-                type: 'full',
-                players: updates,
-                ts: now,
-                frame: currentRoom.updateCounter
-            });
-        } else if (deltas.length > 0) {
-            // فروقات فقط - يرسل كل 33ms
-            io.to(roomId).emit('game_state_update', {
-                type: 'delta',
-                players: deltas,
-                ts: now,
-                frame: currentRoom.updateCounter
-            });
+        // جمع تحديثات اللاعبين
+        const playersUpdate = [];
+        const movementUpdates = [];
+        const healthUpdates = [];
+        
+        for (const player of currentRoom.players) {
+            if (player.position && player.health > 0) {
+                // التحقق من تغير الموقع لتجنب التحديثات غير الضرورية
+                const lastPosition = player.lastSentPosition || {};
+                const positionChanged = 
+                    lastPosition.x !== player.position.x ||
+                    lastPosition.z !== player.position.z ||
+                    lastPosition.y !== player.position.y;
+                
+                if (positionChanged || deltaTime > 100) {
+                    playersUpdate.push({
+                        userId: player.userId,
+                        position: player.position,
+                        rotation: player.rotation || 0,
+                        health: player.health,
+                        team: player.team,
+                        timestamp: now
+                    });
+                    
+                    movementUpdates.push({
+                        userId: player.userId,
+                        position: player.position,
+                        rotation: player.rotation,
+                        velocity: player.velocity || { x: 0, z: 0 }
+                    });
+                    
+                    player.lastSentPosition = { ...player.position };
+                }
+            }
+            
+            if (player.health !== player.lastSentHealth) {
+                healthUpdates.push({
+                    userId: player.userId,
+                    health: player.health
+                });
+                player.lastSentHealth = player.health;
+            }
         }
         
-        // تحديث وقت آخر تحديث
+        // إرسال التحديثات المجمعة
+        if (playersUpdate.length > 0) {
+            // تحديثات متفرقة للحركة السريعة
+            if (playersUpdate.length === 1 && movementUpdates.length === 1) {
+                io.to(roomId).emit('player_moved', movementUpdates[0]);
+            } 
+            // تحديثات كاملة للحالة العامة
+            else {
+                io.to(roomId).emit('game_state_update', { 
+                    players: playersUpdate,
+                    timestamp: now,
+                    frameRate: currentRoom.currentFPS
+                });
+            }
+        }
+        
+        if (healthUpdates.length > 0) {
+            io.to(roomId).emit('health_updates', { updates: healthUpdates });
+        }
+        
         currentRoom.lastUpdateTime = now;
         
-    }, GAME_UPDATE_INTERVAL);
+        // جدولة الحلقة التالية بمعدل ديناميكي
+        if (gameLoopActive) {
+            const updateRate = currentRoom.updateRate || calculateDynamicRate(roomId);
+            setTimeout(gameLoop, updateRate);
+        }
+    };
     
-    room.gameInterval = gameInterval;
+    // بدء الحلقة
+    currentRoom.updateRate = calculateDynamicRate(roomId);
+    setTimeout(gameLoop, currentRoom.updateRate);
+    
+    room.gameLoop = { active: true, loopFunction: gameLoop };
     
     // جدولة نهاية اللعبة
     setTimeout(() => {
@@ -284,13 +386,19 @@ function startGame(roomId) {
     }, globalGameSettings.gameDuration);
 }
 
-// إنهاء اللعبة وتوزيع المكافآت
+// إنهاء اللعبة مع تحسين الأداء
 async function endGame(roomId, reason) {
     const room = rooms.get(roomId);
     if (!room || room.status === 'ended') return;
     
     room.status = 'ended';
-    if (room.gameInterval) clearInterval(room.gameInterval);
+    if (room.gameLoop) {
+        room.gameLoop.active = false;
+    }
+    
+    // تنظيف الإحصائيات
+    performanceStats.delete(roomId);
+    updateBatch.delete(roomId);
     
     const duration = Math.floor((Date.now() - (room.startTime || Date.now())) / 1000);
     
@@ -369,13 +477,22 @@ async function endGame(roomId, reason) {
 }
 
 // ============================================
-// 📡 API Routes (نفس الكود السابق بدون تغيير)
+// 📡 API Routes - نظام الإدارة المتقدم
 // ============================================
 
+// التحقق من صحة الخادم
 app.get('/health', (req, res) => {
-    res.json({ status: 'online', timestamp: Date.now(), version: '4.0.0' });
+    res.json({ 
+        status: 'online', 
+        timestamp: Date.now(), 
+        version: '4.0.0',
+        dynamicUpdate: globalGameSettings.dynamicUpdate.enabled,
+        activeRooms: rooms.size,
+        activePlayers: players.size
+    });
 });
 
+// الحصول على رصيد المستخدم
 app.get('/api/balance/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -387,6 +504,7 @@ app.get('/api/balance/:userId', async (req, res) => {
     }
 });
 
+// إدارة الأرصدة (للمدير)
 app.post('/api/admin/balance', async (req, res) => {
     try {
         const { adminToken, userId, amount, action } = req.body;
@@ -432,55 +550,71 @@ app.post('/api/admin/balance', async (req, res) => {
     }
 });
 
-app.get('/api/admin/stats', async (req, res) => {
+// إعدادات التحديث الديناميكي
+app.post('/api/admin/dynamicUpdate', async (req, res) => {
     try {
-        const { adminToken, userId } = req.query;
+        const { adminToken, userId, enabled, minRate, maxRate, targetFPS } = req.body;
         
         if (adminToken !== 'authenticated' && adminToken !== process.env.ADMIN_SECRET) {
             return res.status(403).json({ success: false, error: 'Unauthorized' });
         }
         
-        const adminSnapshot = await db.ref(`users/${userId}`).once('value');
-        if (!adminSnapshot.val()?.isAdmin) {
+        const snapshot = await db.ref(`users/${userId}`).once('value');
+        if (!snapshot.val()?.isAdmin) {
             return res.status(403).json({ success: false, error: 'Not admin' });
         }
         
-        const usersSnapshot = await db.ref('users').once('value');
-        const users = usersSnapshot.val();
-        const report = {
-            totalUsers: 0,
-            totalBalance: 0,
-            totalGames: 0,
-            totalWins: 0,
-            users: []
-        };
+        if (enabled !== undefined) globalGameSettings.dynamicUpdate.enabled = enabled;
+        if (minRate !== undefined) globalGameSettings.dynamicUpdate.minRate = Math.max(16, Math.min(100, minRate));
+        if (maxRate !== undefined) globalGameSettings.dynamicUpdate.maxRate = Math.max(33, Math.min(100, maxRate));
+        if (targetFPS !== undefined) globalGameSettings.dynamicUpdate.targetFPS = Math.max(15, Math.min(60, targetFPS));
         
-        if (users) {
-            for (const [id, data] of Object.entries(users)) {
-                report.totalUsers++;
-                report.totalBalance += data.balance || 0;
-                report.totalGames += data.gamesPlayed || 0;
-                report.totalWins += data.wins || 0;
-                report.users.push({
-                    id: id,
-                    email: data.email,
-                    username: data.username,
-                    balance: data.balance || 100,
-                    gamesPlayed: data.gamesPlayed || 0,
-                    wins: data.wins || 0,
-                    isAdmin: data.isAdmin || false,
-                    lastGame: data.lastGame,
-                    createdAt: data.createdAt
-                });
-            }
-        }
-        
-        res.json({ success: true, report });
+        res.json({ 
+            success: true, 
+            dynamicUpdate: globalGameSettings.dynamicUpdate 
+        });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
+// الحصول على إحصائيات الأداء
+app.get('/api/admin/performance', async (req, res) => {
+    try {
+        const { adminToken } = req.query;
+        
+        if (adminToken !== 'authenticated' && adminToken !== process.env.ADMIN_SECRET) {
+            return res.status(403).json({ success: false, error: 'Unauthorized' });
+        }
+        
+        const performanceData = [];
+        for (const [roomId, stats] of performanceStats) {
+            const room = rooms.get(roomId);
+            performanceData.push({
+                roomId,
+                playerCount: stats.playerCount,
+                avgLatency: stats.avgLatency,
+                updateRate: room?.updateRate || 33,
+                status: room?.status || 'ended'
+            });
+        }
+        
+        res.json({
+            success: true,
+            performance: {
+                activeRooms: rooms.size,
+                totalPlayers: players.size,
+                dynamicMode: globalGameSettings.dynamicUpdate.enabled,
+                rooms: performanceData,
+                settings: globalGameSettings.dynamicUpdate
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// تغيير سعر المقعد
 app.post('/api/admin/setSeatPrice', async (req, res) => {
     try {
         const { adminToken, userId, price } = req.body;
@@ -503,6 +637,7 @@ app.post('/api/admin/setSeatPrice', async (req, res) => {
     }
 });
 
+// تغيير عدد اللاعبين
 app.post('/api/admin/setMaxPlayers', async (req, res) => {
     try {
         const { adminToken, userId, maxPlayers } = req.body;
@@ -518,6 +653,7 @@ app.post('/api/admin/setMaxPlayers', async (req, res) => {
         
         const newMax = Math.max(2, Math.min(16, maxPlayers));
         globalGameSettings.maxPlayers = newMax;
+        globalGameSettings.performance.maxPlayersInRoom = newMax;
         
         res.json({ success: true, maxPlayers: newMax });
     } catch (error) {
@@ -525,6 +661,7 @@ app.post('/api/admin/setMaxPlayers', async (req, res) => {
     }
 });
 
+// الحصول على الإعدادات
 app.get('/api/admin/settings', async (req, res) => {
     try {
         const { adminToken } = req.query;
@@ -535,17 +672,14 @@ app.get('/api/admin/settings', async (req, res) => {
         
         res.json({ 
             success: true, 
-            settings: {
-                seatPrice: globalGameSettings.seatPrice,
-                maxPlayers: globalGameSettings.maxPlayers,
-                gameDuration: globalGameSettings.gameDuration
-            }
+            settings: globalGameSettings
         });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
+// مسح جميع البيانات
 app.post('/api/admin/resetData', async (req, res) => {
     try {
         const { adminToken, userId } = req.body;
@@ -581,21 +715,50 @@ app.post('/api/admin/resetData', async (req, res) => {
 });
 
 // ============================================
-// 🔌 أحداث Socket.io (محسنة)
+// 🔌 أحداث Socket.io المحسنة
 // ============================================
 io.on('connection', (socket) => {
     console.log(`🔌 New connection: ${socket.id}`);
+    
+    // قياس زمن الاستجابة
+    let pingInterval;
     
     players.set(socket.id, {
         socketId: socket.id,
         userId: null,
         roomId: null,
         connectedAt: Date.now(),
-        lastMoveTime: 0
+        latency: 0,
+        lastPing: Date.now()
     });
     
+    // قياس زمن الاستجابة بانتظام
+    pingInterval = setInterval(() => {
+        const startTime = Date.now();
+        socket.emit('ping', { timestamp: startTime });
+        
+        socket.once('pong', (data) => {
+            const latency = Date.now() - startTime;
+            const player = players.get(socket.id);
+            if (player) {
+                player.latency = latency;
+                
+                // تحديث إحصائيات الأداء للغرفة
+                if (player.roomId) {
+                    const stats = performanceStats.get(player.roomId);
+                    if (stats) {
+                        stats.avgLatency = (stats.avgLatency * 0.9) + (latency * 0.1);
+                        stats.networkQuality = Math.max(0.2, Math.min(1.0, 1 - (latency / 200)));
+                        globalGameSettings.dynamicUpdate.networkQuality = stats.networkQuality;
+                        performanceStats.set(player.roomId, stats);
+                    }
+                }
+            }
+        });
+    }, 5000);
+    
     // ============================================
-    // 🔐 المصادقة (نفس الكود)
+    // 🔐 المصادقة
     // ============================================
     socket.on('auth', async (data) => {
         try {
@@ -644,7 +807,11 @@ io.on('connection', (socket) => {
                 username: userData.username,
                 isAdmin: userData.isAdmin || false,
                 gamesPlayed: userData.gamesPlayed || 0,
-                wins: userData.wins || 0
+                wins: userData.wins || 0,
+                settings: {
+                    dynamicUpdate: globalGameSettings.dynamicUpdate.enabled,
+                    updateRate: globalGameSettings.dynamicUpdate.targetFPS
+                }
             });
             
             console.log(`✅ User authenticated: ${email} (Admin: ${userData.isAdmin || false})`);
@@ -656,7 +823,7 @@ io.on('connection', (socket) => {
     });
     
     // ============================================
-    // 🏠 اللوبي والغرف (نفس الكود)
+    // 🏠 اللوبي والغرف
     // ============================================
     socket.on('join_lobby', async () => {
         const player = players.get(socket.id);
@@ -677,7 +844,8 @@ io.on('connection', (socket) => {
                 isAdmin: userData?.isAdmin || false,
                 settings: {
                     seatPrice: globalGameSettings.seatPrice,
-                    maxPlayers: globalGameSettings.maxPlayers
+                    maxPlayers: globalGameSettings.maxPlayers,
+                    dynamicUpdate: globalGameSettings.dynamicUpdate.enabled
                 }
             });
             
@@ -693,6 +861,7 @@ io.on('connection', (socket) => {
         broadcastRoomsList();
     });
     
+    // إنشاء غرفة
     socket.on('create_room', (data) => {
         const player = players.get(socket.id);
         if (!player?.userId) {
@@ -706,7 +875,7 @@ io.on('connection', (socket) => {
         }
         
         const roomId = generateId();
-        const maxSeats = data.seats || globalGameSettings.maxPlayers;
+        const maxSeats = Math.min(data.seats || globalGameSettings.maxPlayers, globalGameSettings.performance.maxPlayersInRoom);
         
         const room = {
             id: roomId,
@@ -715,17 +884,19 @@ io.on('connection', (socket) => {
                 userId: player.userId,
                 socketId: socket.id,
                 email: player.email,
-                health: 100
+                health: 100,
+                lastUpdate: Date.now()
             }],
             status: 'waiting',
-            createdAt: Date.now()
+            createdAt: Date.now(),
+            updateRate: globalGameSettings.dynamicUpdate.targetFPS
         };
         
         rooms.set(roomId, room);
         player.roomId = roomId;
         
         socket.join(roomId);
-        socket.emit('room_created', { roomId: roomId });
+        socket.emit('room_created', { roomId: roomId, updateRate: room.updateRate });
         
         updateRoom(roomId);
         broadcastRoomsList();
@@ -733,6 +904,7 @@ io.on('connection', (socket) => {
         console.log(`📦 Room created: ${roomId} by ${player.email}`);
     });
     
+    // الانضمام إلى غرفة
     socket.on('join_room', (data) => {
         const player = players.get(socket.id);
         if (!player?.userId) {
@@ -767,12 +939,13 @@ io.on('connection', (socket) => {
             userId: player.userId,
             socketId: socket.id,
             email: player.email,
-            health: 100
+            health: 100,
+            lastUpdate: Date.now()
         });
         player.roomId = roomId;
         
         socket.join(roomId);
-        socket.emit('room_joined', { roomId: roomId });
+        socket.emit('room_joined', { roomId: roomId, updateRate: room.updateRate });
         
         updateRoom(roomId);
         broadcastRoomsList();
@@ -784,32 +957,51 @@ io.on('connection', (socket) => {
     // 🎮 أحداث اللعبة المحسنة
     // ============================================
     
-    // حركة اللاعب مع تحديد التردد
+    // حركة اللاعب مع تحسين الأداء
     socket.on('move', (data) => {
         const player = players.get(socket.id);
-        if (!player?.roomId) return;
-        
-        const now = Date.now();
-        // تحديد تردد الإرسال (30 مرة في الثانية كحد أقصى)
-        if (now - player.lastMoveTime < 33) return;
-        player.lastMoveTime = now;
-        
-        const room = rooms.get(player.roomId);
-        if (room && room.status === 'active') {
-            const roomPlayer = room.players.find(p => p.socketId === socket.id);
-            if (roomPlayer && roomPlayer.health > 0) {
-                roomPlayer.position = data.position;
-                roomPlayer.rotation = data.rotation;
-                roomPlayer.lastUpdate = now;
+        if (player?.roomId) {
+            const room = rooms.get(player.roomId);
+            if (room && room.status === 'active') {
+                const roomPlayer = room.players.find(p => p.socketId === socket.id);
+                if (roomPlayer && roomPlayer.health > 0) {
+                    // حفظ الموقع السابق لحساب السرعة
+                    const oldPosition = roomPlayer.position || { x: 0, z: 0 };
+                    roomPlayer.position = data.position;
+                    roomPlayer.rotation = data.rotation;
+                    roomPlayer.lastUpdate = Date.now();
+                    
+                    // حساب السرعة للتحديثات المستقبلية
+                    const dx = roomPlayer.position.x - oldPosition.x;
+                    const dz = roomPlayer.position.z - oldPosition.z;
+                    const dt = (Date.now() - (roomPlayer.lastMoveTime || Date.now())) / 1000;
+                    
+                    roomPlayer.velocity = {
+                        x: dt > 0 ? dx / dt : 0,
+                        z: dt > 0 ? dz / dt : 0
+                    };
+                    roomPlayer.lastMoveTime = Date.now();
+                    
+                    // استخدام نظام الدفعات للحركة السريعة
+                    if (globalGameSettings.dynamicUpdate.enabled && room.players.length > 4) {
+                        queueUpdate(player.roomId, 'player_moved', {
+                            userId: player.userId,
+                            position: data.position,
+                            rotation: data.rotation,
+                            velocity: roomPlayer.velocity,
+                            timestamp: Date.now()
+                        });
+                    } else {
+                        socket.to(player.roomId).emit('player_moved', {
+                            userId: player.userId,
+                            position: data.position,
+                            rotation: data.rotation,
+                            velocity: roomPlayer.velocity,
+                            timestamp: Date.now()
+                        });
+                    }
+                }
             }
-            
-            // إرسال حركة اللاعب للآخرين (بدون إرسال للاعب نفسه)
-            socket.to(player.roomId).emit('player_moved', {
-                userId: player.userId,
-                position: data.position,
-                rotation: data.rotation,
-                timestamp: now
-            });
         }
     });
     
@@ -826,79 +1018,113 @@ io.on('connection', (socket) => {
         }
     });
     
-    // تحديث الصحة بعد الضرر (محسن)
+    // الضرر مع تحسين الدقة
     socket.on('damage', (data) => {
         const player = players.get(socket.id);
-        if (!player?.roomId) return;
-        
-        const room = rooms.get(player.roomId);
-        if (!room || room.status !== 'active') return;
-        
-        const targetPlayer = room.players.find(p => p.userId === data.targetId);
-        
-        if (targetPlayer && targetPlayer.health > 0) {
-            const oldHealth = targetPlayer.health || 100;
-            targetPlayer.health = Math.max(0, oldHealth - data.damage);
-            
-            console.log(`💥 Damage dealt: ${data.damage} to ${targetPlayer.userId} by ${player.userId}. Health: ${oldHealth} -> ${targetPlayer.health}`);
-            
-            // إرسال تحديث الصحة للجميع
-            io.to(player.roomId).emit('health_update', {
-                userId: targetPlayer.userId,
-                health: targetPlayer.health
-            });
-            
-            // إذا كان اللاعب المستهدف قد مات
-            if (targetPlayer.health <= 0) {
-                targetPlayer.health = 0;
+        if (player?.roomId) {
+            const room = rooms.get(player.roomId);
+            if (room && room.status === 'active') {
+                const targetPlayer = room.players.find(p => p.userId === data.targetId);
                 
-                io.to(player.roomId).emit('player_eliminated', {
-                    userId: targetPlayer.userId,
-                    killerId: player.userId,
-                    position: targetPlayer.position
-                });
-                
-                console.log(`💀 Player ${targetPlayer.userId} eliminated by ${player.userId}`);
-                
-                const targetSocket = io.sockets.sockets.get(targetPlayer.socketId);
-                if (targetSocket) {
-                    targetSocket.emit('you_were_eliminated', {
-                        message: 'لقد تم تدمير دبابتك!',
-                        killerId: player.userId
+                if (targetPlayer && targetPlayer.health > 0) {
+                    // التحقق من صحة الضرر (مكافحة الغش)
+                    const distance = data.distance || 0;
+                    const maxDistance = 100;
+                    const damageMultiplier = Math.max(0.5, Math.min(1.5, 1 - (distance / maxDistance)));
+                    const actualDamage = Math.min(data.damage * damageMultiplier, targetPlayer.health);
+                    
+                    const oldHealth = targetPlayer.health;
+                    targetPlayer.health = Math.max(0, oldHealth - actualDamage);
+                    
+                    console.log(`💥 Damage: ${actualDamage.toFixed(1)} to ${targetPlayer.userId}. Health: ${oldHealth} -> ${targetPlayer.health}`);
+                    
+                    // إرسال تحديث الصحة
+                    io.to(player.roomId).emit('health_update', {
+                        userId: targetPlayer.userId,
+                        health: targetPlayer.health,
+                        damage: actualDamage,
+                        from: player.userId
                     });
-                }
-                
-                // التحقق من انتهاء اللعبة
-                const alivePlayers = room.players.filter(p => p.health > 0);
-                console.log(`Alive players: ${alivePlayers.length}`);
-                
-                if (alivePlayers.length <= 1) {
-                    if (alivePlayers.length === 1) {
-                        const winner = alivePlayers[0];
-                        const winnerName = winner.team === 1 ? 'الفريق الأحمر' : 'الفريق الأزرق';
-                        endGame(player.roomId, `🎉 فوز ${winnerName}! 🎉`);
-                    } else {
-                        endGame(player.roomId, '🤝 تعادل!');
-                    }
-                } else {
-                    // تحديث قائمة اللاعبين للجميع
-                    const playersUpdate = [];
-                    for (const p of room.players) {
-                        if (p.position && p.health > 0) {
-                            playersUpdate.push({
-                                userId: p.userId,
-                                position: p.position,
-                                rotation: p.rotation || 0,
-                                health: p.health || 100,
-                                team: p.team
+                    
+                    // معالجة الإقصاء
+                    if (targetPlayer.health <= 0) {
+                        targetPlayer.health = 0;
+                        
+                        io.to(player.roomId).emit('player_eliminated', {
+                            userId: targetPlayer.userId,
+                            killerId: player.userId,
+                            position: targetPlayer.position,
+                            timestamp: Date.now()
+                        });
+                        
+                        console.log(`💀 Player ${targetPlayer.userId} eliminated by ${player.userId}`);
+                        
+                        const targetSocket = io.sockets.sockets.get(targetPlayer.socketId);
+                        if (targetSocket) {
+                            targetSocket.emit('you_were_eliminated', {
+                                message: 'لقد تم تدمير دبابتك!',
+                                killerId: player.userId
                             });
                         }
+                        
+                        // التحقق من نهاية اللعبة
+                        const alivePlayers = room.players.filter(p => p.health > 0);
+                        console.log(`Alive players: ${alivePlayers.length}`);
+                        
+                        if (alivePlayers.length <= 1) {
+                            if (alivePlayers.length === 1) {
+                                const winner = alivePlayers[0];
+                                const winnerName = winner.team === 1 ? 'الفريق الأحمر' : 'الفريق الأزرق';
+                                endGame(player.roomId, `🎉 فوز ${winnerName}! 🎉`);
+                            } else {
+                                endGame(player.roomId, '🤝 تعادل!');
+                            }
+                        } else {
+                            // تحديث قائمة اللاعبين
+                            const playersUpdate = [];
+                            for (const p of room.players) {
+                                if (p.position && p.health > 0) {
+                                    playersUpdate.push({
+                                        userId: p.userId,
+                                        position: p.position,
+                                        rotation: p.rotation || 0,
+                                        health: p.health,
+                                        team: p.team
+                                    });
+                                }
+                            }
+                            io.to(player.roomId).emit('players_list_update', { players: playersUpdate });
+                        }
                     }
-                    io.to(player.roomId).emit('players_list_update', { players: playersUpdate });
                 }
             }
-        } else {
-            console.log(`⚠️ Target player not found or already eliminated: ${data.targetId}`);
+        }
+    });
+    
+    // طلب حالة اللعبة (للمزامنة)
+    socket.on('request_game_state', () => {
+        const player = players.get(socket.id);
+        if (player?.roomId) {
+            const room = rooms.get(player.roomId);
+            if (room && room.status === 'active') {
+                const playersUpdate = [];
+                for (const p of room.players) {
+                    if (p.position && p.health > 0) {
+                        playersUpdate.push({
+                            userId: p.userId,
+                            position: p.position,
+                            rotation: p.rotation || 0,
+                            health: p.health,
+                            team: p.team
+                        });
+                    }
+                }
+                socket.emit('game_state_full', {
+                    players: playersUpdate,
+                    timestamp: Date.now(),
+                    yourHealth: room.players.find(p => p.socketId === socket.id)?.health || 0
+                });
+            }
         }
     });
     
@@ -906,6 +1132,8 @@ io.on('connection', (socket) => {
     // 🔌 انقطاع الاتصال
     // ============================================
     socket.on('disconnect', () => {
+        if (pingInterval) clearInterval(pingInterval);
+        
         const player = players.get(socket.id);
         if (player) {
             if (player.roomId) {
@@ -919,8 +1147,9 @@ io.on('connection', (socket) => {
                         });
                         
                         if (room.players.length === 0) {
-                            if (room.gameInterval) clearInterval(room.gameInterval);
+                            if (room.gameLoop) room.gameLoop.active = false;
                             rooms.delete(player.roomId);
+                            performanceStats.delete(player.roomId);
                         } else if (room.status === 'active') {
                             const alivePlayers = room.players.filter(p => p.health > 0);
                             if (alivePlayers.length === 1) {
@@ -952,25 +1181,38 @@ server.listen(PORT, () => {
     console.log(`
 ╔══════════════════════════════════════════════════════════════╗
 ║                                                              ║
-║   🎮 BATTLE TANKS GAME SERVER - OPTIMIZED VERSION 4.0 🎮     ║
+║     🎮 BATTLE TANKS GAME SERVER - DYNAMIC EDITION 🎮        ║
+║                      Version 4.0.0                          ║
 ║                                                              ║
 ╠══════════════════════════════════════════════════════════════╣
 ║  📡 Server running on port: ${PORT}
-║  🌐 WebSocket: Ready (with compression)
+║  🌐 WebSocket: Ready with dynamic updates
 ║  🔥 Firebase: Connected
 ║  👑 Admin email: admin@boomb.com
 ║  💰 Seat price: ${globalGameSettings.seatPrice}$
 ║  👥 Max players: ${globalGameSettings.maxPlayers}
 ║  ⏱️  Game duration: ${globalGameSettings.gameDuration / 1000} seconds
-║  🔐 Admin secret: ${process.env.ADMIN_SECRET ? '✅ Set' : '⚠️ Not set'}
-║  ⚡ Optimizations:                                     ║
-║     • Data compression enabled                         ║
-║     • Delta updates (30 fps → 70% less data)          ║
-║     • Full updates every 200ms                        ║
-║     • Player move throttling (33ms)                   ║
-║     • WebSocket perMessageDeflate                     ║
-║  🎯 Smooth movement: Interpolation ready              ║
+║  🔄 Dynamic Updates: ${globalGameSettings.dynamicUpdate.enabled ? '✅ Enabled' : '❌ Disabled'}
+║  🎯 Update Rate: ${globalGameSettings.dynamicUpdate.targetFPS} FPS (${Math.floor(1000 / globalGameSettings.dynamicUpdate.targetFPS)}ms)
+║  📊 Adaptive Range: ${Math.floor(1000 / globalGameSettings.dynamicUpdate.maxRate)}-${Math.floor(1000 / globalGameSettings.dynamicUpdate.minRate)} FPS
+║  📱 Mobile Optimized: ${globalGameSettings.performance.optimizeForMobile ? '✅ Yes' : '❌ No'}
+║  🚀 Performance Mode: ${globalGameSettings.dynamicUpdate.enabled ? 'Adaptive' : 'Fixed'}
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
     `);
+    
+    // عرض إحصائيات الأداء كل 30 ثانية
+    setInterval(() => {
+        const activeRooms = Array.from(rooms.values()).filter(r => r.status === 'active');
+        if (activeRooms.length > 0) {
+            console.log(`\n📊 Performance Stats:`);
+            console.log(`   Active Rooms: ${activeRooms.length}`);
+            console.log(`   Total Players: ${players.size}`);
+            console.log(`   Dynamic Mode: ${globalGameSettings.dynamicUpdate.enabled}`);
+            for (const room of activeRooms) {
+                const stats = performanceStats.get(room.id);
+                console.log(`   Room ${room.id}: ${room.players.length} players, Update Rate: ${room.updateRate || 33}ms, Latency: ${stats?.avgLatency?.toFixed(0) || 'N/A'}ms`);
+            }
+        }
+    }, 30000);
 });
