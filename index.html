@@ -822,54 +822,133 @@
             createTank(color, x, z, team, playerId = null) { 
                 const group = new THREE.Group(); 
     
-                // جسم الدبابة (مستطيل)
-                const bodyMat = new THREE.MeshStandardMaterial({ color: color, metalness: 0.7, roughness: 0.4 }); 
-                const body = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.8, 3.2), bodyMat); 
-                body.position.y = 0.4; 
-                body.castShadow = true; 
-                group.add(body); 
-    
-                // هيكل علوي (نصف دائري)
-                const topMat = new THREE.MeshStandardMaterial({ color: color, metalness: 0.6, roughness: 0.5 });
-                const top = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 1.5, 0.5, 12), topMat);
-                top.position.y = 0.85;
-                top.castShadow = true;
-                group.add(top);
-    
-                // البرج الثابت (بدون دوران)
-                const turretMat = new THREE.MeshStandardMaterial({ color: color, metalness: 0.8 }); 
-                const turret = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.2, 0.6, 16), turretMat); 
-                turret.position.y = 1.15; 
-                turret.castShadow = true; 
-                group.add(turret); 
-    
-                // المدفع (ثابت مع الجسم)
-                const barrelMat = new THREE.MeshStandardMaterial({ color: 0x4a4a4a, metalness: 0.9 });
-                const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.32, 2.0, 12), barrelMat); 
-                barrel.position.set(0, 1.25, 1.4); 
-                barrel.rotation.x = 0.08;
-                barrel.castShadow = true;
-                group.add(barrel); 
-    
-                // تفاصيل جانبية (عجلات)
-                const wheelMat = new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.5 });
-                const wheelPositions = [
-                    { x: -1.1, z: -1.2 }, { x: -1.1, z: 0 }, { x: -1.1, z: 1.2 },
-                    { x: 1.1, z: -1.2 }, { x: 1.1, z: 0 }, { x: 1.1, z: 1.2 }
-    ];
-                wheelPositions.forEach(pos => {
-                    const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.2, 12), wheelMat);
-                    wheel.rotation.z = Math.PI / 2;
-                    wheel.position.set(pos.x, 0.25, pos.z);
-                    wheel.castShadow = true;
-                    group.add(wheel);
+                // المواد
+                const tankMaterial = new THREE.MeshStandardMaterial({ 
+                    color: color, 
+                    roughness: 0.8, 
+                    metalness: 0.2 
     });
     
-                // كاتم صوت (اختياري)
-                const exhaustMat = new THREE.MeshStandardMaterial({ color: 0x663333 });
-                const exhaust = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.6), exhaustMat);
-                exhaust.position.set(1.1, 0.5, -1.5);
-                group.add(exhaust);
+                const trackMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x222222, 
+                    roughness: 0.9, 
+                    metalness: 0.2 
+    });
+    
+                const barrelMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x333333, 
+                    roughness: 0.7, 
+                    metalness: 0.6 
+    });
+    
+                // الهيكل السفلي (Chassis)
+                const chassisGeometry = new THREE.BoxGeometry(6, 1.5, 4);
+                const chassis = new THREE.Mesh(chassisGeometry, tankMaterial);
+                chassis.position.y = 1;
+                chassis.castShadow = true;
+                chassis.receiveShadow = true;
+                group.add(chassis);
+    
+                // مجموعة البرج (Turret Group) - يدور مع الجسم (ثابت)
+                const turretGroup = new THREE.Group();
+                turretGroup.position.y = 2.25;
+                turretGroup.position.x = -0.5;
+                group.add(turretGroup);
+    
+                // البرج
+                const turretGeometry = new THREE.BoxGeometry(3.5, 1.2, 2.8);
+                const turret = new THREE.Mesh(turretGeometry, tankMaterial);
+                turret.castShadow = true;
+                turret.receiveShadow = true;
+                turretGroup.add(turret);
+    
+                // فتحة القائد
+                const hatchGeometry = new THREE.CylinderGeometry(0.4, 0.4, 0.2, 32);
+                const hatch = new THREE.Mesh(hatchGeometry, tankMaterial);
+                hatch.position.set(-0.5, 0.7, 0.6);
+                hatch.castShadow = true;
+                hatch.receiveShadow = true;
+                turretGroup.add(hatch);
+    
+                // رشاش صغير
+                const mgGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.8, 16);
+                const mg = new THREE.Mesh(mgGeometry, barrelMaterial);
+                mg.rotation.z = Math.PI / 2.5;
+                mg.position.set(0, 0.9, 0.6);
+                mg.castShadow = true;
+                turretGroup.add(mg);
+    
+                // مجموعة المدفع
+                const barrelGroup = new THREE.Group();
+                barrelGroup.position.set(1, 0, 0);
+                turretGroup.add(barrelGroup);
+    
+                // المدفع
+                const barrelGeometry = new THREE.CylinderGeometry(0.15, 0.2, 4.5, 32);
+                const barrel = new THREE.Mesh(barrelGeometry, barrelMaterial);
+                barrel.rotation.z = Math.PI / 2;
+                barrel.position.x = 2.25;
+                barrel.castShadow = true;
+                barrel.receiveShadow = true;
+                barrelGroup.add(barrel);
+    
+                // فوهة المدفع
+                const muzzleGeometry = new THREE.CylinderGeometry(0.25, 0.25, 0.6, 32);
+                const muzzle = new THREE.Mesh(muzzleGeometry, barrelMaterial);
+                muzzle.rotation.z = Math.PI / 2;
+                muzzle.position.x = 4.5;
+                muzzle.castShadow = true;
+                muzzle.receiveShadow = true;
+                barrelGroup.add(muzzle);
+    
+                // المسارات
+                const trackGeometry = new THREE.BoxGeometry(6.2, 1.2, 0.8);
+    
+                const leftTrack = new THREE.Mesh(trackGeometry, trackMaterial);
+                leftTrack.position.set(0, 0.7, 2);
+                leftTrack.castShadow = true;
+                leftTrack.receiveShadow = true;
+                group.add(leftTrack);
+    
+                const rightTrack = new THREE.Mesh(trackGeometry, trackMaterial);
+                rightTrack.position.set(0, 0.7, -2);
+                rightTrack.castShadow = true;
+                rightTrack.receiveShadow = true;
+                group.add(rightTrack);
+    
+                // الدروع الجانبية
+                const skirtGeometry = new THREE.BoxGeometry(6, 0.8, 0.1);
+                const leftSkirt = new THREE.Mesh(skirtGeometry, tankMaterial);
+                leftSkirt.position.set(0, 1, 2.45);
+                leftSkirt.castShadow = true;
+                leftSkirt.receiveShadow = true;
+                group.add(leftSkirt);
+    
+                const rightSkirt = new THREE.Mesh(skirtGeometry, tankMaterial);
+                rightSkirt.position.set(0, 1, -2.45);
+                rightSkirt.castShadow = true;
+                rightSkirt.receiveShadow = true;
+                group.add(rightSkirt);
+    
+                // العجلات
+                const wheelGeometry = new THREE.CylinderGeometry(0.4, 0.4, 0.9, 16);
+                const wheelMaterial = new THREE.MeshStandardMaterial({ color: 0x111111 });
+    
+                for (let i = -2.5; i <= 2.5; i += 1.25) {
+                    const wheelL = new THREE.Mesh(wheelGeometry, wheelMaterial);
+                    wheelL.rotation.x = Math.PI / 2;
+                    wheelL.position.set(i, 0.5, 2);
+                    wheelL.castShadow = true;
+                    wheelL.receiveShadow = true;
+                    group.add(wheelL);
+        
+                    const wheelR = new THREE.Mesh(wheelGeometry, wheelMaterial);
+                    wheelR.rotation.x = Math.PI / 2;
+                    wheelR.position.set(i, 0.5, -2);
+                    wheelR.castShadow = true;
+                    wheelR.receiveShadow = true;
+                    group.add(wheelR);
+    }
     
                 group.position.set(x, 0, z); 
                 group.userData = { health: 100, team: team, playerId: playerId }; 
