@@ -568,7 +568,7 @@ app.post('/api/admin/resetData', async (req, res) => {
         
         // إعادة إنشاء مستخدم المدير الافتراضي
         await db.ref('users/admin_default').set({
-            email: 'admin@boomb.com',
+            email: 'admin2613857@boomb.com',
             username: 'Admin',
             balance: 9999,
             isAdmin: true,
