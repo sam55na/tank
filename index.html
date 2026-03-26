@@ -790,16 +790,111 @@
             }
             
             createTerrain() { 
+                // ==================== أرضية عشبية واقعية بدون شبكة ====================
+                // إنشاء نسيج عشبي
+                const canvas = document.createElement('canvas');
+                canvas.width = 512;
+                canvas.height = 512;
+                const ctx = canvas.getContext('2d');
+    
+                ctx.fillStyle = '#5c9e5e';
+                ctx.fillRect(0, 0, 512, 512);
+    
+                // رسم نسيج عشبي
+                for (let i = 0; i < 2500; i++) {
+                    ctx.fillStyle = `hsl(${80 + Math.random() * 20}, 70%, ${40 + Math.random() * 30}%)`;
+                    ctx.fillRect(
+                        Math.floor(Math.random() * 512),
+                        Math.floor(Math.random() * 512),
+                        2 + Math.random() * 3,
+                        2 + Math.random() * 3
+        );
+    }
+    
+                const grassTexture = new THREE.CanvasTexture(canvas);
+                grassTexture.wrapS = THREE.RepeatWrapping;
+                grassTexture.wrapT = THREE.RepeatWrapping;
+                grassTexture.repeat.set(20, 20);
+    
+                const groundMat = new THREE.MeshStandardMaterial({ 
+                    map: grassTexture,
+                    roughness: 0.9, 
+                    metalness: 0.05 
+    });
+    
                 const geo = new THREE.PlaneGeometry(450, 450, 60, 60); 
                 geo.rotateX(-Math.PI / 2); 
-                const groundMat = new THREE.MeshStandardMaterial({ color: 0x6a5a4a, roughness: 0.9, metalness: 0.05 }); 
                 const ground = new THREE.Mesh(geo, groundMat); 
                 ground.receiveShadow = true; 
                 this.scene.add(ground); 
-                const gridHelper = new THREE.GridHelper(460, 50, 0x8a8a7a, 0x5a5a4a);
-                gridHelper.position.y = 0.03;
-                this.scene.add(gridHelper);
-            }
+    
+                // ==================== جدار الفريق الأحمر (يسار) ====================
+                const wallMaterial = new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.7 });
+    
+                // الجدار الرئيسي الأحمر
+                const redWall = new THREE.Mesh(new THREE.BoxGeometry(18, 3.5, 2), wallMaterial);
+                redWall.position.set(-65, 1.75, -55);
+                redWall.castShadow = true;
+                redWall.receiveShadow = true;
+                this.scene.add(redWall);
+                this.obstacles.push(redWall);
+    
+                // أبراج جانبية للجدار الأحمر
+                const redTowerLeft = new THREE.Mesh(new THREE.BoxGeometry(2.5, 5, 2.5), wallMaterial);
+                redTowerLeft.position.set(-74, 2.5, -50);
+                redTowerLeft.castShadow = true;
+                this.scene.add(redTowerLeft);
+                this.obstacles.push(redTowerLeft);
+    
+                const redTowerRight = new THREE.Mesh(new THREE.BoxGeometry(2.5, 5, 2.5), wallMaterial);
+                redTowerRight.position.set(-56, 2.5, -60);
+                redTowerRight.castShadow = true;
+                this.scene.add(redTowerRight);
+                this.obstacles.push(redTowerRight);
+    
+                // ==================== جدار الفريق الأزرق (يمين) ====================
+                // الجدار الرئيسي الأزرق
+                const blueWall = new THREE.Mesh(new THREE.BoxGeometry(18, 3.5, 2), wallMaterial);
+                blueWall.position.set(65, 1.75, 55);
+                blueWall.castShadow = true;
+                blueWall.receiveShadow = true;
+                this.scene.add(blueWall);
+                this.obstacles.push(blueWall);
+    
+                // أبراج جانبية للجدار الأزرق
+                const blueTowerLeft = new THREE.Mesh(new THREE.BoxGeometry(2.5, 5, 2.5), wallMaterial);
+                blueTowerLeft.position.set(56, 2.5, 50);
+                blueTowerLeft.castShadow = true;
+                this.scene.add(blueTowerLeft);
+                this.obstacles.push(blueTowerLeft);
+    
+                const blueTowerRight = new THREE.Mesh(new THREE.BoxGeometry(2.5, 5, 2.5), wallMaterial);
+                blueTowerRight.position.set(74, 2.5, 60);
+                blueTowerRight.castShadow = true;
+                this.scene.add(blueTowerRight);
+                this.obstacles.push(blueTowerRight);
+    
+                // ==================== إضافة عشب صغير حول الجدران ====================
+                const grassMat = new THREE.MeshStandardMaterial({ color: 0x6aab6a });
+    
+                for (let i = 0; i < 60; i++) {
+                    // عشب حول الجدار الأحمر
+                    const xRed = -65 + (Math.random() - 0.5) * 22;
+                    const zRed = -55 + (Math.random() - 0.5) * 15;
+                    const grassRed = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.4, 0.35, 4), grassMat);
+                    grassRed.position.set(xRed, 0.1, zRed);
+                    grassRed.castShadow = true;
+                    this.scene.add(grassRed);
+        
+                    // عشب حول الجدار الأزرق
+                    const xBlue = 65 + (Math.random() - 0.5) * 22;
+                    const zBlue = 55 + (Math.random() - 0.5) * 15;
+                    const grassBlue = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.4, 0.35, 4), grassMat);
+                    grassBlue.position.set(xBlue, 0.1, zBlue);
+                    grassBlue.castShadow = true;
+                    this.scene.add(grassBlue);
+    }
+}
             
             createObstacles() {
                 const rockMat = new THREE.MeshStandardMaterial({ color: 0x6a6a5a, roughness: 0.75 });
