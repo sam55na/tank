@@ -850,9 +850,10 @@
                 group.add(chassis);
     
                 // مجموعة البرج (Turret Group) - يدور مع الجسم (ثابت)
+                
                 const turretGroup = new THREE.Group();
                 turretGroup.position.y = 2.25;
-                turretGroup.position.x = -0.5;
+                turretGroup.position.z = -0.5;
                 group.add(turretGroup);
     
                 // البرج
@@ -863,17 +864,18 @@
                 turretGroup.add(turret);
     
                 // فتحة القائد
+
                 const hatchGeometry = new THREE.CylinderGeometry(0.4, 0.4, 0.2, 32);
                 const hatch = new THREE.Mesh(hatchGeometry, tankMaterial);
                 hatch.position.set(-0.5, 0.7, 0.6);
                 hatch.castShadow = true;
                 hatch.receiveShadow = true;
                 turretGroup.add(hatch);
-    
-                // رشاش صغير
+
+                // رشاش صغير (Machine Gun)
                 const mgGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.8, 16);
                 const mg = new THREE.Mesh(mgGeometry, barrelMaterial);
-                mg.rotation.z = Math.PI / 2.5;
+                mg.rotation.x = Math.PI / 2.5;
                 mg.position.set(0, 0.9, 0.6);
                 mg.castShadow = true;
                 turretGroup.add(mg);
