@@ -89,6 +89,8 @@
             color: #d4af37;
             margin-bottom: 20px;
             font-size: 20px;
+            border-right: 3px solid #d4af37;
+            padding-right: 15px;
         }
 
         .users-table {
@@ -196,7 +198,6 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
-            margin-bottom: 20px;
         }
 
         .room-type-card {
@@ -204,11 +205,18 @@
             border: 1px solid #d4af37;
             border-radius: 15px;
             padding: 15px;
+            transition: all 0.3s;
+        }
+
+        .room-type-card:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateX(-5px);
         }
 
         .room-type-card h3 {
             color: #d4af37;
             margin-bottom: 10px;
+            font-size: 18px;
         }
 
         .room-type-info {
@@ -220,9 +228,9 @@
 
         .room-type-info span {
             background: rgba(212,175,55,0.2);
-            padding: 5px 10px;
-            border-radius: 10px;
-            font-size: 12px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
         }
 
         .room-type-controls {
@@ -230,36 +238,49 @@
             gap: 15px;
             flex-wrap: wrap;
             align-items: flex-end;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(212,175,55,0.3);
         }
 
-        .room-type-controls .control-group {
+        .control-group {
             display: flex;
             flex-direction: column;
             gap: 5px;
         }
 
-        .room-type-controls label {
+        .control-group label {
             font-size: 12px;
             color: #aaa;
         }
 
-        .room-type-controls input {
-            width: 100px;
-            padding: 8px;
+        .control-group input {
+            width: 120px;
+            padding: 8px 12px;
             border-radius: 8px;
             border: 1px solid #d4af37;
             background: rgba(255,255,255,0.1);
             color: white;
+            font-size: 14px;
         }
 
         .room-type-controls button {
             background: #d4af37;
             color: #1a1a2e;
-            padding: 8px 15px;
+            padding: 8px 20px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .room-type-controls button:hover {
+            transform: scale(1.02);
+        }
+
+        .room-type-controls button:active {
+            transform: scale(0.98);
         }
 
         /* أنماط الغرف النشطة */
@@ -267,17 +288,24 @@
             background: rgba(255,255,255,0.05);
             border: 1px solid #d4af37;
             border-radius: 10px;
-            padding: 10px 15px;
+            padding: 12px 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .active-room-card strong {
+            color: #d4af37;
         }
 
         .active-room-card .room-status {
             font-size: 12px;
-            padding: 3px 8px;
+            padding: 3px 10px;
             border-radius: 15px;
+            background: rgba(0,0,0,0.5);
         }
 
         .status-waiting {
@@ -292,6 +320,11 @@
             color: #e74c3c;
         }
 
+        hr {
+            border-color: rgba(212,175,55,0.3);
+            margin: 20px 0;
+        }
+
         @media (max-width: 768px) {
             .form-row {
                 grid-template-columns: 1fr;
@@ -302,10 +335,14 @@
             }
             .room-type-controls {
                 flex-direction: column;
-                align-items: flex-start;
+                align-items: stretch;
             }
-            .room-type-controls input {
+            .control-group input {
                 width: 100%;
+            }
+            .active-room-card {
+                flex-direction: column;
+                align-items: flex-start;
             }
         }
     </style>
@@ -313,54 +350,71 @@
 <body>
     <div class="container">
         <header>
-            <h1>🛡️ لوحة تحكم المشرف - Battle Tanks</h1>
-            <button class="back-btn" onclick="window.location.href='index.html'">🏠 العودة للرئيسية</button>
+            <h1>🛡️ لوحة تحكم المشرف - Battle Tanks Elite</h1>
+            <button class="back-btn" onclick="window.location.href='index.html'">🏠 العودة للعبة</button>
         </header>
 
         <!-- إحصائيات عامة -->
         <div class="stats-grid">
             <div class="stat-card">
-                <h3>إجمالي المستخدمين</h3>
+                <h3>👥 إجمالي المستخدمين</h3>
                 <div class="value" id="totalUsers">0</div>
             </div>
             <div class="stat-card">
-                <h3>إجمالي الرصيد</h3>
+                <h3>💰 إجمالي الرصيد</h3>
                 <div class="value" id="totalBalance">0 $</div>
             </div>
             <div class="stat-card">
-                <h3>إجمالي المعارك</h3>
+                <h3>🎮 إجمالي المعارك</h3>
                 <div class="value" id="totalGames">0</div>
             </div>
         </div>
 
-        <!-- إدارة أنواع الغرف -->
+        <!-- ==================== أنواع الغرف (الجديد) ==================== -->
         <section>
-            <h2>🏷️ إعدادات أنواع الغرف</h2>
+            <h2>🏷️ إدارة أنواع الغرف</h2>
             <div id="roomTypesList" class="room-types-list">
-                <div class="loading">جاري تحميل أنواع الغرف...</div>
+                <div class="loading">⏳ جاري تحميل أنواع الغرف...</div>
             </div>
             <div id="roomTypesMessage" class="message"></div>
         </section>
 
-        <!-- إدارة الغرف النشطة -->
+        <!-- ==================== الإعدادات القديمة (للتوافق) ==================== -->
         <section>
-            <h2>🚀 الغرف النشطة</h2>
+            <h2>⚙️ الإعدادات العامة</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>💰 سعر المقعد ($)</label>
+                    <input type="number" id="seatPrice" value="1" min="1" max="1000">
+                    <button class="submit-btn" id="saveSeatPriceBtn" style="margin-top:10px;">💾 حفظ</button>
+                </div>
+                <div class="form-group">
+                    <label>👥 عدد اللاعبين (2-16)</label>
+                    <input type="number" id="maxPlayers" value="2" min="2" max="16">
+                    <button class="submit-btn" id="saveMaxPlayersBtn" style="margin-top:10px;">💾 حفظ</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- الغرف النشطة -->
+        <section>
+            <h2>🚀 الغرف النشطة حالياً</h2>
             <div id="activeRoomsList">
-                <div class="loading">جاري تحميل الغرف...</div>
+                <div class="loading">⏳ جاري تحميل الغرف...</div>
             </div>
             <div id="roomsMessage" class="message"></div>
         </section>
 
         <!-- إدارة الرصيد -->
         <section>
-            <h2>💰 إدارة الرصيد</h2>
+            <h2>💰 إدارة رصيد اللاعبين</h2>
             <div class="form-row">
                 <div class="form-group">
-                    <label>البريد الإلكتروني للمستخدم</label>
+                    <label>📧 البريد الإلكتروني</label>
                     <input type="email" id="targetEmail" placeholder="example@email.com">
                 </div>
                 <div class="form-group">
-                    <label>المبلغ ($)</label>
+                    <label>💵 المبلغ ($)</label>
                     <input type="number" id="amount" placeholder="100" min="1">
                 </div>
             </div>
@@ -373,33 +427,40 @@
 
         <!-- قائمة المستخدمين -->
         <section>
-            <h2>👥 قائمة المستخدمين</h2>
+            <h2>👥 قائمة اللاعبين</h2>
             <div class="users-table">
                 <table id="usersTable">
                     <thead>
                         <tr>
                             <th>البريد الإلكتروني</th>
                             <th>اسم المستخدم</th>
-                            <th>الرصيد</th>
-                            <th>عدد المعارك</th>
-                            <th>مرات الفوز</th>
-                            <th>صلاحية</th>
-                            <th>إجراءات</th>
+                            <th>💰 الرصيد</th>
+                            <th>🎮 المعارك</th>
+                            <th>🏆 الفوز</th>
+                            <th>👑 الصلاحية</th>
+                            <th>⚡ إجراءات</th>
                         </tr>
                     </thead>
                     <tbody id="usersList">
-                        <tr><td colspan="7" class="loading">جاري تحميل المستخدمين...</td></tr>
+                        <tr><td colspan="7" class="loading">⏳ جاري تحميل المستخدمين...</td></tr>
                     </tbody>
                 </table>
             </div>
             <button class="submit-btn" onclick="fetchStats()" style="margin-top: 15px;">🔄 تحديث القائمة</button>
         </section>
+
+        <!-- أزرار إضافية -->
+        <hr>
+        <div class="form-row">
+            <button class="submit-btn danger" id="resetDataBtn">🗑️ مسح جميع بيانات اللاعبين</button>
+            <button class="submit-btn" id="refreshStatsBtn">🔄 تحديث الإحصائيات</button>
+        </div>
     </div>
 
     <script>
         const SERVER_URL = "https://tank-yf0p.onrender.com";
 
-        // الحصول على التوكن من localStorage
+        // الحصول على التوكن
         function getAdminToken() {
             return localStorage.getItem('adminToken');
         }
@@ -451,30 +512,30 @@
             if (!container) return;
 
             if (!types || types.length === 0) {
-                container.innerHTML = '<div class="loading">لا توجد أنواع غرف</div>';
+                container.innerHTML = '<div class="loading">📭 لا توجد أنواع غرف متاحة</div>';
                 return;
             }
 
             container.innerHTML = types.map(type => `
                 <div class="room-type-card">
-                    <h3>${type.name}</h3>
+                    <h3>🏷️ ${type.name}</h3>
                     <div class="room-type-info">
-                        <span>👥 المقاعد: ${type.maxSeats}</span>
-                        <span>💰 سعر المقعد: ${type.seatPrice}$</span>
-                        <span>🏠 الحد الأقصى للغرف: ${type.maxRooms || 'غير محدد'}</span>
-                        <span>📌 الغرف المتاحة: ${type.availableRooms || 0}</span>
+                        <span>👥 الحد الأقصى: ${type.maxSeats} لاعب</span>
+                        <span>💰 سعر المقعد: ${type.seatPrice} $</span>
+                        <span>🏠 الحد الأقصى للغرف: ${type.maxRooms || 'غير محدود'}</span>
+                        <span>📌 غرف متاحة: ${type.availableRooms || 0}</span>
                         <span>⚔️ غرف نشطة: ${type.activeRooms || 0}</span>
                     </div>
                     <div class="room-type-controls">
                         <div class="control-group">
                             <label>عدد اللاعبين (2-16)</label>
-                            <input type="number" id="maxSeats_${type.name}" value="${type.maxSeats}" min="2" max="16">
+                            <input type="number" id="maxSeats_${type.name.replace(/\s/g, '_')}" value="${type.maxSeats}" min="2" max="16">
                         </div>
                         <div class="control-group">
                             <label>سعر المقعد ($)</label>
-                            <input type="number" id="price_${type.name}" value="${type.seatPrice}" min="1" max="1000">
+                            <input type="number" id="price_${type.name.replace(/\s/g, '_')}" value="${type.seatPrice}" min="1" max="1000">
                         </div>
-                        <button onclick="updateRoomType('${type.name}')">💾 حفظ التغيير</button>
+                        <button onclick="updateRoomType('${type.name}')">💾 حفظ التغييرات</button>
                     </div>
                 </div>
             `).join('');
@@ -484,11 +545,21 @@
             const token = getAdminToken();
             if (!token) return;
 
-            const maxSeatsInput = document.getElementById(`maxSeats_${typeName}`);
-            const priceInput = document.getElementById(`price_${typeName}`);
+            const safeName = typeName.replace(/\s/g, '_');
+            const maxSeatsInput = document.getElementById(`maxSeats_${safeName}`);
+            const priceInput = document.getElementById(`price_${safeName}`);
 
             const maxSeats = parseInt(maxSeatsInput?.value) || 2;
             const seatPrice = parseInt(priceInput?.value) || 1;
+
+            if (maxSeats < 2 || maxSeats > 16) {
+                showRoomTypesMessage('عدد اللاعبين يجب أن يكون بين 2 و 16', 'error');
+                return;
+            }
+            if (seatPrice < 1) {
+                showRoomTypesMessage('سعر المقعد يجب أن يكون 1 على الأقل', 'error');
+                return;
+            }
 
             try {
                 const response = await fetch(`${SERVER_URL}/api/admin/updateRoomType`, {
@@ -498,7 +569,7 @@
                 });
                 const data = await response.json();
                 if (data.success) {
-                    showRoomTypesMessage(`تم تحديث إعدادات ${typeName} بنجاح`, 'success');
+                    showRoomTypesMessage(`✅ تم تحديث إعدادات ${typeName} بنجاح`, 'success');
                     fetchRoomTypes();
                     fetchActiveRooms();
                 } else {
@@ -543,26 +614,26 @@
             if (!container) return;
 
             if (!rooms || rooms.length === 0) {
-                container.innerHTML = '<div class="loading">لا توجد غرف نشطة</div>';
+                container.innerHTML = '<div class="loading">📭 لا توجد غرف نشطة حالياً</div>';
                 return;
             }
 
             container.innerHTML = rooms.map(room => `
                 <div class="active-room-card">
                     <div>
-                        <strong>${room.name || 'غرفة غير مسماة'}</strong><br>
-                        <small>ID: ${room.id}</small>
+                        <strong>🏠 ${room.name || 'غرفة غير مسماة'}</strong><br>
+                        <small style="color:#aaa;">ID: ${room.id}</small>
                     </div>
                     <div>
                         <span>👥 ${room.playersCount || 0}/${room.maxSeats}</span>
-                        <span>💰 ${room.seatPrice || 1}$</span>
-                        <span class="room-status status-${room.status}">${getStatusText(room.status)}</span>
+                        <span style="margin-left:15px;">💰 ${room.seatPrice || 1}$</span>
+                        <span class="room-status status-${room.status}" style="margin-left:15px;">${getStatusText(room.status)}</span>
                     </div>
                 </div>
             `).join('');
         }
 
-        // ==================== إدارة اللاعبين ====================
+        // ==================== إحصائيات المستخدمين ====================
         async function fetchStats() {
             const token = getAdminToken();
             if (!token) return;
@@ -584,7 +655,7 @@
                             const row = usersList.insertRow();
                             row.insertCell(0).innerText = user.email || user.id;
                             row.insertCell(1).innerText = user.username || user.email?.split('@')[0] || 'لاعب';
-                            row.insertCell(2).innerHTML = `<span style="color:#d4af37;">${user.balance || 100} $</span>`;
+                            row.insertCell(2).innerHTML = `<span style="color:#d4af37; font-weight:bold;">${user.balance || 100} $</span>`;
                             row.insertCell(3).innerText = user.gamesPlayed || 0;
                             row.insertCell(4).innerText = user.wins || 0;
                             row.insertCell(5).innerText = user.isAdmin ? '✅ مشرف' : '👤 عادي';
@@ -594,7 +665,7 @@
                             `;
                         });
                     } else {
-                        usersList.innerHTML = '<tr><td colspan="7" class="loading">لا يوجد لاعبين</td></tr>';
+                        usersList.innerHTML = '<tr><td colspan="7" class="loading">📭 لا يوجد لاعبين</td></tr>';
                     }
                 } else {
                     showBalanceMessage(data.error || 'خطأ في تحميل البيانات', 'error');
@@ -617,7 +688,7 @@
                 });
                 const data = await response.json();
                 if (data.success) {
-                    showBalanceMessage(`تم إيداع ${amount}$ للمستخدم`, 'success');
+                    showBalanceMessage(`✅ تم إيداع ${amount}$ للمستخدم`, 'success');
                     fetchStats();
                 } else {
                     showBalanceMessage(data.error, 'error');
@@ -639,7 +710,7 @@
                 });
                 const data = await response.json();
                 if (data.success) {
-                    showBalanceMessage(`تم سحب ${amount}$ من المستخدم`, 'success');
+                    showBalanceMessage(`✅ تم سحب ${amount}$ من المستخدم`, 'success');
                     fetchStats();
                 } else {
                     showBalanceMessage(data.error, 'error');
@@ -655,7 +726,7 @@
             const token = getAdminToken();
 
             if (!email || !amount) {
-                showBalanceMessage('الرجاء إدخال البريد الإلكتروني والمبلغ', 'error');
+                showBalanceMessage('⚠️ الرجاء إدخال البريد الإلكتروني والمبلغ', 'error');
                 return;
             }
 
@@ -667,7 +738,7 @@
                 });
                 const data = await response.json();
                 if (data.success) {
-                    showBalanceMessage(`تم إيداع ${amount}$ بنجاح`, 'success');
+                    showBalanceMessage(`✅ تم إيداع ${amount}$ بنجاح`, 'success');
                     document.getElementById('targetEmail').value = '';
                     document.getElementById('amount').value = '';
                     fetchStats();
@@ -685,7 +756,7 @@
             const token = getAdminToken();
 
             if (!email || !amount) {
-                showBalanceMessage('الرجاء إدخال البريد الإلكتروني والمبلغ', 'error');
+                showBalanceMessage('⚠️ الرجاء إدخال البريد الإلكتروني والمبلغ', 'error');
                 return;
             }
 
@@ -697,7 +768,7 @@
                 });
                 const data = await response.json();
                 if (data.success) {
-                    showBalanceMessage(`تم سحب ${amount}$ بنجاح`, 'success');
+                    showBalanceMessage(`✅ تم سحب ${amount}$ بنجاح`, 'success');
                     document.getElementById('targetEmail').value = '';
                     document.getElementById('amount').value = '';
                     fetchStats();
@@ -709,7 +780,70 @@
             }
         }
 
-        // التحقق من صلاحية المشرف
+        async function resetAllData() {
+            if (!confirm('⚠️ تحذير نهائي! سيتم مسح جميع بيانات اللاعبين بشكل دائم. هل أنت متأكد؟')) return;
+            const confirmText = prompt('اكتب كلمة "مسح" للتأكيد النهائي:');
+            if (confirmText !== 'مسح') return;
+
+            const token = getAdminToken();
+            try {
+                const response = await fetch(`${SERVER_URL}/api/admin/resetData`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ adminToken: token })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showBalanceMessage('✅ تم مسح جميع بيانات اللاعبين بنجاح', 'success');
+                    fetchStats();
+                } else {
+                    showBalanceMessage(data.error, 'error');
+                }
+            } catch (error) {
+                showBalanceMessage('خطأ في الاتصال', 'error');
+            }
+        }
+
+        // ==================== الإعدادات القديمة ====================
+        async function saveSeatPrice() {
+            const price = parseInt(document.getElementById('seatPrice').value);
+            if (isNaN(price) || price < 1) return showBalanceMessage('سعر غير صالح', 'error');
+            const token = getAdminToken();
+            try {
+                const response = await fetch(`${SERVER_URL}/api/admin/setSeatPrice`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ adminToken: token, price })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showBalanceMessage(`✅ تم تغيير سعر المقعد إلى ${price}$`, 'success');
+                } else {
+                    showBalanceMessage(data.error, 'error');
+                }
+            } catch (e) { showBalanceMessage('خطأ في الاتصال', 'error'); }
+        }
+
+        async function saveMaxPlayers() {
+            const maxPlayers = parseInt(document.getElementById('maxPlayers').value);
+            if (isNaN(maxPlayers) || maxPlayers < 2 || maxPlayers > 16) return showBalanceMessage('عدد غير صالح (2-16)', 'error');
+            const token = getAdminToken();
+            try {
+                const response = await fetch(`${SERVER_URL}/api/admin/setMaxPlayers`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ adminToken: token, maxPlayers })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showBalanceMessage(`✅ تم تغيير عدد اللاعبين إلى ${maxPlayers}`, 'success');
+                } else {
+                    showBalanceMessage(data.error, 'error');
+                }
+            } catch (e) { showBalanceMessage('خطأ في الاتصال', 'error'); }
+        }
+
+        // ==================== التحقق من الصلاحية ====================
         async function checkAdmin() {
             const token = getAdminToken();
             const isAdmin = localStorage.getItem('isAdmin');
@@ -727,7 +861,17 @@
             await fetchActiveRooms();
         }
 
-        // تشغيل التحقق عند تحميل الصفحة
+        // ربط الأزرار
+        document.getElementById('saveSeatPriceBtn').onclick = saveSeatPrice;
+        document.getElementById('saveMaxPlayersBtn').onclick = saveMaxPlayers;
+        document.getElementById('resetDataBtn').onclick = resetAllData;
+        document.getElementById('refreshStatsBtn').onclick = () => {
+            fetchStats();
+            fetchRoomTypes();
+            fetchActiveRooms();
+        };
+
+        // بدء التشغيل
         checkAdmin();
     </script>
 </body>
