@@ -427,6 +427,11 @@
             return localStorage.getItem('adminToken');
         }
 
+        // الحصول على userId من localStorage
+        function getUserId() {
+            return localStorage.getItem('userId');
+        }
+
         // عرض الرسائل
         function showMessage(messageId, msg, type) {
             const messageDiv = document.getElementById(messageId);
@@ -453,15 +458,23 @@
         // ==================== إدارة أنواع الغرف ====================
         async function fetchRoomTypes() {
             const token = getAdminToken();
+            const userId = getUserId();
+            
             if (!token) {
                 console.log('No token found');
                 showRoomTypesMessage('يرجى تسجيل الدخول أولاً', 'error');
                 return;
             }
 
+            if (!userId) {
+                console.log('No userId found');
+                showRoomTypesMessage('لم يتم العثور على معرف المستخدم', 'error');
+                return;
+            }
+
             try {
-                console.log('Fetching room types...');
-                const response = await fetch(`${SERVER_URL}/api/admin/roomTypes?adminToken=${token}`);
+                console.log('Fetching room types with userId:', userId);
+                const response = await fetch(`${SERVER_URL}/api/admin/roomTypes?adminToken=${token}&userId=${userId}`);
                 const data = await response.json();
                 console.log('Room types response:', data);
                 
@@ -512,8 +525,15 @@
 
         async function updateRoomType(typeName) {
             const token = getAdminToken();
+            const userId = getUserId();
+            
             if (!token) {
                 showRoomTypesMessage('يرجى تسجيل الدخول أولاً', 'error');
+                return;
+            }
+
+            if (!userId) {
+                showRoomTypesMessage('لم يتم العثور على معرف المستخدم', 'error');
                 return;
             }
 
@@ -537,7 +557,7 @@
                 const response = await fetch(`${SERVER_URL}/api/admin/updateRoomType`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ adminToken: token, typeName, maxSeats, seatPrice })
+                    body: JSON.stringify({ adminToken: token, userId: userId, typeName, maxSeats, seatPrice })
                 });
                 const data = await response.json();
                 if (data.success) {
@@ -556,14 +576,21 @@
         // ==================== الغرف النشطة ====================
         async function fetchActiveRooms() {
             const token = getAdminToken();
+            const userId = getUserId();
+            
             if (!token) {
                 console.log('No token for active rooms');
                 return;
             }
 
+            if (!userId) {
+                console.log('No userId for active rooms');
+                return;
+            }
+
             try {
-                console.log('Fetching active rooms...');
-                const response = await fetch(`${SERVER_URL}/api/admin/rooms?adminToken=${token}`);
+                console.log('Fetching active rooms with userId:', userId);
+                const response = await fetch(`${SERVER_URL}/api/admin/rooms?adminToken=${token}&userId=${userId}`);
                 const data = await response.json();
                 console.log('Active rooms response:', data);
                 
@@ -614,6 +641,8 @@
         // ==================== إحصائيات المستخدمين ====================
         async function fetchStats() {
             const token = getAdminToken();
+            const userId = getUserId();
+            
             if (!token) {
                 console.log('No token for stats');
                 const usersList = document.getElementById('usersList');
@@ -621,9 +650,16 @@
                 return;
             }
 
+            if (!userId) {
+                console.log('No userId for stats');
+                const usersList = document.getElementById('usersList');
+                if (usersList) usersList.innerHTML = '<tr><td colspan="7" class="loading">❌ لم يتم العثور على معرف المستخدم</td></tr>';
+                return;
+            }
+
             try {
-                console.log('Fetching stats...');
-                const response = await fetch(`${SERVER_URL}/api/admin/stats?adminToken=${token}`);
+                console.log('Fetching stats with userId:', userId);
+                const response = await fetch(`${SERVER_URL}/api/admin/stats?adminToken=${token}&userId=${userId}`);
                 const data = await response.json();
                 console.log('Stats response:', data);
 
@@ -663,13 +699,14 @@
 
         async function quickDeposit(email, amount) {
             const token = getAdminToken();
-            if (!token) return;
+            const userId = getUserId();
+            if (!token || !userId) return;
 
             try {
                 const response = await fetch(`${SERVER_URL}/api/admin/balance`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ adminToken: token, userId: email, amount, action: 'deposit' })
+                    body: JSON.stringify({ adminToken: token, userId: email, adminId: userId, amount, action: 'deposit' })
                 });
                 const data = await response.json();
                 if (data.success) {
@@ -685,13 +722,14 @@
 
         async function quickWithdraw(email, amount) {
             const token = getAdminToken();
-            if (!token) return;
+            const userId = getUserId();
+            if (!token || !userId) return;
 
             try {
                 const response = await fetch(`${SERVER_URL}/api/admin/balance`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ adminToken: token, userId: email, amount, action: 'withdraw' })
+                    body: JSON.stringify({ adminToken: token, userId: email, adminId: userId, amount, action: 'withdraw' })
                 });
                 const data = await response.json();
                 if (data.success) {
@@ -709,9 +747,15 @@
             const email = document.getElementById('targetEmail').value;
             const amount = parseFloat(document.getElementById('amount').value);
             const token = getAdminToken();
+            const userId = getUserId();
 
             if (!email || !amount) {
                 showBalanceMessage('⚠️ الرجاء إدخال البريد الإلكتروني والمبلغ', 'error');
+                return;
+            }
+
+            if (!token || !userId) {
+                showBalanceMessage('⚠️ يرجى تسجيل الدخول أولاً', 'error');
                 return;
             }
 
@@ -719,7 +763,7 @@
                 const response = await fetch(`${SERVER_URL}/api/admin/balance`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ adminToken: token, userId: email, amount, action: 'deposit' })
+                    body: JSON.stringify({ adminToken: token, userId: email, adminId: userId, amount, action: 'deposit' })
                 });
                 const data = await response.json();
                 if (data.success) {
@@ -739,9 +783,15 @@
             const email = document.getElementById('targetEmail').value;
             const amount = parseFloat(document.getElementById('amount').value);
             const token = getAdminToken();
+            const userId = getUserId();
 
             if (!email || !amount) {
                 showBalanceMessage('⚠️ الرجاء إدخال البريد الإلكتروني والمبلغ', 'error');
+                return;
+            }
+
+            if (!token || !userId) {
+                showBalanceMessage('⚠️ يرجى تسجيل الدخول أولاً', 'error');
                 return;
             }
 
@@ -749,7 +799,7 @@
                 const response = await fetch(`${SERVER_URL}/api/admin/balance`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ adminToken: token, userId: email, amount, action: 'withdraw' })
+                    body: JSON.stringify({ adminToken: token, userId: email, adminId: userId, amount, action: 'withdraw' })
                 });
                 const data = await response.json();
                 if (data.success) {
@@ -766,16 +816,23 @@
         }
 
         async function resetAllData() {
+            const token = getAdminToken();
+            const userId = getUserId();
+            
+            if (!token || !userId) {
+                showBalanceMessage('⚠️ يرجى تسجيل الدخول أولاً', 'error');
+                return;
+            }
+            
             if (!confirm('⚠️ تحذير نهائي! سيتم مسح جميع بيانات اللاعبين بشكل دائم. هل أنت متأكد؟')) return;
             const confirmText = prompt('اكتب كلمة "مسح" للتأكيد النهائي:');
             if (confirmText !== 'مسح') return;
 
-            const token = getAdminToken();
             try {
                 const response = await fetch(`${SERVER_URL}/api/admin/resetData`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ adminToken: token })
+                    body: JSON.stringify({ adminToken: token, userId: userId })
                 });
                 const data = await response.json();
                 if (data.success) {
@@ -793,12 +850,20 @@
         async function checkAdmin() {
             const token = getAdminToken();
             const isAdmin = localStorage.getItem('isAdmin');
+            const userId = getUserId();
             
-            console.log('🔐 Checking admin access:', { hasToken: !!token, isAdmin });
+            console.log('🔐 Checking admin access:', { hasToken: !!token, isAdmin, userId });
             
             if (!token || isAdmin !== 'true') {
                 console.log('❌ Not admin, redirecting to login');
                 alert('❌ غير مصرح بالدخول. يجب تسجيل الدخول كمشرف أولاً.');
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            if (!userId) {
+                console.log('⚠️ No userId found in localStorage');
+                alert('⚠️ خطأ: لم يتم العثور على معرف المستخدم. يرجى تسجيل الخروج وتسجيل الدخول مرة أخرى.');
                 window.location.href = 'index.html';
                 return;
             }
