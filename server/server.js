@@ -369,6 +369,38 @@ app.get('/health', (req, res) => {
     res.json({ status: 'online', timestamp: Date.now(), version: '3.2.0' });
 });
 
+// نقطة نهاية للتحقق من صحة الخادم (نسخة بديلة)
+app.get('/api/health', (req, res) => {
+    res.json({ 
+        status: 'healthy',
+        timestamp: Date.now(),
+        connections: io.engine.clientsCount,
+        rooms: rooms.size
+    });
+});
+
+// نقطة نهاية للتحقق من حالة المستخدم
+app.post('/api/auth/verify', async (req, res) => {
+    try {
+        const { token } = req.body;
+        const decoded = await admin.auth().verifyIdToken(token);
+        
+        const userRef = db.ref(`users/${decoded.uid}`);
+        const snapshot = await userRef.once('value');
+        const userData = snapshot.val();
+        
+        res.json({
+            success: true,
+            userId: decoded.uid,
+            email: decoded.email,
+            balance: userData?.balance || 100,
+            isAdmin: userData?.isAdmin || false
+        });
+    } catch (error) {
+        res.status(401).json({ success: false, error: error.message });
+    }
+});
+
 // الحصول على رصيد المستخدم
 app.get('/api/balance/:userId', async (req, res) => {
     try {
@@ -696,7 +728,9 @@ io.on('connection', (socket) => {
     players.set(socket.id, {
         socketId: socket.id,
         userId: null,
+        email: null,
         roomId: null,
+        isAdmin: false,
         connectedAt: Date.now()
     });
     
@@ -704,9 +738,15 @@ io.on('connection', (socket) => {
     // 🔐 المصادقة
     // ============================================
     socket.on('auth', async (data) => {
+        // تعيين مهلة للمصادقة
+        const authTimeout = setTimeout(() => {
+            socket.emit('auth_error', { message: 'Authentication timeout' });
+        }, 15000);
+        
         try {
             const { token } = data;
             if (!token) {
+                clearTimeout(authTimeout);
                 socket.emit('auth_error', { message: 'No token provided' });
                 return;
             }
@@ -744,6 +784,13 @@ io.on('connection', (socket) => {
                 userData.isAdmin = true;
             }
             
+            // تحديث معلومات المدير في player
+            if (player) {
+                player.isAdmin = userData.isAdmin || false;
+            }
+            
+            clearTimeout(authTimeout);
+            
             socket.emit('auth_success', {
                 userId: userId,
                 email: email,
@@ -751,12 +798,14 @@ io.on('connection', (socket) => {
                 username: userData.username,
                 isAdmin: userData.isAdmin || false,
                 gamesPlayed: userData.gamesPlayed || 0,
-                wins: userData.wins || 0
+                wins: userData.wins || 0,
+                timestamp: Date.now()
             });
             
             console.log(`✅ User authenticated: ${email} (Admin: ${userData.isAdmin || false})`);
             
         } catch (error) {
+            clearTimeout(authTimeout);
             console.error('❌ Auth error:', error);
             socket.emit('auth_error', { message: 'Invalid token: ' + error.message });
         }
@@ -916,9 +965,48 @@ io.on('connection', (socket) => {
         console.log(`👥 ${player.email} joined room ${roomId} (Price: ${seatPrice}$, Balance: ${balance - seatPrice}$)`);
     });
     
+    // مغادرة الغرفة
+    socket.on('leave_room', () => {
+        const player = players.get(socket.id);
+        if (player && player.roomId) {
+            const room = rooms.get(player.roomId);
+            if (room) {
+                const index = room.players.findIndex(p => p.socketId === socket.id);
+                if (index !== -1) {
+                    room.players.splice(index, 1);
+                    socket.leave(player.roomId);
+                    
+                    if (room.players.length === 0 && room.status === 'waiting') {
+                        rooms.delete(player.roomId);
+                        console.log(`🗑️ Room ${player.roomId} deleted (empty)`);
+                    } else if (room.status === 'active') {
+                        const alivePlayers = room.players.filter(p => p.health > 0);
+                        if (alivePlayers.length === 1) {
+                            const winner = alivePlayers[0];
+                            endGame(player.roomId, `🎉 فوز ${winner.team === 1 ? 'فريقي' : 'الخصم'} بسبب انسحاب الخصم! 🎉`);
+                        } else if (alivePlayers.length === 0) {
+                            endGame(player.roomId, 'انتهت المعركة بسبب انسحاب جميع اللاعبين');
+                        }
+                    } else {
+                        updateRoom(player.roomId);
+                    }
+                    
+                    broadcastRoomsList();
+                }
+            }
+            player.roomId = null;
+            console.log(`🚪 Player ${player.email} left room`);
+        }
+    });
+    
     // ============================================
     // 🎮 أحداث اللعبة (مزامنة كاملة)
     // ============================================
+    
+    // إضافة حدث ping
+    socket.on('ping', (data) => {
+        socket.emit('pong', { timestamp: data.timestamp });
+    });
     
     // حركة اللاعب
     socket.on('move', (data) => {
@@ -1088,6 +1176,7 @@ io.on('connection', (socket) => {
     });
 });
 
+// تنظيف الغرف المنتهية
 setInterval(() => {
     const now = Date.now();
     for (const [roomId, room] of rooms) {
