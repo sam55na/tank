@@ -2,8 +2,8 @@
 // 🚀 خادم لعبة Battle Tanks - النسخة النهائية للإنتاج
 // ============================================
 // Author: Battle Tanks Team
-// Version: 3.3.0
-// Description: خادم متكامل للألعاب متعددة اللاعبين مع نظام إدارة متقدم ومزامنة كاملة
+// Version: 3.4.0
+// Description: خادم متكامل للألعاب متعددة اللاعبين - غرف انتظار دائم حتى اكتمال العدد
 // ============================================
 
 const express = require('express');
@@ -69,7 +69,7 @@ const players = new Map();      // socketId -> player data
 const rooms = new Map();        // roomId -> room data
 
 // ============================================
-// 🏠 نظام الغرف - غرفة واحدة من كل نوع فقط
+// 🏠 نظام الغرف - غرفة واحدة من كل نوع (انتظار دائم حتى اكتمال العدد)
 // ============================================
 const ROOM_TYPES = [
     { name: 'غرفة المبتدئين', maxSeats: 2, seatPrice: 1, roomId: 'beginner_room' },
@@ -112,15 +112,16 @@ function resetRoom(roomId) {
         room.gameInterval = null;
     }
     
-    console.log(`🔄 Room reset: ${room.name} is now waiting for new players`);
+    console.log(`🔄 Room reset: ${room.name} is now waiting for new players (needs ${room.maxSeats} players to start)`);
     
     // بث تحديث للاعبين أن الغرفة جاهزة
     io.to(roomId).emit('room_reset', {
-        message: 'الغرفة جاهزة لمعركة جديدة',
+        message: `الغرفة جاهزة لمعركة جديدة (تحتاج ${room.maxSeats} لاعبين للبدء)`,
         roomId: roomId,
         maxSeats: room.maxSeats,
         seatPrice: room.seatPrice,
-        roomName: room.name
+        roomName: room.name,
+        playersCount: 0
     });
     
     // إعادة بث قائمة الغرف
@@ -148,7 +149,8 @@ function broadcastRoomsList() {
                 players: room.players.length,
                 maxSeats: room.maxSeats,
                 seatPrice: room.seatPrice,
-                status: room.status
+                status: room.status,
+                needed: room.maxSeats - room.players.length // عدد اللاعبين المطلوبين
             });
         }
     }
@@ -161,17 +163,88 @@ function updateRoom(roomId) {
     if (!room) return;
     
     io.to(roomId).emit('room_update', {
-        players: room.players.map(p => p.userId),
+        players: room.players.map(p => ({ userId: p.userId, email: p.email })),
         maxSeats: room.maxSeats,
         count: room.players.length,
-        seatPrice: room.seatPrice
+        seatPrice: room.seatPrice,
+        needed: room.maxSeats - room.players.length
     });
     
     // إذا اكتملت الغرفة ووصل عدد اللاعبين إلى الحد الأقصى، ابدأ المعركة
     if (room.players.length === room.maxSeats && room.status === 'waiting') {
-        console.log(`🎯 ${room.name} is full! Starting game...`);
+        console.log(`🎯 ${room.name} is full (${room.players.length}/${room.maxSeats})! Starting game...`);
         startGame(roomId);
     }
+}
+
+// إضافة اللاعب إلى الغرفة مع خصم الرصيد وإرسال إشعار
+async function addPlayerToRoom(socket, player, room) {
+    // التحقق من الرصيد
+    const userRef = db.ref(`users/${player.userId}`);
+    const snapshot = await userRef.once('value');
+    const userData = snapshot.val();
+    const balance = userData?.balance || 100;
+    const seatPrice = room.seatPrice || 1;
+    
+    if (balance < seatPrice) {
+        return { success: false, error: `⚠️ رصيدك غير كافٍ! سعر المقعد: ${seatPrice}$` };
+    }
+    
+    // خصم الرصيد
+    await userRef.update({ balance: balance - seatPrice });
+    player.balance = balance - seatPrice;
+    
+    // إضافة اللاعب إلى الغرفة مع حفظ المبلغ المدفوع
+    const newPlayer = {
+        userId: player.userId,
+        socketId: socket.id,
+        email: player.email,
+        health: 100,
+        paidAmount: seatPrice
+    };
+    room.players.push(newPlayer);
+    player.roomId = room.id;
+    
+    socket.join(room.id);
+    
+    return { 
+        success: true, 
+        balance: balance - seatPrice,
+        playersCount: room.players.length,
+        maxSeats: room.maxSeats,
+        needed: room.maxSeats - room.players.length
+    };
+}
+
+// إزالة اللاعب من الغرفة مع إعادة الرصيد
+async function removePlayerFromRoom(socket, player, room) {
+    const index = room.players.findIndex(p => p.socketId === socket.id);
+    if (index !== -1) {
+        const removedPlayer = room.players[index];
+        const paidAmount = removedPlayer.paidAmount || room.seatPrice;
+        
+        // إعادة الرصيد فقط إذا كانت الغرفة لا تزال في حالة انتظار
+        if (room.status === 'waiting' && paidAmount > 0) {
+            try {
+                const userRef = db.ref(`users/${player.userId}`);
+                const snapshot = await userRef.once('value');
+                const userData = snapshot.val();
+                const currentBalance = userData?.balance || 0;
+                await userRef.update({ balance: currentBalance + paidAmount });
+                console.log(`💰 Refunded ${paidAmount}$ to ${player.email} for leaving ${room.name}`);
+                return { success: true, refunded: paidAmount };
+            } catch (error) {
+                console.error('Error refunding balance:', error);
+                return { success: false, refunded: 0 };
+            }
+        }
+        
+        room.players.splice(index, 1);
+        socket.leave(room.id);
+        
+        return { success: true, refunded: 0 };
+    }
+    return { success: false, refunded: 0 };
 }
 
 // بدء اللعبة مع إعدادات الفرق والمواقع
@@ -265,7 +338,7 @@ async function endGame(roomId, reason) {
     
     if (alivePlayers.length === 1) {
         winnerTeam = alivePlayers[0].team;
-        winnerName = winnerTeam === 1 ? 'فريقي' : 'الخصم';
+        winnerName = winnerTeam === 1 ? 'فريقك' : 'الفريق الخصم';
     } else if (alivePlayers.length === 2) {
         const player1 = alivePlayers[0];
         const player2 = alivePlayers[1];
@@ -274,10 +347,10 @@ async function endGame(roomId, reason) {
         
         if (health1 > health2) {
             winnerTeam = player1.team;
-            winnerName = winnerTeam === 1 ? 'فريقي' : 'الخصم';
+            winnerName = winnerTeam === 1 ? 'فريقك' : 'الفريق الخصم';
         } else if (health2 > health1) {
             winnerTeam = player2.team;
-            winnerName = winnerTeam === 1 ? 'فريقي' : 'الخصم';
+            winnerName = winnerTeam === 1 ? 'فريقك' : 'الفريق الخصم';
         } else {
             winnerName = 'تعادل';
         }
@@ -312,7 +385,7 @@ async function endGame(roomId, reason) {
                 duration: duration,
                 yourBalance: currentBalance,
                 winner: winnerName,
-                yourTeam: player.team === 1 ? 'فريقي' : 'الخصم'
+                yourTeam: player.team === 1 ? 'فريقك' : 'الفريق الخصم'
             });
         } catch (error) {
             console.error('Error updating balance:', error);
@@ -341,7 +414,7 @@ async function endGame(roomId, reason) {
 
 // التحقق من صحة الخادم
 app.get('/health', (req, res) => {
-    res.json({ status: 'online', timestamp: Date.now(), version: '3.3.0' });
+    res.json({ status: 'online', timestamp: Date.now(), version: '3.4.0' });
 });
 
 app.get('/api/health', (req, res) => {
@@ -608,6 +681,7 @@ io.on('connection', (socket) => {
         email: null,
         roomId: null,
         isAdmin: false,
+        balance: 0,
         connectedAt: Date.now()
     });
     
@@ -666,6 +740,7 @@ io.on('connection', (socket) => {
             
             if (player) {
                 player.isAdmin = userData.isAdmin || false;
+                player.balance = userData.balance || 100;
             }
             
             clearTimeout(authTimeout);
@@ -705,6 +780,7 @@ io.on('connection', (socket) => {
             const snapshot = await userRef.once('value');
             const userData = snapshot.val();
             const balance = userData?.balance || 100;
+            player.balance = balance;
             
             socket.emit('lobby_joined', {
                 balance: balance,
@@ -755,68 +831,97 @@ io.on('connection', (socket) => {
         }
         
         if (player.roomId) {
-            socket.emit('error', { message: 'You are already in a room' });
+            socket.emit('error', { message: 'You are already in a room. Please leave current room first.' });
             return;
         }
         
-        // التحقق من الرصيد
-        const userRef = db.ref(`users/${player.userId}`);
-        const snapshot = await userRef.once('value');
-        const userData = snapshot.val();
-        const balance = userData?.balance || 100;
-        const seatPrice = room.seatPrice || 1;
+        // إضافة اللاعب إلى الغرفة مع خصم الرصيد
+        const result = await addPlayerToRoom(socket, player, room);
         
-        if (balance < seatPrice) {
-            socket.emit('error', { message: `⚠️ رصيدك غير كافٍ! سعر المقعد: ${seatPrice}$` });
+        if (!result.success) {
+            socket.emit('error', { message: result.error });
             return;
         }
         
-        // خصم الرصيد
-        await userRef.update({ balance: balance - seatPrice });
-        player.balance = balance - seatPrice;
-        
-        room.players.push({
-            userId: player.userId,
-            socketId: socket.id,
-            email: player.email,
-            health: 100
-        });
-        player.roomId = roomId;
-        
-        socket.join(roomId);
+        // إرسال تأكيد الانضمام مع تفاصيل الخصم
         socket.emit('room_joined', { 
             roomId: roomId, 
-            balance: balance - seatPrice,
+            balance: result.balance,
             roomName: room.name,
+            playersCount: result.playersCount,
+            maxSeats: result.maxSeats,
+            seatPrice: room.seatPrice,
+            needed: result.needed,
+            message: `✅ تم الانضمام إلى ${room.name}\n💰 تم خصم ${room.seatPrice}$ من رصيدك\n👥 عدد اللاعبين: ${result.playersCount}/${result.maxSeats}\n⏳ ينتظر ${result.needed} لاعب(ين) لبدء المعركة`
+        });
+        
+        // إرسال إشعار لجميع اللاعبين في الغرفة
+        io.to(roomId).emit('player_joined', {
+            userId: player.userId,
+            username: player.email.split('@')[0],
             playersCount: room.players.length,
-            maxSeats: room.maxSeats
+            maxSeats: room.maxSeats,
+            needed: room.maxSeats - room.players.length
         });
         
         updateRoom(roomId);
         broadcastRoomsList();
         
-        console.log(`👥 ${player.email} joined ${room.name} (${room.players.length}/${room.maxSeats})`);
+        console.log(`👥 ${player.email} joined ${room.name} (${room.players.length}/${room.maxSeats}) - Paid: ${room.seatPrice}$`);
     });
     
-    // مغادرة الغرفة
-    socket.on('leave_room', () => {
+    // مغادرة الغرفة مع إعادة الرصيد
+    socket.on('leave_room', async () => {
         const player = players.get(socket.id);
-        if (player && player.roomId) {
-            const room = rooms.get(player.roomId);
-            if (room) {
-                const index = room.players.findIndex(p => p.socketId === socket.id);
-                if (index !== -1) {
-                    room.players.splice(index, 1);
-                    socket.leave(player.roomId);
-                    console.log(`🚪 ${player.email} left ${room.name}`);
-                    
-                    if (room.status === 'waiting') {
-                        updateRoom(player.roomId);
-                        broadcastRoomsList();
-                    }
-                }
-            }
+        if (!player || !player.roomId) {
+            socket.emit('error', { message: 'You are not in any room' });
+            return;
+        }
+        
+        const room = rooms.get(player.roomId);
+        if (!room) {
             player.roomId = null;
+            socket.emit('error', { message: 'Room not found' });
+            return;
+        }
+        
+        // لا يمكن مغادرة الغرفة أثناء المعركة
+        if (room.status !== 'waiting') {
+            socket.emit('error', { message: 'Cannot leave room during active battle' });
+            return;
+        }
+        
+        // إزالة اللاعب وإعادة الرصيد
+        const result = await removePlayerFromRoom(socket, player, room);
+        
+        if (result.success) {
+            const oldRoomId = player.roomId;
+            player.roomId = null;
+            
+            // إرسال تأكيد المغادرة مع تفاصيل إعادة الرصيد
+            socket.emit('room_left', {
+                roomName: room.name,
+                refunded: result.refunded,
+                message: result.refunded > 0 
+                    ? `🚪 تم مغادرة ${room.name}\n💰 تم إعادة ${result.refunded}$ إلى رصيدك`
+                    : `🚪 تم مغادرة ${room.name}`
+            });
+            
+            // إرسال إشعار لجميع اللاعبين المتبقين
+            io.to(room.id).emit('player_left', {
+                userId: player.userId,
+                username: player.email.split('@')[0],
+                playersCount: room.players.length,
+                maxSeats: room.maxSeats,
+                needed: room.maxSeats - room.players.length
+            });
+            
+            updateRoom(room.id);
+            broadcastRoomsList();
+            
+            console.log(`🚪 ${player.email} left ${room.name} - Refunded: ${result.refunded}$`);
+        } else {
+            socket.emit('error', { message: 'Failed to leave room' });
         }
     });
     
@@ -902,7 +1007,7 @@ io.on('connection', (socket) => {
                         if (alivePlayers.length <= 1) {
                             if (alivePlayers.length === 1) {
                                 const winner = alivePlayers[0];
-                                const winnerName = winner.team === 1 ? 'فريقي' : 'الخصم';
+                                const winnerName = winner.team === 1 ? 'فريقك' : 'الفريق الخصم';
                                 endGame(player.roomId, `🎉 فوز ${winnerName}! 🎉`);
                             } else {
                                 endGame(player.roomId, '🤝 تعادل!');
@@ -947,31 +1052,36 @@ io.on('connection', (socket) => {
     // ============================================
     // 🔌 انقطاع الاتصال
     // ============================================
-    socket.on('disconnect', () => {
+    socket.on('disconnect', async () => {
         const player = players.get(socket.id);
         if (player) {
             if (player.roomId) {
                 const room = rooms.get(player.roomId);
                 if (room) {
-                    const index = room.players.findIndex(p => p.socketId === socket.id);
-                    if (index !== -1) {
-                        room.players.splice(index, 1);
-                        socket.to(player.roomId).emit('player_left', {
-                            userId: player.userId
-                        });
-                        
-                        if (room.status === 'active') {
-                            const alivePlayers = room.players.filter(p => p.health > 0);
-                            if (alivePlayers.length === 1) {
-                                const winner = alivePlayers[0];
-                                endGame(player.roomId, `🎉 فوز ${winner.team === 1 ? 'فريقي' : 'الخصم'} بسبب انسحاب الخصم! 🎉`);
-                            } else if (alivePlayers.length === 0) {
-                                endGame(player.roomId, 'انتهت المعركة بسبب انسحاب جميع اللاعبين');
-                            }
-                        } else if (room.status === 'waiting') {
-                            updateRoom(player.roomId);
-                            broadcastRoomsList();
+                    // إعادة الرصيد عند انقطاع الاتصال
+                    if (room.status === 'waiting') {
+                        await removePlayerFromRoom(socket, player, room);
+                    } else {
+                        const index = room.players.findIndex(p => p.socketId === socket.id);
+                        if (index !== -1) {
+                            room.players.splice(index, 1);
                         }
+                    }
+                    socket.to(player.roomId).emit('player_left', {
+                        userId: player.userId
+                    });
+                    
+                    if (room.status === 'active') {
+                        const alivePlayers = room.players.filter(p => p.health > 0);
+                        if (alivePlayers.length === 1) {
+                            const winner = alivePlayers[0];
+                            endGame(player.roomId, `🎉 فوز ${winner.team === 1 ? 'فريقك' : 'الفريق الخصم'} بسبب انسحاب الخصم! 🎉`);
+                        } else if (alivePlayers.length === 0) {
+                            endGame(player.roomId, 'انتهت المعركة بسبب انسحاب جميع اللاعبين');
+                        }
+                    } else if (room.status === 'waiting') {
+                        updateRoom(player.roomId);
+                        broadcastRoomsList();
                     }
                 }
             }
@@ -1003,11 +1113,12 @@ server.listen(PORT, () => {
 ║  🔥 Firebase: Connected
 ║  👑 Admin email: admin@boomb.com
 ║  ⏱️  Game duration: ${globalGameSettings.gameDuration / 1000} seconds
-║  🏠 Single room system:
+║  🏠 Single room system (permanent waiting until full):
 ║     - ${ROOM_TYPES[0].name}: ${ROOM_TYPES[0].maxSeats} players, ${ROOM_TYPES[0].seatPrice}$
 ║     - ${ROOM_TYPES[1].name}: ${ROOM_TYPES[1].maxSeats} players, ${ROOM_TYPES[1].seatPrice}$
 ║     - ${ROOM_TYPES[2].name}: ${ROOM_TYPES[2].maxSeats} players, ${ROOM_TYPES[2].seatPrice}$
-║  🔄 Rooms are reset after each match
+║  🔄 Rooms start only when full, then reset after match
+║  💰 Balance deducted on join, refunded on leave (before game starts)
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
     `);
