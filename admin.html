@@ -31,6 +31,8 @@
             margin-bottom: 30px;
             padding-bottom: 20px;
             border-bottom: 2px solid #d4af37;
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
         header h1 {
@@ -210,7 +212,6 @@
 
         .room-type-card:hover {
             background: rgba(255,255,255,0.1);
-            transform: translateX(-5px);
         }
 
         .room-type-card h3 {
@@ -272,15 +273,6 @@
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
-            transition: transform 0.2s;
-        }
-
-        .room-type-controls button:hover {
-            transform: scale(1.02);
-        }
-
-        .room-type-controls button:active {
-            transform: scale(0.98);
         }
 
         /* أنماط الغرف النشطة */
@@ -301,24 +293,16 @@
             color: #d4af37;
         }
 
-        .active-room-card .room-status {
+        .room-status {
             font-size: 12px;
             padding: 3px 10px;
             border-radius: 15px;
             background: rgba(0,0,0,0.5);
         }
 
-        .status-waiting {
-            color: #27ae60;
-        }
-
-        .status-active {
-            color: #f39c12;
-        }
-
-        .status-ended {
-            color: #e74c3c;
-        }
+        .status-waiting { color: #27ae60; }
+        .status-active { color: #f39c12; }
+        .status-ended { color: #e74c3c; }
 
         hr {
             border-color: rgba(212,175,55,0.3);
@@ -339,10 +323,6 @@
             }
             .control-group input {
                 width: 100%;
-            }
-            .active-room-card {
-                flex-direction: column;
-                align-items: flex-start;
             }
         }
     </style>
@@ -370,30 +350,13 @@
             </div>
         </div>
 
-        <!-- ==================== أنواع الغرف (الجديد) ==================== -->
+        <!-- أنواع الغرف -->
         <section>
             <h2>🏷️ إدارة أنواع الغرف</h2>
             <div id="roomTypesList" class="room-types-list">
                 <div class="loading">⏳ جاري تحميل أنواع الغرف...</div>
             </div>
             <div id="roomTypesMessage" class="message"></div>
-        </section>
-
-        <!-- ==================== الإعدادات القديمة (للتوافق) ==================== -->
-        <section>
-            <h2>⚙️ الإعدادات العامة</h2>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>💰 سعر المقعد ($)</label>
-                    <input type="number" id="seatPrice" value="1" min="1" max="1000">
-                    <button class="submit-btn" id="saveSeatPriceBtn" style="margin-top:10px;">💾 حفظ</button>
-                </div>
-                <div class="form-group">
-                    <label>👥 عدد اللاعبين (2-16)</label>
-                    <input type="number" id="maxPlayers" value="2" min="2" max="16">
-                    <button class="submit-btn" id="saveMaxPlayersBtn" style="margin-top:10px;">💾 حفظ</button>
-                </div>
-            </div>
         </section>
 
         <!-- الغرف النشطة -->
@@ -449,7 +412,6 @@
             <button class="submit-btn" onclick="fetchStats()" style="margin-top: 15px;">🔄 تحديث القائمة</button>
         </section>
 
-        <!-- أزرار إضافية -->
         <hr>
         <div class="form-row">
             <button class="submit-btn danger" id="resetDataBtn">🗑️ مسح جميع بيانات اللاعبين</button>
@@ -491,11 +453,18 @@
         // ==================== إدارة أنواع الغرف ====================
         async function fetchRoomTypes() {
             const token = getAdminToken();
-            if (!token) return;
+            if (!token) {
+                console.log('No token found');
+                showRoomTypesMessage('يرجى تسجيل الدخول أولاً', 'error');
+                return;
+            }
 
             try {
+                console.log('Fetching room types...');
                 const response = await fetch(`${SERVER_URL}/api/admin/roomTypes?adminToken=${token}`);
                 const data = await response.json();
+                console.log('Room types response:', data);
+                
                 if (data.success) {
                     displayRoomTypes(data.types);
                 } else {
@@ -543,7 +512,10 @@
 
         async function updateRoomType(typeName) {
             const token = getAdminToken();
-            if (!token) return;
+            if (!token) {
+                showRoomTypesMessage('يرجى تسجيل الدخول أولاً', 'error');
+                return;
+            }
 
             const safeName = typeName.replace(/\s/g, '_');
             const maxSeatsInput = document.getElementById(`maxSeats_${safeName}`);
@@ -584,11 +556,17 @@
         // ==================== الغرف النشطة ====================
         async function fetchActiveRooms() {
             const token = getAdminToken();
-            if (!token) return;
+            if (!token) {
+                console.log('No token for active rooms');
+                return;
+            }
 
             try {
+                console.log('Fetching active rooms...');
                 const response = await fetch(`${SERVER_URL}/api/admin/rooms?adminToken=${token}`);
                 const data = await response.json();
+                console.log('Active rooms response:', data);
+                
                 if (data.success && data.rooms) {
                     displayActiveRooms(data.rooms);
                 } else {
@@ -636,11 +614,18 @@
         // ==================== إحصائيات المستخدمين ====================
         async function fetchStats() {
             const token = getAdminToken();
-            if (!token) return;
+            if (!token) {
+                console.log('No token for stats');
+                const usersList = document.getElementById('usersList');
+                if (usersList) usersList.innerHTML = '<tr><td colspan="7" class="loading">❌ يرجى تسجيل الدخول أولاً</td></tr>';
+                return;
+            }
 
             try {
+                console.log('Fetching stats...');
                 const response = await fetch(`${SERVER_URL}/api/admin/stats?adminToken=${token}`);
                 const data = await response.json();
+                console.log('Stats response:', data);
 
                 if (data.success) {
                     document.getElementById('totalUsers').innerText = data.report?.totalUsers || 0;
@@ -671,7 +656,7 @@
                     showBalanceMessage(data.error || 'خطأ في تحميل البيانات', 'error');
                 }
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error fetching stats:', error);
                 showBalanceMessage('فشل الاتصال بالخادم', 'error');
             }
         }
@@ -804,66 +789,29 @@
             }
         }
 
-        // ==================== الإعدادات القديمة ====================
-        async function saveSeatPrice() {
-            const price = parseInt(document.getElementById('seatPrice').value);
-            if (isNaN(price) || price < 1) return showBalanceMessage('سعر غير صالح', 'error');
-            const token = getAdminToken();
-            try {
-                const response = await fetch(`${SERVER_URL}/api/admin/setSeatPrice`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ adminToken: token, price })
-                });
-                const data = await response.json();
-                if (data.success) {
-                    showBalanceMessage(`✅ تم تغيير سعر المقعد إلى ${price}$`, 'success');
-                } else {
-                    showBalanceMessage(data.error, 'error');
-                }
-            } catch (e) { showBalanceMessage('خطأ في الاتصال', 'error'); }
-        }
-
-        async function saveMaxPlayers() {
-            const maxPlayers = parseInt(document.getElementById('maxPlayers').value);
-            if (isNaN(maxPlayers) || maxPlayers < 2 || maxPlayers > 16) return showBalanceMessage('عدد غير صالح (2-16)', 'error');
-            const token = getAdminToken();
-            try {
-                const response = await fetch(`${SERVER_URL}/api/admin/setMaxPlayers`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ adminToken: token, maxPlayers })
-                });
-                const data = await response.json();
-                if (data.success) {
-                    showBalanceMessage(`✅ تم تغيير عدد اللاعبين إلى ${maxPlayers}`, 'success');
-                } else {
-                    showBalanceMessage(data.error, 'error');
-                }
-            } catch (e) { showBalanceMessage('خطأ في الاتصال', 'error'); }
-        }
-
         // ==================== التحقق من الصلاحية ====================
         async function checkAdmin() {
             const token = getAdminToken();
             const isAdmin = localStorage.getItem('isAdmin');
             
-            console.log('Checking admin access:', { hasToken: !!token, isAdmin });
+            console.log('🔐 Checking admin access:', { hasToken: !!token, isAdmin });
             
             if (!token || isAdmin !== 'true') {
-                console.log('Not admin, redirecting to login');
+                console.log('❌ Not admin, redirecting to login');
+                alert('❌ غير مصرح بالدخول. يجب تسجيل الدخول كمشرف أولاً.');
                 window.location.href = 'index.html';
                 return;
             }
             
+            console.log('✅ Admin access granted, loading data...');
+            
+            // تحميل جميع البيانات
             await fetchStats();
             await fetchRoomTypes();
             await fetchActiveRooms();
         }
 
         // ربط الأزرار
-        document.getElementById('saveSeatPriceBtn').onclick = saveSeatPrice;
-        document.getElementById('saveMaxPlayersBtn').onclick = saveMaxPlayers;
         document.getElementById('resetDataBtn').onclick = resetAllData;
         document.getElementById('refreshStatsBtn').onclick = () => {
             fetchStats();
