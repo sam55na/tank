@@ -1661,10 +1661,12 @@
                     document.getElementById('gameUsername').innerText = data.username || data.email.split('@')[0];
                     document.getElementById('gamesPlayed').innerText = data.gamesPlayed || 0;
                     document.getElementById('wins').innerText = data.wins || 0;
+                    updateTopBar(currentBalance, data.gamesPlayed || 0, data.wins || 0);
+                    
                     if(isAdmin) document.getElementById('adminBtn').style.display = 'block';
                     this.showMainScreen();
                 });
-                    updateTopBar(currentBalance, data.gamesPlayed || 0, data.wins || 0);
+                
                 socket.on('auth_error', (data) => {
                     document.getElementById('loading').style.display = 'none';
                     alert('خطأ في المصادقة: ' + data.message);
