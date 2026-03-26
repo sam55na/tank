@@ -62,7 +62,7 @@
             100% { transform: rotate(90deg); }
         }
 
-        .login-screen, .main-screen, .lobby, .admin-panel, .report-screen, .hud {
+        .login-screen, .main-screen, .lobby, .admin-panel, .report-screen, .hud, .seat-screen {
             position: fixed;
             top: 0;
             left: 0;
@@ -135,6 +135,7 @@
             margin-top: 10px;
         }
 
+        /* شاشة رئيسية جديدة مع تحسينات */
         .main-screen {
             background: linear-gradient(145deg, #0f1725, #070b14);
             display: none;
@@ -142,42 +143,156 @@
             align-items: center;
             justify-content: center;
             z-index: 900;
+            padding: 20px;
+            overflow-y: auto;
         }
 
-        .main-screen h2 {
-            color: #d4af37;
-            font-size: clamp(24px, 8vw, 36px);
-            margin-bottom: 20px;
-            text-shadow: 0 0 10px rgba(212,175,55,0.5);
-            text-align: center;
-            padding: 0 20px;
-        }
-
-        .btn-group {
+        /* شريط علوي جديد */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
             display: flex;
-            gap: 20px;
-            margin: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 100;
+            border-bottom: 2px solid rgba(212,175,55,0.3);
         }
 
-        .play-btn, .wallet-btn {
-            padding: clamp(12px, 4vw, 18px) clamp(25px, 8vw, 40px);
+        .balance-box {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            padding: 8px 18px;
+            border-radius: 40px;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 2px 10px rgba(46,204,113,0.3);
+        }
+
+        .neon-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #d4af37;
+            text-shadow: 0 0 5px #d4af37, 0 0 10px #d4af37, 0 0 20px #ffd700;
+            animation: neonPulse 1.5s ease-in-out infinite;
+            letter-spacing: 2px;
+        }
+
+        @keyframes neonPulse {
+            0%, 100% { text-shadow: 0 0 5px #d4af37, 0 0 10px #d4af37, 0 0 20px #ffd700; opacity: 1; }
+            50% { text-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700, 0 0 30px #ffaa00; opacity: 0.9; }
+        }
+
+        .stats-btn-top {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            padding: 8px 18px;
+            border-radius: 40px;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border: none;
+        }
+
+        .stats-btn-top:active {
+            transform: scale(0.95);
+        }
+
+        /* أيقونة اللعبة */
+        .game-icon {
+            margin-top: 90px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .tank-icon {
+            font-size: 100px;
+            filter: drop-shadow(0 0 10px #d4af37) drop-shadow(0 0 20px #ffd700);
+            animation: shine 1.5s ease-in-out infinite, wobble 2s ease-in-out infinite;
+            display: inline-block;
+        }
+
+        @keyframes shine {
+            0%, 100% { filter: drop-shadow(0 0 5px #d4af37) drop-shadow(0 0 10px #ffd700); }
+            50% { filter: drop-shadow(0 0 15px #ffd700) drop-shadow(0 0 25px #ffaa00); }
+        }
+
+        @keyframes wobble {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        /* زر اللعب الكبير */
+        .big-play-btn {
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            padding: 20px 60px;
+            font-size: 32px;
+            font-weight: bold;
             border: none;
             border-radius: 60px;
-            font-size: clamp(18px, 5vw, 24px);
+            color: white;
+            cursor: pointer;
+            margin: 30px 0;
+            box-shadow: 0 10px 30px rgba(212,175,55,0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .big-play-btn:active {
+            transform: scale(0.97);
+            box-shadow: 0 5px 15px rgba(212,175,55,0.4);
+        }
+
+        /* أزرار منفصلة بعرض كامل */
+        .full-width-btn {
+            width: 90%;
+            max-width: 400px;
+            padding: 16px;
+            margin: 10px auto;
+            border: none;
+            border-radius: 60px;
+            font-size: 20px;
             font-weight: bold;
             cursor: pointer;
             transition: transform 0.2s;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            display: block;
+            text-align: center;
         }
 
-        .play-btn {
-            background: linear-gradient(135deg, #d4af37, #b8860b);
-        }
-
-        .wallet-btn {
+        .wallet-full-btn {
             background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+        }
+
+        .stats-full-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .full-width-btn:active {
+            transform: scale(0.97);
+        }
+
+        .user-card {
+            background: rgba(255,255,255,0.1);
+            padding: 15px 30px;
+            border-radius: 50px;
+            margin: 20px auto;
+            text-align: center;
+            color: white;
+            backdrop-filter: blur(5px);
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .user-card div {
+            margin: 5px 0;
+            font-size: clamp(12px, 4vw, 16px);
         }
 
         .admin-btn {
@@ -188,7 +303,7 @@
             font-weight: bold;
             cursor: pointer;
             position: absolute;
-            top: 20px;
+            top: 80px;
             right: 20px;
             display: none;
             transition: transform 0.2s;
@@ -197,21 +312,6 @@
 
         .play-btn:active, .wallet-btn:active, .admin-btn:active {
             transform: scale(0.96);
-        }
-
-        .user-card {
-            background: rgba(255,255,255,0.1);
-            padding: 15px 30px;
-            border-radius: 50px;
-            margin-top: 30px;
-            text-align: center;
-            color: white;
-            backdrop-filter: blur(5px);
-        }
-
-        .user-card div {
-            margin: 5px 0;
-            font-size: clamp(12px, 4vw, 16px);
         }
 
         .loading {
@@ -226,6 +326,148 @@
             display: none;
             z-index: 10001;
             font-size: 18px;
+        }
+
+        /* شاشة المقاعد */
+        .seat-screen {
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .seat-container {
+            background: linear-gradient(145deg, #111a24, #0a0f18);
+            padding: clamp(20px, 5vw, 30px);
+            border-radius: 48px;
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+            border: 2px solid #d4af37;
+        }
+
+        .seat-container h2 {
+            color: #d4af37;
+            margin-bottom: 20px;
+        }
+
+        .team-section {
+            margin: 25px 0;
+            padding: 15px;
+            border-radius: 30px;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .team-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .team-red .team-title { color: #ff6b6b; }
+        .team-blue .team-title { color: #4dabff; }
+
+        .seats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .seat-option {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            border: 2px solid #d4af37;
+            color: white;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .seat-option.occupied {
+            background: #2e7035;
+            cursor: not-allowed;
+            opacity: 0.6;
+            border-color: #aaa;
+        }
+
+        .seat-option.selected {
+            background: #d4af37;
+            color: #000;
+            transform: scale(1.05);
+        }
+
+        .leave-seat-btn {
+            background: #e74c3c;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .leave-seat-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .leave-seat-btn:not(.disabled):active {
+            transform: scale(0.96);
+        }
+
+        .back-to-lobby-btn {
+            background: #555;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        /* إشعارات */
+        .notification {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            color: #d4af37;
+            padding: 15px 25px;
+            border-radius: 50px;
+            z-index: 10002;
+            animation: slideUp 0.3s ease-out;
+            border-left: 4px solid #d4af37;
+            font-size: 14px;
+            max-width: 90%;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        .lobby, .admin-panel, .report-screen, .hud {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
         }
 
         .lobby {
@@ -247,62 +489,31 @@
             border: 2px solid #d4af37;
         }
 
-        .lobby-container h2 {
-            color: #d4af37;
-            margin-bottom: 20px;
-            font-size: clamp(20px, 6vw, 28px);
-        }
-
-        .seats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
+        .rooms-grid {
+            display: flex;
+            flex-direction: column;
             gap: 15px;
-            margin: 25px 0;
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
         }
 
-        .seat {
-            background: rgba(255,255,255,0.08);
-            padding: 15px;
-            border-radius: 28px;
+        .room-card {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid #d4af37;
+            border-radius: 20px;
+            padding: 15px 20px;
             cursor: pointer;
-            border: 1px solid #d4af37;
-            color: white;
             transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .seat.occupied {
-            background: #2e7035;
+        .room-card.full {
+            opacity: 0.6;
             cursor: not-allowed;
-            opacity: 0.7;
-        }
-
-        .create-room-btn, .back-lobby-btn {
-            padding: 12px 30px;
-            border: none;
-            border-radius: 30px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: transform 0.2s;
-        }
-
-        .create-room-btn {
-            background: #d4af37;
-        }
-
-        .back-lobby-btn {
-            background: #555;
-            color: white;
-        }
-
-        .create-room-btn:active, .back-lobby-btn:active {
-            transform: scale(0.96);
-        }
-
-        .lobby-status {
-            color: #d4af37;
-            margin-top: 15px;
-            font-size: 14px;
+            border-color: #e74c3c;
         }
 
         .hud {
@@ -334,47 +545,6 @@
             text-align: right;
             color: white;
             font-size: clamp(10px, 3vw, 14px);
-        }
-
-        .cooldown-side {
-            position: absolute;
-            top: clamp(60px, 10vh, 80px);
-            right: clamp(10px, 3vw, 20px);
-            background: rgba(0,0,0,0.7);
-            padding: 5px 12px;
-            border-radius: 30px;
-            font-size: clamp(10px, 3vw, 12px);
-            color: #d4af37;
-            font-weight: bold;
-            pointer-events: none;
-        }
-
-        .crosshair {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: clamp(30px, 5vw, 36px);
-            height: clamp(30px, 5vw, 36px);
-        }
-        .crosshair::before, .crosshair::after {
-            content: '';
-            position: absolute;
-            background: rgba(255,255,240,0.85);
-        }
-        .crosshair::before {
-            top: 50%;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            transform: translateY(-50%);
-        }
-        .crosshair::after {
-            top: 0;
-            left: 50%;
-            width: 2px;
-            height: 100%;
-            transform: translateX(-50%);
         }
 
         .controls {
@@ -423,11 +593,30 @@
             cursor: pointer;
             pointer-events: auto;
             box-shadow: 0 0 12px rgba(255,0,0,0.4);
-            transition: transform 0.05s;
         }
 
-        .fire-btn:active {
-            transform: scale(0.95);
+        .elimination-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0,0,0,0.9);
+            color: #ff4444;
+            padding: clamp(15px, 4vw, 20px) clamp(25px, 6vw, 40px);
+            border-radius: 30px;
+            font-size: clamp(18px, 5vw, 24px);
+            font-weight: bold;
+            z-index: 10000;
+            text-align: center;
+            border: 2px solid #ff4444;
+            animation: fadeInOut 3s ease-in-out;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
         }
 
         .report-screen {
@@ -449,197 +638,6 @@
             width: 90%;
         }
 
-        .report-container h2 {
-            color: #d4af37;
-            margin-bottom: 20px;
-            font-size: clamp(20px, 6vw, 28px);
-        }
-
-        .report-container p {
-            color: white;
-            margin: 15px 0;
-            line-height: 1.8;
-            font-size: clamp(14px, 4vw, 16px);
-        }
-
-        .back-home-btn {
-            margin-top: 20px;
-            padding: 12px 30px;
-            background: linear-gradient(135deg, #d4af37, #b8860b);
-            border: none;
-            border-radius: 30px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .admin-panel {
-            background: rgba(0,0,0,0.96);
-            backdrop-filter: blur(8px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-        }
-
-        .admin-container {
-            background: linear-gradient(135deg, #121926, #080c14);
-            padding: clamp(20px, 5vw, 30px);
-            border-radius: 40px;
-            width: 90%;
-            max-width: 500px;
-            max-height: 85vh;
-            overflow-y: auto;
-            border: 1px solid #d4af37;
-        }
-
-        .admin-container h3 {
-            color: #d4af37;
-            margin-bottom: 20px;
-            font-size: clamp(20px, 5vw, 24px);
-        }
-
-        .admin-container input, .admin-container select {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            border-radius: 30px;
-            border: 1px solid #d4af37;
-            background: rgba(255,255,255,0.1);
-            color: white;
-        }
-
-        .admin-container button {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            background: #d4af37;
-            border: none;
-            border-radius: 30px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .admin-container button:active {
-            transform: scale(0.97);
-        }
-
-        .admin-container .danger-btn {
-            background: #e74c3c;
-            color: white;
-        }
-
-        .admin-stats-box {
-            background: rgba(0,0,0,0.5);
-            padding: 15px;
-            border-radius: 20px;
-            margin: 15px 0;
-            max-height: 200px;
-            overflow-y: auto;
-            font-size: 12px;
-        }
-        
-        .elimination-message {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0,0,0,0.9);
-            color: #ff4444;
-            padding: clamp(15px, 4vw, 20px) clamp(25px, 6vw, 40px);
-            border-radius: 30px;
-            font-size: clamp(18px, 5vw, 24px);
-            font-weight: bold;
-            z-index: 10000;
-            text-align: center;
-            border: 2px solid #ff4444;
-            animation: fadeInOut 3s ease-in-out;
-            white-space: nowrap;
-        }
-
-        .rooms-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin: 20px 0;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .room-card {
-            background: rgba(255,255,255,0.1);
-            border: 2px solid #d4af37;
-            border-radius: 20px;
-            padding: 15px 20px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .room-card:hover {
-            background: rgba(255,255,255,0.2);
-            transform: scale(1.02);
-            border-color: #ffd700;
-        }
-
-        .room-card .room-info {
-            flex: 1;
-        }
-
-        .room-card .room-name {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .room-card .room-details {
-            font-size: 12px;
-            color: #aaa;
-        }
-
-        .room-card .room-price {
-            text-align: right;
-        }
-
-        .room-card .price-value {
-            color: #d4af37;
-            font-weight: bold;
-            font-size: 18px;
-        }
-
-        .room-card .players-count {
-            font-size: 12px;
-            color: #4caf50;
-        }
-
-        .room-card.full {
-            opacity: 0.6;
-            cursor: not-allowed;
-            border-color: #e74c3c;
-        }
-
-        .room-card.full:hover {
-            transform: none;
-            background: rgba(255,255,255,0.1);
-        }
-        
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-            20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-        }
-
-        @media (max-width: 768px) {
-            .elimination-message {
-                white-space: normal;
-                min-width: 200px;
-            }
-        }
-        
         .fullscreen-btn {
             position: absolute;
             bottom: 20px;
@@ -654,9 +652,46 @@
             z-index: 1000;
             pointer-events: auto;
         }
-        
-        .fullscreen-btn:active {
-            transform: scale(0.95);
+
+        .cooldown-side {
+            position: absolute;
+            top: clamp(60px, 10vh, 80px);
+            right: clamp(10px, 3vw, 20px);
+            background: rgba(0,0,0,0.7);
+            padding: 5px 12px;
+            border-radius: 30px;
+            font-size: clamp(10px, 3vw, 12px);
+            color: #d4af37;
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        .crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: clamp(30px, 5vw, 36px);
+            height: clamp(30px, 5vw, 36px);
+        }
+        .crosshair::before, .crosshair::after {
+            content: '';
+            position: absolute;
+            background: rgba(255,255,240,0.85);
+        }
+        .crosshair::before {
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            transform: translateY(-50%);
+        }
+        .crosshair::after {
+            top: 0;
+            left: 50%;
+            width: 2px;
+            height: 100%;
+            transform: translateX(-50%);
         }
     </style>
 </head>
@@ -679,11 +714,25 @@
     </div>
 
     <div class="main-screen" id="mainScreen">
-        <h2>BATTLE TANKS ELITE</h2>
-        <div class="btn-group">
-            <button class="play-btn" id="playBtn">🎮 العب الآن</button>
-            <button class="wallet-btn" id="walletBtn">💰 المحفظة</button>
+        <!-- شريط علوي جديد -->
+        <div class="top-bar">
+            <div class="balance-box" id="topBalance">💰 0 $</div>
+            <div class="neon-title">TANKS WAR</div>
+            <button class="stats-btn-top" id="topStatsBtn">📊 <span id="topGames">0</span> | 🏆 <span id="topWins">0</span></button>
         </div>
+
+        <!-- أيقونة اللعبة -->
+        <div class="game-icon">
+            <div class="tank-icon">🚀</div>
+        </div>
+
+        <!-- زر اللعب الكبير -->
+        <button class="big-play-btn" id="playBtn">🔥 العب الآن 🔥</button>
+
+        <!-- أزرار منفصلة -->
+        <button class="full-width-btn wallet-full-btn" id="walletBtn">💰 المحفظة</button>
+        <button class="full-width-btn stats-full-btn" id="statsBtn">📊 الإحصائيات</button>
+
         <div class="user-card">
             <div>👤 <span id="username">اللاعب</span></div>
             <div>💰 <span id="balance">0</span> $</div>
@@ -693,12 +742,22 @@
         <button class="admin-btn" id="adminBtn">⚙️ لوحة التحكم</button>
     </div>
 
+    <!-- شاشة المقاعد -->
+    <div class="seat-screen" id="seatScreen">
+        <div class="seat-container">
+            <h2>🎮 اختيار المقعد</h2>
+            <div id="seatContent"></div>
+            <button class="leave-seat-btn" id="leaveSeatBtn">🚪 مغادرة المقعد</button>
+            <button class="back-to-lobby-btn" id="backToLobbyFromSeatsBtn">🏠 العودة للوبي</button>
+        </div>
+    </div>
+
     <div class="lobby" id="lobby">
         <div class="lobby-container">
             <h2>🏆 لوبي المعركة</h2>
-            <div class="rooms-grid" id="roomsGrid" style="display: flex; flex-direction: column; gap: 15px; margin: 20px 0;"></div>
+            <div class="rooms-grid" id="roomsGrid"></div>
             <div class="lobby-status" id="lobbyStatus"></div>
-            <button class="back-lobby-btn" id="backFromLobbyBtn">🏠 العودة للرئيسية</button>
+            <button class="back-to-lobby-btn" id="backFromLobbyBtn">🏠 العودة للرئيسية</button>
         </div>
     </div>
 
@@ -727,37 +786,18 @@
         <div class="report-container">
             <h2>📊 تقرير المعركة</h2>
             <p id="reportText"></p>
-            <button class="back-home-btn" id="backHomeBtn">🏠 العودة للرئيسية</button>
+            <button class="back-to-lobby-btn" id="backHomeBtn">🏠 العودة للرئيسية</button>
         </div>
     </div>
 
     <div class="admin-panel" id="adminPanel">
-        <div class="admin-container">
-            <h3>⚙️ لوحة التحكم</h3>
-            
-            <div class="admin-stats-box" id="adminStats">جاري التحميل...</div>
-            
-            <label>سعر المقعد ($):</label>
-            <input type="number" id="seatPrice" value="1" min="1" max="1000">
-            <button id="saveSeatPriceBtn">💾 حفظ سعر المقعد</button>
-            
-            <label>عدد اللاعبين في الجولة (2-16):</label>
-            <input type="number" id="maxPlayers" value="2" min="2" max="16">
-            <button id="saveMaxPlayersBtn">💾 حفظ عدد اللاعبين</button>
-            
-            <hr style="margin: 15px 0; border-color: #d4af37;">
-            
-            <label>تعديل رصيد لاعب:</label>
-            <input type="email" id="targetEmail" placeholder="البريد الإلكتروني">
-            <input type="number" id="amount" placeholder="المبلغ">
-            <button id="adminDepositBtn">➕ إيداع</button>
-            <button id="adminWithdrawBtn" class="danger-btn">➖ سحب</button>
-            
-            <hr style="margin: 15px 0; border-color: #d4af37;">
-            
-            <button id="resetDataBtn" class="danger-btn" style="background:#c0392b;">🗑️ مسح جميع بيانات اللاعبين</button>
-            <button id="refreshStatsBtn">🔄 تحديث الإحصائيات</button>
-            <button id="closeAdminBtn">❌ إغلاق</button>
+        <div class="admin-container" style="background: linear-gradient(135deg, #121926, #080c14); padding: clamp(20px, 5vw, 30px); border-radius: 40px; width: 90%; max-width: 500px; max-height: 85vh; overflow-y: auto; border: 1px solid #d4af37;">
+            <h3 style="color:#d4af37;">⚙️ لوحة التحكم</h3>
+            <div id="adminStats">جاري التحميل...</div>
+            <label style="color:white;">سعر المقعد ($):</label>
+            <input type="number" id="seatPrice" value="1" min="1" max="1000" style="width:100%; padding:12px; margin:8px 0; border-radius:30px;">
+            <button id="saveSeatPriceBtn" style="width:100%; padding:12px; background:#d4af37; border:none; border-radius:30px;">💾 حفظ</button>
+            <button id="closeAdminBtn" style="width:100%; padding:12px; margin-top:10px; background:#555; border:none; border-radius:30px;">❌ إغلاق</button>
         </div>
     </div>
 
@@ -797,7 +837,19 @@
         let currentBalance = 0;
         let isAdmin = false;
         let gameSettings = { seatPrice: 1, maxPlayers: 2 };
-        let isFullscreen = false;
+        let currentRoomId = null;
+        let selectedTeam = null;
+        let selectedSeat = null;
+        let roomPlayers = [];
+        let roomMaxSeats = 8;
+        
+        function showNotification(message) {
+            const notif = document.createElement('div');
+            notif.className = 'notification';
+            notif.innerHTML = message;
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 3000);
+        }
         
         class AudioEngine {
             constructor() { this.ctx = null; this.engineOsc = null; this.engineGain = null; }
@@ -929,18 +981,11 @@
             
             createObstacles() {
                 const rockMat = new THREE.MeshStandardMaterial({ color: 0x6a6a5a, roughness: 0.75 });
-
                 const positions = [
                     { x: -90, z: -70, scale: 3.5 }, { x: -70, z: 40, scale: 4.0 }, { x: -40, z: -95, scale: 3.2 },
                     { x: 20, z: -85, scale: 3.8 }, { x: 85, z: -50, scale: 4.2 }, { x: 95, z: 20, scale: 3.5 },
-                    { x: 75, z: 85, scale: 4.0 }, { x: -55, z: -95, scale: 3.6 }, { x: -95, z: 25, scale: 4.5 },
-                    { x: -20, z: 95, scale: 3.3 }, { x: 50, z: -105, scale: 3.8 }, { x: -85, z: -80, scale: 4.0 },
-                    { x: -70, z: 85, scale: 3.5 }, { x: 40, z: 105, scale: 3.2 }, { x: 105, z: 70, scale: 4.0 },
-                    { x: -105, z: -55, scale: 4.2 }, { x: -50, z: 105, scale: 3.5 }, { x: 90, z: -90, scale: 3.8 },
-                    { x: 0, z: -110, scale: 4.0 }, { x: -110, z: 0, scale: 4.5 }, { x: 110, z: -30, scale: 3.8 },
-                    { x: 30, z: 110, scale: 3.5 }, { x: -95, z: 85, scale: 4.0 }, { x: 95, z: 95, scale: 4.2 }
+                    { x: 75, z: 85, scale: 4.0 }, { x: -55, z: -95, scale: 3.6 }, { x: -95, z: 25, scale: 4.5 }
                 ];
-
                 positions.forEach(pos => {
                     const rock = new THREE.Mesh(new THREE.BoxGeometry(pos.scale * 1.2, pos.scale * 0.9, pos.scale * 1.2), rockMat);
                     rock.position.set(pos.x, pos.scale * 0.5, pos.z);
@@ -948,21 +993,6 @@
                     rock.receiveShadow = true;
                     this.scene.add(rock);
                     this.obstacles.push(rock);
-                    
-                    for (let i = 0; i < 4; i++) {
-                        const smallRock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.6), rockMat);
-                        const angle = Math.random() * Math.PI * 2;
-                        const radius = pos.scale * 0.8 + Math.random() * 1.5;
-                        smallRock.scale.set(0.7, 0.5, 0.7);
-                        smallRock.position.set(
-                            pos.x + Math.cos(angle) * radius, 
-                            0.3, 
-                            pos.z + Math.sin(angle) * radius
-                        );
-                        smallRock.castShadow = true;
-                        smallRock.receiveShadow = true;
-                        this.scene.add(smallRock);
-                    }
                 });
             }
             
@@ -971,36 +1001,20 @@
                 canvas.width = 256;
                 canvas.height = 256;
                 const ctx = canvas.getContext('2d');
-
                 ctx.fillStyle = colors.base;
                 ctx.fillRect(0, 0, 256, 256);
-
                 ctx.fillStyle = colors.spot1;
                 for (let i = 0; i < 20; i++) {
                     ctx.beginPath();
-                    ctx.arc(
-                        Math.random() * 256,
-                        Math.random() * 256,
-                        20 + Math.random() * 30,
-                        0,
-                        Math.PI * 2
-                    );
+                    ctx.arc(Math.random() * 256, Math.random() * 256, 20 + Math.random() * 30, 0, Math.PI * 2);
                     ctx.fill();
                 }
-
                 ctx.fillStyle = colors.spot2;
                 for (let i = 0; i < 15; i++) {
                     ctx.beginPath();
-                    ctx.arc(
-                        Math.random() * 256,
-                        Math.random() * 256,
-                        10 + Math.random() * 20,
-                        0,
-                        Math.PI * 2
-                    );
+                    ctx.arc(Math.random() * 256, Math.random() * 256, 10 + Math.random() * 20, 0, Math.PI * 2);
                     ctx.fill();
                 }
-
                 const texture = new THREE.CanvasTexture(canvas);
                 texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
                 texture.repeat.set(2, 2);
@@ -1009,138 +1023,46 @@
             
             createTank(color, x, z, team, playerId = null) { 
                 const group = new THREE.Group(); 
-    
                 let camoTexture;
                 if (team === 1) {
-                    camoTexture = this.createCamoTexture({
-                        base: '#4b5320',
-                        spot1: '#3d3d29',
-                        spot2: '#1a1a0d',
-                    });
+                    camoTexture = this.createCamoTexture({ base: '#4b5320', spot1: '#3d3d29', spot2: '#1a1a0d' });
                 } else {
-                    camoTexture = this.createCamoTexture({
-                        base: '#d4a574',
-                        spot1: '#b8956a',
-                        spot2: '#8b7355',
-                    });
+                    camoTexture = this.createCamoTexture({ base: '#d4a574', spot1: '#b8956a', spot2: '#8b7355' });
                 }
-    
-                const tankMaterial = new THREE.MeshStandardMaterial({ 
-                    map: camoTexture,
-                    roughness: 0.8, 
-                    metalness: 0.2 
-                });
-    
-                const trackMaterial = new THREE.MeshStandardMaterial({ 
-                    color: 0x222222, 
-                    roughness: 0.9, 
-                    metalness: 0.2 
-                });
-    
-                const barrelMaterial = new THREE.MeshStandardMaterial({ 
-                    color: 0x333333, 
-                    roughness: 0.7, 
-                    metalness: 0.6 
-                });
-    
+                const tankMaterial = new THREE.MeshStandardMaterial({ map: camoTexture, roughness: 0.8, metalness: 0.2 });
+                const trackMaterial = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.9, metalness: 0.2 });
+                const barrelMaterial = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.7, metalness: 0.6 });
                 const chassisGeometry = new THREE.BoxGeometry(6, 1.5, 4);
                 const chassis = new THREE.Mesh(chassisGeometry, tankMaterial);
                 chassis.position.y = 1;
                 chassis.castShadow = true;
-                chassis.receiveShadow = true;
                 group.add(chassis);
-    
                 const turretGroup = new THREE.Group();
                 turretGroup.position.y = 2.25;
                 turretGroup.position.z = -0.5;
                 group.add(turretGroup);
-    
                 const turretGeometry = new THREE.BoxGeometry(3.5, 1.2, 2.8);
                 const turret = new THREE.Mesh(turretGeometry, tankMaterial);
                 turret.castShadow = true;
-                turret.receiveShadow = true;
                 turretGroup.add(turret);
-    
-                const hatchGeometry = new THREE.CylinderGeometry(0.4, 0.4, 0.2, 32);
-                const hatch = new THREE.Mesh(hatchGeometry, tankMaterial);
-                hatch.position.set(-0.5, 0.7, 0.6);
-                hatch.castShadow = true;
-                hatch.receiveShadow = true;
-                turretGroup.add(hatch);
-    
-                const mgGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.8, 16);
-                const mg = new THREE.Mesh(mgGeometry, barrelMaterial);
-                mg.rotation.x = Math.PI / 2.5;
-                mg.position.set(0, 0.9, 0.6);
-                mg.castShadow = true;
-                turretGroup.add(mg);
-    
                 const barrelGroup = new THREE.Group();
                 barrelGroup.position.set(0, 0, 1.8);
                 turretGroup.add(barrelGroup);
-    
                 const barrelGeometry = new THREE.CylinderGeometry(0.15, 0.2, 4.5, 32);
                 const barrel = new THREE.Mesh(barrelGeometry, barrelMaterial);
                 barrel.rotation.x = Math.PI / 2;
                 barrel.position.z = 2.25;
                 barrel.castShadow = true;
-                barrel.receiveShadow = true;
                 barrelGroup.add(barrel);
-    
-                const muzzleGeometry = new THREE.CylinderGeometry(0.25, 0.25, 0.6, 32);
-                const muzzle = new THREE.Mesh(muzzleGeometry, barrelMaterial);
-                muzzle.rotation.x = Math.PI / 2;
-                muzzle.position.z = 4.5;
-                muzzle.castShadow = true;
-                muzzle.receiveShadow = true;
-                barrelGroup.add(muzzle);
-    
                 const trackGeometry = new THREE.BoxGeometry(6.2, 1.2, 0.8);
-    
                 const leftTrack = new THREE.Mesh(trackGeometry, trackMaterial);
                 leftTrack.position.set(0, 0.7, 2);
                 leftTrack.castShadow = true;
-                leftTrack.receiveShadow = true;
                 group.add(leftTrack);
-    
                 const rightTrack = new THREE.Mesh(trackGeometry, trackMaterial);
                 rightTrack.position.set(0, 0.7, -2);
                 rightTrack.castShadow = true;
-                rightTrack.receiveShadow = true;
                 group.add(rightTrack);
-    
-                const skirtGeometry = new THREE.BoxGeometry(6, 0.8, 0.1);
-                const leftSkirt = new THREE.Mesh(skirtGeometry, tankMaterial);
-                leftSkirt.position.set(0, 1, 2.45);
-                leftSkirt.castShadow = true;
-                leftSkirt.receiveShadow = true;
-                group.add(leftSkirt);
-    
-                const rightSkirt = new THREE.Mesh(skirtGeometry, tankMaterial);
-                rightSkirt.position.set(0, 1, -2.45);
-                rightSkirt.castShadow = true;
-                rightSkirt.receiveShadow = true;
-                group.add(rightSkirt);
-    
-                const wheelGeometry = new THREE.CylinderGeometry(0.4, 0.4, 0.9, 16);
-                const wheelMaterial = new THREE.MeshStandardMaterial({ color: 0x111111 });
-    
-                for (let i = -2.5; i <= 2.5; i += 1.25) {
-                    const wheelL = new THREE.Mesh(wheelGeometry, wheelMaterial);
-                    wheelL.rotation.x = Math.PI / 2;
-                    wheelL.position.set(i, 0.5, 2);
-                    wheelL.castShadow = true;
-                    wheelL.receiveShadow = true;
-                    group.add(wheelL);
-        
-                    const wheelR = new THREE.Mesh(wheelGeometry, wheelMaterial);
-                    wheelR.rotation.x = Math.PI / 2;
-                    wheelR.position.set(i, 0.5, -2);
-                    wheelR.castShadow = true;
-                    wheelR.receiveShadow = true;
-                    group.add(wheelR);
-                }
-    
                 group.position.set(x, 0, z); 
                 group.userData = { health: 100, team: team, playerId: playerId }; 
                 this.scene.add(group); 
@@ -1149,7 +1071,6 @@
             
             fire(tank) { 
                 if (this.isEliminated || !this.gameActive) return false;
-    
                 const now = Date.now(); 
                 if(now - this.lastShot < 3000) return false; 
                 this.lastShot = now; 
@@ -1161,7 +1082,6 @@
                 this.scene.add(bullet); 
                 this.bullets.push(bullet); 
                 if(tank === this.playerTank) gameApp.audio.fire(); 
-    
                 socket.emit('shoot', { 
                     position: { x: bullet.position.x, y: bullet.position.y, z: bullet.position.z },
                     direction: { x: dir.x, y: dir.y, z: dir.z },
@@ -1174,18 +1094,10 @@
             
             createRemoteBullet(data) {
                 if (!this.gameActive) return;
-    
                 const direction = new THREE.Vector3(data.direction.x, data.direction.y, data.direction.z);
                 const bullet = new THREE.Mesh(new THREE.SphereGeometry(0.26, 24, 24), new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4422, emissiveIntensity: 0.6 }));
                 bullet.position.set(data.position.x, data.position.y, data.position.z);
-                bullet.userData = { 
-                    velocity: direction.multiplyScalar(2.6), 
-                    owner: null, 
-                    life: 200, 
-                    ownerId: data.ownerId,
-                    bulletId: data.bulletId,
-                    isRemote: true
-                };
+                bullet.userData = { velocity: direction.multiplyScalar(2.6), owner: null, life: 200, ownerId: data.ownerId, bulletId: data.bulletId, isRemote: true };
                 this.scene.add(bullet);
                 this.bullets.push(bullet);
             }
@@ -1193,9 +1105,7 @@
             checkBoundary(tank) {
                 const boundaryLimit = 280;
                 const pos = tank.position;
-                if (Math.abs(pos.x) > boundaryLimit || Math.abs(pos.z) > boundaryLimit) {
-                    return true;
-                }
+                if (Math.abs(pos.x) > boundaryLimit || Math.abs(pos.z) > boundaryLimit) return true;
                 return false;
             }
             
@@ -1205,26 +1115,13 @@
                 explosionGroup.add(flash);
                 explosionGroup.position.copy(pos);
                 this.scene.add(explosionGroup);
-                
                 for(let i = 0; i < 45; i++) { 
                     const particle = new THREE.Mesh(new THREE.SphereGeometry(0.12, 6, 6), new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4422 })); 
                     particle.position.copy(pos); 
-                    particle.userData = { 
-                        vel: new THREE.Vector3((Math.random() - 0.5) * 1.2, Math.random() * 1.5 + 0.5, (Math.random() - 0.5) * 1.2), 
-                        life: 1, gravity: 0.03 
-                    }; 
+                    particle.userData = { vel: new THREE.Vector3((Math.random() - 0.5) * 1.2, Math.random() * 1.5 + 0.5, (Math.random() - 0.5) * 1.2), life: 1, gravity: 0.03 }; 
                     this.scene.add(particle); 
                     this.particles.push(particle); 
                 }
-                
-                for(let i = 0; i < 12; i++) {
-                    const smoke = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), new THREE.MeshStandardMaterial({ color: 0x886666, emissive: 0x442222 }));
-                    smoke.position.copy(pos);
-                    smoke.userData = { vel: new THREE.Vector3((Math.random() - 0.5) * 0.4, Math.random() * 0.8, (Math.random() - 0.5) * 0.4), life: 1.2 };
-                    this.scene.add(smoke);
-                    this.particles.push(smoke);
-                }
-                
                 setTimeout(() => this.scene.remove(explosionGroup), 200);
                 const dist = this.playerTank ? pos.distanceTo(this.playerTank.position) : 0;
                 gameApp.audio.explosion(dist);
@@ -1253,30 +1150,24 @@
                 if (!this.gameActive || this.isEliminated) return;
                 this.updateSmoothMovements();
                 this.updateParticles();
-
                 if(this.playerTank) { 
                     const speed = -this.joystick.y * 0.22;
                     const rot = -this.joystick.x * 0.045; 
                     const oldX = this.playerTank.position.x, oldZ = this.playerTank.position.z; 
                     this.playerTank.rotation.y += rot; 
                     this.playerTank.translateZ(speed); 
-        
                     if(this.checkCollision(this.playerTank)) {
                         this.playerTank.position.set(oldX, 0, oldZ);
                     }
-        
                     if(this.checkBoundary(this.playerTank)) {
                         this.playerTank.position.set(oldX, 0, oldZ);
                     }
-        
                     gameApp.audio.updateEngine(Math.abs(speed) * 3.5); 
-        
                     const now = Date.now();
                     if (now - this.lastMoveTime > 50) {
                         this.lastMoveTime = now;
                         socket.emit('move', { position: this.playerTank.position, rotation: this.playerTank.rotation.y });
                     }
-        
                     const camOffset = new THREE.Vector3(0, 5.5, -12).applyQuaternion(this.playerTank.quaternion); 
                     let camTarget = this.playerTank.position.clone().add(camOffset); 
                     if(this.cameraShake > 0) { 
@@ -1287,13 +1178,11 @@
                     this.camera.position.lerp(camTarget, 0.12); 
                     this.camera.lookAt(this.playerTank.position.clone().add(new THREE.Vector3(0, 1.2, 0))); 
                 } 
-    
                 for(let i = this.bullets.length-1; i >= 0; i--) { 
                     const b = this.bullets[i]; 
                     b.position.add(b.userData.velocity); 
                     b.userData.life--; 
                     let hit = false; 
-        
                     for(let obs of this.obstacles) { 
                         if(new THREE.Box3().setFromObject(b).intersectsBox(new THREE.Box3().setFromObject(obs))) { 
                             hit = true; 
@@ -1303,34 +1192,23 @@
                             break; 
                         } 
                     } 
-        
                     if(!hit) { 
                         for(let [id, tank] of this.tanks) {
                             const isOwner = (b.userData.owner === tank);
                             const isSameTeam = tank.userData.team === b.userData.owner?.userData?.team;
                             const isRemoteOwner = (b.userData.ownerId === tank.userData.playerId);
-                
                             if ((!isOwner && !isSameTeam && !isRemoteOwner) && b.position.distanceTo(tank.position) < 1.9) { 
                                 hit = true; 
                                 this.createExplosion(b.position, 1.5); 
                                 this.scene.remove(b); 
                                 this.bullets.splice(i,1);
-                    
-                                console.log('Hit detected! Shooter:', b.userData.ownerId, 'Target:', id);
-                    
                                 if(b.userData.owner === this.playerTank) {
-                                    console.log('Sending damage event for target:', id);
-                                    socket.emit('damage', { 
-                                        damage: 100, 
-                                        killerId: this.playerId,
-                                        targetId: id 
-                                    });
+                                    socket.emit('damage', { damage: 100, killerId: this.playerId, targetId: id });
                                 }
                                 break; 
                             } 
                         } 
                     } 
-        
                     if(!hit && (b.userData.life < 0 || Math.abs(b.position.x) > 430 || Math.abs(b.position.z) > 430)) { 
                         this.scene.remove(b); 
                         this.bullets.splice(i,1); 
@@ -1345,8 +1223,7 @@
                         try {
                             const obsBox = new THREE.Box3().setFromObject(obs);
                             if(box.intersectsBox(obsBox)) return true;
-                        } catch(e) {
-                        }
+                        } catch(e) {}
                     }
                 }
                 return false; 
@@ -1355,15 +1232,12 @@
             updateCounts() { 
                 this.team1Count = 0; 
                 this.team2Count = 0; 
-    
                 for(let tank of this.tanks.values()) {
                     if(tank.userData.team === 1) this.team1Count++; 
                     else if(tank.userData.team === 2) this.team2Count++;
                 }
-    
                 const myTeamCountEl = document.getElementById('myTeamCount');
                 const enemyTeamCountEl = document.getElementById('enemyTeamCount');
-    
                 if (myTeamCountEl && enemyTeamCountEl) {
                     if (this.playerTeam === 1) {
                         myTeamCountEl.innerText = this.team1Count;
@@ -1446,10 +1320,13 @@
                     localStorage.setItem('isAdmin', data.isAdmin);
                     document.getElementById('balance').innerText = currentBalance;
                     document.getElementById('gameBalance').innerText = currentBalance;
+                    document.getElementById('topBalance').innerHTML = `💰 ${currentBalance} $`;
                     document.getElementById('username').innerText = data.username || data.email.split('@')[0];
                     document.getElementById('gameUsername').innerText = data.username || data.email.split('@')[0];
                     document.getElementById('gamesPlayed').innerText = data.gamesPlayed || 0;
                     document.getElementById('wins').innerText = data.wins || 0;
+                    document.getElementById('topGames').innerText = data.gamesPlayed || 0;
+                    document.getElementById('topWins').innerText = data.wins || 0;
                     if(isAdmin) document.getElementById('adminBtn').style.display = 'block';
                     this.showMainScreen();
                 });
@@ -1463,29 +1340,56 @@
                     currentBalance = data.balance;
                     document.getElementById('balance').innerText = currentBalance;
                     document.getElementById('gameBalance').innerText = currentBalance;
+                    document.getElementById('topBalance').innerHTML = `💰 ${currentBalance} $`;
                     if(data.settings) {
                         gameSettings = data.settings;
                         document.getElementById('seatPrice').value = data.settings.seatPrice;
-                        document.getElementById('maxPlayers').value = data.settings.maxPlayers;
                     }
                     socket.emit('list_rooms');
                 });
-
+                
                 socket.on('rooms_list', (data) => {
                     this.displayRooms(data.rooms);
                 });
-
-                socket.on('room_created', (data) => {
-                    document.getElementById('lobbyStatus').innerHTML = '✅ تم إنشاء الغرفة، جاري انتظار لاعبين...';
-                    socket.emit('list_rooms');
+                
+                socket.on('room_joined', (data) => {
+                    currentRoomId = data.roomId;
+                    roomPlayers = data.players || [];
+                    roomMaxSeats = data.maxSeats || 8;
+                    this.showSeatScreen();
+                    this.updateSeatsDisplay();
                 });
-
-                socket.on('room_update', (data) => {
-                    console.log('Room update:', data);
-                    socket.emit('list_rooms');
-                    if(data.players && data.players.length === data.maxSeats) {
-                        document.getElementById('lobbyStatus').innerHTML = '🚀 اكتملت المقاعد! جاري بدء المعركة...';
+                
+                socket.on('room_left', (data) => {
+                    if (data.balanceRefund) {
+                        currentBalance = data.balanceRefund;
+                        document.getElementById('balance').innerText = currentBalance;
+                        document.getElementById('gameBalance').innerText = currentBalance;
+                        document.getElementById('topBalance').innerHTML = `💰 ${currentBalance} $`;
+                        showNotification(`🚪 تم مغادرة الغرفة. تم إعادة ${data.balanceRefund} $ إلى رصيدك`);
                     }
+                    currentRoomId = null;
+                    selectedTeam = null;
+                    selectedSeat = null;
+                    this.showLobby();
+                });
+                
+                socket.on('room_update', (data) => {
+                    if (currentRoomId === data.roomId) {
+                        roomPlayers = data.players || [];
+                        this.updateSeatsDisplay();
+                        
+                        if (roomPlayers.length === roomMaxSeats) {
+                            const leaveBtn = document.getElementById('leaveSeatBtn');
+                            if (leaveBtn) {
+                                leaveBtn.classList.add('disabled');
+                                leaveBtn.style.opacity = '0.5';
+                                leaveBtn.style.cursor = 'not-allowed';
+                            }
+                            showNotification('⚠️ اكتملت المقاعد! لا يمكن المغادرة الآن');
+                        }
+                    }
+                    socket.emit('list_rooms');
                 });
                 
                 socket.on('game_start', (data) => {
@@ -1511,6 +1415,7 @@
                     if(data.reward) {
                         currentBalance = data.yourBalance;
                         document.getElementById('balance').innerText = currentBalance;
+                        document.getElementById('topBalance').innerHTML = `💰 ${currentBalance} $`;
                     }
                 });
                 
@@ -1519,52 +1424,34 @@
                 });
                 
                 socket.on('player_shot', (data) => {
-                    console.log('Player shot:', data.userId);
                     if(this.sim && this.sim.gameActive && data.userId !== currentUser?.uid) {
                         this.sim.createRemoteBullet(data);
                     }
                 });
                 
-                socket.on('game_state_update', (data) => {
-                    if(this.sim && this.sim.gameActive && data.players) {
-                        data.players.forEach(player => {
-                            if(player.userId !== currentUser?.uid) {
-                                this.sim.updateOtherPlayer(player);
-                            }
-                        });
-                    }
-                });
-                
                 socket.on('player_eliminated', (data) => {
-                    console.log('Player eliminated:', data.userId);
                     if (this.sim && this.sim.gameActive && data.userId !== currentUser?.uid) {
                         this.sim.removeTank(data.userId);
                     }
                 });
                 
                 socket.on('you_were_eliminated', (data) => {
-                    console.log('You were eliminated by:', data.killerId);
-                    
                     if (this.sim && this.sim.gameActive) {
                         this.sim.isEliminated = true;
                         this.sim.gameActive = false;
-                        
                         if (this.sim.playerTank) {
                             this.sim.createExplosion(this.sim.playerTank.position, 2.5);
                             this.sim.scene.remove(this.sim.playerTank);
                             this.sim.playerTank = null;
                         }
-                        
                         const eliminationMessage = document.createElement('div');
                         eliminationMessage.className = 'elimination-message';
                         eliminationMessage.innerHTML = '💀 لقد تم تدمير دبابتك! 💀';
                         document.body.appendChild(eliminationMessage);
-                        
                         document.getElementById('joystickBase').style.opacity = '0.3';
                         document.getElementById('fireBtn').style.opacity = '0.3';
                         document.getElementById('joystickBase').style.pointerEvents = 'none';
                         document.getElementById('fireBtn').style.pointerEvents = 'none';
-                        
                         setTimeout(() => {
                             if (eliminationMessage) eliminationMessage.remove();
                             document.getElementById('joystickBase').style.opacity = '1';
@@ -1573,27 +1460,6 @@
                             document.getElementById('fireBtn').style.pointerEvents = 'auto';
                             this.endBattle('لقد تم إقصاؤك من المعركة');
                         }, 2500);
-                    }
-                });
-                
-                socket.on('players_list_update', (data) => {
-                    if (this.sim && this.sim.gameActive && data.players) {
-                        const existingTanks = new Set(this.sim.tanks.keys());
-                        const newPlayers = new Set(data.players.map(p => p.userId));
-                        
-                        for (const userId of existingTanks) {
-                            if (!newPlayers.has(userId) && userId !== currentUser?.uid) {
-                                this.sim.removeTank(userId);
-                            }
-                        }
-                        
-                        this.sim.updateCounts();
-                    }
-                });
-                
-                socket.on('health_update', (data) => {
-                    if (data.userId === currentUser?.uid) {
-                        document.getElementById('health').innerText = data.health;
                     }
                 });
                 
@@ -1632,20 +1498,106 @@
             showMainScreen() {
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('mainScreen').style.display = 'flex';
+                document.getElementById('seatScreen').style.display = 'none';
+                document.getElementById('lobby').style.display = 'none';
                 this.audio.init();
             },
             
             showLobby() {
                 document.getElementById('mainScreen').style.display = 'none';
+                document.getElementById('seatScreen').style.display = 'none';
                 document.getElementById('lobby').style.display = 'flex';
                 socket.emit('join_lobby');
+            },
+            
+            showSeatScreen() {
+                document.getElementById('mainScreen').style.display = 'none';
+                document.getElementById('lobby').style.display = 'none';
+                document.getElementById('seatScreen').style.display = 'flex';
+            },
+            
+            updateSeatsDisplay() {
+                const container = document.getElementById('seatContent');
+                if (!container) return;
+                
+                const redSeats = roomPlayers.filter(p => p.team === 1);
+                const blueSeats = roomPlayers.filter(p => p.team === 2);
+                const currentPlayer = roomPlayers.find(p => p.userId === currentUser?.uid);
+                
+                let html = `
+                    <div class="team-section team-red">
+                        <div class="team-title">🔴 الفريق الأحمر</div>
+                        <div class="seats-row">
+                `;
+                for (let i = 1; i <= 4; i++) {
+                    const occupied = redSeats.find(p => p.seatNumber === i);
+                    const isCurrent = currentPlayer && currentPlayer.team === 1 && currentPlayer.seatNumber === i;
+                    html += `
+                        <div class="seat-option ${occupied ? 'occupied' : ''} ${isCurrent ? 'selected' : ''}" 
+                             onclick="${!occupied ? `gameApp.selectSeat(1, ${i})` : ''}">
+                            <div>🚀 مقعد ${i}</div>
+                            <div style="font-size:12px">${occupied ? occupied.username || 'لاعب' : 'شاغر'}</div>
+                        </div>
+                    `;
+                }
+                html += `</div></div><div class="team-section team-blue"><div class="team-title">🔵 الفريق الأزرق</div><div class="seats-row">`;
+                for (let i = 5; i <= 8; i++) {
+                    const occupied = blueSeats.find(p => p.seatNumber === i);
+                    const isCurrent = currentPlayer && currentPlayer.team === 2 && currentPlayer.seatNumber === i;
+                    html += `
+                        <div class="seat-option ${occupied ? 'occupied' : ''} ${isCurrent ? 'selected' : ''}" 
+                             onclick="${!occupied ? `gameApp.selectSeat(2, ${i})` : ''}">
+                            <div>🚀 مقعد ${i}</div>
+                            <div style="font-size:12px">${occupied ? occupied.username || 'لاعب' : 'شاغر'}</div>
+                        </div>
+                    `;
+                }
+                html += `</div></div>`;
+                container.innerHTML = html;
+                
+                const leaveBtn = document.getElementById('leaveSeatBtn');
+                if (currentPlayer) {
+                    leaveBtn.style.display = 'block';
+                    if (roomPlayers.length === roomMaxSeats) {
+                        leaveBtn.classList.add('disabled');
+                    } else {
+                        leaveBtn.classList.remove('disabled');
+                    }
+                } else {
+                    leaveBtn.style.display = 'none';
+                }
+            },
+            
+            selectSeat(team, seatNumber) {
+                if (!currentRoomId) {
+                    showNotification('❌ لا توجد غرفة نشطة');
+                    return;
+                }
+                socket.emit('select_seat', { roomId: currentRoomId, team, seatNumber });
+                
+                const teamName = team === 1 ? 'الفريق الأحمر' : 'الفريق الأزرق';
+                showNotification(`✅ تم الانضمام إلى ${teamName} - مقعد ${seatNumber}`);
+                
+                const opponentTeam = team === 1 ? 'الفريق الأزرق' : 'الفريق الأحمر';
+                const opponentCount = roomPlayers.filter(p => p.team !== team).length;
+                showNotification(`📢 تفاصيل الغرفة: الفريق الخصم: ${opponentTeam} | عدد اللاعبين: ${roomPlayers.length + 1}/${roomMaxSeats}`);
+            },
+            
+            leaveSeat() {
+                if (!currentRoomId) return;
+                const leaveBtn = document.getElementById('leaveSeatBtn');
+                if (leaveBtn.classList.contains('disabled')) {
+                    showNotification('⚠️ لا يمكن مغادرة المقعد بعد اكتمال المقاعد!');
+                    return;
+                }
+                socket.emit('leave_room', { roomId: currentRoomId });
             },
             
             displayRooms(rooms) {
                 const grid = document.getElementById('roomsGrid');
                 if(!grid) return;
                 if(!rooms || rooms.length === 0) {
-                    grid.innerHTML = '<div style="text-align:center; padding:20px;">لا توجد غرف متاحة حالياً</div>';
+                    grid.innerHTML = '<div style="text-align:center; padding:20px; color:#aaa;">لا توجد غرف متاحة حالياً</div>';
                     return;
                 }
                 grid.innerHTML = rooms.map(room => `
@@ -1660,23 +1612,6 @@
                         </div>
                     </div>
                 `).join('');
-            },
-            
-            updateSeatsDisplay(players, maxSeats) {
-                const grid = document.getElementById('seatsGrid');
-                if(!grid) return;
-                grid.innerHTML = '';
-                for(let i = 0; i < maxSeats; i++) {
-                    const isOccupied = i < players.length;
-                    const seat = document.createElement('div');
-                    seat.className = 'seat' + (isOccupied ? ' occupied' : '');
-                    seat.innerHTML = `<div>${i+1}</div><div>${isOccupied ? (players[i]?.slice(0,8) || 'لاعب') : 'شاغر'}</div>`;
-                    grid.appendChild(seat);
-                }
-            },
-            
-            createRoom() {
-                socket.emit('create_room', { seats: gameSettings.maxPlayers || 2 });
             },
             
             joinRoom(roomId) {
@@ -1704,6 +1639,7 @@
                     this.sim.obstacles = [];
                 }
     
+                document.getElementById('seatScreen').style.display = 'none';
                 document.getElementById('lobby').style.display = 'none';
                 document.getElementById('hud').style.display = 'block';
                 document.getElementById('health').innerText = '100';
@@ -1797,13 +1733,9 @@
             
             toggleFullscreen() {
                 if (!document.fullscreenElement) {
-                    document.documentElement.requestFullscreen().catch(err => {
-                        console.log(`Error attempting to enable fullscreen: ${err.message}`);
-                    });
+                    document.documentElement.requestFullscreen();
                 } else {
-                    document.exitFullscreen().catch(err => {
-                        console.log(`Error attempting to exit fullscreen: ${err.message}`);
-                    });
+                    document.exitFullscreen();
                 }
             },
             
@@ -1845,12 +1777,7 @@
                 }
                 document.getElementById('reportScreen').style.display = 'none';
                 document.getElementById('hud').style.display = 'none';
-                document.getElementById('mainScreen').style.display = 'none';
-                document.getElementById('lobby').style.display = 'flex';
-                const backBtn = document.getElementById('backHomeBtn');
-                backBtn.innerHTML = '🏠 العودة للرئيسية';
-                backBtn.onclick = () => this.backToHome();
-                socket.emit('join_lobby');
+                this.showLobby();
                 if(this.sim && this.sim.renderer) {
                     this.sim.renderer.domElement.style.display = 'block';
                 }
@@ -1858,7 +1785,9 @@
             
             backToHome() {
                 document.getElementById('reportScreen').style.display = 'none';
-                document.getElementById('mainScreen').style.display = 'flex';
+                document.getElementById('seatScreen').style.display = 'none';
+                document.getElementById('lobby').style.display = 'none';
+                this.showMainScreen();
                 if(this.sim && this.sim.scene) {
                     this.sim.gameActive = false;
                     this.sim.otherPlayers.clear();
@@ -1868,8 +1797,16 @@
                 }
             },
             
-            goToWallet() { window.location.href = 'wallet.html'; },
-            goToAdmin() { window.location.href = 'admin.html'; },
+            goToWallet() { 
+                showNotification('💰 جاري فتح المحفظة...');
+                window.location.href = 'wallet.html'; 
+            },
+            
+            showStats() {
+                const games = document.getElementById('gamesPlayed').innerText;
+                const wins = document.getElementById('wins').innerText;
+                showNotification(`📊 إحصائياتك: ${games} مباراة | ${wins} فوز`);
+            },
             
             async saveSeatPrice() {
                 const price = parseInt(document.getElementById('seatPrice').value);
@@ -1890,83 +1827,35 @@
                 } catch(e) { alert('خطأ في الاتصال'); }
             },
             
-            async saveMaxPlayers() {
-                const maxPlayers = parseInt(document.getElementById('maxPlayers').value);
-                if(isNaN(maxPlayers) || maxPlayers < 2 || maxPlayers > 16) return alert('عدد غير صالح (2-16)');
-                try {
-                    const response = await fetch(`${SERVER_URL}/api/admin/setMaxPlayers`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ adminToken: 'authenticated', userId: currentUser?.uid, maxPlayers })
-                    });
-                    const data = await response.json();
-                    if(data.success) {
-                        alert(`تم تغيير عدد اللاعبين إلى ${maxPlayers}`);
-                        gameSettings.maxPlayers = maxPlayers;
-                    } else {
-                        alert(data.error);
-                    }
-                } catch(e) { alert('خطأ في الاتصال'); }
-            },
-            
-            async adminDeposit() {
-                const email = document.getElementById('targetEmail').value;
-                const amount = parseInt(document.getElementById('amount').value);
-                if(!email || !amount) return alert('أدخل البريد والمبلغ');
-                try {
-                    const response = await fetch(`${SERVER_URL}/api/admin/balance`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ adminToken: 'authenticated', userId: email, amount, action: 'deposit' })
-                    });
-                    const data = await response.json();
-                    if(data.success) {
-                        alert(`تم إيداع ${amount}$ للمستخدم ${email}`);
-                        this.refreshStats();
-                    } else {
-                        alert(data.error);
-                    }
-                } catch(e) { alert('خطأ في الاتصال'); }
-            },
-            
-            async adminWithdraw() {
-                const email = document.getElementById('targetEmail').value;
-                const amount = parseInt(document.getElementById('amount').value);
-                if(!email || !amount) return alert('أدخل البريد والمبلغ');
-                try {
-                    const response = await fetch(`${SERVER_URL}/api/admin/balance`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ adminToken: 'authenticated', userId: email, amount, action: 'withdraw' })
-                    });
-                    const data = await response.json();
-                    if(data.success) {
-                        alert(`تم سحب ${amount}$ من المستخدم ${email}`);
-                        this.refreshStats();
-                    } else {
-                        alert(data.error);
-                    }
-                } catch(e) { alert('خطأ في الاتصال'); }
-            },
-            
-            async resetAllData() {
-                if(!confirm('⚠️ تحذير: سيتم مسح جميع بيانات اللاعبين نهائياً! هل أنت متأكد؟')) return;
-                const confirmText = prompt('اكتب "مسح" للتأكيد النهائي');
-                if(confirmText !== 'مسح') return;
-                try {
-                    const response = await fetch(`${SERVER_URL}/api/admin/resetData`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ adminToken: 'authenticated', userId: currentUser?.uid })
-                    });
-                    const data = await response.json();
-                    if(data.success) {
-                        alert('تم مسح جميع بيانات اللاعبين بنجاح');
-                        this.refreshStats();
-                    } else {
-                        alert(data.error);
-                    }
-                } catch(e) { alert('خطأ في الاتصال'); }
+            init() {
+                this.initSocket();
+                
+                document.getElementById('loginBtn').onclick = () => {
+                    const email = document.getElementById('email').value;
+                    const password = document.getElementById('password').value;
+                    this.login(email, password);
+                };
+                document.getElementById('registerBtn').onclick = () => {
+                    const email = document.getElementById('email').value;
+                    const password = document.getElementById('password').value;
+                    this.register(email, password);
+                };
+                document.getElementById('playBtn').onclick = () => this.showLobby();
+                document.getElementById('walletBtn').onclick = () => this.goToWallet();
+                document.getElementById('statsBtn').onclick = () => this.showStats();
+                document.getElementById('topStatsBtn').onclick = () => this.showStats();
+                document.getElementById('adminBtn').onclick = () => {
+                    document.getElementById('adminPanel').style.display = 'flex';
+                    this.refreshStats();
+                };
+                
+                document.getElementById('backFromLobbyBtn').onclick = () => this.backToHome();
+                document.getElementById('backToLobbyFromSeatsBtn').onclick = () => this.leaveSeat();
+                document.getElementById('backHomeBtn').onclick = () => this.backToHome();
+                document.getElementById('closeAdminBtn').onclick = () => document.getElementById('adminPanel').style.display = 'none';
+                document.getElementById('saveSeatPriceBtn').onclick = () => this.saveSeatPrice();
+                document.getElementById('leaveSeatBtn').onclick = () => this.leaveSeat();
+                document.getElementById('fullscreenBtn').onclick = () => this.toggleFullscreen();
             },
             
             async refreshStats() {
@@ -1992,40 +1881,6 @@
                 } catch(e) {
                     statsBox.innerHTML = 'خطأ في الاتصال بالخادم';
                 }
-            },
-            
-            init() {
-                this.initSocket();
-                
-                document.getElementById('loginBtn').onclick = () => {
-                    const email = document.getElementById('email').value;
-                    const password = document.getElementById('password').value;
-                    this.login(email, password);
-                };
-                document.getElementById('registerBtn').onclick = () => {
-                    const email = document.getElementById('email').value;
-                    const password = document.getElementById('password').value;
-                    this.register(email, password);
-                };
-                document.getElementById('playBtn').onclick = () => this.showLobby();
-                document.getElementById('walletBtn').onclick = () => this.goToWallet();
-                document.getElementById('adminBtn').onclick = () => {
-                    window.location.href = 'admin.html';
-                };
-                
-                document.getElementById('backFromLobbyBtn').onclick = () => {
-                    document.getElementById('lobby').style.display = 'none';
-                    document.getElementById('mainScreen').style.display = 'flex';
-                };
-                document.getElementById('backHomeBtn').onclick = () => this.backToHome();
-                document.getElementById('closeAdminBtn').onclick = () => document.getElementById('adminPanel').style.display = 'none';
-                document.getElementById('saveSeatPriceBtn').onclick = () => this.saveSeatPrice();
-                document.getElementById('saveMaxPlayersBtn').onclick = () => this.saveMaxPlayers();
-                document.getElementById('adminDepositBtn').onclick = () => this.adminDeposit();
-                document.getElementById('adminWithdrawBtn').onclick = () => this.adminWithdraw();
-                document.getElementById('resetDataBtn').onclick = () => this.resetAllData();
-                document.getElementById('refreshStatsBtn').onclick = () => this.refreshStats();
-                document.getElementById('fullscreenBtn').onclick = () => this.toggleFullscreen();
             }
         };
         
