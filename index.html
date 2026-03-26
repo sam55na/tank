@@ -790,19 +790,17 @@
             }
             
             createTerrain() { 
-                // ==================== أرضية عشبية واقعية بدون شبكة ====================
-                // إنشاء نسيج عشبي
+                // ==================== أرضية عشبية أخضر غامق موسعة ====================
                 const canvas = document.createElement('canvas');
                 canvas.width = 512;
                 canvas.height = 512;
                 const ctx = canvas.getContext('2d');
     
-                ctx.fillStyle = '#5c9e5e';
+                ctx.fillStyle = '#2c5e2a';
                 ctx.fillRect(0, 0, 512, 512);
     
-                // رسم نسيج عشبي
-                for (let i = 0; i < 2500; i++) {
-                    ctx.fillStyle = `hsl(${80 + Math.random() * 20}, 70%, ${40 + Math.random() * 30}%)`;
+                for (let i = 0; i < 3500; i++) {
+                    ctx.fillStyle = `hsl(${100 + Math.random() * 20}, 70%, ${30 + Math.random() * 25}%)`;
                     ctx.fillRect(
                         Math.floor(Math.random() * 512),
                         Math.floor(Math.random() * 512),
@@ -814,7 +812,7 @@
                 const grassTexture = new THREE.CanvasTexture(canvas);
                 grassTexture.wrapS = THREE.RepeatWrapping;
                 grassTexture.wrapT = THREE.RepeatWrapping;
-                grassTexture.repeat.set(20, 20);
+                grassTexture.repeat.set(30, 30);
     
                 const groundMat = new THREE.MeshStandardMaterial({ 
                     map: grassTexture,
@@ -822,7 +820,8 @@
                     metalness: 0.05 
     });
     
-                const geo = new THREE.PlaneGeometry(450, 450, 60, 60); 
+                // توسيع الأرضية إلى 600x600
+                const geo = new THREE.PlaneGeometry(600, 600, 80, 80); 
                 geo.rotateX(-Math.PI / 2); 
                 const ground = new THREE.Mesh(geo, groundMat); 
                 ground.receiveShadow = true; 
@@ -831,65 +830,59 @@
                 // ==================== جدار الفريق الأحمر (يسار) ====================
                 const wallMaterial = new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.7 });
     
-                // الجدار الرئيسي الأحمر
-                const redWall = new THREE.Mesh(new THREE.BoxGeometry(18, 3.5, 2), wallMaterial);
-                redWall.position.set(-65, 1.75, -55);
+                const redWall = new THREE.Mesh(new THREE.BoxGeometry(22, 4, 2.5), wallMaterial);
+                redWall.position.set(-95, 2, -85);
                 redWall.castShadow = true;
                 redWall.receiveShadow = true;
                 this.scene.add(redWall);
                 this.obstacles.push(redWall);
     
-                // أبراج جانبية للجدار الأحمر
-                const redTowerLeft = new THREE.Mesh(new THREE.BoxGeometry(2.5, 5, 2.5), wallMaterial);
-                redTowerLeft.position.set(-74, 2.5, -50);
+                const redTowerLeft = new THREE.Mesh(new THREE.BoxGeometry(3, 6, 3), wallMaterial);
+                redTowerLeft.position.set(-106, 3, -78);
                 redTowerLeft.castShadow = true;
                 this.scene.add(redTowerLeft);
                 this.obstacles.push(redTowerLeft);
     
-                const redTowerRight = new THREE.Mesh(new THREE.BoxGeometry(2.5, 5, 2.5), wallMaterial);
-                redTowerRight.position.set(-56, 2.5, -60);
+                const redTowerRight = new THREE.Mesh(new THREE.BoxGeometry(3, 6, 3), wallMaterial);
+                redTowerRight.position.set(-84, 3, -92);
                 redTowerRight.castShadow = true;
                 this.scene.add(redTowerRight);
                 this.obstacles.push(redTowerRight);
     
                 // ==================== جدار الفريق الأزرق (يمين) ====================
-                // الجدار الرئيسي الأزرق
-                const blueWall = new THREE.Mesh(new THREE.BoxGeometry(18, 3.5, 2), wallMaterial);
-                blueWall.position.set(65, 1.75, 55);
+                const blueWall = new THREE.Mesh(new THREE.BoxGeometry(22, 4, 2.5), wallMaterial);
+                blueWall.position.set(95, 2, 85);
                 blueWall.castShadow = true;
                 blueWall.receiveShadow = true;
                 this.scene.add(blueWall);
                 this.obstacles.push(blueWall);
     
-                // أبراج جانبية للجدار الأزرق
-                const blueTowerLeft = new THREE.Mesh(new THREE.BoxGeometry(2.5, 5, 2.5), wallMaterial);
-                blueTowerLeft.position.set(56, 2.5, 50);
+                const blueTowerLeft = new THREE.Mesh(new THREE.BoxGeometry(3, 6, 3), wallMaterial);
+                blueTowerLeft.position.set(84, 3, 78);
                 blueTowerLeft.castShadow = true;
                 this.scene.add(blueTowerLeft);
                 this.obstacles.push(blueTowerLeft);
     
-                const blueTowerRight = new THREE.Mesh(new THREE.BoxGeometry(2.5, 5, 2.5), wallMaterial);
-                blueTowerRight.position.set(74, 2.5, 60);
+                const blueTowerRight = new THREE.Mesh(new THREE.BoxGeometry(3, 6, 3), wallMaterial);
+                blueTowerRight.position.set(106, 3, 92);
                 blueTowerRight.castShadow = true;
                 this.scene.add(blueTowerRight);
                 this.obstacles.push(blueTowerRight);
     
-                // ==================== إضافة عشب صغير حول الجدران ====================
-                const grassMat = new THREE.MeshStandardMaterial({ color: 0x6aab6a });
+                // ==================== إضافة عشب حول الجدران ====================
+                const grassMat = new THREE.MeshStandardMaterial({ color: 0x4a8b4a });
     
-                for (let i = 0; i < 60; i++) {
-                    // عشب حول الجدار الأحمر
-                    const xRed = -65 + (Math.random() - 0.5) * 22;
-                    const zRed = -55 + (Math.random() - 0.5) * 15;
-                    const grassRed = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.4, 0.35, 4), grassMat);
+                for (let i = 0; i < 100; i++) {
+                    const xRed = -95 + (Math.random() - 0.5) * 30;
+                    const zRed = -85 + (Math.random() - 0.5) * 25;
+                    const grassRed = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.5, 0.45, 4), grassMat);
                     grassRed.position.set(xRed, 0.1, zRed);
                     grassRed.castShadow = true;
                     this.scene.add(grassRed);
         
-                    // عشب حول الجدار الأزرق
-                    const xBlue = 65 + (Math.random() - 0.5) * 22;
-                    const zBlue = 55 + (Math.random() - 0.5) * 15;
-                    const grassBlue = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.4, 0.35, 4), grassMat);
+                    const xBlue = 95 + (Math.random() - 0.5) * 30;
+                    const zBlue = 85 + (Math.random() - 0.5) * 25;
+                    const grassBlue = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.5, 0.45, 4), grassMat);
                     grassBlue.position.set(xBlue, 0.1, zBlue);
                     grassBlue.castShadow = true;
                     this.scene.add(grassBlue);
@@ -898,32 +891,44 @@
             
             createObstacles() {
                 const rockMat = new THREE.MeshStandardMaterial({ color: 0x6a6a5a, roughness: 0.75 });
+    
+                // زيادة حجم وتباعد الصخور (3 أضعاف الحجم، ضعف التباعد)
                 const positions = [
-                    { x: -45, z: -20, scale: 1.2 },
-                    { x: -30, z: 40, scale: 1.5 },
-                    { x: -10, z: -55, scale: 1.0 },
-                    { x: 15, z: -35, scale: 1.3 },
-                    { x: 40, z: -15, scale: 1.1 },
-                    { x: 55, z: 25, scale: 1.4 },
-                    { x: 35, z: 55, scale: 1.2 },
-                    { x: -25, z: -45, scale: 1.3 },
-                    { x: -55, z: 15, scale: 1.5 },
-                    { x: 5, z: 60, scale: 1.0 },
-                    { x: 70, z: -25, scale: 1.2 },
-                    { x: -60, z: -40, scale: 1.4 },
-                    { x: -40, z: 65, scale: 1.3 },
-                    { x: 25, z: -65, scale: 1.1 },
-                    { x: 50, z: 45, scale: 1.2 }
+                    { x: -90, z: -70, scale: 3.5 }, { x: -70, z: 40, scale: 4.0 }, { x: -40, z: -95, scale: 3.2 },
+                    { x: 20, z: -85, scale: 3.8 }, { x: 85, z: -50, scale: 4.2 }, { x: 95, z: 20, scale: 3.5 },
+                    { x: 75, z: 85, scale: 4.0 }, { x: -55, z: -95, scale: 3.6 }, { x: -95, z: 25, scale: 4.5 },
+                    { x: -20, z: 95, scale: 3.3 }, { x: 50, z: -105, scale: 3.8 }, { x: -85, z: -80, scale: 4.0 },
+                    { x: -70, z: 85, scale: 3.5 }, { x: 40, z: 105, scale: 3.2 }, { x: 105, z: 70, scale: 4.0 },
+                    { x: -105, z: -55, scale: 4.2 }, { x: -50, z: 105, scale: 3.5 }, { x: 90, z: -90, scale: 3.8 },
+                    { x: 0, z: -110, scale: 4.0 }, { x: -110, z: 0, scale: 4.5 }, { x: 110, z: -30, scale: 3.8 },
+                    { x: 30, z: 110, scale: 3.5 }, { x: -95, z: 85, scale: 4.0 }, { x: 95, z: 95, scale: 4.2 }
     ];
     
                 positions.forEach(pos => {
-                    const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(1.2), rockMat);
+                    const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(1.5), rockMat);
                     rock.scale.set(pos.scale, pos.scale * 0.8, pos.scale);
-                    rock.position.set(pos.x, 0.6, pos.z);
+                    rock.position.set(pos.x, 0.8, pos.z);
                     rock.castShadow = true;
                     rock.receiveShadow = true;
                     this.scene.add(rock);
                     this.obstacles.push(rock);
+        
+                    // إضافة صخور صغيرة حول الصخور الكبيرة
+                    for (let i = 0; i < 5; i++) {
+                        const smallRock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.8), rockMat);
+                        const angle = Math.random() * Math.PI * 2;
+                        const radius = 2.5 + Math.random() * 2;
+                        smallRock.scale.set(0.8, 0.6, 0.8);
+                        smallRock.position.set(
+                            pos.x + Math.cos(angle) * radius, 
+                            0.4, 
+                            pos.z + Math.sin(angle) * radius
+            );
+                        smallRock.castShadow = true;
+                        smallRock.receiveShadow = true;
+                        this.scene.add(smallRock);
+                        this.obstacles.push(smallRock);
+        }
     });
 }
             createCamoTexture(colors) {
@@ -1161,6 +1166,14 @@
                 this.scene.add(bullet);
                 this.bullets.push(bullet);
 }
+            checkBoundary(tank) {
+                const boundaryLimit = 280; //       حدود المسموح (الأرضية 600، الحد الآمن 280 من المركز)
+                const pos = tank.position;
+                if (Math.abs(pos.x) > boundaryLimit || Math.abs(pos.z) > boundaryLimit) {
+                    return true;
+    }
+                return false;
+}
             createExplosion(pos, size = 1.2) {
                 const explosionGroup = new THREE.Group();
                 const flash = new THREE.Mesh(new THREE.SphereGeometry(size * 0.6, 16, 16), new THREE.MeshStandardMaterial({ color: 0xffaa66, emissive: 0xff4422, emissiveIntensity: 1.2 }));
@@ -1215,14 +1228,24 @@
                 if (!this.gameActive || this.isEliminated) return;
                 this.updateSmoothMovements();
                 this.updateParticles();
-    
+
                 if(this.playerTank) { 
                     const speed = -this.joystick.y * 0.22;
                     const rot = -this.joystick.x * 0.045; 
                     const oldX = this.playerTank.position.x, oldZ = this.playerTank.position.z; 
                     this.playerTank.rotation.y += rot; 
                     this.playerTank.translateZ(speed); 
-                    if(this.checkCollision(this.playerTank)) this.playerTank.position.set(oldX, 0, oldZ); 
+        
+                    // التحقق من التصادم مع العوائق
+                    if(this.checkCollision(this.playerTank)) {
+                        this.playerTank.position.set(oldX, 0, oldZ);
+        }
+        
+                    // التحقق من عدم الخروج عن حدود الأرضية
+                    if(this.checkBoundary(this.playerTank)) {
+                        this.playerTank.position.set(oldX, 0, oldZ);
+        }
+        
                     gameApp.audio.updateEngine(Math.abs(speed) * 3.5); 
         
                     const now = Date.now();
