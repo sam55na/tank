@@ -717,14 +717,16 @@ io.on('connection', (socket) => {
     socket.on('shoot', (data) => {
         const player = players.get(socket.id);
         if (player?.roomId) {
-            socket.to(player.roomId).emit('player_shot', {
+            // بث الطلقة لجميع اللاعبين في الغرفة (بما فيهم المرسل)
+            io.to(player.roomId).emit('player_shot', {
                 userId: player.userId,
                 position: data.position,
                 direction: data.direction,
+                bulletId: data.bulletId,
                 timestamp: Date.now()
-            });
-        }
-    });
+        });
+    }
+});
     
     // تحديث الصحة بعد الضرر - التعديل الأساسي لإصلاح مشكلة الإقصاء
     socket.on('damage', (data) => {

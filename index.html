@@ -847,7 +847,7 @@
             
             fire(tank) { 
                 if (this.isEliminated || !this.gameActive) return false;
-                
+    
                 const now = Date.now(); 
                 if(now - this.lastShot < 3000) return false; 
                 this.lastShot = now; 
@@ -855,15 +855,37 @@
                 const bullet = new THREE.Mesh(new THREE.SphereGeometry(0.26, 24, 24), new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4422, emissiveIntensity: 0.6 })); 
                 bullet.position.copy(tank.position); 
                 bullet.position.y += 1.2; 
-                bullet.userData = { velocity: dir.multiplyScalar(2.6), owner: tank, life: 200, ownerId: tank.userData.playerId || 'player' }; 
+                bullet.userData = { velocity: dir.multiplyScalar(2.6), owner: tank, life: 200, ownerId: tank.userData.playerId || 'player', bulletId: Date.now() + Math.random() }; 
                 this.scene.add(bullet); 
                 this.bullets.push(bullet); 
                 if(tank === this.playerTank) gameApp.audio.fire(); 
-                
-                socket.emit('shoot', { position: bullet.position, direction: dir });
+    
+                socket.emit('shoot', { 
+                    position: { x: bullet.position.x, y: bullet.position.y, z: bullet.position.z },
+                    direction: { x: dir.x, y: dir.y, z: dir.z },
+                    ownerId: tank.userData.playerId,
+                    bulletId: bullet.userData.bulletId,
+                    timestamp: Date.now()
+    });
                 return true; 
-            }
-            
+}
+            createRemoteBullet(data) {
+                if (!this.gameActive) return;
+    
+                const direction = new THREE.Vector3(data.direction.x, data.direction.y, data.direction.z);
+                const bullet = new THREE.Mesh(new THREE.SphereGeometry(0.26, 24, 24), new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4422, emissiveIntensity: 0.6 }));
+                bullet.position.set(data.position.x, data.position.y, data.position.z);
+                bullet.userData = { 
+                    velocity: direction.multiplyScalar(2.6), 
+                    owner: null, 
+                    life: 200, 
+                    ownerId: data.ownerId,
+                    bulletId: data.bulletId,
+                    isRemote: true
+    };
+                this.scene.add(bullet);
+                this.bullets.push(bullet);
+}
             createExplosion(pos, size = 1.2) {
                 const explosionGroup = new THREE.Group();
                 const flash = new THREE.Mesh(new THREE.SphereGeometry(size * 0.6, 16, 16), new THREE.MeshStandardMaterial({ color: 0xffaa66, emissive: 0xff4422, emissiveIntensity: 1.2 }));
@@ -918,7 +940,7 @@
                 if (!this.gameActive || this.isEliminated) return;
                 this.updateSmoothMovements();
                 this.updateParticles();
-                
+    
                 if(this.playerTank) { 
                     const speed = -this.joystick.y * 0.22;
                     const rot = -this.joystick.x * 0.045; 
@@ -927,30 +949,30 @@
                     this.playerTank.translateZ(speed); 
                     if(this.checkCollision(this.playerTank)) this.playerTank.position.set(oldX, 0, oldZ); 
                     gameApp.audio.updateEngine(Math.abs(speed) * 3.5); 
-                    
+        
                     const now = Date.now();
                     if (now - this.lastMoveTime > 50) {
                         this.lastMoveTime = now;
                         socket.emit('move', { position: this.playerTank.position, rotation: this.playerTank.rotation.y });
-                    }
-                    
+        }
+        
                     const camOffset = new THREE.Vector3(0, 5.5, -12).applyQuaternion(this.playerTank.quaternion); 
                     let camTarget = this.playerTank.position.clone().add(camOffset); 
                     if(this.cameraShake > 0) { 
                         camTarget.x += (Math.random() - 0.5) * this.cameraShake * 0.5; 
                         camTarget.y += (Math.random() - 0.5) * this.cameraShake * 0.3; 
                         this.cameraShake *= 0.92; 
-                    } 
+        } 
                     this.camera.position.lerp(camTarget, 0.12); 
                     this.camera.lookAt(this.playerTank.position.clone().add(new THREE.Vector3(0, 1.2, 0))); 
-                } 
-                
+    } 
+    
                 for(let i = this.bullets.length-1; i >= 0; i--) { 
                     const b = this.bullets[i]; 
                     b.position.add(b.userData.velocity); 
                     b.userData.life--; 
                     let hit = false; 
-                    
+        
                     for(let obs of this.obstacles) { 
                         if(new THREE.Box3().setFromObject(b).intersectsBox(new THREE.Box3().setFromObject(obs))) { 
                             hit = true; 
@@ -958,44 +980,42 @@
                             this.scene.remove(b); 
                             this.bullets.splice(i,1); 
                             break; 
-                        } 
-                    } 
-                    
+            } 
+        } 
+        
                     if(!hit) { 
                         for(let [id, tank] of this.tanks) {
-                            // التحقق: الرصاصة ليست من نفس الدبابة
                             const isOwner = (b.userData.owner === tank);
-                            // التحقق: الفرق مختلفة
                             const isSameTeam = tank.userData.team === b.userData.owner?.userData?.team;
-                            
-                            if (!isOwner && !isSameTeam && b.position.distanceTo(tank.position) < 1.9) { 
+                            const isRemoteOwner = (b.userData.ownerId === tank.userData.playerId);
+                
+                            if ((!isOwner && !isSameTeam && !isRemoteOwner) && b.position.distanceTo(tank.position) < 1.9) { 
                                 hit = true; 
                                 this.createExplosion(b.position, 1.5); 
                                 this.scene.remove(b); 
                                 this.bullets.splice(i,1);
-                                
+                    
                                 console.log('Hit detected! Shooter:', b.userData.ownerId, 'Target:', id);
-                                
+                    
                                 if(b.userData.owner === this.playerTank) {
                                     console.log('Sending damage event for target:', id);
                                     socket.emit('damage', { 
                                         damage: 100, 
                                         killerId: this.playerId,
                                         targetId: id 
-                                    });
-                                }
+                        });
+                    }
                                 break; 
-                            } 
-                        } 
-                    } 
-                    
+                } 
+            } 
+        } 
+        
                     if(!hit && (b.userData.life < 0 || Math.abs(b.position.x) > 430 || Math.abs(b.position.z) > 430)) { 
                         this.scene.remove(b); 
                         this.bullets.splice(i,1); 
-                    } 
-                } 
-            }
-            
+        } 
+    } 
+}
             checkCollision(tank) { 
                 const box = new THREE.Box3().setFromObject(tank); 
                 for(let obs of this.obstacles) if(box.intersectsBox(new THREE.Box3().setFromObject(obs))) return true; 
@@ -1155,7 +1175,10 @@
                 
                 socket.on('player_shot', (data) => {
                     console.log('Player shot:', data.userId);
-                });
+                    if(this.sim && this.sim.gameActive && data.userId !== currentUser?.uid) {
+                        this.sim.createRemoteBullet(data);
+    }
+});
                 
                 socket.on('game_state_update', (data) => {
                     if(this.sim && this.sim.gameActive && data.players) {
