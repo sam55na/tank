@@ -657,41 +657,44 @@
         .fullscreen-btn:active {
             transform: scale(0.95);}
         /* ==================== الشريط العلوي الجديد ==================== */
+        /* ==================== الشريط العلوي المتجاوب ==================== */
         .top-bar {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            height: 70px;
+            height: clamp(50px, 8vh, 70px);
             background: linear-gradient(135deg, rgba(0,0,0,0.85) 0%, rgba(20,30,45,0.9) 100%);
             backdrop-filter: blur(15px);
             border-bottom: 2px solid rgba(212, 175, 55, 0.4);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 25px;
+            padding: 0 clamp(10px, 3vw, 25px);
             z-index: 1000;
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
         .balance-section {
             background: linear-gradient(135deg, #2ecc71, #27ae60);
-            padding: 8px 20px;
+            padding: clamp(4px, 1.5vh, 8px) clamp(12px, 2.5vw, 20px);
             border-radius: 40px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: clamp(6px, 1.5vw, 12px);
             box-shadow: 0 4px 15px rgba(46,204,113,0.3);
             border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
 }
 
         .balance-icon {
-            font-size: 24px;
+            font-size: clamp(16px, 4vw, 24px);
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
 }
 
         .balance-amount {
-            font-size: 24px;
+            font-size: clamp(14px, 4vw, 24px);
             font-weight: bold;
             color: white;
             text-shadow: 0 1px 2px rgba(0,0,0,0.3);
@@ -699,22 +702,23 @@
 }
 
         .balance-label {
-            font-size: 12px;
+            font-size: clamp(8px, 2.5vw, 12px);
             color: rgba(255,255,255,0.8);
-            margin-right: 5px;
+            margin-right: 3px;
 }
 
         .logo-section {
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
+            white-space: nowrap;
 }
 
         .neon-title {
-            font-size: 32px;
+            font-size: clamp(16px, 5vw, 32px);
             font-weight: bold;
             font-family: 'Segoe UI', 'Cairo', monospace;
-            letter-spacing: 4px;
+            letter-spacing: clamp(2px, 1vw, 4px);
             background: linear-gradient(135deg, #d4af37, #ffd700, #b8860b);
             -webkit-background-clip: text;
             background-clip: text;
@@ -722,89 +726,178 @@
             text-shadow: 0 0 10px rgba(212,175,55,0.5);
             animation: neonPulse 2s ease-in-out infinite;
             white-space: nowrap;
-}
-
-        @keyframes neonPulse {
-            0%, 100% {
-                text-shadow: 0 0 5px rgba(212,175,55,0.3), 0 0 10px rgba(212,175,55,0.2);
-                opacity: 0.9;
-    }
-            50% {
-                text-shadow: 0 0 20px rgba(212,175,55,0.8), 0 0 30px rgba(212,175,55,0.5);
-                opacity: 1;
-    }
+            transition: all 0.3s ease;
 }
 
         .stats-section {
             background: rgba(0,0,0,0.6);
-            padding: 8px 20px;
+            padding: clamp(4px, 1.5vh, 8px) clamp(12px, 2.5vw, 20px);
             border-radius: 40px;
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: clamp(12px, 3vw, 20px);
             border: 1px solid rgba(212,175,55,0.3);
             backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
 }
 
         .stat-item {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: clamp(4px, 1vw, 8px);
 }
 
         .stat-icon {
-            font-size: 20px;
+            font-size: clamp(12px, 3.5vw, 20px);
 }
 
         .stat-value {
-            font-size: 20px;
+            font-size: clamp(12px, 3.5vw, 20px);
             font-weight: bold;
             color: #d4af37;
 }
 
         .stat-label {
-            font-size: 12px;
+            font-size: clamp(8px, 2.5vw, 12px);
             color: rgba(255,255,255,0.7);
 }
 
         .main-screen {
-            padding-top: 70px;
+            padding-top: clamp(50px, 8vh, 70px);
 }
 
         .main-screen h2 {
-            display: none;
+    display: none;
 }
 
-        @media (max-width: 768px) {
-            .top-bar {
-                padding: 0 15px;
-                height: 60px;
-    }
+        /* للشاشات الصغيرة جداً */
+        @media (max-width: 480px) {
             .balance-section {
-                padding: 5px 12px;
+                padding: 4px 10px;
     }
+    
+            .balance-icon {
+                font-size: 14px;
+    }
+    
             .balance-amount {
-                font-size: 18px;
+                font-size: 12px;
     }
+    
+            .balance-label {
+                font-size: 8px;
+    }
+    
+            .neon-title {
+                font-size: 14px;
+                letter-spacing: 1px;
+    }
+    
+            .stats-section {
+                padding: 4px 10px;
+                gap: 8px;
+    }
+    
+            .stat-icon {
+                font-size: 10px;
+    }
+    
+            .stat-value {
+                font-size: 10px;
+    }
+    
+            .stat-label {
+                font-size: 7px;
+    }
+}
+
+        /* للشاشات المتوسطة */
+        @media (min-width: 481px) and (max-width: 768px) {
             .balance-icon {
                 font-size: 18px;
     }
+    
+            .balance-amount {
+                font-size: 16px;
+    }
+    
             .neon-title {
                 font-size: 20px;
                 letter-spacing: 2px;
     }
-            .stats-section {
-                padding: 5px 12px;
-                gap: 10px;
-    }
-            .stat-value {
-                font-size: 16px;
-    }
+    
             .stat-icon {
-                font-size: 16px;
+                font-size: 14px;
     }
+    
+            .stat-value {
+                font-size: 14px;
+    }
+}
 
-        }
+        /* للشاشات الكبيرة */
+        @media (min-width: 1200px) {
+            .balance-icon {
+                font-size: 28px;
+    }
+    
+            .balance-amount {
+                font-size: 28px;
+    }
+    
+            .neon-title {
+                font-size: 38px;
+                letter-spacing: 6px;
+    }
+    
+            .stat-icon {
+                font-size: 24px;
+    }
+    
+            .stat-value {
+                font-size: 24px;
+    }
+    
+    .        stat-label {
+                font-size: 14px;
+    }
+}
+
+/* تحسين للشاشات الأفقية على الجوال */
+        @media (orientation: landscape) and (max-height: 500px) {
+            .top-bar {
+                height: clamp(40px, 10vh, 50px);
+    }
+    
+            .main-screen {
+                padding-top: clamp(40px, 10vh, 50px);
+    }
+    
+            .balance-section,
+            .stats-section {
+                padding: 3px 8px;
+    }
+    
+            .balance-icon {
+        font-size: 14px;
+    }
+    
+            .balance-amount {
+                font-size: 12px;
+    }
+    
+            .neon-title {
+                font-size: 14px;
+    }
+    
+            .stat-icon {
+                font-size: 12px;
+    }
+    
+            .stat-value {
+                font-size: 12px;
+    }
+}
     </style>
 </head>
 <body>
