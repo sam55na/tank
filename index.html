@@ -2030,9 +2030,8 @@
                 document.getElementById('playBtn').onclick = () => this.showLobby();
                 document.getElementById('walletBtn').onclick = () => this.goToWallet();
                 document.getElementById('adminBtn').onclick = () => {
-                    document.getElementById('adminPanel').style.display = 'flex';
-                    this.refreshStats();
-                };
+                    window.location.href = 'admin.html';
+};
                 
                 document.getElementById('backFromLobbyBtn').onclick = () => {
                     document.getElementById('lobby').style.display = 'none';
