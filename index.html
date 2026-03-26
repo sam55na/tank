@@ -555,7 +555,74 @@
             text-align: center;
             border: 2px solid #ff4444;
             animation: fadeInOut 3s ease-in-out;
-            white-space: nowrap;
+            white-space: nowrap;}
+        .rooms-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
+}
+
+        .room-card {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid #d4af37;
+            border-radius: 20px;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+}
+
+        .room-card:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.02);
+            border-color: #ffd700;
+}
+
+        .room-card .room-info {
+            flex: 1;
+}
+
+        .room-card .room-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+}
+
+        .room-card .room-details {
+            font-size: 12px;
+            color: #aaa;
+}
+
+        .room-card .room-price {
+            text-align: right;
+}
+
+        .room-card .price-value {
+            color: #d4af37;
+            font-weight: bold;
+            font-size: 18px;
+}
+
+        .room-card .players-count {
+            font-size: 12px;
+            color: #4caf50;
+}
+
+        .room-card.full {
+            opacity: 0.6;
+            cursor: not-allowed;
+            border-color: #e74c3c;
+}
+
+        .room-card.full:hover {
+            transform: none;
+            background: rgba(255,255,255,0.1);
+}
         }
         
         @keyframes fadeInOut {
@@ -628,8 +695,7 @@
     <div class="lobby" id="lobby">
         <div class="lobby-container">
             <h2>🏆 لوبي المعركة</h2>
-            <div class="seats-grid" id="seatsGrid"></div>
-            <button class="create-room-btn" id="createRoomBtn">➕ إنشاء غرفة جديدة</button>
+            <div class="rooms-grid" id="roomsGrid" style="display: flex; flex-direction: column; gap: 15px; margin: 20px 0;"></div>
             <div class="lobby-status" id="lobbyStatus"></div>
             <button class="back-lobby-btn" id="backFromLobbyBtn">🏠 العودة للرئيسية</button>
         </div>
@@ -642,8 +708,8 @@
             <div>❤️ <span id="health">100</span>%</div>
         </div>
         <div class="team-info">
-            <div style="color:#ff8888;">🔴 الأحمر: <span id="team1">0</span></div>
-            <div style="color:#88aaff;">🔵 الأزرق: <span id="team2">0</span></div>
+            <div style="color:#4caf50;">🟢 فريقي: <span id="myTeamCount">0</span></div>
+            <div style="color:#ff4444;">🔴 الخصم: <span id="enemyTeamCount">0</span></div>
         </div>
         <div class="cooldown-side" id="cooldownText">✅ جاهز</div>
         <div class="crosshair"></div>
@@ -1305,16 +1371,28 @@
 }
             
             updateCounts() { 
-                this.team1Count = 0; this.team2Count = 0; 
+                this.team1Count = 0; 
+                this.team2Count = 0; 
+    
                 for(let tank of this.tanks.values()) {
                     if(tank.userData.team === 1) this.team1Count++; 
                     else if(tank.userData.team === 2) this.team2Count++;
-                }
-                const team1El = document.getElementById('team1');
-                const team2El = document.getElementById('team2');
-                if (team1El) team1El.innerText = this.team1Count;
-                if (team2El) team2El.innerText = this.team2Count;
-            }
+    }
+    
+                // عرض عدد فريقي وعدد الخصم
+                const myTeamCountEl = document.getElementById('myTeamCount');
+                const enemyTeamCountEl = document.getElementById('enemyTeamCount');
+    
+                if (myTeamCountEl && enemyTeamCountEl) {
+                    if (this.playerTeam === 1) {
+                        myTeamCountEl.innerText = this.team1Count;
+                        enemyTeamCountEl.innerText = this.team2Count;
+                    } else {
+                        myTeamCountEl.innerText = this.team2Count;
+                        enemyTeamCountEl.innerText = this.team1Count;
+        }
+    }
+}
             
             updateOtherPlayer(data) {
                 if (!this.gameActive || this.isEliminated) return;
@@ -1407,23 +1485,26 @@
                         gameSettings = data.settings;
                         document.getElementById('seatPrice').value = data.settings.seatPrice;
                         document.getElementById('maxPlayers').value = data.settings.maxPlayers;
-                    }
-                });
-                
+    }
+                    socket.emit('list_rooms');
+});
+
                 socket.on('rooms_list', (data) => {
                     this.displayRooms(data.rooms);
-                });
-                
+});
+
                 socket.on('room_created', (data) => {
                     document.getElementById('lobbyStatus').innerHTML = '✅ تم إنشاء الغرفة، جاري انتظار لاعبين...';
-                });
-                
+                    socket.emit('list_rooms');
+});
+
                 socket.on('room_update', (data) => {
-                    this.updateSeatsDisplay(data.players, data.maxSeats);
-                    if(data.players.length === data.maxSeats) {
+                    console.log('Room update:', data);
+                    socket.emit('list_rooms');
+                    if(data.players && data.players.length === data.maxSeats) {
                         document.getElementById('lobbyStatus').innerHTML = '🚀 اكتملت المقاعد! جاري بدء المعركة...';
-                    }
-                });
+    }
+});
                 
                 socket.on('game_start', (data) => {
                     if(window.innerHeight > window.innerWidth) {
@@ -1579,19 +1660,25 @@
             },
             
             displayRooms(rooms) {
-                const grid = document.getElementById('seatsGrid');
+                const grid = document.getElementById('roomsGrid');
                 if(!grid) return;
                 if(!rooms || rooms.length === 0) {
-                    grid.innerHTML = '<div style="grid-column:span 2; text-align:center;">لا توجد غرف، اضغط "إنشاء غرفة جديدة"</div>';
+                    grid.innerHTML = '<div style="text-align:center; padding:20px;">لا توجد غرف متاحة حالياً</div>';
                     return;
-                }
+    }
                 grid.innerHTML = rooms.map(room => `
-                    <div class="seat" onclick="gameApp.joinRoom('${room.id}')">
-                        <div>🏠 غرفة</div>
-                        <div>👥 ${room.players}/${room.maxSeats}</div>
+                    <div class="room-card ${room.players >= room.maxSeats ? 'full' : ''}" onclick="${room.players >= room.maxSeats ? '' : `gameApp.joinRoom('${room.id}')`}">
+                        <div class="room-info">
+                            <div class="room-name">${room.name || '🏠 غرفة المعركة'}</div>
+                            <div class="room-details">👥 ${room.players}/${room.maxSeats} لاعب</div>
+                        </div>
+                        <div class="room-price">
+                            <div class="price-value">💰 ${room.seatPrice || 1}$</div>
+                            <div class="players-count">${room.players >= room.maxSeats ? '🟢 مكتملة' : '🔓 متاحة للانضمام'}</div>
+                        </div>
                     </div>
                 `).join('');
-            },
+},
             
             updateSeatsDisplay(players, maxSeats) {
                 const grid = document.getElementById('seatsGrid');
@@ -1946,7 +2033,7 @@
                     document.getElementById('adminPanel').style.display = 'flex';
                     this.refreshStats();
                 };
-                document.getElementById('createRoomBtn').onclick = () => this.createRoom();
+                
                 document.getElementById('backFromLobbyBtn').onclick = () => {
                     document.getElementById('lobby').style.display = 'none';
                     document.getElementById('mainScreen').style.display = 'flex';
