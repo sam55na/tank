@@ -795,10 +795,10 @@
                 canvas.width = 512;
                 canvas.height = 512;
                 const ctx = canvas.getContext('2d');
-    
+
                 ctx.fillStyle = '#2c5e2a';
                 ctx.fillRect(0, 0, 512, 512);
-    
+
                 for (let i = 0; i < 3500; i++) {
                     ctx.fillStyle = `hsl(${100 + Math.random() * 20}, 70%, ${30 + Math.random() * 25}%)`;
                     ctx.fillRect(
@@ -808,80 +808,56 @@
                         2 + Math.random() * 3
         );
     }
-    
+
                 const grassTexture = new THREE.CanvasTexture(canvas);
                 grassTexture.wrapS = THREE.RepeatWrapping;
                 grassTexture.wrapT = THREE.RepeatWrapping;
                 grassTexture.repeat.set(30, 30);
-    
+
                 const groundMat = new THREE.MeshStandardMaterial({ 
                     map: grassTexture,
                     roughness: 0.9, 
                     metalness: 0.05 
     });
-    
-                // توسيع الأرضية إلى 600x600
+
                 const geo = new THREE.PlaneGeometry(600, 600, 80, 80); 
                 geo.rotateX(-Math.PI / 2); 
                 const ground = new THREE.Mesh(geo, groundMat); 
                 ground.receiveShadow = true; 
                 this.scene.add(ground); 
-    
-                // ==================== جدار الفريق الأحمر (يسار) ====================
+
+                // ==================== جدار الفريق الأحمر (يسار) - يكون من جهة العدو ====================
                 const wallMaterial = new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.7 });
     
-                const redWall = new THREE.Mesh(new THREE.BoxGeometry(22, 4, 2.5), wallMaterial);
-                redWall.position.set(-95, 2, -85);
+                // جدار الفريق الأحمر (جهة اليسار) - حجم مضاعف
+                const redWall = new THREE.Mesh(new THREE.BoxGeometry(30, 6, 3), wallMaterial);
+                redWall.position.set(-85, 3, -70);
                 redWall.castShadow = true;
                 redWall.receiveShadow = true;
                 this.scene.add(redWall);
                 this.obstacles.push(redWall);
-    
-                const redTowerLeft = new THREE.Mesh(new THREE.BoxGeometry(3, 6, 3), wallMaterial);
-                redTowerLeft.position.set(-106, 3, -78);
-                redTowerLeft.castShadow = true;
-                this.scene.add(redTowerLeft);
-                this.obstacles.push(redTowerLeft);
-    
-                const redTowerRight = new THREE.Mesh(new THREE.BoxGeometry(3, 6, 3), wallMaterial);
-                redTowerRight.position.set(-84, 3, -92);
-                redTowerRight.castShadow = true;
-                this.scene.add(redTowerRight);
-                this.obstacles.push(redTowerRight);
-    
-                // ==================== جدار الفريق الأزرق (يمين) ====================
-                const blueWall = new THREE.Mesh(new THREE.BoxGeometry(22, 4, 2.5), wallMaterial);
-                blueWall.position.set(95, 2, 85);
+
+                // ==================== جدار الفريق الأزرق (يمين) - يكون من جهة العدو ====================
+                const blueWall = new THREE.Mesh(new THREE.BoxGeometry(30, 6, 3), wallMaterial);
+                blueWall.position.set(85, 3, 70);
                 blueWall.castShadow = true;
                 blueWall.receiveShadow = true;
                 this.scene.add(blueWall);
                 this.obstacles.push(blueWall);
     
-                const blueTowerLeft = new THREE.Mesh(new THREE.BoxGeometry(3, 6, 3), wallMaterial);
-                blueTowerLeft.position.set(84, 3, 78);
-                blueTowerLeft.castShadow = true;
-                this.scene.add(blueTowerLeft);
-                this.obstacles.push(blueTowerLeft);
-    
-                const blueTowerRight = new THREE.Mesh(new THREE.BoxGeometry(3, 6, 3), wallMaterial);
-                blueTowerRight.position.set(106, 3, 92);
-                blueTowerRight.castShadow = true;
-                this.scene.add(blueTowerRight);
-                this.obstacles.push(blueTowerRight);
-    
                 // ==================== إضافة عشب حول الجدران ====================
                 const grassMat = new THREE.MeshStandardMaterial({ color: 0x4a8b4a });
-    
-                for (let i = 0; i < 100; i++) {
-                    const xRed = -95 + (Math.random() - 0.5) * 30;
-                    const zRed = -85 + (Math.random() - 0.5) * 25;
+
+                for (let i = 0; i < 80; i++) {
+                    const xRed = -85 + (Math.random() - 0.5) * 35;
+                    const zRed = -70 + (Math.random() - 0.5) * 25;
                     const grassRed = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.5, 0.45, 4), grassMat);
                     grassRed.position.set(xRed, 0.1, zRed);
                     grassRed.castShadow = true;
                     this.scene.add(grassRed);
-        
-                    const xBlue = 95 + (Math.random() - 0.5) * 30;
-                    const zBlue = 85 + (Math.random() - 0.5) * 25;
+
+                    const xBlue = 85 + (Math.random() - 0.5) * 35;
+                    const zBlue = 70 + (Math.random() - 0.5) * 25;
                     const grassBlue = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.5, 0.45, 4), grassMat);
                     grassBlue.position.set(xBlue, 0.1, zBlue);
                     grassBlue.castShadow = true;
@@ -891,8 +867,7 @@
             
             createObstacles() {
                 const rockMat = new THREE.MeshStandardMaterial({ color: 0x6a6a5a, roughness: 0.75 });
-    
-                // زيادة حجم وتباعد الصخور (3 أضعاف الحجم، ضعف التباعد)
+
                 const positions = [
                     { x: -90, z: -70, scale: 3.5 }, { x: -70, z: 40, scale: 4.0 }, { x: -40, z: -95, scale: 3.2 },
                     { x: 20, z: -85, scale: 3.8 }, { x: 85, z: -50, scale: 4.2 }, { x: 95, z: 20, scale: 3.5 },
@@ -903,31 +878,31 @@
                     { x: 0, z: -110, scale: 4.0 }, { x: -110, z: 0, scale: 4.5 }, { x: 110, z: -30, scale: 3.8 },
                     { x: 30, z: 110, scale: 3.5 }, { x: -95, z: 85, scale: 4.0 }, { x: 95, z: 95, scale: 4.2 }
     ];
-    
+
                 positions.forEach(pos => {
-                    const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(1.5), rockMat);
-                    rock.scale.set(pos.scale, pos.scale * 0.8, pos.scale);
-                    rock.position.set(pos.x, 0.8, pos.z);
+                    // استخدام BoxGeometry بدلاً من DodecahedronGeometry للتصادم الأفضل
+                    const rock = new THREE.Mesh(new THREE.BoxGeometry(pos.scale * 1.2, pos.scale * 0.9, pos.scale * 1.2), rockMat);
+                    rock.position.set(pos.x, pos.scale * 0.5, pos.z);
                     rock.castShadow = true;
                     rock.receiveShadow = true;
                     this.scene.add(rock);
                     this.obstacles.push(rock);
         
-                    // إضافة صخور صغيرة حول الصخور الكبيرة
-                    for (let i = 0; i < 5; i++) {
-                        const smallRock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.8), rockMat);
+        // إضافة صخور صغيرة حول الصخور الكبيرة (كزينة فقط، بدون تصادم)
+                    for (let i = 0; i < 4; i++) {
+                        const smallRock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.6), rockMat);
                         const angle = Math.random() * Math.PI * 2;
-                        const radius = 2.5 + Math.random() * 2;
-                        smallRock.scale.set(0.8, 0.6, 0.8);
+                        const radius = pos.scale * 0.8 + Math.random() * 1.5;
+                        smallRock.scale.set(0.7, 0.5, 0.7);
                         smallRock.position.set(
                             pos.x + Math.cos(angle) * radius, 
-                            0.4, 
+                            0.3, 
                             pos.z + Math.sin(angle) * radius
             );
                         smallRock.castShadow = true;
                         smallRock.receiveShadow = true;
                         this.scene.add(smallRock);
-                        this.obstacles.push(smallRock);
+                        // لا نضيف الصخور الصغيرة إلى obstacles لتجنب التصادم غير المرئي
         }
     });
 }
@@ -1316,9 +1291,18 @@
 }
             checkCollision(tank) { 
                 const box = new THREE.Box3().setFromObject(tank); 
-                for(let obs of this.obstacles) if(box.intersectsBox(new THREE.Box3().setFromObject(obs))) return true; 
-                return false; 
+                for(let obs of this.obstacles) {
+                    if(obs && obs.isObject3D) {
+                        try {
+                            const obsBox = new THREE.Box3().setFromObject(obs);
+                            if(box.intersectsBox(obsBox)) return true;
+                        } catch(e) {
+                            // تجاهل الأخطاء
             }
+        }
+    }
+                return false; 
+}
             
             updateCounts() { 
                 this.team1Count = 0; this.team2Count = 0; 
