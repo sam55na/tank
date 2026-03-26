@@ -880,23 +880,23 @@
     
                 // مجموعة المدفع
                 const barrelGroup = new THREE.Group();
-                barrelGroup.position.set(1, 0, 0);
+                barrelGroup.position.set(0, 0, 1.8);
                 turretGroup.add(barrelGroup);
-    
-                // المدفع
+
+// المدفع
                 const barrelGeometry = new THREE.CylinderGeometry(0.15, 0.2, 4.5, 32);
                 const barrel = new THREE.Mesh(barrelGeometry, barrelMaterial);
-                barrel.rotation.z = Math.PI / 2;
-                barrel.position.x = 2.25;
+                barrel.rotation.x = Math.PI / 2;
+                barrel.position.z = 2.25;
                 barrel.castShadow = true;
                 barrel.receiveShadow = true;
                 barrelGroup.add(barrel);
-    
-                // فوهة المدفع
+
+// فوهة المدفع
                 const muzzleGeometry = new THREE.CylinderGeometry(0.25, 0.25, 0.6, 32);
                 const muzzle = new THREE.Mesh(muzzleGeometry, barrelMaterial);
-                muzzle.rotation.z = Math.PI / 2;
-                muzzle.position.x = 4.5;
+                muzzle.rotation.x = Math.PI / 2;
+                muzzle.position.z = 4.5;
                 muzzle.castShadow = true;
                 muzzle.receiveShadow = true;
                 barrelGroup.add(muzzle);
