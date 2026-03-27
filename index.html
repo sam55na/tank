@@ -655,249 +655,8 @@
         }
         
         .fullscreen-btn:active {
-            transform: scale(0.95);}
-        /* ==================== الشريط العلوي الجديد ==================== */
-        /* ==================== الشريط العلوي المتجاوب ==================== */
-        .top-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: clamp(50px, 8vh, 70px);
-            background: linear-gradient(135deg, rgba(0,0,0,0.85) 0%, rgba(20,30,45,0.9) 100%);
-            backdrop-filter: blur(15px);
-            border-bottom: 2px solid rgba(212, 175, 55, 0.4);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 clamp(10px, 3vw, 25px);
-            z-index: 1000;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-        .balance-section {
-            background: linear-gradient(135deg, #2ecc71, #27ae60);
-            padding: clamp(4px, 1.5vh, 8px) clamp(12px, 2.5vw, 20px);
-            border-radius: 40px;
-            display: flex;
-            align-items: center;
-            gap: clamp(6px, 1.5vw, 12px);
-            box-shadow: 0 4px 15px rgba(46,204,113,0.3);
-            border: 1px solid rgba(255,255,255,0.2);
-            transition: all 0.3s ease;
-}
-
-        .balance-icon {
-            font-size: clamp(16px, 4vw, 24px);
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-}
-
-        .balance-amount {
-            font-size: clamp(14px, 4vw, 24px);
-            font-weight: bold;
-            color: white;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-            letter-spacing: 1px;
-}
-
-        .balance-label {
-            font-size: clamp(8px, 2.5vw, 12px);
-            color: rgba(255,255,255,0.8);
-            margin-right: 3px;
-}
-
-        .logo-section {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            white-space: nowrap;
-}
-
-        .neon-title {
-            font-size: clamp(16px, 5vw, 32px);
-            font-weight: bold;
-            font-family: 'Segoe UI', 'Cairo', monospace;
-            letter-spacing: clamp(2px, 1vw, 4px);
-            background: linear-gradient(135deg, #d4af37, #ffd700, #b8860b);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            text-shadow: 0 0 10px rgba(212,175,55,0.5);
-            animation: neonPulse 2s ease-in-out infinite;
-            white-space: nowrap;
-            transition: all 0.3s ease;
-}
-
-        .stats-section {
-            background: rgba(0,0,0,0.6);
-            padding: clamp(4px, 1.5vh, 8px) clamp(12px, 2.5vw, 20px);
-            border-radius: 40px;
-            display: flex;
-            align-items: center;
-            gap: clamp(12px, 3vw, 20px);
-            border: 1px solid rgba(212,175,55,0.3);
-            backdrop-filter: blur(5px);
-            transition: all 0.3s ease;
-}
-
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: clamp(4px, 1vw, 8px);
-}
-
-        .stat-icon {
-            font-size: clamp(12px, 3.5vw, 20px);
-}
-
-        .stat-value {
-            font-size: clamp(12px, 3.5vw, 20px);
-            font-weight: bold;
-            color: #d4af37;
-}
-
-        .stat-label {
-            font-size: clamp(8px, 2.5vw, 12px);
-            color: rgba(255,255,255,0.7);
-}
-
-        .main-screen {
-            padding-top: clamp(50px, 8vh, 70px);
-}
-
-        .main-screen h2 {
-    display: none;
-}
-
-        /* للشاشات الصغيرة جداً */
-        @media (max-width: 480px) {
-            .balance-section {
-                padding: 4px 10px;
-    }
-    
-            .balance-icon {
-                font-size: 14px;
-    }
-    
-            .balance-amount {
-                font-size: 12px;
-    }
-    
-            .balance-label {
-                font-size: 8px;
-    }
-    
-            .neon-title {
-                font-size: 14px;
-                letter-spacing: 1px;
-    }
-    
-            .stats-section {
-                padding: 4px 10px;
-                gap: 8px;
-    }
-    
-            .stat-icon {
-                font-size: 10px;
-    }
-    
-            .stat-value {
-                font-size: 10px;
-    }
-    
-            .stat-label {
-                font-size: 7px;
-    }
-}
-
-        /* للشاشات المتوسطة */
-        @media (min-width: 481px) and (max-width: 768px) {
-            .balance-icon {
-                font-size: 18px;
-    }
-    
-            .balance-amount {
-                font-size: 16px;
-    }
-    
-            .neon-title {
-                font-size: 20px;
-                letter-spacing: 2px;
-    }
-    
-            .stat-icon {
-                font-size: 14px;
-    }
-    
-            .stat-value {
-                font-size: 14px;
-    }
-}
-
-        /* للشاشات الكبيرة */
-        @media (min-width: 1200px) {
-            .balance-icon {
-                font-size: 28px;
-    }
-    
-            .balance-amount {
-                font-size: 28px;
-    }
-    
-            .neon-title {
-                font-size: 38px;
-                letter-spacing: 6px;
-    }
-    
-            .stat-icon {
-                font-size: 24px;
-    }
-    
-            .stat-value {
-                font-size: 24px;
-    }
-    
-    .        stat-label {
-                font-size: 14px;
-    }
-}
-
-/* تحسين للشاشات الأفقية على الجوال */
-        @media (orientation: landscape) and (max-height: 500px) {
-            .top-bar {
-                height: clamp(40px, 10vh, 50px);
-    }
-    
-            .main-screen {
-                padding-top: clamp(40px, 10vh, 50px);
-    }
-    
-            .balance-section,
-            .stats-section {
-                padding: 3px 8px;
-    }
-    
-            .balance-icon {
-        font-size: 14px;
-    }
-    
-            .balance-amount {
-                font-size: 12px;
-    }
-    
-            .neon-title {
-                font-size: 14px;
-    }
-    
-            .stat-icon {
-                font-size: 12px;
-    }
-    
-            .stat-value {
-                font-size: 12px;
-    }
-}
+            transform: scale(0.95);
+        }
     </style>
 </head>
 <body>
@@ -906,40 +665,7 @@
         <h2 style="color:#d4af37;">يرجى تدوير الجهاز</h2>
         <p style="color:#aaa;">المعركة تعمل في الوضع الأفقي فقط</p>
     </div>
-    
-    
-    <div class="top-bar" id="topBar">
-        <div class="balance-section">
-            <span class="balance-icon">💲</span>
-            <div>
-                <span class="balance-label">الرصيد</span>
-                <span class="balance-amount" id="topBalance">0</span>
-                <span class="balance-label">$</span>
-            </div>
-        </div>
-        <div class="logo-section">
-            <div class="neon-title">⚡ TANKS WAR ⚡</div>
-        </div>
-        <div class="stats-section">
-            <div class="stat-item">
-                <span class="stat-icon">🎮</span>
-                <div>
-                    <span class="stat-value" id="topGamesPlayed">0</span>
-                    <span class="stat-label">مباراة</span>
-                </div>
-            </div>
-            <div class="stat-item">
-                <span class="stat-icon">🏆</span>
-                <div>
-                    <span class="stat-value" id="topWins">0</span>
-                    <span class="stat-label">فوز</span>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    
-    
+
     <div class="login-screen" id="loginScreen">
         <div class="login-container">
             <h1>⚔️ BATTLE TANKS</h1>
@@ -1071,18 +797,6 @@
         let isAdmin = false;
         let gameSettings = { seatPrice: 1, maxPlayers: 2 };
         let isFullscreen = false;
-        
-        
-        function updateTopBar(balance, gamesPlayed, wins) {
-            const topBalanceEl = document.getElementById('topBalance');
-            const topGamesPlayedEl = document.getElementById('topGamesPlayed');
-            const topWinsEl = document.getElementById('topWins');
-    
-            if (topBalanceEl) topBalanceEl.innerText = balance || 0;
-            if (topGamesPlayedEl) topGamesPlayedEl.innerText = gamesPlayed || 0;
-            if (topWinsEl) topWinsEl.innerText = wins || 0;
-}
-        
         
         class AudioEngine {
             constructor() { this.ctx = null; this.engineOsc = null; this.engineGain = null; }
@@ -1754,8 +1468,6 @@
                     document.getElementById('gameUsername').innerText = data.username || data.email.split('@')[0];
                     document.getElementById('gamesPlayed').innerText = data.gamesPlayed || 0;
                     document.getElementById('wins').innerText = data.wins || 0;
-                    updateTopBar(currentBalance, data.gamesPlayed || 0, data.wins || 0);
-                    
                     if(isAdmin) document.getElementById('adminBtn').style.display = 'block';
                     this.showMainScreen();
                 });
@@ -1769,11 +1481,6 @@
                     currentBalance = data.balance;
                     document.getElementById('balance').innerText = currentBalance;
                     document.getElementById('gameBalance').innerText = currentBalance;
-    
-                    updateTopBar(currentBalance, 
-                        parseInt(document.getElementById('gamesPlayed')?.innerText || 0), 
-                        parseInt(document.getElementById('wins')?.innerText || 0));
-    
                     if(data.settings) {
                         gameSettings = data.settings;
                         document.getElementById('seatPrice').value = data.settings.seatPrice;
@@ -1798,7 +1505,7 @@
                         document.getElementById('lobbyStatus').innerHTML = '🚀 اكتملت المقاعد! جاري بدء المعركة...';
     }
 });
-
+                
                 socket.on('game_start', (data) => {
                     if(window.innerHeight > window.innerWidth) {
                         const warning = document.getElementById('landscapeWarning');
@@ -1810,23 +1517,20 @@
                                 warning.style.display = 'none';
                                 this._startGame(this.pendingGameStart);
                                 this.pendingGameStart = null;
-            }
+                            }
                         }, 200);
                     } else {
                         this._startGame(data);
-    }
-});
-
+                    }
+                });
+                
                 socket.on('game_ended', (data) => {
                     this.endBattle(data.winner || (data.yourTeam === 1 ? 'الفريق الأزرق' : 'الفريق الأحمر'));
                     if(data.reward) {
                         currentBalance = data.yourBalance;
                         document.getElementById('balance').innerText = currentBalance;
-    }
-                    updateTopBar(currentBalance, 
-                        parseInt(document.getElementById('gamesPlayed')?.innerText || 0), 
-                        parseInt(document.getElementById('wins')?.innerText || 0));
-});
+                    }
+                });
                 
                 socket.on('player_moved', (data) => {
                     if(this.sim && this.sim.gameActive) this.sim.updateOtherPlayer(data);
@@ -2351,3 +2055,4 @@
     </script>
 </body>
 </html>
+
