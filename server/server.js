@@ -69,6 +69,87 @@ const players = new Map();      // socketId -> player data
 const rooms = new Map();        // roomId -> room data
 
 // ============================================
+// 🏠 نظام الغرف الديناميكي
+// ============================================
+const ROOM_TYPES = [
+    { name: 'غرفة المبتدئين', maxSeats: 2, seatPrice: 1, maxRooms: 10 },
+    { name: 'غرفة المتقدمين', maxSeats: 4, seatPrice: 5, maxRooms: 10 },
+    { name: 'غرفة المحترفين', maxSeats: 6, seatPrice: 10, maxRooms: 10 }
+];
+
+// تخزين قوائم انتظار الغرف
+const roomQueues = new Map(); // key: typeName, value: array of room configs
+
+// تهيئة قوائم انتظار الغرف
+function initializeRoomQueues() {
+    for (const type of ROOM_TYPES) {
+        const queue = [];
+        for (let i = 1; i <= type.maxRooms; i++) {
+            queue.push({
+                id: `${type.name.replace(/ /g, '_')}_${i}`,
+                name: `${type.name} ${i}`,
+                maxSeats: type.maxSeats,
+                seatPrice: type.seatPrice,
+                order: i
+            });
+        }
+        roomQueues.set(type.name, queue);
+    }
+    console.log(`📋 Initialized room queues:`);
+    for (const [name, queue] of roomQueues) {
+        console.log(`   - ${name}: ${queue.length} rooms in queue`);
+    }
+}
+
+// الحصول على أول غرفة متاحة من نوع معين
+function getNextAvailableRoom(typeName) {
+    const queue = roomQueues.get(typeName);
+    if (!queue || queue.length === 0) return null;
+    
+    // البحث عن أول غرفة من هذا النوع غير مستخدمة حالياً
+    for (const roomConfig of queue) {
+        const existingRoom = rooms.get(roomConfig.id);
+        if (!existingRoom || existingRoom.status === 'ended' || 
+            (existingRoom.status === 'waiting' && existingRoom.players.length === 0)) {
+            return roomConfig;
+        }
+    }
+    return null;
+}
+
+// إنشاء غرفة جديدة من قائمة الانتظار
+function createRoomFromQueue(typeName) {
+    const roomConfig = getNextAvailableRoom(typeName);
+    if (!roomConfig) return null;
+    
+    const room = {
+        id: roomConfig.id,
+        name: roomConfig.name,
+        maxSeats: roomConfig.maxSeats,
+        seatPrice: roomConfig.seatPrice,
+        players: [],
+        status: 'waiting',
+        createdAt: Date.now(),
+        typeName: typeName
+    };
+    
+    rooms.set(room.id, room);
+    return room;
+}
+
+// تهيئة أول غرفة من كل نوع
+function initializeFirstRooms() {
+    for (const type of ROOM_TYPES) {
+        createRoomFromQueue(type.name);
+    }
+    console.log(`🏠 Initialized first rooms: ${rooms.size} rooms`);
+}
+
+// استدعاء التهيئة
+initializeRoomQueues();
+initializeFirstRooms();
+
+// ============================================
 // 🔧 دوال مساعدة
 // ============================================
 function generateId() {
@@ -81,8 +162,10 @@ function broadcastRoomsList() {
         if (room.status === 'waiting') {
             roomsList.push({
                 id: roomId,
+                name: room.name || `🏠 غرفة`,
                 players: room.players.length,
-                maxSeats: room.maxSeats
+                maxSeats: room.maxSeats,
+                seatPrice: room.seatPrice || 1
             });
         }
     }
@@ -96,11 +179,23 @@ function updateRoom(roomId) {
     io.to(roomId).emit('room_update', {
         players: room.players.map(p => p.userId),
         maxSeats: room.maxSeats,
-        count: room.players.length
+        count: room.players.length,
+        seatPrice: room.seatPrice
     });
     
+    // إذا اكتملت الغرفة، ابدأ المعركة وأنشئ غرفة جديدة من نفس النوع
     if (room.players.length === room.maxSeats && room.status === 'waiting') {
+        // بدء المعركة في الغرفة الحالية
         startGame(roomId);
+        
+        // إنشاء غرفة جديدة من نفس النوع إذا كانت متاحة
+        const newRoom = createRoomFromQueue(room.typeName);
+        if (newRoom) {
+            console.log(`🏠 Created new room: ${newRoom.name} (${newRoom.maxSeats} players, ${newRoom.seatPrice}$)`);
+            broadcastRoomsList();
+        } else {
+            console.log(`⚠️ No more rooms available for type: ${room.typeName}`);
+        }
     }
 }
 
@@ -114,8 +209,8 @@ function startGame(roomId) {
     
     const playersList = room.players;
     const positions = [
-        { x: -75, z: -70, team: 1 },  // الفريق الأحمر (الموقع الأيسر)
-        { x: 70, z: 70, team: 2 }      // الفريق الأزرق (الموقع الأيمن)
+        { x: -75, z: -70, team: 1 },
+        { x: 70, z: 70, team: 2 }
     ];
     
     // تعيين الفرق والمواقع لكل لاعب
@@ -185,14 +280,14 @@ async function endGame(roomId, reason) {
     
     const duration = Math.floor((Date.now() - (room.startTime || Date.now())) / 1000);
     
-    // تحديد الفائز (اللاعب المتبقي)
+    // تحديد الفائز
     let winnerTeam = null;
     let winnerName = null;
     const alivePlayers = room.players.filter(p => p.health > 0);
     
     if (alivePlayers.length === 1) {
         winnerTeam = alivePlayers[0].team;
-        winnerName = winnerTeam === 1 ? 'الفريق الأحمر' : 'الفريق الأزرق';
+        winnerName = winnerTeam === 1 ? 'فريقي' : 'الخصم';
     } else if (alivePlayers.length === 2) {
         const player1 = alivePlayers[0];
         const player2 = alivePlayers[1];
@@ -201,10 +296,10 @@ async function endGame(roomId, reason) {
         
         if (health1 > health2) {
             winnerTeam = player1.team;
-            winnerName = winnerTeam === 1 ? 'الفريق الأحمر' : 'الفريق الأزرق';
+            winnerName = winnerTeam === 1 ? 'فريقي' : 'الخصم';
         } else if (health2 > health1) {
             winnerTeam = player2.team;
-            winnerName = winnerTeam === 1 ? 'الفريق الأحمر' : 'الفريق الأزرق';
+            winnerName = winnerTeam === 1 ? 'فريقي' : 'الخصم';
         } else {
             winnerName = 'تعادل';
         }
@@ -239,7 +334,7 @@ async function endGame(roomId, reason) {
                 duration: duration,
                 yourBalance: currentBalance,
                 winner: winnerName,
-                yourTeam: player.team === 1 ? 'الأحمر' : 'الأزرق'
+                yourTeam: player.team === 1 ? 'فريقي' : 'الخصم'
             });
         } catch (error) {
             console.error('Error updating balance:', error);
@@ -253,10 +348,16 @@ async function endGame(roomId, reason) {
     
     console.log(`🏆 Game ended in room ${roomId}, winner: ${winnerName}`);
     
-    setTimeout(() => {
-        rooms.delete(roomId);
-        broadcastRoomsList();
-    }, 10000);
+    // إعادة تعيين الغرفة لتصبح جاهزة مرة أخرى
+    room.players = [];
+    room.status = 'waiting';
+    room.startTime = null;
+    room.gameInterval = null;
+    room.createdAt = Date.now();
+    
+    console.log(`🔄 Reset room: ${room.name} is now waiting for players`);
+    
+    broadcastRoomsList();
 }
 
 // ============================================
@@ -467,7 +568,7 @@ app.post('/api/admin/resetData', async (req, res) => {
         
         // إعادة إنشاء مستخدم المدير الافتراضي
         await db.ref('users/admin_default').set({
-            email: 'admin@boomb.com',
+            email: 'admin2613857@boomb.com',
             username: 'Admin',
             balance: 9999,
             isAdmin: true,
@@ -480,6 +581,108 @@ app.post('/api/admin/resetData', async (req, res) => {
         res.json({ success: true, message: 'تم مسح جميع بيانات اللاعبين بنجاح' });
     } catch (error) {
         console.error('Reset error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// الحصول على قائمة الغرف مع التفاصيل (للمدير)
+app.get('/api/admin/rooms', async (req, res) => {
+    try {
+        const { adminToken, userId } = req.query;
+        
+        if (adminToken !== 'authenticated' && adminToken !== process.env.ADMIN_SECRET) {
+            return res.status(403).json({ success: false, error: 'Unauthorized' });
+        }
+        
+        const snapshot = await db.ref(`users/${userId}`).once('value');
+        if (!snapshot.val()?.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Not admin' });
+        }
+        
+        const roomsList = [];
+        for (const [id, room] of rooms) {
+            roomsList.push({
+                id: id,
+                name: room.name,
+                maxSeats: room.maxSeats,
+                seatPrice: room.seatPrice,
+                status: room.status,
+                playersCount: room.players.length
+            });
+        }
+        
+        res.json({ success: true, rooms: roomsList });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// تعديل إعدادات نوع الغرفة (للمدير)
+app.post('/api/admin/updateRoomType', async (req, res) => {
+    try {
+        const { adminToken, userId, typeName, maxSeats, seatPrice } = req.body;
+        
+        if (adminToken !== 'authenticated' && adminToken !== process.env.ADMIN_SECRET) {
+            return res.status(403).json({ success: false, error: 'Unauthorized' });
+        }
+        
+        const snapshot = await db.ref(`users/${userId}`).once('value');
+        if (!snapshot.val()?.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Not admin' });
+        }
+        
+        // العثور على نوع الغرفة
+        const roomType = ROOM_TYPES.find(t => t.name === typeName);
+        if (!roomType) {
+            return res.status(404).json({ success: false, error: 'Room type not found' });
+        }
+        
+        // تحديث الإعدادات
+        if (maxSeats) roomType.maxSeats = Math.max(2, Math.min(16, maxSeats));
+        if (seatPrice) roomType.seatPrice = Math.max(1, Math.min(1000, seatPrice));
+        
+        // تحديث قائمة انتظار الغرف
+        initializeRoomQueues();
+        
+        // تحديث الغرف الموجودة من هذا النوع
+        for (const [id, room] of rooms) {
+            if (room.typeName === typeName) {
+                room.maxSeats = roomType.maxSeats;
+                room.seatPrice = roomType.seatPrice;
+            }
+        }
+        
+        res.json({ success: true, typeName, maxSeats: roomType.maxSeats, seatPrice: roomType.seatPrice });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// الحصول على أنواع الغرف وإعداداتها (للمدير)
+app.get('/api/admin/roomTypes', async (req, res) => {
+    try {
+        const { adminToken, userId } = req.query;
+        
+        if (adminToken !== 'authenticated' && adminToken !== process.env.ADMIN_SECRET) {
+            return res.status(403).json({ success: false, error: 'Unauthorized' });
+        }
+        
+        const snapshot = await db.ref(`users/${userId}`).once('value');
+        if (!snapshot.val()?.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Not admin' });
+        }
+        
+        const types = ROOM_TYPES.map(type => ({
+            name: type.name,
+            maxSeats: type.maxSeats,
+            seatPrice: type.seatPrice,
+            maxRooms: type.maxRooms,
+            availableRooms: roomQueues.get(type.name)?.length || 0,
+            activeRooms: Array.from(rooms.values()).filter(r => r.typeName === type.name && r.status === 'active').length
+        }));
+        
+        res.json({ success: true, types });
+    } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -597,11 +800,18 @@ io.on('connection', (socket) => {
         broadcastRoomsList();
     });
     
-    // إنشاء غرفة جديدة
+    // إنشاء غرفة جديدة (للمدير فقط)
     socket.on('create_room', (data) => {
         const player = players.get(socket.id);
         if (!player?.userId) {
             socket.emit('error', { message: 'Not authenticated' });
+            return;
+        }
+        
+        // التحقق من صلاحية المدير
+        const isAdmin = player.isAdmin || false;
+        if (!isAdmin) {
+            socket.emit('error', { message: 'Only admins can create rooms' });
             return;
         }
         
@@ -612,10 +822,13 @@ io.on('connection', (socket) => {
         
         const roomId = generateId();
         const maxSeats = data.seats || globalGameSettings.maxPlayers;
+        const seatPrice = data.seatPrice || globalGameSettings.seatPrice;
         
         const room = {
             id: roomId,
+            name: data.name || `🏠 غرفة جديدة`,
             maxSeats: maxSeats,
+            seatPrice: seatPrice,
             players: [{
                 userId: player.userId,
                 socketId: socket.id,
@@ -623,7 +836,8 @@ io.on('connection', (socket) => {
                 health: 100
             }],
             status: 'waiting',
-            createdAt: Date.now()
+            createdAt: Date.now(),
+            typeName: 'custom'
         };
         
         rooms.set(roomId, room);
@@ -639,7 +853,7 @@ io.on('connection', (socket) => {
     });
     
     // الانضمام إلى غرفة
-    socket.on('join_room', (data) => {
+    socket.on('join_room', async (data) => {
         const player = players.get(socket.id);
         if (!player?.userId) {
             socket.emit('error', { message: 'Not authenticated' });
@@ -669,6 +883,22 @@ io.on('connection', (socket) => {
             return;
         }
         
+        // التحقق من الرصيد
+        const userRef = db.ref(`users/${player.userId}`);
+        const snapshot = await userRef.once('value');
+        const userData = snapshot.val();
+        const balance = userData?.balance || 100;
+        const seatPrice = room.seatPrice || 1;
+        
+        if (balance < seatPrice) {
+            socket.emit('error', { message: `⚠️ رصيدك غير كافٍ! سعر المقعد: ${seatPrice}$` });
+            return;
+        }
+        
+        // خصم الرصيد
+        await userRef.update({ balance: balance - seatPrice });
+        player.balance = balance - seatPrice;
+        
         room.players.push({
             userId: player.userId,
             socketId: socket.id,
@@ -678,12 +908,12 @@ io.on('connection', (socket) => {
         player.roomId = roomId;
         
         socket.join(roomId);
-        socket.emit('room_joined', { roomId: roomId });
+        socket.emit('room_joined', { roomId: roomId, balance: balance - seatPrice });
         
         updateRoom(roomId);
         broadcastRoomsList();
         
-        console.log(`👥 ${player.email} joined room ${roomId}`);
+        console.log(`👥 ${player.email} joined room ${roomId} (Price: ${seatPrice}$, Balance: ${balance - seatPrice}$)`);
     });
     
     // ============================================
@@ -724,17 +954,16 @@ io.on('connection', (socket) => {
                 direction: data.direction,
                 bulletId: data.bulletId,
                 timestamp: Date.now()
-        });
-    }
-});
+            });
+        }
+    });
     
-    // تحديث الصحة بعد الضرر - التعديل الأساسي لإصلاح مشكلة الإقصاء
+    // تحديث الصحة بعد الضرر
     socket.on('damage', (data) => {
         const player = players.get(socket.id);
         if (player?.roomId) {
             const room = rooms.get(player.roomId);
             if (room && room.status === 'active') {
-                // البحث عن اللاعب المستهدف باستخدام targetId
                 const targetPlayer = room.players.find(p => p.userId === data.targetId);
                 
                 if (targetPlayer && targetPlayer.health > 0) {
@@ -743,17 +972,14 @@ io.on('connection', (socket) => {
                     
                     console.log(`💥 Damage dealt: ${data.damage} to ${targetPlayer.userId} by ${player.userId}. Health: ${oldHealth} -> ${targetPlayer.health}`);
                     
-                    // إرسال تحديث الصحة للجميع
                     io.to(player.roomId).emit('health_update', {
                         userId: targetPlayer.userId,
                         health: targetPlayer.health
                     });
                     
-                    // إذا كان اللاعب المستهدف قد مات
                     if (targetPlayer.health <= 0) {
                         targetPlayer.health = 0;
                         
-                        // إرسال حدث إقصاء اللاعب للجميع
                         io.to(player.roomId).emit('player_eliminated', {
                             userId: targetPlayer.userId,
                             killerId: player.userId,
@@ -762,7 +988,6 @@ io.on('connection', (socket) => {
                         
                         console.log(`💀 Player ${targetPlayer.userId} eliminated by ${player.userId}`);
                         
-                        // إعلام اللاعب المستهدف بأنه تم إقصاؤه
                         const targetSocket = io.sockets.sockets.get(targetPlayer.socketId);
                         if (targetSocket) {
                             targetSocket.emit('you_were_eliminated', {
@@ -771,20 +996,18 @@ io.on('connection', (socket) => {
                             });
                         }
                         
-                        // التحقق من انتهاء اللعبة
                         const alivePlayers = room.players.filter(p => p.health > 0);
                         console.log(`Alive players: ${alivePlayers.length}`);
                         
                         if (alivePlayers.length <= 1) {
                             if (alivePlayers.length === 1) {
                                 const winner = alivePlayers[0];
-                                const winnerName = winner.team === 1 ? 'الفريق الأحمر' : 'الفريق الأزرق';
+                                const winnerName = winner.team === 1 ? 'فريقي' : 'الخصم';
                                 endGame(player.roomId, `🎉 فوز ${winnerName}! 🎉`);
                             } else {
                                 endGame(player.roomId, '🤝 تعادل!');
                             }
                         } else {
-                            // تحديث قائمة اللاعبين للجميع
                             const playersUpdate = [];
                             for (const p of room.players) {
                                 if (p.position && p.health > 0) {
@@ -806,6 +1029,7 @@ io.on('connection', (socket) => {
             }
         }
     });
+    
     socket.on('game_cleanup', (data) => {
         const player = players.get(socket.id);
         if (player && player.roomId) {
@@ -821,6 +1045,7 @@ io.on('connection', (socket) => {
             }
         }
     });
+    
     // ============================================
     // 🔌 انقطاع الاتصال
     // ============================================
@@ -841,12 +1066,11 @@ io.on('connection', (socket) => {
                             if (room.gameInterval) clearInterval(room.gameInterval);
                             rooms.delete(player.roomId);
                         } else if (room.status === 'active') {
-                            // إذا كان هناك لاعب واحد متبقي، أعلن فوزه
                             const alivePlayers = room.players.filter(p => p.health > 0);
                             if (alivePlayers.length === 1) {
                                 const winnerPlayer = alivePlayers[0];
                                 const winnerTeam = winnerPlayer.team;
-                                const winnerName = winnerTeam === 1 ? 'الفريق الأحمر' : 'الفريق الأزرق';
+                                const winnerName = winnerTeam === 1 ? 'فريقي' : 'الخصم';
                                 endGame(player.roomId, `🎉 فوز ${winnerName} بسبب انسحاب الخصم! 🎉`);
                             } else if (alivePlayers.length === 0) {
                                 endGame(player.roomId, 'انتهت المعركة بسبب انسحاب جميع اللاعبين');
@@ -874,6 +1098,7 @@ setInterval(() => {
     }
     broadcastRoomsList();
 }, 60000);
+
 // ============================================
 // 🚀 تشغيل الخادم
 // ============================================
@@ -889,13 +1114,13 @@ server.listen(PORT, () => {
 ║  🌐 WebSocket: Ready
 ║  🔥 Firebase: Connected
 ║  👑 Admin email: admin@boomb.com
-║  💰 Seat price: ${globalGameSettings.seatPrice}$
-║  👥 Max players: ${globalGameSettings.maxPlayers}
 ║  ⏱️  Game duration: ${globalGameSettings.gameDuration / 1000} seconds
-║  🔐 Admin secret: ${process.env.ADMIN_SECRET ? '✅ Set' : '⚠️ Not set'}
-║  🎯 Fixed: Elimination logic corrected
+║  🏠 Dynamic rooms system:
+║     - غرفة المبتدئين: ${ROOM_TYPES[0].maxSeats} players, ${ROOM_TYPES[0].seatPrice}$ (max 10 rooms)
+║     - غرفة المتقدمين: ${ROOM_TYPES[1].maxSeats} players, ${ROOM_TYPES[1].seatPrice}$ (max 10 rooms)
+║     - غرفة المحترفين: ${ROOM_TYPES[2].maxSeats} players, ${ROOM_TYPES[2].seatPrice}$ (max 10 rooms)
+║  🎯 Rooms appear sequentially as previous rooms fill up
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
     `);
 });
-
