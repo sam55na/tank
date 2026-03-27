@@ -354,70 +354,85 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 20px;
-            height: 20px;
-            border: 1px solid white;
-            border-radius: 50%;
-            pointer-events: none;
+            width: clamp(30px, 5vw, 36px);
+            height: clamp(30px, 5vw, 36px);
+        }
+        .crosshair::before, .crosshair::after {
+            content: '';
+            position: absolute;
+            background: rgba(255,255,240,0.85);
+        }
+        .crosshair::before {
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            transform: translateY(-50%);
+        }
+        .crosshair::after {
+            top: 0;
+            left: 50%;
+            width: 2px;
+            height: 100%;
+            transform: translateX(-50%);
         }
 
         .controls {
             position: absolute;
-            bottom: 0;
-            left: 0;
+            bottom: clamp(20px, 5vh, 30px);
             width: 100%;
-            height: 150px;
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
+            padding: 0 clamp(10px, 5vw, 20px);
+            pointer-events: none;
         }
 
         .joystick-base {
-            width: 100px;
-            height: 100px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 50%;
+            width: clamp(80px, 20vw, 120px);
+            height: clamp(80px, 20vw, 120px);
+            background: rgba(0,0,0,0.6);
+            border: 2px solid #d4af37;
+            border-radius: 70px;
             position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             pointer-events: auto;
         }
 
         .joystick-handle {
-            width: 60px;
-            height: 60px;
-            background: rgba(255,255,255,0.5);
-            border-radius: 50%;
+            width: clamp(35px, 10vw, 52px);
+            height: clamp(35px, 10vw, 52px);
+            background: radial-gradient(circle, #d4af37, #b8860b);
+            border-radius: 30px;
             position: absolute;
-            transform: translate(-50%, -50%);
-            left: 50%;
             top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
         }
 
         .fire-btn {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            border-radius: 50%;
+            width: clamp(60px, 15vw, 80px);
+            height: clamp(60px, 15vw, 80px);
+            background: radial-gradient(circle, #e55, #a22);
+            border: 2px solid #d4af37;
+            border-radius: 50px;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 40px;
+            font-size: clamp(28px, 6vw, 36px);
+            color: white;
             cursor: pointer;
             pointer-events: auto;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            transition: transform 0.1s;
+            box-shadow: 0 0 12px rgba(255,0,0,0.4);
+            transition: transform 0.05s;
         }
 
         .fire-btn:active {
-            transform: scale(0.9);
+            transform: scale(0.95);
         }
 
         .report-screen {
             background: rgba(0,0,0,0.95);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
             display: none;
             justify-content: center;
             align-items: center;
@@ -425,14 +440,13 @@
         }
 
         .report-container {
-            background: linear-gradient(145deg, #111a24, #0a0f18);
+            background: linear-gradient(135deg, #1a1a2e, #0a0a1a);
             padding: clamp(20px, 5vw, 30px);
-            border-radius: 48px;
-            width: 90%;
-            max-width: 500px;
+            border-radius: 40px;
             text-align: center;
             border: 2px solid #d4af37;
-            color: white;
+            max-width: 400px;
+            width: 90%;
         }
 
         .report-container h2 {
@@ -442,58 +456,47 @@
         }
 
         .report-container p {
-            font-size: clamp(16px, 4vw, 20px);
-            margin-bottom: 20px;
-            line-height: 1.5;
+            color: white;
+            margin: 15px 0;
+            line-height: 1.8;
+            font-size: clamp(14px, 4vw, 16px);
         }
 
         .back-home-btn {
+            margin-top: 20px;
             padding: 12px 30px;
+            background: linear-gradient(135deg, #d4af37, #b8860b);
             border: none;
             border-radius: 30px;
+            font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 10px;
-            background: #d4af37;
-            transition: transform 0.2s;
-        }
-
-        .back-home-btn:active {
-            transform: scale(0.96);
         }
 
         .admin-panel {
-            background: rgba(0,0,0,0.95);
-            backdrop-filter: blur(10px);
+            background: rgba(0,0,0,0.96);
+            backdrop-filter: blur(8px);
             display: none;
             justify-content: center;
             align-items: center;
-            z-index: 4000;
+            z-index: 2000;
         }
 
         .admin-container {
-            background: linear-gradient(145deg, #111a24, #0a0f18);
+            background: linear-gradient(135deg, #121926, #080c14);
             padding: clamp(20px, 5vw, 30px);
-            border-radius: 48px;
+            border-radius: 40px;
             width: 90%;
             max-width: 500px;
-            text-align: center;
-            border: 2px solid #d4af37;
-            color: white;
+            max-height: 85vh;
+            overflow-y: auto;
+            border: 1px solid #d4af37;
         }
 
         .admin-container h3 {
             color: #d4af37;
             margin-bottom: 20px;
-            font-size: clamp(20px, 6vw, 28px);
-        }
-
-        .admin-container label {
-            display: block;
-            text-align: right;
-            margin-top: 15px;
-            margin-bottom: 5px;
-            color: #aaa;
+            font-size: clamp(20px, 5vw, 24px);
         }
 
         .admin-container input, .admin-container select {
@@ -654,1406 +657,6 @@
         .fullscreen-btn:active {
             transform: scale(0.95);
         }
-            /* New Top Bar */
-        .top-bar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
-            z-index: 100;
-        }
-
-        .top-bar .balance-info {
-            color: #2ecc71;
-            font-weight: bold;
-            font-size: clamp(14px, 4vw, 18px);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            flex: 1;
-        }
-
-        .top-bar .neon-title {
-            color: #fff;
-            font-size: clamp(18px, 5vw, 26px);
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 
-                0 0 5px #fff,
-                0 0 10px #fff,
-                0 0 20px #d4af37,
-                0 0 40px #d4af37;
-            animation: neonBlink 3s infinite alternate;
-            flex: 1;
-            text-align: center;
-            white-space: nowrap;
-        }
-
-        .top-bar .stats-info {
-            color: #aaa;
-            font-size: clamp(12px, 3vw, 16px);
-            display: flex;
-            gap: 10px;
-            flex: 1;
-            justify-content: flex-end;
-        }
-
-        @keyframes neonBlink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.8; text-shadow: 0 0 5px #fff, 0 0 10px #d4af37, 0 0 20px #d4af37; }
-        }
-
-        /* Game Icon */
-        .game-icon-container {
-            position: relative;
-            margin: 80px auto 30px;
-            width: 150px;
-            height: 150px;
-            border-radius: 30px;
-            background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
-            border: 2px solid #d4af37;
-            box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            animation: wobble 4s ease-in-out infinite;
-        }
-
-        .game-icon-container::after {
-            content: \'\';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
-            transform: rotate(45deg);
-            animation: shine 3s infinite;
-        }
-
-        .tank-icon {
-            width: 80px;
-            height: 80px;
-            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)) invert(75%) sepia(43%) saturate(485%) hue-rotate(5deg) brightness(95%) contrast(88%);
-        }
-
-        @keyframes wobble {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            25% { transform: translateY(-5px) rotate(-2deg); }
-            75% { transform: translateY(5px) rotate(2deg); }
-        }
-
-        @keyframes shine {
-            0% { transform: translateX(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) rotate(45deg); }
-        }
-
-        /* Main Screen Layout */
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            max-width: 400px;
-            padding: 0 20px;
-            margin-top: 60px;
-        }
-
-        .play-btn-container {
-            width: 100%;
-            margin-bottom: 20px;
-        }
-
-        .play-btn {
-            width: 100%;
-            padding: 18px;
-            font-size: 24px;
-            background: linear-gradient(135deg, #d4af37, #b8860b);
-            border: none;
-            border-radius: 20px;
-            color: white;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 10px 20px rgba(212, 175, 55, 0.3);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .play-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 25px rgba(212, 175, 55, 0.4);
-        }
-
-        .wallet-btn-container {
-            width: 100%;
-        }
-
-        .wallet-btn {
-            width: 100%;
-            padding: 15px;
-            font-size: 18px;
-            background: rgba(46, 204, 113, 0.1);
-            border: 1px solid #2ecc71;
-            border-radius: 15px;
-            color: #2ecc71;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .wallet-btn:hover {
-            background: rgba(46, 204, 113, 0.2);
-        }
-
-        /* Seats Screen */
-        .room-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.95);
-            backdrop-filter: blur(10px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-        }
-
-        .room-container {
-            background: linear-gradient(145deg, #111a24, #0a0f18);
-            padding: clamp(20px, 5vw, 30px);
-            border-radius: 48px;
-            width: 90%;
-            max-width: 600px;
-            text-align: center;
-            border: 2px solid #d4af37;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .room-container h2 {
-            color: #d4af37;
-            margin-bottom: 10px;
-        }
-
-        .teams-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            width: 100%;
-            margin: 20px 0;
-        }
-
-        .team-section {
-            background: rgba(0,0,0,0.3);
-            border-radius: 20px;
-            padding: 15px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .team-red { border-top: 3px solid #e74c3c; }
-        .team-blue { border-top: 3px solid #3498db; }
-
-        .team-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-
-        .team-red .team-header { color: #e74c3c; }
-        .team-blue .team-header { color: #3498db; }
-
-        .seats-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-            gap: 10px;
-        }
-
-        .seat-btn {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 12px;
-            padding: 10px 5px;
-            color: white;
-            font-size: 12px;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.2s;
-        }
-
-        .seat-btn:hover:not(:disabled) {
-            background: rgba(255,255,255,0.1);
-            transform: translateY(-2px);
-        }
-
-        .seat-btn.occupied {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .seat-btn.my-seat {
-            border-color: #d4af37;
-            background: rgba(212, 175, 55, 0.2);
-        }
-
-        .seat-icon {
-            font-size: 24px;
-        }
-
-        .leave-room-btn {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 15px;
-            display: none;
-        }
-
-        .leave-room-btn:disabled {
-            background: #555;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-            /* New Top Bar */
-        .top-bar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
-            z-index: 100;
-        }
-
-        .top-bar .balance-info {
-            color: #2ecc71;
-            font-weight: bold;
-            font-size: clamp(14px, 4vw, 18px);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            flex: 1;
-        }
-
-        .top-bar .neon-title {
-            color: #fff;
-            font-size: clamp(18px, 5vw, 26px);
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 
-                0 0 5px #fff,
-                0 0 10px #fff,
-                0 0 20px #d4af37,
-                0 0 40px #d4af37;
-            animation: neonBlink 3s infinite alternate;
-            flex: 1;
-            text-align: center;
-            white-space: nowrap;
-        }
-
-        .top-bar .stats-info {
-            color: #aaa;
-            font-size: clamp(12px, 3vw, 16px);
-            display: flex;
-            gap: 10px;
-            flex: 1;
-            justify-content: flex-end;
-        }
-
-        @keyframes neonBlink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.8; text-shadow: 0 0 5px #fff, 0 0 10px #d4af37, 0 0 20px #d4af37; }
-        }
-
-        /* Game Icon */
-        .game-icon-container {
-            position: relative;
-            margin: 80px auto 30px;
-            width: 150px;
-            height: 150px;
-            border-radius: 30px;
-            background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
-            border: 2px solid #d4af37;
-            box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            animation: wobble 4s ease-in-out infinite;
-        }
-
-        .game-icon-container::after {
-            content: \'\';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
-            transform: rotate(45deg);
-            animation: shine 3s infinite;
-        }
-
-        .tank-icon {
-            width: 80px;
-            height: 80px;
-            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)) invert(75%) sepia(43%) saturate(485%) hue-rotate(5deg) brightness(95%) contrast(88%);
-        }
-
-        @keyframes wobble {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            25% { transform: translateY(-5px) rotate(-2deg); }
-            75% { transform: translateY(5px) rotate(2deg); }
-        }
-
-        @keyframes shine {
-            0% { transform: translateX(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) rotate(45deg); }
-        }
-
-        /* Main Screen Layout */
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            max-width: 400px;
-            padding: 0 20px;
-            margin-top: 60px;
-        }
-
-        .play-btn-container {
-            width: 100%;
-            margin-bottom: 20px;
-        }
-
-        .play-btn {
-            width: 100%;
-            padding: 18px;
-            font-size: 24px;
-            background: linear-gradient(135deg, #d4af37, #b8860b);
-            border: none;
-            border-radius: 20px;
-            color: white;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 10px 20px rgba(212, 175, 55, 0.3);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .play-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 25px rgba(212, 175, 55, 0.4);
-        }
-
-        .wallet-btn-container {
-            width: 100%;
-        }
-
-        .wallet-btn {
-            width: 100%;
-            padding: 15px;
-            font-size: 18px;
-            background: rgba(46, 204, 113, 0.1);
-            border: 1px solid #2ecc71;
-            border-radius: 15px;
-            color: #2ecc71;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .wallet-btn:hover {
-            background: rgba(46, 204, 113, 0.2);
-        }
-
-        /* Seats Screen */
-        .room-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.95);
-            backdrop-filter: blur(10px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-        }
-
-        .room-container {
-            background: linear-gradient(145deg, #111a24, #0a0f18);
-            padding: clamp(20px, 5vw, 30px);
-            border-radius: 48px;
-            width: 90%;
-            max-width: 600px;
-            text-align: center;
-            border: 2px solid #d4af37;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .room-container h2 {
-            color: #d4af37;
-            margin-bottom: 10px;
-        }
-
-        .teams-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            width: 100%;
-            margin: 20px 0;
-        }
-
-        .team-section {
-            background: rgba(0,0,0,0.3);
-            border-radius: 20px;
-            padding: 15px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .team-red { border-top: 3px solid #e74c3c; }
-        .team-blue { border-top: 3px solid #3498db; }
-
-        .team-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-
-        .team-red .team-header { color: #e74c3c; }
-        .team-blue .team-header { color: #3498db; }
-
-        .seats-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-            gap: 10px;
-        }
-
-        .seat-btn {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 12px;
-            padding: 10px 5px;
-            color: white;
-            font-size: 12px;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.2s;
-        }
-
-        .seat-btn:hover:not(:disabled) {
-            background: rgba(255,255,255,0.1);
-            transform: translateY(-2px);
-        }
-
-        .seat-btn.occupied {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .seat-btn.my-seat {
-            border-color: #d4af37;
-            background: rgba(212, 175, 55, 0.2);
-        }
-
-        .seat-icon {
-            font-size: 24px;
-        }
-
-        .leave-room-btn {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 15px;
-            display: none;
-        }
-
-        .leave-room-btn:disabled {
-            background: #555;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-            /* New Top Bar */
-        .top-bar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
-            z-index: 100;
-        }
-
-        .top-bar .balance-info {
-            color: #2ecc71;
-            font-weight: bold;
-            font-size: clamp(14px, 4vw, 18px);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            flex: 1;
-        }
-
-        .top-bar .neon-title {
-            color: #fff;
-            font-size: clamp(18px, 5vw, 26px);
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 
-                0 0 5px #fff,
-                0 0 10px #fff,
-                0 0 20px #d4af37,
-                0 0 40px #d4af37;
-            animation: neonBlink 3s infinite alternate;
-            flex: 1;
-            text-align: center;
-            white-space: nowrap;
-        }
-
-        .top-bar .stats-info {
-            color: #aaa;
-            font-size: clamp(12px, 3vw, 16px);
-            display: flex;
-            gap: 10px;
-            flex: 1;
-            justify-content: flex-end;
-        }
-
-        @keyframes neonBlink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.8; text-shadow: 0 0 5px #fff, 0 0 10px #d4af37, 0 0 20px #d4af37; }
-        }
-
-        /* Game Icon */
-        .game-icon-container {
-            position: relative;
-            margin: 80px auto 30px;
-            width: 150px;
-            height: 150px;
-            border-radius: 30px;
-            background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
-            border: 2px solid #d4af37;
-            box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            animation: wobble 4s ease-in-out infinite;
-        }
-
-        .game-icon-container::after {
-            content: \'\';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
-            transform: rotate(45deg);
-            animation: shine 3s infinite;
-        }
-
-        .tank-icon {
-            width: 80px;
-            height: 80px;
-            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)) invert(75%) sepia(43%) saturate(485%) hue-rotate(5deg) brightness(95%) contrast(88%);
-        }
-
-        @keyframes wobble {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            25% { transform: translateY(-5px) rotate(-2deg); }
-            75% { transform: translateY(5px) rotate(2deg); }
-        }
-
-        @keyframes shine {
-            0% { transform: translateX(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) rotate(45deg); }
-        }
-
-        /* Main Screen Layout */
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            max-width: 400px;
-            padding: 0 20px;
-            margin-top: 60px;
-        }
-
-        .play-btn-container {
-            width: 100%;
-            margin-bottom: 20px;
-        }
-
-        .play-btn {
-            width: 100%;
-            padding: 18px;
-            font-size: 24px;
-            background: linear-gradient(135deg, #d4af37, #b8860b);
-            border: none;
-            border-radius: 20px;
-            color: white;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 10px 20px rgba(212, 175, 55, 0.3);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .play-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 25px rgba(212, 175, 55, 0.4);
-        }
-
-        .wallet-btn-container {
-            width: 100%;
-        }
-
-        .wallet-btn {
-            width: 100%;
-            padding: 15px;
-            font-size: 18px;
-            background: rgba(46, 204, 113, 0.1);
-            border: 1px solid #2ecc71;
-            border-radius: 15px;
-            color: #2ecc71;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .wallet-btn:hover {
-            background: rgba(46, 204, 113, 0.2);
-        }
-
-        /* Seats Screen */
-        .room-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.95);
-            backdrop-filter: blur(10px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-        }
-
-        .room-container {
-            background: linear-gradient(145deg, #111a24, #0a0f18);
-            padding: clamp(20px, 5vw, 30px);
-            border-radius: 48px;
-            width: 90%;
-            max-width: 600px;
-            text-align: center;
-            border: 2px solid #d4af37;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .room-container h2 {
-            color: #d4af37;
-            margin-bottom: 10px;
-        }
-
-        .teams-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            width: 100%;
-            margin: 20px 0;
-        }
-
-        .team-section {
-            background: rgba(0,0,0,0.3);
-            border-radius: 20px;
-            padding: 15px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .team-red { border-top: 3px solid #e74c3c; }
-        .team-blue { border-top: 3px solid #3498db; }
-
-        .team-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-
-        .team-red .team-header { color: #e74c3c; }
-        .team-blue .team-header { color: #3498db; }
-
-        .seats-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-            gap: 10px;
-        }
-
-        .seat-btn {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 12px;
-            padding: 10px 5px;
-            color: white;
-            font-size: 12px;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.2s;
-        }
-
-        .seat-btn:hover:not(:disabled) {
-            background: rgba(255,255,255,0.1);
-            transform: translateY(-2px);
-        }
-
-        .seat-btn.occupied {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .seat-btn.my-seat {
-            border-color: #d4af37;
-            background: rgba(212, 175, 55, 0.2);
-        }
-
-        .seat-icon {
-            font-size: 24px;
-        }
-
-        .leave-room-btn {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 15px;
-            display: none;
-        }
-
-        .leave-room-btn:disabled {
-            background: #555;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-            /* New Top Bar */
-        .top-bar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
-            z-index: 100;
-        }
-
-        .top-bar .balance-info {
-            color: #2ecc71;
-            font-weight: bold;
-            font-size: clamp(14px, 4vw, 18px);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            flex: 1;
-        }
-
-        .top-bar .neon-title {
-            color: #fff;
-            font-size: clamp(18px, 5vw, 26px);
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 
-                0 0 5px #fff,
-                0 0 10px #fff,
-                0 0 20px #d4af37,
-                0 0 40px #d4af37;
-            animation: neonBlink 3s infinite alternate;
-            flex: 1;
-            text-align: center;
-            white-space: nowrap;
-        }
-
-        .top-bar .stats-info {
-            color: #aaa;
-            font-size: clamp(12px, 3vw, 16px);
-            display: flex;
-            gap: 10px;
-            flex: 1;
-            justify-content: flex-end;
-        }
-
-        @keyframes neonBlink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.8; text-shadow: 0 0 5px #fff, 0 0 10px #d4af37, 0 0 20px #d4af37; }
-        }
-
-        /* Game Icon */
-        .game-icon-container {
-            position: relative;
-            margin: 80px auto 30px;
-            width: 150px;
-            height: 150px;
-            border-radius: 30px;
-            background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
-            border: 2px solid #d4af37;
-            box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            animation: wobble 4s ease-in-out infinite;
-        }
-
-        .game-icon-container::after {
-            content: \'\';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
-            transform: rotate(45deg);
-            animation: shine 3s infinite;
-        }
-
-        .tank-icon {
-            width: 80px;
-            height: 80px;
-            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)) invert(75%) sepia(43%) saturate(485%) hue-rotate(5deg) brightness(95%) contrast(88%);
-        }
-
-        @keyframes wobble {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            25% { transform: translateY(-5px) rotate(-2deg); }
-            75% { transform: translateY(5px) rotate(2deg); }
-        }
-
-        @keyframes shine {
-            0% { transform: translateX(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) rotate(45deg); }
-        }
-
-        /* Main Screen Layout */
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            max-width: 400px;
-            padding: 0 20px;
-            margin-top: 60px;
-        }
-
-        .play-btn-container {
-            width: 100%;
-            margin-bottom: 20px;
-        }
-
-        .play-btn {
-            width: 100%;
-            padding: 18px;
-            font-size: 24px;
-            background: linear-gradient(135deg, #d4af37, #b8860b);
-            border: none;
-            border-radius: 20px;
-            color: white;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 10px 20px rgba(212, 175, 55, 0.3);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .play-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 25px rgba(212, 175, 55, 0.4);
-        }
-
-        .wallet-btn-container {
-            width: 100%;
-        }
-
-        .wallet-btn {
-            width: 100%;
-            padding: 15px;
-            font-size: 18px;
-            background: rgba(46, 204, 113, 0.1);
-            border: 1px solid #2ecc71;
-            border-radius: 15px;
-            color: #2ecc71;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .wallet-btn:hover {
-            background: rgba(46, 204, 113, 0.2);
-        }
-
-        /* Seats Screen */
-        .room-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.95);
-            backdrop-filter: blur(10px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-        }
-
-        .room-container {
-            background: linear-gradient(145deg, #111a24, #0a0f18);
-            padding: clamp(20px, 5vw, 30px);
-            border-radius: 48px;
-            width: 90%;
-            max-width: 600px;
-            text-align: center;
-            border: 2px solid #d4af37;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .room-container h2 {
-            color: #d4af37;
-            margin-bottom: 10px;
-        }
-
-        .teams-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            width: 100%;
-            margin: 20px 0;
-        }
-
-        .team-section {
-            background: rgba(0,0,0,0.3);
-            border-radius: 20px;
-            padding: 15px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .team-red { border-top: 3px solid #e74c3c; }
-        .team-blue { border-top: 3px solid #3498db; }
-
-        .team-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-
-        .team-red .team-header { color: #e74c3c; }
-        .team-blue .team-header { color: #3498db; }
-
-        .seats-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-            gap: 10px;
-        }
-
-        .seat-btn {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 12px;
-            padding: 10px 5px;
-            color: white;
-            font-size: 12px;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.2s;
-        }
-
-        .seat-btn:hover:not(:disabled) {
-            background: rgba(255,255,255,0.1);
-            transform: translateY(-2px);
-        }
-
-        .seat-btn.occupied {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .seat-btn.my-seat {
-            border-color: #d4af37;
-            background: rgba(212, 175, 55, 0.2);
-        }
-
-        .seat-icon {
-            font-size: 24px;
-        }
-
-        .leave-room-btn {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 15px;
-            display: none;
-        }
-
-        .leave-room-btn:disabled {
-            background: #555;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-            /* New Top Bar */
-        .top-bar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
-            z-index: 100;
-        }
-
-        .top-bar .balance-info {
-            color: #2ecc71;
-            font-weight: bold;
-            font-size: clamp(14px, 4vw, 18px);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            flex: 1;
-        }
-
-        .top-bar .neon-title {
-            color: #fff;
-            font-size: clamp(18px, 5vw, 26px);
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 
-                0 0 5px #fff,
-                0 0 10px #fff,
-                0 0 20px #d4af37,
-                0 0 40px #d4af37;
-            animation: neonBlink 3s infinite alternate;
-            flex: 1;
-            text-align: center;
-            white-space: nowrap;
-        }
-
-        .top-bar .stats-info {
-            color: #aaa;
-            font-size: clamp(12px, 3vw, 16px);
-            display: flex;
-            gap: 10px;
-            flex: 1;
-            justify-content: flex-end;
-        }
-
-        @keyframes neonBlink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.8; text-shadow: 0 0 5px #fff, 0 0 10px #d4af37, 0 0 20px #d4af37; }
-        }
-
-        /* Game Icon */
-        .game-icon-container {
-            position: relative;
-            margin: 80px auto 30px;
-            width: 150px;
-            height: 150px;
-            border-radius: 30px;
-            background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
-            border: 2px solid #d4af37;
-            box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            animation: wobble 4s ease-in-out infinite;
-        }
-
-        .game-icon-container::after {
-            content: \'\';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
-            transform: rotate(45deg);
-            animation: shine 3s infinite;
-        }
-
-        .tank-icon {
-            width: 80px;
-            height: 80px;
-            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)) invert(75%) sepia(43%) saturate(485%) hue-rotate(5deg) brightness(95%) contrast(88%);
-        }
-
-        @keyframes wobble {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            25% { transform: translateY(-5px) rotate(-2deg); }
-            75% { transform: translateY(5px) rotate(2deg); }
-        }
-
-        @keyframes shine {
-            0% { transform: translateX(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) rotate(45deg); }
-        }
-
-        /* Main Screen Layout */
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            max-width: 400px;
-            padding: 0 20px;
-            margin-top: 60px;
-        }
-
-        .play-btn-container {
-            width: 100%;
-            margin-bottom: 20px;
-        }
-
-        .play-btn {
-            width: 100%;
-            padding: 18px;
-            font-size: 24px;
-            background: linear-gradient(135deg, #d4af37, #b8860b);
-            border: none;
-            border-radius: 20px;
-            color: white;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 10px 20px rgba(212, 175, 55, 0.3);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .play-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 25px rgba(212, 175, 55, 0.4);
-        }
-
-        .wallet-btn-container {
-            width: 100%;
-        }
-
-        .wallet-btn {
-            width: 100%;
-            padding: 15px;
-            font-size: 18px;
-            background: rgba(46, 204, 113, 0.1);
-            border: 1px solid #2ecc71;
-            border-radius: 15px;
-            color: #2ecc71;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .wallet-btn:hover {
-            background: rgba(46, 204, 113, 0.2);
-        }
-
-        /* Seats Screen */
-        .room-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.95);
-            backdrop-filter: blur(10px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-        }
-
-        .room-container {
-            background: linear-gradient(145deg, #111a24, #0a0f18);
-            padding: clamp(20px, 5vw, 30px);
-            border-radius: 48px;
-            width: 90%;
-            max-width: 600px;
-            text-align: center;
-            border: 2px solid #d4af37;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .room-container h2 {
-            color: #d4af37;
-            margin-bottom: 10px;
-        }
-
-        .teams-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            width: 100%;
-            margin: 20px 0;
-        }
-
-        .team-section {
-            background: rgba(0,0,0,0.3);
-            border-radius: 20px;
-            padding: 15px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .team-red { border-top: 3px solid #e74c3c; }
-        .team-blue { border-top: 3px solid #3498db; }
-
-        .team-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-
-        .team-red .team-header { color: #e74c3c; }
-        .team-blue .team-header { color: #3498db; }
-
-        .seats-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-            gap: 10px;
-        }
-
-        .seat-btn {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 12px;
-            padding: 10px 5px;
-            color: white;
-            font-size: 12px;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.2s;
-        }
-
-        .seat-btn:hover:not(:disabled) {
-            background: rgba(255,255,255,0.1);
-            transform: translateY(-2px);
-        }
-
-        .seat-btn.occupied {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .seat-btn.my-seat {
-            border-color: #d4af37;
-            background: rgba(212, 175, 55, 0.2);
-        }
-
-        .seat-icon {
-            font-size: 24px;
-        }
-
-        .leave-room-btn {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 15px;
-            display: none;
-        }
-
-        .leave-room-btn:disabled {
-            background: #555;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
     </style>
 </head>
 <body>
@@ -2075,59 +678,20 @@
     </div>
 
     <div class="main-screen" id="mainScreen">
-        <div class="top-bar">
-            <div class="balance-info">💰 <span id="balance">0</span>$</div>
-            <div class="neon-title">TANKS WAR</div>
-            <div class="stats-info">
-                <span>🏆 <span id="gamesPlayed">0</span></span>
-                <span>⚔️ <span id="wins">0</span></span>
-            </div>
+        <h2>BATTLE TANKS ELITE</h2>
+        <div class="btn-group">
+            <button class="play-btn" id="playBtn">🎮 العب الآن</button>
+            <button class="wallet-btn" id="walletBtn">💰 المحفظة</button>
         </div>
-        
-        <div class="main-content">
-            <div class="game-icon-container">
-                <img src="https://cdn-icons-png.flaticon.com/512/1986/1986937.png" class="tank-icon" alt="Tank">
-            </div>
-            
-            <div class="play-btn-container">
-                <button class="play-btn" id="playBtn">🎮 العب الآن</button>
-            </div>
-            
-            <div class="wallet-btn-container">
-                <button class="wallet-btn" id="walletBtn">💰 المحفظة</button>
-            </div>
+        <div class="user-card">
+            <div>👤 <span id="username">اللاعب</span></div>
+            <div>💰 <span id="balance">0</span> $</div>
+            <div>🏆 <span id="gamesPlayed">0</span> مباراة</div>
+            <div>⚔️ <span id="wins">0</span> فوز</div>
         </div>
-        
         <button class="admin-btn" id="adminBtn">⚙️ لوحة التحكم</button>
     </div>
 
-    <div class="room-screen" id="roomScreen">
-        <div class="room-container">
-            <h2 id="currentRoomTitle">الغرفة</h2>
-            <p style="color: #aaa; font-size: 14px; margin-bottom: 15px;" id="roomStatusText">اختر مقعدك للانضمام</p>
-            
-            <div class="teams-container">
-                <div class="team-section team-red">
-                    <div class="team-header">
-                        <span>🔴 الفريق الأحمر</span>
-                        <span id="redTeamCount">0/0</span>
-                    </div>
-                    <div class="seats-row" id="redTeamSeats"></div>
-                </div>
-                
-                <div class="team-section team-blue">
-                    <div class="team-header">
-                        <span>🔵 الفريق الأزرق</span>
-                        <span id="blueTeamCount">0/0</span>
-                    </div>
-                    <div class="seats-row" id="blueTeamSeats"></div>
-                </div>
-            </div>
-            
-            <button class="leave-room-btn" id="leaveRoomBtn">🚪 مغادرة المقعد</button>
-            <button class="back-lobby-btn" id="backFromRoomBtn">🔙 العودة للغرف</button>
-        </div>
-    </div>
     <div class="lobby" id="lobby">
         <div class="lobby-container">
             <h2>🏆 لوبي المعركة</h2>
@@ -2235,140 +799,198 @@
         let isFullscreen = false;
         
         class AudioEngine {
-            constructor() {
-                this.engineSound = new Audio("https://www.soundjay.com/mechanical/sounds/tank-engine-01.mp3");
-                this.engineSound.loop = true;
-                this.engineSound.volume = 0.3;
-
-                this.shootSound = new Audio("https://www.soundjay.com/weapons/sounds/tank-fire-01.mp3");
-                this.shootSound.volume = 0.5;
-
-                this.explosionSound = new Audio("https://www.soundjay.com/mechanical/sounds/explosion-01.mp3");
-                this.explosionSound.volume = 0.7;
+            constructor() { 
+                this.ctx = null; 
+                this.engineOsc = null; 
+                this.engineGain = null; 
+                this.filter = null;
+    }
+    
+            init() { 
+                if (this.ctx) return; 
+                try { 
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)(); 
+                } catch(e) {} 
+    }
+    
+            startEngine() { 
+                if (!this.ctx) this.init(); 
+                if (this.engineOsc) return; 
+                try { 
+                    this.engineOsc = this.ctx.createOscillator(); 
+                    this.engineGain = this.ctx.createGain(); 
+                    this.filter = this.ctx.createBiquadFilter(); 
+                    this.engineOsc.type = 'sawtooth'; 
+                    this.engineOsc.frequency.value = 42; 
+                    this.filter.type = 'lowpass'; 
+                    this.filter.frequency.value = 180; 
+                    this.engineGain.gain.value = 0.08; 
+                    this.engineOsc.connect(this.filter); 
+                    this.filter.connect(this.engineGain); 
+                    this.engineGain.connect(this.ctx.destination); 
+                    this.engineOsc.start(); 
+                } catch(e) {} 
+    }
+    
+            // ✅ دالة إيقاف الصوت
+            stopEngine() {
+                try {
+                    if (this.engineGain) {
+                        // تخفيض الصوت تدريجياً
+                        this.engineGain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.05);
+                        setTimeout(() => {
+                            if (this.engineOsc) {
+                                try {
+                                    this.engineOsc.stop();
+                                    this.engineOsc.disconnect();
+                                } catch(e) {}
+                                this.engineOsc = null;
+                    }
+                            if (this.filter) {
+                                this.filter.disconnect();
+                                this.filter = null;
+                    }
+                            if (this.engineGain) {
+                                this.engineGain.disconnect();
+                                this.engineGain = null;
+                    }
+                        }, 200);
             }
-
-            startEngine() { this.engineSound.play(); }
-            stopEngine() { this.engineSound.pause(); this.engineSound.currentTime = 0; }
-            playShoot() { this.shootSound.currentTime = 0; this.shootSound.play(); }
-            playExplosion() { this.explosionSound.currentTime = 0; this.explosionSound.play(); }
+                } catch(e) {
+                    console.log('Error stopping engine:', e);
         }
+    }
+    
+            updateEngine(speed) { 
+                if (!this.engineOsc || !this.engineGain) return; 
+                const freq = 42 + speed * 40; 
+                this.engineOsc.frequency.setTargetAtTime(freq, this.ctx.currentTime, 0.05); 
+                this.engineGain.gain.setTargetAtTime(0.08 + speed * 0.1, this.ctx.currentTime, 0.05); 
+    }
+    
+            fire() { 
+                if (!this.ctx) return; 
+                const now = this.ctx.currentTime; 
+                const osc = this.ctx.createOscillator(); 
+                const gain = this.ctx.createGain(); 
+                osc.type = 'square'; 
+                osc.frequency.setValueAtTime(170, now); 
+                osc.frequency.exponentialRampToValueAtTime(55, now + 0.28); 
+                gain.gain.setValueAtTime(0.7, now); 
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.32); 
+                osc.connect(gain); 
+                gain.connect(this.ctx.destination); 
+                osc.start(now); 
+                osc.stop(now + 0.32); 
+    }
+    
+            explosion(distance) { 
+                if (!this.ctx) return; 
+                const vol = Math.max(0.2, Math.min(0.9, 1 - distance / 60)); 
+                const now = this.ctx.currentTime; 
+                const noise = this.ctx.createBufferSource(); 
+                const buffer = this.ctx.createBuffer(1, this.ctx.sampleRate * 1.0, this.ctx.sampleRate); 
+                const data = buffer.getChannelData(0); 
+                for (let i = 0; i < buffer.length; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / buffer.length, 1.3); 
+                noise.buffer = buffer; 
+                const gain = this.ctx.createGain(); 
+                gain.gain.setValueAtTime(vol, now); 
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 1.0); 
+                noise.connect(gain); 
+                gain.connect(this.ctx.destination); 
+                noise.start(now); 
+    }
+}
 
         class GameSimulation {
-            constructor() {
-                this.scene = new THREE.Scene();
-                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-                this.renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
-                this.renderer.setSize(window.innerWidth, window.innerHeight);
-                this.renderer.setClearColor(0x0a0f1a);
-                this.renderer.shadowMap.enabled = true;
-                this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-                this.tanks = new Map();
-                this.otherPlayers = new Map();
-                this.bullets = [];
-                this.particles = [];
-                this.obstacles = [];
-                this.playerTank = null;
-                this.playerId = null;
+            constructor() { 
+                this.scene = null; this.camera = null; this.renderer = null; 
+                this.tanks = new Map(); this.bullets = []; this.playerTank = null; 
+                this.joystick = { x: 0, y: 0 }; this.cameraShake = 0; this.lastShot = 0; 
+                this.obstacles = []; this.particles = []; this.team1Count = 0; this.team2Count = 0;
+                this.playerTeam = null; this.otherPlayers = new Map();
                 this.gameActive = false;
                 this.isEliminated = false;
-                this.joystick = { x: 0, y: 0 };
-                this.targetPositions = new Map(); // لتخزين المواقع المستهدفة للاعبين الآخرين
+                this.lastMoveTime = 0;
+                this.playerId = null;
+                this.targetPositions = new Map();
+                this.animationFrameId = null;
+            }
 
-                this.setupScene();
-                this.camera.position.set(0, 100, 150);
-                this.camera.lookAt(0, 0, 0);
-
+            init() { 
+                this.scene = new THREE.Scene(); 
+                this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 500); 
+                this.renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
+                this.renderer.setSize(window.innerWidth, window.innerHeight); 
+                this.renderer.setPixelRatio(window.devicePixelRatio);
+                this.renderer.shadowMap.enabled = true; 
+                this.scene.background = new THREE.Color(0x1a2a3a); 
+                this.scene.fog = new THREE.FogExp2(0x1a2a3a, 0.0018);
+                
+                const ambient = new THREE.AmbientLight(0xffffff, 0.6); 
+                this.scene.add(ambient); 
+                const sun = new THREE.DirectionalLight(0xffeedd, 1.4); 
+                sun.position.set(50, 70, 40); 
+                sun.castShadow = true; 
+                sun.shadow.mapSize.set(1024, 1024); 
+                this.scene.add(sun); 
+                
+                this.createTerrain(); 
+                this.createObstacles(); 
+                
                 window.addEventListener('resize', () => this.onWindowResize());
+                this.animate();
             }
-
-            setupScene() {
-                // الإضاءة
-                const ambientLight = new THREE.AmbientLight(0x404040, 2);
-                this.scene.add(ambientLight);
-
-                const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
-                directionalLight.position.set(50, 100, 50);
-                directionalLight.castShadow = true;
-                directionalLight.shadow.mapSize.width = 2048;
-                directionalLight.shadow.mapSize.height = 2048;
-                directionalLight.shadow.camera.near = 0.5;
-                directionalLight.shadow.camera.far = 500;
-                directionalLight.shadow.camera.left = -200;
-                directionalLight.shadow.camera.right = 200;
-                directionalLight.shadow.camera.top = 200;
-                directionalLight.shadow.camera.bottom = -200;
-                this.scene.add(directionalLight);
-
-                // الأرضية
-                const groundGeometry = new THREE.PlaneGeometry(300, 300);
-                const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x556b2f, roughness: 0.8, metalness: 0.1 });
-                const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-                ground.rotation.x = -Math.PI / 2;
-                ground.receiveShadow = true;
-                this.scene.add(ground);
-
-                this.createArenaWalls();
-                this.createObstacles();
-            }
-
+            
             onWindowResize() {
-                this.camera.aspect = window.innerWidth / window.innerHeight;
-                this.camera.updateProjectionMatrix();
-                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                if (this.camera && this.renderer) {
+                    this.camera.aspect = window.innerWidth / window.innerHeight;
+                    this.camera.updateProjectionMatrix();
+                    this.renderer.setSize(window.innerWidth, window.innerHeight);
+                }
             }
+            
+            createTerrain() { 
+                // ==================== أرضية عشبية أخضر غامق موسعة ====================
+                const canvas = document.createElement('canvas');
+                canvas.width = 512;
+                canvas.height = 512;
+                const ctx = canvas.getContext('2d');
 
-            createArenaWalls() {
-                const wallMaterial = new THREE.MeshStandardMaterial({ color: 0x8b4513, roughness: 0.6, metalness: 0.3 });
+                ctx.fillStyle = '#2c5e2a';
+                ctx.fillRect(0, 0, 512, 512);
 
-                // الجدران الخارجية
-                const wallThickness = 5;
-                const arenaSize = 150;
+                for (let i = 0; i < 3500; i++) {
+                    ctx.fillStyle = `hsl(${100 + Math.random() * 20}, 70%, ${30 + Math.random() * 25}%)`;
+                    ctx.fillRect(
+                        Math.floor(Math.random() * 512),
+                        Math.floor(Math.random() * 512),
+                        2 + Math.random() * 3,
+                        2 + Math.random() * 3
+        );
+    }
 
-                // جدار أمامي
-                const frontWall = new THREE.Mesh(new THREE.BoxGeometry(arenaSize * 2 + wallThickness * 2, 10, wallThickness), wallMaterial);
-                frontWall.position.set(0, 5, -arenaSize - wallThickness / 2);
-                frontWall.castShadow = true;
-                frontWall.receiveShadow = true;
-                this.scene.add(frontWall);
-                this.obstacles.push(frontWall);
+                const grassTexture = new THREE.CanvasTexture(canvas);
+                grassTexture.wrapS = THREE.RepeatWrapping;
+                grassTexture.wrapT = THREE.RepeatWrapping;
+                grassTexture.repeat.set(30, 30);
 
-                // جدار خلفي
-                const backWall = new THREE.Mesh(new THREE.BoxGeometry(arenaSize * 2 + wallThickness * 2, 10, wallThickness), wallMaterial);
-                backWall.position.set(0, 5, arenaSize + wallThickness / 2);
-                backWall.castShadow = true;
-                backWall.receiveShadow = true;
-                this.scene.add(backWall);
-                this.obstacles.push(backWall);
+                const groundMat = new THREE.MeshStandardMaterial({ 
+                    map: grassTexture,
+                    roughness: 0.9, 
+                    metalness: 0.05 
+    });
 
-                // جدار أيمن
-                const rightWall = new THREE.Mesh(new THREE.BoxGeometry(wallThickness, 10, arenaSize * 2), wallMaterial);
-                rightWall.position.set(arenaSize + wallThickness / 2, 5, 0);
-                rightWall.castShadow = true;
-                rightWall.receiveShadow = true;
-                this.scene.add(rightWall);
-                this.obstacles.push(rightWall);
+                const geo = new THREE.PlaneGeometry(600, 600, 80, 80); 
+                geo.rotateX(-Math.PI / 2); 
+                const ground = new THREE.Mesh(geo, groundMat); 
+                ground.receiveShadow = true; 
+                this.scene.add(ground); 
 
-                // جدار أيسر
-                const leftWall = new THREE.Mesh(new THREE.BoxGeometry(wallThickness, 10, arenaSize * 2), wallMaterial);
-                leftWall.position.set(-arenaSize - wallThickness / 2, 5, 0);
-                leftWall.castShadow = true;
-                leftWall.receiveShadow = true;
-                this.scene.add(leftWall);
-                this.obstacles.push(leftWall);
-
-                // جدران تقسيم المنطقة
-                const centralWallMaterial = new THREE.MeshStandardMaterial({ color: 0x696969, roughness: 0.6, metalness: 0.3 });
-
-                // جدار مركزي أفقي
-                const centralHorizontalWall = new THREE.Mesh(new THREE.BoxGeometry(100, 6, 3), centralWallMaterial);
-                centralHorizontalWall.position.set(0, 3, 0);
-                centralHorizontalWall.castShadow = true;
-                centralHorizontalWall.receiveShadow = true;
-                this.scene.add(centralHorizontalWall);
-                this.obstacles.push(centralHorizontalWall);
-
-                // جدار أحمر (فريق 1)
+                // ==================== جدار الفريق الأحمر (يسار) - يكون من جهة العدو ====================
+                const wallMaterial = new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.7 });
+    
+                // جدار الفريق الأحمر (جهة اليسار) - حجم مضاعف
                 const redWall = new THREE.Mesh(new THREE.BoxGeometry(30, 6, 3), wallMaterial);
                 redWall.position.set(-85, 3, -70);
                 redWall.castShadow = true;
@@ -2376,7 +998,7 @@
                 this.scene.add(redWall);
                 this.obstacles.push(redWall);
 
-                // جدار أزرق (فريق 2)
+                // ==================== جدار الفريق الأزرق (يمين) - يكون من جهة العدو ====================
                 const blueWall = new THREE.Mesh(new THREE.BoxGeometry(30, 6, 3), wallMaterial);
                 blueWall.position.set(85, 3, 70);
                 blueWall.castShadow = true;
@@ -2613,200 +1235,270 @@
                 rightSkirt.receiveShadow = true;
                 group.add(rightSkirt);
     
-                group.position.set(x, 0, z);
-                group.rotation.y = Math.random() * Math.PI * 2;
-                group.userData = { team: team, playerId: playerId }; // إضافة بيانات الفريق واللاعب
-                this.scene.add(group);
-                this.tanks.set(playerId, group);
-                return group;
-            }
-
-            createBullet(tank) {
-                const bulletGeometry = new THREE.SphereGeometry(0.3, 8, 8);
-                const bulletMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-                const bullet = new THREE.Mesh(bulletGeometry, bulletMaterial);
-
-                // تحديد موقع إطلاق الرصاصة من فوهة المدفع
-                const barrelTipPosition = new THREE.Vector3();
-                tank.children[1].children[2].children[0].getWorldPosition(barrelTipPosition); // barrelGroup -> barrel
-
-                bullet.position.copy(barrelTipPosition);
-
-                // تحديد اتجاه الرصاصة بناءً على اتجاه المدفع
-                const barrelDirection = new THREE.Vector3();
-                tank.children[1].children[2].getWorldDirection(barrelDirection); // barrelGroup
-
-                bullet.userData.velocity = barrelDirection.multiplyScalar(5);
-                bullet.userData.ownerId = tank.userData.playerId;
-                this.scene.add(bullet);
-                this.bullets.push(bullet);
-                gameApp.audio.playShoot();
-                return bullet;
-            }
-
-            createRemoteBullet(data) {
-                const bulletGeometry = new THREE.SphereGeometry(0.3, 8, 8);
-                const bulletMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-                const bullet = new THREE.Mesh(bulletGeometry, bulletMaterial);
-
-                bullet.position.set(data.position.x, data.position.y, data.position.z);
-                bullet.userData.velocity = new THREE.Vector3(data.velocity.x, data.velocity.y, data.velocity.z);
-                bullet.userData.ownerId = data.ownerId;
-                this.scene.add(bullet);
-                this.bullets.push(bullet);
-            }
-
-            createExplosion(position, scale = 1.0) {
-                gameApp.audio.playExplosion();
-                const particleCount = 50;
-                const particles = new THREE.Group();
-                for (let i = 0; i < particleCount; i++) {
-                    const particleGeometry = new THREE.SphereGeometry(0.1 * scale, 4, 4);
-                    const particleMaterial = new THREE.MeshBasicMaterial({ color: 0xffa500 });
-                    const particle = new THREE.Mesh(particleGeometry, particleMaterial);
-                    particle.position.copy(position);
-                    particle.userData.velocity = new THREE.Vector3(
-                        (Math.random() - 0.5) * 0.5 * scale,
-                        (Math.random() - 0.5) * 0.5 * scale,
-                        (Math.random() - 0.5) * 0.5 * scale
-                    );
-                    particle.userData.lifetime = 60; // frames
-                    particles.add(particle);
-                }
-                this.scene.add(particles);
-                this.particles.push(particles);
-            }
-
-            fire(tank) {
+                // العجلات
+                const wheelGeometry = new THREE.CylinderGeometry(0.4, 0.4, 0.9, 16);
+                const wheelMaterial = new THREE.MeshStandardMaterial({ color: 0x111111 });
+    
+                for (let i = -2.5; i <= 2.5; i += 1.25) {
+                    const wheelL = new THREE.Mesh(wheelGeometry, wheelMaterial);
+                    wheelL.rotation.x = Math.PI / 2;
+                    wheelL.position.set(i, 0.5, 2);
+                    wheelL.castShadow = true;
+                    wheelL.receiveShadow = true;
+                    group.add(wheelL);
+        
+                    const wheelR = new THREE.Mesh(wheelGeometry, wheelMaterial);
+                    wheelR.rotation.x = Math.PI / 2;
+                    wheelR.position.set(i, 0.5, -2);
+                    wheelR.castShadow = true;
+                    wheelR.receiveShadow = true;
+                    group.add(wheelR);
+    }
+    
+                group.position.set(x, 0, z); 
+                group.userData = { health: 100, team: team, playerId: playerId }; 
+                this.scene.add(group); 
+                return group; 
+}
+            
+            fire(tank) { 
                 if (this.isEliminated || !this.gameActive) return false;
-                const bullet = this.createBullet(tank);
-                socket.emit('player_shot', {
-                    position: bullet.position,
-                    velocity: bullet.userData.velocity,
-                    ownerId: bullet.userData.ownerId
-                });
-                return true;
+    
+                const now = Date.now(); 
+                if(now - this.lastShot < 3000) return false; 
+                this.lastShot = now; 
+                const dir = new THREE.Vector3(0, 0, 1).applyQuaternion(tank.quaternion); 
+                const bullet = new THREE.Mesh(new THREE.SphereGeometry(0.26, 24, 24), new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4422, emissiveIntensity: 0.6 })); 
+                bullet.position.copy(tank.position); 
+                bullet.position.y += 1.2; 
+                bullet.userData = { velocity: dir.multiplyScalar(2.6), owner: tank, life: 200, ownerId: tank.userData.playerId || 'player', bulletId: Date.now() + Math.random() }; 
+                this.scene.add(bullet); 
+                this.bullets.push(bullet); 
+                if(tank === this.playerTank) gameApp.audio.fire(); 
+    
+                socket.emit('shoot', { 
+                    position: { x: bullet.position.x, y: bullet.position.y, z: bullet.position.z },
+                    direction: { x: dir.x, y: dir.y, z: dir.z },
+                    ownerId: tank.userData.playerId,
+                    bulletId: bullet.userData.bulletId,
+                    timestamp: Date.now()
+    });
+                return true; 
+}
+            createRemoteBullet(data) {
+                if (!this.gameActive) return;
+    
+                const direction = new THREE.Vector3(data.direction.x, data.direction.y, data.direction.z);
+                const bullet = new THREE.Mesh(new THREE.SphereGeometry(0.26, 24, 24), new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4422, emissiveIntensity: 0.6 }));
+                bullet.position.set(data.position.x, data.position.y, data.position.z);
+                bullet.userData = { 
+                    velocity: direction.multiplyScalar(2.6), 
+                    owner: null, 
+                    life: 200, 
+                    ownerId: data.ownerId,
+                    bulletId: data.bulletId,
+                    isRemote: true
+    };
+                this.scene.add(bullet);
+                this.bullets.push(bullet);
+}
+            checkBoundary(tank) {
+                const boundaryLimit = 280; //       حدود المسموح (الأرضية 600، الحد الآمن 280 من المركز)
+                const pos = tank.position;
+                if (Math.abs(pos.x) > boundaryLimit || Math.abs(pos.z) > boundaryLimit) {
+                    return true;
+    }
+                return false;
+}
+            createExplosion(pos, size = 1.2) {
+                const explosionGroup = new THREE.Group();
+                const flash = new THREE.Mesh(new THREE.SphereGeometry(size * 0.6, 16, 16), new THREE.MeshStandardMaterial({ color: 0xffaa66, emissive: 0xff4422, emissiveIntensity: 1.2 }));
+                explosionGroup.add(flash);
+                explosionGroup.position.copy(pos);
+                this.scene.add(explosionGroup);
+                
+                for(let i = 0; i < 45; i++) { 
+                    const particle = new THREE.Mesh(new THREE.SphereGeometry(0.12, 6, 6), new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4422 })); 
+                    particle.position.copy(pos); 
+                    particle.userData = { 
+                        vel: new THREE.Vector3((Math.random() - 0.5) * 1.2, Math.random() * 1.5 + 0.5, (Math.random() - 0.5) * 1.2), 
+                        life: 1, gravity: 0.03 
+                    }; 
+                    this.scene.add(particle); 
+                    this.particles.push(particle); 
+                }
+                
+                for(let i = 0; i < 12; i++) {
+                    const smoke = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), new THREE.MeshStandardMaterial({ color: 0x886666, emissive: 0x442222 }));
+                    smoke.position.copy(pos);
+                    smoke.userData = { vel: new THREE.Vector3((Math.random() - 0.5) * 0.4, Math.random() * 0.8, (Math.random() - 0.5) * 0.4), life: 1.2 };
+                    this.scene.add(smoke);
+                    this.particles.push(smoke);
+                }
+                
+                setTimeout(() => this.scene.remove(explosionGroup), 200);
+                const dist = this.playerTank ? pos.distanceTo(this.playerTank.position) : 0;
+                gameApp.audio.explosion(dist);
+                if(dist < 35) this.cameraShake = 1.2;
             }
-
-            update() {
-                if (!this.gameActive || this.isEliminated) return;
-
-                // تحديث حركة اللاعب
-                if (this.playerTank) {
-                    const moveSpeed = 0.2;
-                    const rotateSpeed = 0.05;
-
-                    if (this.joystick.x !== 0 || this.joystick.y !== 0) {
-                        const angle = Math.atan2(this.joystick.x, this.joystick.y);
-                        this.playerTank.rotation.y = angle;
-
-                        const forward = new THREE.Vector3(0, 0, 1);
-                        forward.applyQuaternion(this.playerTank.quaternion);
-                        this.playerTank.position.add(forward.multiplyScalar(moveSpeed));
-
-                        // تحديث الكاميرا لتتبع الدبابة
-                        this.camera.position.x = this.playerTank.position.x;
-                        this.camera.position.z = this.playerTank.position.z + 150;
-                        this.camera.lookAt(this.playerTank.position.x, this.playerTank.position.y, this.playerTank.position.z);
-                    }
-
-                    // منع الدبابة من الخروج عن حدود الخريطة
-                    const mapLimit = 145;
-                    this.playerTank.position.x = Math.max(-mapLimit, Math.min(mapLimit, this.playerTank.position.x));
-                    this.playerTank.position.z = Math.max(-mapLimit, Math.min(mapLimit, this.playerTank.position.z));
-
-                    // إرسال تحديثات الموقع إلى الخادم
-                    socket.emit('player_moved', {
-                        position: this.playerTank.position,
-                        rotation: this.playerTank.rotation.y
-                    });
-                }
-
-                // تحديث الرصاص
-                for (let i = this.bullets.length - 1; i >= 0; i--) {
-                    const bullet = this.bullets[i];
-                    bullet.position.add(bullet.userData.velocity);
-
-                    // فحص التصادم مع الجدران والعوائق
-                    let hitObstacle = false;
-                    for (const obstacle of this.obstacles) {
-                        const box = new THREE.Box3().setFromObject(obstacle);
-                        if (box.containsPoint(bullet.position)) {
-                            this.createExplosion(bullet.position, 0.5);
-                            this.scene.remove(bullet);
-                            this.bullets.splice(i, 1);
-                            hitObstacle = true;
-                            break;
-                        }
-                    }
-                    if (hitObstacle) continue;
-
-                    // فحص التصادم مع الدبابات الأخرى
-                    for (const [userId, tank] of this.tanks) {
-                        if (userId === bullet.userData.ownerId) continue; // لا تصطدم بالدبابة التي أطلقتها
-
-                        const box = new THREE.Box3().setFromObject(tank);
-                        if (box.containsPoint(bullet.position)) {
-                            this.createExplosion(bullet.position);
-                            this.scene.remove(bullet);
-                            this.bullets.splice(i, 1);
-                            socket.emit('player_hit', { targetId: userId, killerId: bullet.userData.ownerId });
-                            hitObstacle = true;
-                            break;
-                        }
-                    }
-                    if (hitObstacle) continue;
-
-                    // إزالة الرصاصات التي تخرج عن الحدود
-                    if (Math.abs(bullet.position.x) > 150 || Math.abs(bullet.position.z) > 150 || bullet.position.y < 0) {
-                        this.scene.remove(bullet);
-                        this.bullets.splice(i, 1);
-                    }
-                }
-
-                // تحديث الجسيمات (الانفجارات)
-                for (let i = this.particles.length - 1; i >= 0; i--) {
-                    const particleGroup = this.particles[i];
-                    particleGroup.children.forEach(particle => {
-                        particle.position.add(particle.userData.velocity);
-                        particle.userData.velocity.y -= 0.01; // جاذبية
-                        particle.material.opacity -= 0.02; // تتلاشى
-                        particle.scale.multiplyScalar(0.98); // تتقلص
-                    });
-                    particleGroup.userData.lifetime--;
-                    if (particleGroup.userData.lifetime <= 0 || particleGroup.children.every(p => p.material.opacity <= 0)) {
-                        this.scene.remove(particleGroup);
-                        this.particles.splice(i, 1);
-                    }
-                }
-
-                this.updateSmoothMovements();
-            }
-
-            updateCounts() {
-                let myTeamCount = 0;
-                let enemyTeamCount = 0;
-                for (const [id, tank] of this.tanks) {
-                    if (tank.userData.team === this.playerTank.userData.team) {
-                        myTeamCount++;
+            
+            updateParticles() {
+                for(let i = this.particles.length-1; i >= 0; i--) {
+                    const p = this.particles[i];
+                    p.userData.life -= 0.025;
+                    if(p.userData.life <= 0) {
+                        this.scene.remove(p);
+                        this.particles.splice(i,1);
                     } else {
-                        enemyTeamCount++;
+                        p.position.x += p.userData.vel.x;
+                        p.position.z += p.userData.vel.z;
+                        p.position.y += p.userData.vel.y;
+                        if(p.userData.gravity) p.userData.vel.y -= p.userData.gravity;
+                        p.material.emissiveIntensity = p.userData.life * 1.5;
+                        p.scale.setScalar(p.userData.life * 1.5);
                     }
                 }
-                document.getElementById('myTeamCount').innerText = myTeamCount;
-                document.getElementById('enemyTeamCount').innerText = enemyTeamCount;
             }
+            
+            update() { 
+                if (!this.gameActive || this.isEliminated) return;
+                this.updateSmoothMovements();
+                this.updateParticles();
 
-            addOtherPlayer(data) {
-                const tank = this.createTank(0xff0000, data.position.x, data.position.z, data.team, data.userId);
-                tank.rotation.y = data.rotation;
-                this.otherPlayers.set(data.userId, tank);
-                this.tanks.set(data.userId, tank);
-                this.updateCounts();
+                if(this.playerTank) { 
+                    const speed = -this.joystick.y * 0.22;
+                    const rot = -this.joystick.x * 0.045; 
+                    const oldX = this.playerTank.position.x, oldZ = this.playerTank.position.z; 
+                    this.playerTank.rotation.y += rot; 
+                    this.playerTank.translateZ(speed); 
+        
+                    // التحقق من التصادم مع العوائق
+                    if(this.checkCollision(this.playerTank)) {
+                        this.playerTank.position.set(oldX, 0, oldZ);
+        }
+        
+                    // التحقق من عدم الخروج عن حدود الأرضية
+                    if(this.checkBoundary(this.playerTank)) {
+                        this.playerTank.position.set(oldX, 0, oldZ);
+        }
+        
+                    gameApp.audio.updateEngine(Math.abs(speed) * 3.5); 
+        
+                    const now = Date.now();
+                    if (now - this.lastMoveTime > 50) {
+                        this.lastMoveTime = now;
+                        socket.emit('move', { position: this.playerTank.position, rotation: this.playerTank.rotation.y });
+        }
+        
+                    const camOffset = new THREE.Vector3(0, 5.5, -12).applyQuaternion(this.playerTank.quaternion); 
+                    let camTarget = this.playerTank.position.clone().add(camOffset); 
+                    if(this.cameraShake > 0) { 
+                        camTarget.x += (Math.random() - 0.5) * this.cameraShake * 0.5; 
+                        camTarget.y += (Math.random() - 0.5) * this.cameraShake * 0.3; 
+                        this.cameraShake *= 0.92; 
+        } 
+                    this.camera.position.lerp(camTarget, 0.12); 
+                    this.camera.lookAt(this.playerTank.position.clone().add(new THREE.Vector3(0, 1.2, 0))); 
+    } 
+    
+                for(let i = this.bullets.length-1; i >= 0; i--) { 
+                    const b = this.bullets[i]; 
+                    b.position.add(b.userData.velocity); 
+                    b.userData.life--; 
+                    let hit = false; 
+        
+                    for(let obs of this.obstacles) { 
+                        if(new THREE.Box3().setFromObject(b).intersectsBox(new THREE.Box3().setFromObject(obs))) { 
+                            hit = true; 
+                            this.createExplosion(b.position); 
+                            this.scene.remove(b); 
+                            this.bullets.splice(i,1); 
+                            break; 
+            } 
+        } 
+        
+                    if(!hit) { 
+                        for(let [id, tank] of this.tanks) {
+                            const isOwner = (b.userData.owner === tank);
+                            const isSameTeam = tank.userData.team === b.userData.owner?.userData?.team;
+                            const isRemoteOwner = (b.userData.ownerId === tank.userData.playerId);
+                
+                            if ((!isOwner && !isSameTeam && !isRemoteOwner) && b.position.distanceTo(tank.position) < 1.9) { 
+                                hit = true; 
+                                this.createExplosion(b.position, 1.5); 
+                                this.scene.remove(b); 
+                                this.bullets.splice(i,1);
+                    
+                                console.log('Hit detected! Shooter:', b.userData.ownerId, 'Target:', id);
+                    
+                                if(b.userData.owner === this.playerTank) {
+                                    console.log('Sending damage event for target:', id);
+                                    socket.emit('damage', { 
+                                        damage: 100, 
+                                        killerId: this.playerId,
+                                        targetId: id 
+                        });
+                    }
+                                break; 
+                } 
+            } 
+        } 
+        
+                    if(!hit && (b.userData.life < 0 || Math.abs(b.position.x) > 430 || Math.abs(b.position.z) > 430)) { 
+                        this.scene.remove(b); 
+                        this.bullets.splice(i,1); 
+        } 
+    } 
+}
+            checkCollision(tank) { 
+                const box = new THREE.Box3().setFromObject(tank); 
+                for(let obs of this.obstacles) {
+                    if(obs && obs.isObject3D) {
+                        try {
+                            const obsBox = new THREE.Box3().setFromObject(obs);
+                            if(box.intersectsBox(obsBox)) return true;
+                        } catch(e) {
+                            // تجاهل الأخطاء
             }
-
+        }
+    }
+                return false; 
+}
+            
+            updateCounts() { 
+                this.team1Count = 0; 
+                this.team2Count = 0; 
+    
+                for(let tank of this.tanks.values()) {
+                    if(tank.userData.team === 1) this.team1Count++; 
+                    else if(tank.userData.team === 2) this.team2Count++;
+    }
+    
+                // عرض عدد فريقي وعدد الخصم
+                const myTeamCountEl = document.getElementById('myTeamCount');
+                const enemyTeamCountEl = document.getElementById('enemyTeamCount');
+    
+                if (myTeamCountEl && enemyTeamCountEl) {
+                    if (this.playerTeam === 1) {
+                        myTeamCountEl.innerText = this.team1Count;
+                        enemyTeamCountEl.innerText = this.team2Count;
+                    } else {
+                        myTeamCountEl.innerText = this.team2Count;
+                        enemyTeamCountEl.innerText = this.team1Count;
+        }
+    }
+}
+            
             updateOtherPlayer(data) {
-                const tank = this.tanks.get(data.userId);
+                if (!this.gameActive || this.isEliminated) return;
+                let tank = this.otherPlayers.get(data.userId);
+                if(!tank && data.userId !== this.playerId) {
+                    const color = data.team === 1 ? 0x8b5a2b : 0x4a6a8b;
+                    const pos = data.position || { x: 0, z: 0 };
+                    tank = this.createTank(color, pos.x, pos.z, data.team, data.userId);
+                    this.otherPlayers.set(data.userId, tank);
+                    this.tanks.set(data.userId, tank);
+    }
                 if(tank && data.position) {
         // تخزين الموقع المستهدف للتنعيم بدلاً من التعيين المباشر
                     this.targetPositions.set(data.userId, { 
@@ -2850,7 +1542,6 @@
             sim: new GameSimulation(), 
             battleResult: null,
             pendingGameStart: null,
-            currentRoom: null,
             
             initSocket() {
                 socket.on('connect', () => console.log('✅ Connected to server'));
@@ -2960,18 +1651,14 @@
                 socket.on('room_update', (data) => {
                     console.log('Room update:', data);
                     socket.emit('list_rooms');
-    
-                    if (document.getElementById('roomScreen').style.display === 'flex' && this.currentRoom && this.currentRoom.roomId === data.roomId) {
-                        this.currentRoom = data;
-                        this.renderSeats(data);
-                    }
-
                     if(data.players && data.players.length === data.maxSeats) {
                         document.getElementById('lobbyStatus').innerHTML = '🚀 اكتملت المقاعد! جاري بدء المعركة...';
-                    }
-                });
-                
+        }
+    });
+    
                 socket.on('game_start', (data) => {
+                    // ✅ مسح حالة الإقصاء المحفوظة عند بدء معركة جديدة
+                    localStorage.removeItem('wasEliminated');
         
                     if(window.innerHeight > window.innerWidth) {
                         const warning = document.getElementById('landscapeWarning');
@@ -3044,7 +1731,7 @@
             
                         const eliminationMessage = document.createElement('div');
                         eliminationMessage.className = 'elimination-message';
-                        eliminationMessage.innerHTML = `💀 تم تدمير دبابتك بواسطة ${data.killerUsername || 'عدو مجهول'}! 💀`;
+                        eliminationMessage.innerHTML = '💀 لقد تم تدمير دبابتك! 💀';
                         document.body.appendChild(eliminationMessage);
             
                         document.getElementById('joystickBase').style.opacity = '0.3';
@@ -3059,270 +1746,259 @@
                             document.getElementById('joystickBase').style.pointerEvents = 'auto';
                             document.getElementById('fireBtn').style.pointerEvents = 'auto';
                             this.endBattle('لقد تم إقصاؤك من المعركة');
-                        }, 3000);
+                        }, 2500);
         }
     });
     
-                socket.on('balance_updated', (data) => {
-                    currentBalance = data.newBalance;
-                    document.getElementById('balance').innerText = currentBalance;
-                    document.getElementById('gameBalance').innerText = currentBalance;
-        alert(`تم تحديث رصيدك: ${data.newBalance}$`);
-    });
-    
-                socket.on('admin_stats_update', (data) => {
-                    const statsBox = document.getElementById('adminStats');
-                    statsBox.innerHTML = `
-                        <p>إجمالي اللاعبين: ${data.totalUsers}</p>
-                        <p>اللاعبون النشطون: ${data.activeUsers}</p>
-                        <p>إجمالي الأرصدة: ${data.totalBalance}$</p>
-                        <p>سعر المقعد الحالي: ${data.seatPrice}$</p>
-                        <p>الحد الأقصى للاعبين: ${data.maxPlayers}</p>
-                    `;
-        });
-    
-                socket.on('error', (message) => {
-                    console.error('Socket Error:', message);
-        alert('خطأ: ' + message);
-    });
-
-                socket.on('room_full', (message) => {
-                    alert(message);
-                });
-
-                socket.on('seat_taken', (message) => {
-                    alert(message);
-                });
-
-                socket.on('join_room_error', (message) => {
-                    alert(message);
-                });
-
-                socket.on('room_left', (data) => {
-                    console.log('Left room:', data);
-                    // إظهار إشعار مغادرة الغرفة
-                    this.showNotification(`👋 لقد غادرت الغرفة. تم إعادة ${data.refundAmount}$ إلى رصيدك.`, 'info');
-                    this.returnToLobby();
-                });
-
-                socket.on('player_joined_room', (data) => {
-                    // إظهار إشعار انضمام لاعب جديد
-                    this.showNotification(`👋 انضم ${data.username} إلى الغرفة!`, 'success');
-                    socket.emit('list_rooms'); // تحديث قائمة الغرف
-                });
-
-                socket.on('player_left_room', (data) => {
-                    // إظهار إشعار مغادرة لاعب
-                    this.showNotification(`🚶‍♂️ غادر ${data.username} الغرفة.`, 'info');
-                    socket.emit('list_rooms'); // تحديث قائمة الغرف
-                });
-
-                socket.on('room_closed', (data) => {
-                    // إظهار إشعار إغلاق الغرفة
-                    this.showNotification(`🔒 تم إغلاق الغرفة ${data.roomId}.`, 'warning');
-                    socket.emit('list_rooms'); // تحديث قائمة الغرف
-                    this.returnToLobby(); // العودة إلى اللوبي
-                });
-
-                socket.on('game_countdown', (data) => {
-                    this.showNotification(`⏱️ ستبدأ المعركة في ${data.countdown} ثوانٍ!`, 'info');
-                });
-
-                socket.on('game_started_notification', (data) => {
-                    this.showNotification(`🚀 بدأت المعركة في الغرفة ${data.roomId}!`, 'success');
-                });
-
-                socket.on('game_ended_notification', (data) => {
-                    this.showNotification(`🏁 انتهت المعركة في الغرفة ${data.roomId}. الفائز: ${data.winnerUsername}`, 'info');
-});
-
-                socket.on('room_details', (data) => {
-                    const opponentCount = data.maxSeats - data.players.length;
-                    const opponentText = opponentCount > 0 ? `تنتظر ${opponentCount} خصوم` : 'اكتملت المقاعد';
-                    this.showNotification(`✅ انضممت إلى الغرفة ${data.roomId}. ${opponentText}.`, 'success');
-                    this.openRoomScreen(data);
-});
-
-            showNotification(message, type = 'info') {
-                const notificationDiv = document.createElement('div');
-                notificationDiv.className = `notification ${type}`;
-                notificationDiv.innerText = message;
-                document.body.appendChild(notificationDiv);
-
-                setTimeout(() => {
-                    notificationDiv.classList.add('hide');
-                    notificationDiv.addEventListener('transitionend', () => notificationDiv.remove());
-                }, 5000);
-            },
-
-            displayRooms(rooms) {
-                const roomsGrid = document.getElementById('roomsGrid');
-                roomsGrid.innerHTML = '';
-                if (rooms.length === 0) {
-                    roomsGrid.innerHTML = '<p style="color:#aaa;">لا توجد غرف متاحة حالياً. أنشئ واحدة!</p>';
-                    return;
+                socket.on('players_list_update', (data) => {
+                    if (this.sim && this.sim.gameActive && data.players) {
+                        const existingTanks = new Set(this.sim.tanks.keys());
+                        const newPlayers = new Set(data.players.map(p => p.userId));
+            
+                        for (const userId of existingTanks) {
+                            if (!newPlayers.has(userId) && userId !== currentUser?.uid) {
+                                this.sim.removeTank(userId);
                 }
-
-                rooms.forEach(room => {
-                    const roomCard = document.createElement('div');
-                    roomCard.className = `room-card ${room.players.length === room.maxSeats ? 'full' : ''}`;
-                    roomCard.innerHTML = `
-                        <div class="room-info">
-                            <div class="room-name">${room.roomId}</div>
-                            <div class="room-details">${room.players.length}/${room.maxSeats} لاعبين</div>
-                        </div>
-                        <div class="room-price">
-                            <div class="price-value">${room.seatPrice}$</div>
-                            <div class="players-count">${room.players.map(p => p.username).join(', ')}</div>
-                        </div>
-    `;
-                    roomCard.addEventListener('click', () => {
-                        this.openRoomScreen(room);
+            }
+            
+                        this.sim.updateCounts();
+        }
     });
-                    roomsGrid.appendChild(roomCard);
-});
+    
+                socket.on('health_update', (data) => {
+                    if (data.userId === currentUser?.uid) {
+                        document.getElementById('health').innerText = data.health;
+        }
+    });
+    
+                socket.on('error', (data) => {
+                    alert(data.message);
+    });
 },
-            openRoomScreen(room) {
-                document.getElementById('lobby').style.display = 'flex';
-                if(document.getElementById('roomScreen')) document.getElementById('roomScreen').style.display = 'none';
-                
-                document.getElementById('roomScreen').style.display = 'flex';
-                document.getElementById('currentRoomTitle').innerText = `غرفة ${room.roomId}`;
-                this.currentRoom = room;
-                this.renderSeats(room);
+            
+            async login(email, password) {
+                if(!email || !password) return alert('الرجاء إدخال البريد وكلمة المرور');
+                document.getElementById('loading').style.display = 'flex';
+                try {
+                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                    const token = await userCredential.user.getIdToken();
+                    socket.emit('auth', { token });
+                } catch(error) {
+                    document.getElementById('loading').style.display = 'none';
+                    alert('خطأ: ' + error.message);
+                }
             },
-
-            renderSeats(room) {
-                const redSeatsContainer = document.getElementById('redTeamSeats');
-                const blueSeatsContainer = document.getElementById('blueTeamSeats');
-                redSeatsContainer.innerHTML = '';
-                blueSeatsContainer.innerHTML = '';
-
-                const maxPerTeam = Math.ceil(room.maxSeats / 2);
-    
-                const redPlayers = room.players.filter(p => p.team === 1 || p.team === 'red');
-                const bluePlayers = room.players.filter(p => p.team === 2 || p.team === 'blue');
-    
-                if (redPlayers.length === 0 && bluePlayers.length === 0 && room.players.length > 0) {
-                    room.players.forEach((p, index) => {
-                        if (index % 2 === 0) redPlayers.push(p);
-                        else bluePlayers.push(p);
-        });
-    }
-
-                document.getElementById('redTeamCount').innerText = `${redPlayers.length}/${maxPerTeam}`;
-                document.getElementById('blueTeamCount').innerText = `${bluePlayers.length}/${maxPerTeam}`;
-
-                let myPlayerInRoom = room.players.find(p => p.userId === currentUser?.uid);
-    
-                const leaveBtn = document.getElementById('leaveRoomBtn');
-                const backBtn = document.getElementById('backFromRoomBtn');
-    
-                if (myPlayerInRoom) {
-                    leaveBtn.style.display = 'block';
-                    backBtn.style.display = 'none';
-                    document.getElementById('roomStatusText').innerText = 'أنت في هذه الغرفة بانتظار بدء المعركة...';
-        
-                    if (room.players.length === room.maxSeats) {
-                        leaveBtn.disabled = true;
-                        leaveBtn.innerText = '🔒 اكتملت المقاعد (لا يمكن المغادرة)';
-                    } else {
-                        leaveBtn.disabled = false;
-                        leaveBtn.innerText = '🚪 مغادرة المقعد';
-        }
-                } else {
-                    leaveBtn.style.display = 'none';
-                    backBtn.style.display = 'block';
-                    document.getElementById('roomStatusText').innerText = 'اختر مقعدك للانضمام';
-    }
-
-                for (let i = 0; i < maxPerTeam; i++) {
-                    const player = redPlayers[i];
-                    const seatBtn = document.createElement('button');
-                    seatBtn.className = 'seat-btn';
-        
-                    if (player) {
-                        seatBtn.classList.add('occupied');
-                        if (player.userId === currentUser?.uid) seatBtn.classList.add('my-seat');
-                        seatBtn.innerHTML = `<div class="seat-icon">🔴</div><div>${player.username || 'لاعب'}</div>`;
-                        seatBtn.disabled = true;
-                    } else {
-                        seatBtn.innerHTML = `<div class="seat-icon">🪑</div><div>مقعد ${i + 1}</div>`;
-                        seatBtn.onclick = () => this.joinRoomAsTeam(room.roomId, 'red', i);
-        }
-                    redSeatsContainer.appendChild(seatBtn);
-    }
-
-                for (let i = 0; i < maxPerTeam; i++) {
-                    const player = bluePlayers[i];
-                    const seatBtn = document.createElement('button');
-                    seatBtn.className = 'seat-btn';
-        
-                    if (player) {
-                        seatBtn.classList.add('occupied');
-                        if (player.userId === currentUser?.uid) seatBtn.classList.add('my-seat');
-                        seatBtn.innerHTML = `<div class="seat-icon">🔵</div><div>${player.username || 'لاعب'}</div>`;
-                        seatBtn.disabled = true;
-                    } else {
-                        seatBtn.innerHTML = `<div class="seat-icon">🪑</div><div>مقعد ${i + 1}</div>`;
-                        seatBtn.onclick = () => this.joinRoomAsTeam(room.roomId, 'blue', i);
-        }
-                    blueSeatsContainer.appendChild(seatBtn);
-    }
-},
-            joinRoomAsTeam(roomId, team, seatIndex) {
-                socket.emit('join_room', { roomId, team, seatIndex });
-                },
-            leaveRoom() {
-                socket.emit('leave_room');
+            
+            async register(email, password) {
+                if(!email || !password) return alert('الرجاء إدخال البريد وكلمة المرور');
+                if(password.length < 6) return alert('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+                document.getElementById('loading').style.display = 'flex';
+                try {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    const token = await userCredential.user.getIdToken();
+                    socket.emit('auth', { token });
+                } catch(error) {
+                    document.getElementById('loading').style.display = 'none';
+                    alert('خطأ: ' + error.message);
+                }
             },
-
+            
             showMainScreen() {
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('mainScreen').style.display = 'flex';
-                document.getElementById('lobby').style.display = 'none';
-                document.getElementById('adminPanel').style.display = 'none';
-                document.getElementById('reportScreen').style.display = 'none';
-                document.getElementById('hud').style.display = 'none';
+                this.audio.init();
             },
-
-            showLobbyScreen() {
-                document.getElementById('loginScreen').style.display = 'none';
+            
+            showLobby() {
                 document.getElementById('mainScreen').style.display = 'none';
                 document.getElementById('lobby').style.display = 'flex';
-                document.getElementById('adminPanel').style.display = 'none';
-                document.getElementById('reportScreen').style.display = 'none';
-                document.getElementById('hud').style.display = 'none';
                 socket.emit('join_lobby');
             },
-
-            showAdminPanel() {
-                if (!isAdmin) {
-                    alert('ليس لديك صلاحيات المسؤول.');
+            
+            displayRooms(rooms) {
+                const grid = document.getElementById('roomsGrid');
+                if(!grid) return;
+                if(!rooms || rooms.length === 0) {
+                    grid.innerHTML = '<div style="text-align:center; padding:20px;">لا توجد غرف متاحة حالياً</div>';
                     return;
+    }
+    
+                // تجميع الغرف حسب النوع
+                const roomsByType = {
+                    'غرفة المبتدئين': [],
+                    'غرفة المتقدمين': [],
+                    'غرفة المحترفين': []
+    };
+    
+                rooms.forEach(room => {
+                    if (room.name.includes('المبتدئين')) {
+                        roomsByType['غرفة المبتدئين'].push(room);
+                    } else if (room.name.includes('المتقدمين')) {
+                        roomsByType['غرفة المتقدمين'].push(room);
+                    } else if (room.name.includes('المحترفين')) {
+                        roomsByType['غرفة المحترفين'].push(room);
+        }
+    });
+    
+                // عرض غرفة واحدة فقط من كل نوع
+                let html = '';
+    
+                // غرفة المبتدئين (أول غرفة متاحة)
+                if (roomsByType['غرفة المبتدئين'].length > 0) {
+                    const room = roomsByType['غرفة المبتدئين'][0];
+                    html += `
+                        <div class="room-card ${room.players >= room.maxSeats ? 'full' : ''}" 
+                             onclick="${room.players >= room.maxSeats ? '' : `gameApp.joinRoom('${room.id}')`}">
+                            <div class="room-info">
+                                <div class="room-name">🏠 ${room.name}</div>
+                                <div class="room-details">👥 ${room.players}/${room.maxSeats} لاعب</div>
+                                <div class="room-details">💰 ${room.seatPrice || 1}$</div>
+                            </div>
+                            <div class="room-price">
+                                <div class="players-count">${room.players >= room.maxSeats ? '🟢 مكتملة' : '🔓 متاحة للانضمام'}</div>
+                            </div>
+                        </div>
+        `;
+    }
+    
+                // غرفة المتقدمين (أول غرفة متاحة)
+                if (roomsByType['غرفة المتقدمين'].length > 0) {
+                    const room = roomsByType['غرفة المتقدمين'][0];
+                    html += `
+                        <div class="room-card ${room.players >= room.maxSeats ? 'full' : ''}" 
+                             onclick="${room.players >= room.maxSeats ? '' : `gameApp.joinRoom('${room.id}')`}">
+                            <div class="room-info">
+                                <div class="room-name">🏠 ${room.name}</div>
+                                <div class="room-details">👥 ${room.players}/${room.maxSeats} لاعب</div>
+                                <div class="room-details">💰 ${room.seatPrice || 1}$</div>
+                            </div>
+                            <div class="room-price">
+                                <div class="players-count">${room.players >= room.maxSeats ? '🟢 مكتملة' : '🔓 متاحة للانضمام'}</div>
+                            </div>
+                        </div>
+        `;
+    }
+    
+                // غرفة المحترفين (أول غرفة متاحة)
+                if (roomsByType['غرفة المحترفين'].length > 0) {
+                    const room = roomsByType['غرفة المحترفين'][0];
+                    html += `
+                        <div class="room-card ${room.players >= room.maxSeats ? 'full' : ''}" 
+                             onclick="${room.players >= room.maxSeats ? '' : `gameApp.joinRoom('${room.id}')`}">
+                            <div class="room-info">
+                                <div class="room-name">🏠 ${room.name}</div>
+                                <div class="room-details">👥 ${room.players}/${room.maxSeats} لاعب</div>
+                                <div class="room-details">💰 ${room.seatPrice || 1}$</div>
+                            </div>
+                            <div class="room-price">
+                                <div class="players-count">${room.players >= room.maxSeats ? '🟢 مكتملة' : '🔓 متاحة للانضمام'}</div>
+                            </div>
+                        </div>
+        `;
+    }
+    
+                if (html === '') {
+                    html = '<div style="text-align:center; padding:20px;">لا توجد غرف متاحة حالياً</div>';
+    }
+    
+                grid.innerHTML = html;
+},
+            
+            updateSeatsDisplay(players, maxSeats) {
+                const grid = document.getElementById('seatsGrid');
+                if(!grid) return;
+                grid.innerHTML = '';
+                for(let i = 0; i < maxSeats; i++) {
+                    const isOccupied = i < players.length;
+                    const seat = document.createElement('div');
+                    seat.className = 'seat' + (isOccupied ? ' occupied' : '');
+                    seat.innerHTML = `<div>${i+1}</div><div>${isOccupied ? (players[i]?.slice(0,8) || 'لاعب') : 'شاغر'}</div>`;
+                    grid.appendChild(seat);
                 }
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('mainScreen').style.display = 'none';
-                document.getElementById('lobby').style.display = 'none';
-                document.getElementById('adminPanel').style.display = 'flex';
-                document.getElementById('reportScreen').style.display = 'none';
-                document.getElementById('hud').style.display = 'none';
-                this.refreshStats();
             },
-
+            
+            createRoom() {
+                socket.emit('create_room', { seats: gameSettings.maxPlayers || 2 });
+            },
+            
+            joinRoom(roomId) {
+                socket.emit('join_room', { roomId });
+            },
+            
             _startGame(data) {
+                // تنظيف المحاكاة القديمة قبل بدء محاكاة جديدة
+                
+                if(this.sim && this.sim.renderer) {
+                    this.sim.gameActive = false;
+                    this.sim.isEliminated = false;
+                    // إزالة جميع المستمعات القديمة
+                    if(this.sim.animationFrameId) {
+                        cancelAnimationFrame(this.sim.animationFrameId);
+                        this.sim.animationFrameId = null;
+        }
+                    // تنظيف المشهد القديم
+                    if(this.sim.scene) {
+                        // إزالة جميع الكائنات من المشهد
+                        while(this.sim.scene.children.length > 0) {
+                            this.sim.scene.remove(this.sim.scene.children[0]);
+            }
+        }
+                    // إعادة تعيين المصفوفات
+                    this.sim.tanks.clear();
+                    this.sim.otherPlayers.clear();
+                    this.sim.targetPositions.clear();
+                    this.sim.bullets = [];
+                    this.sim.particles = [];
+                    this.sim.obstacles = [];
+                
+    }
+                if (this.audio) {
+                    this.audio.stopEngine();
+                      
+                    this.audio.startEngine();
+    }
                 document.getElementById('lobby').style.display = 'none';
-                document.getElementById('hud').style.display = 'flex';
-                this.sim.gameActive = true;
+                document.getElementById('hud').style.display = 'block';
+                document.getElementById('health').innerText = '100';
+    
                 this.sim.isEliminated = false;
-                this.sim.otherPlayers.clear();
-                this.sim.tanks.clear();
-                this.sim.bullets = [];
-                this.sim.particles = [];
-                this.sim.playerTank = this.sim.createTank(0x00ff00, data.playerStartPos.x, data.playerStartPos.z, data.playerTeam, currentUser.uid);
-                data.otherPlayers.forEach(p => {
-                    this.sim.addOtherPlayer(p);
-                });
+                this.sim.gameActive = true;
+                this.sim.lastMoveTime = 0;
+    
+                document.getElementById('joystickBase').style.opacity = '1';
+                document.getElementById('fireBtn').style.opacity = '1';
+                document.getElementById('joystickBase').style.pointerEvents = 'auto';
+                document.getElementById('fireBtn').style.pointerEvents = 'auto';
+    
+                this.sim.init();
+    
+                const positions = [
+                    { x: -120, z: -80, team: 1 },  // الفريق الأحمر - خلف الجدار تماماً
+                    { x: 120, z: 80, team: 2 }
+    ];
+                const myTeam = data.yourTeam || 1;
+                const myPos = positions[myTeam === 1 ? 0 : 1];
+                const myColor = myTeam === 1 ? 0x8b5a2b : 0x4a6a8b;
+    
+                this.sim.playerTeam = myTeam;
+                this.sim.playerTank = this.sim.createTank(myColor, myPos.x, myPos.z, myTeam, currentUser?.uid);
+                this.sim.playerTank.userData.playerId = currentUser?.uid;
+                this.sim.tanks.set(currentUser?.uid, this.sim.playerTank);
+    
+                if(data.players) {
+                    data.players.forEach(player => {
+                        if(player.userId !== currentUser?.uid) {
+                            const otherTeam = player.team || (player.userId === data.players[0]?.userId ? 1 : 2);
+                            const otherPos = positions[otherTeam === 1 ? 0 : 1];
+                            const otherColor = otherTeam === 1 ? 0x8b5a2b : 0x4a6a8b;
+                            const tank = this.sim.createTank(otherColor, otherPos.x, otherPos.z, otherTeam, player.userId);
+                            tank.userData.playerId = player.userId;
+                            this.sim.tanks.set(player.userId, tank);
+                            this.sim.otherPlayers.set(player.userId, tank);
+            }
+        });
+    }
+    
                 this.sim.updateCounts();
                 this.setupControls();
                 this.audio.startEngine();
@@ -3553,114 +2229,63 @@
                     const data = await response.json();
                     if(data.success) {
                         statsBox.innerHTML = `
-                            <p>إجمالي اللاعبين: ${data.totalUsers}</p>
-                            <p>اللاعبون النشطون: ${data.activeUsers}</p>
-                            <p>إجمالي الأرصدة: ${data.totalBalance}$</p>
-                            <p>سعر المقعد الحالي: ${data.seatPrice}$</p>
-                            <p>الحد الأقصى للاعبين: ${data.maxPlayers}</p>
+                            <strong>📊 إحصائيات عامة</strong><br>
+                            👥 إجمالي اللاعبين: ${data.report.totalUsers}<br>
+                            💰 إجمالي الأرصدة: ${data.report.totalBalance} $<br>
+                            🎮 إجمالي المباريات: ${data.report.totalGames}<br>
+                            🏆 إجمالي الانتصارات: ${data.report.totalWins}<br>
+                            <hr>
+                            <strong>👤 قائمة اللاعبين:</strong><br>
+                            ${data.report.users.map(u => `📧 ${u.email} | 💰 ${u.balance}$ | 🎮 ${u.gamesPlayed} | 🏆 ${u.wins} ${u.isAdmin ? '👑' : ''}`).join('<br>')}
                         `;
                     } else {
-                        statsBox.innerHTML = `<p>خطأ في تحميل الإحصائيات: ${data.error}</p>`;
+                        statsBox.innerHTML = 'خطأ في تحميل الإحصائيات';
                     }
-                } catch(e) { statsBox.innerHTML = '<p>خطأ في الاتصال بالخادم.</p>'; }
+                } catch(e) {
+                    statsBox.innerHTML = 'خطأ في الاتصال بالخادم';
+                }
             },
-
+            
             init() {
                 this.initSocket();
-                document.getElementById('loginBtn').addEventListener('click', () => this.handleLogin());
-                document.getElementById('registerBtn').addEventListener('click', () => this.handleRegister());
-                document.getElementById('playBtn').addEventListener('click', () => this.showLobbyScreen());
-                document.getElementById('walletBtn').addEventListener('click', () => this.goToWallet());
-                document.getElementById('adminBtn').addEventListener('click', () => this.showAdminPanel());
-               document.getElementById('backFromLobbyBtn').addEventListener('click', () => this.showMainScreen());
-                document.getElementById('backFromRoomBtn').addEventListener('click', () => {
-                    document.getElementById('roomScreen').style.display = 'none';
-                    document.getElementById('lobby').style.display = 'none';\n                if(document.getElementById('roomScreen')) document.getElementById('roomScreen').style.display = 'none';
-                });
-                document.getElementById('leaveRoomBtn').addEventListener('click', () => this.leaveRoom());
-              document.getElementById('closeAdminBtn').addEventListener('click', () => this.showMainScreen());
-                document.getElementById('saveSeatPriceBtn').addEventListener('click', () => this.saveSeatPrice());
-                document.getElementById('saveMaxPlayersBtn').addEventListener('click', () => this.saveMaxPlayers());
-                document.getElementById('adminDepositBtn').addEventListener('click', () => this.adminDeposit());
-                document.getElementById('adminWithdrawBtn').addEventListener('click', () => this.adminWithdraw());
-                document.getElementById('resetDataBtn').addEventListener('click', () => this.resetAllData());
-                document.getElementById('refreshStatsBtn').addEventListener('click', () => this.refreshStats());
-                document.getElementById('fullscreenBtn').addEventListener('click', () => this.toggleFullscreen());
-
-                // التحقق من وجود توكن Firebase عند التحميل
-                const savedToken = localStorage.getItem('firebaseToken');
-                const savedUserId = localStorage.getItem('userId');
-                const savedEmail = localStorage.getItem('userEmail');
-                const savedIsAdmin = localStorage.getItem('isAdmin') === 'true';
-
-                if (savedToken && savedUserId && savedEmail) {
-                    document.getElementById('loading').style.display = 'flex';
-                    currentUser = { uid: savedUserId, email: savedEmail, isAdmin: savedIsAdmin };
-                    isAdmin = savedIsAdmin;
-                    socket.emit('auth', { token: savedToken });
-                } else {
-                    this.showLoginScreen();
-                }
-
-                // التحقق من حالة الإقصاء عند تحميل الصفحة
-                if (localStorage.getItem('wasEliminated') === 'true') {
-                    this.showNotification('💀 لقد تم إقصاؤك من المعركة السابقة!', 'warning');
-                    localStorage.removeItem('wasEliminated');
-                }
-            },
-
-            async handleLogin() {
-                const email = document.getElementById('email').value;
-                const password = document.getElementById('password').value;
-                if (!email || !password) return alert('الرجاء إدخال البريد الإلكتروني وكلمة المرور.');
-
-                document.getElementById('loading').style.display = 'flex';
-                try {
-                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                    const token = await userCredential.user.getIdToken();
-                    socket.emit('auth', { token: token });
-                } catch (error) {
-                    document.getElementById('loading').style.display = 'none';
-                    alert('خطأ في تسجيل الدخول: ' + error.message);
-                }
-            },
-
-            async handleRegister() {
-                const email = document.getElementById('email').value;
-                const password = document.getElementById('password').value;
-                if (!email || !password) return alert('الرجاء إدخال البريد الإلكتروني وكلمة المرور.');
-
-                document.getElementById('loading').style.display = 'flex';
-                try {
-                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                    const token = await userCredential.user.getIdToken();
-                    socket.emit('auth', { token: token });
-                } catch (error) {
-                    document.getElementById('loading').style.display = 'none';
-                    alert('خطأ في إنشاء الحساب: ' + error.message);
-                }
+                
+                document.getElementById('loginBtn').onclick = () => {
+                    const email = document.getElementById('email').value;
+                    const password = document.getElementById('password').value;
+                    this.login(email, password);
+                };
+                document.getElementById('registerBtn').onclick = () => {
+                    const email = document.getElementById('email').value;
+                    const password = document.getElementById('password').value;
+                    this.register(email, password);
+                };
+                document.getElementById('playBtn').onclick = () => this.showLobby();
+                document.getElementById('walletBtn').onclick = () => this.goToWallet();
+                document.getElementById('adminBtn').onclick = () => {
+                    window.location.href = 'admin.html';
+};
+                
+                document.getElementById('backFromLobbyBtn').onclick = () => {
+                    document.getElementById('lobby').style.display = 'none';
+                    document.getElementById('mainScreen').style.display = 'flex';
+                };
+                document.getElementById('backHomeBtn').onclick = () => this.backToHome();
+                document.getElementById('closeAdminBtn').onclick = () => document.getElementById('adminPanel').style.display = 'none';
+                document.getElementById('saveSeatPriceBtn').onclick = () => this.saveSeatPrice();
+                document.getElementById('saveMaxPlayersBtn').onclick = () => this.saveMaxPlayers();
+                document.getElementById('adminDepositBtn').onclick = () => this.adminDeposit();
+                document.getElementById('adminWithdrawBtn').onclick = () => this.adminWithdraw();
+                document.getElementById('resetDataBtn').onclick = () => this.resetAllData();
+                document.getElementById('refreshStatsBtn').onclick = () => this.refreshStats();
+                document.getElementById('fullscreenBtn').onclick = () => this.toggleFullscreen();
             }
         };
-
-        document.addEventListener('DOMContentLoaded', () => gameApp.init());
-
-        // Handle landscape warning
-        function checkOrientation() {
-            const warning = document.getElementById('landscapeWarning');
-            if (window.innerHeight > window.innerWidth) {
-                warning.style.display = 'flex';
-            } else {
-                warning.style.display = 'none';
-                if (gameApp.pendingGameStart) {
-                    gameApp._startGame(gameApp.pendingGameStart);
-                    gameApp.pendingGameStart = null;
-                }
-            }
-        }
-
-        window.addEventListener('orientationchange', checkOrientation);
-        window.addEventListener('resize', checkOrientation);
-        checkOrientation();
+        
+        window.gameApp = gameApp;
+        gameApp.init();
+        console.log('🎮 Game ready!');
     </script>
 </body>
 </html>
+
+
