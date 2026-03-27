@@ -2957,21 +2957,21 @@
                     socket.emit('list_rooms');
     });
 
-                socket.on(\'room_update\', (data) => {
-                    console.log(\'Room update:\', data);
-                    socket.emit(\'list_rooms\');
-                    
-                    if (document.getElementById(\'roomScreen\').style.display === \'flex\' && this.currentRoom && this.currentRoom.roomId === data.roomId) {
+                socket.on('room_update', (data) => {
+                    console.log('Room update:', data);
+                    socket.emit('list_rooms');
+    
+                    if (document.getElementById('roomScreen').style.display === 'flex' && this.currentRoom && this.currentRoom.roomId === data.roomId) {
                         this.currentRoom = data;
                         this.renderSeats(data);
                     }
 
                     if(data.players && data.players.length === data.maxSeats) {
-                        document.getElementById(\'lobbyStatus\').innerHTML = \'🚀 اكتملت المقاعد! جاري بدء المعركة...\';
+                        document.getElementById('lobbyStatus').innerHTML = '🚀 اكتملت المقاعد! جاري بدء المعركة...';
                     }
-                });            socket.on('game_start', (data) => {
-                    // ✅ مسح حالة الإقصاء المحفوظة عند بدء معركة جديدة
-                    localStorage.removeItem('wasEliminated');
+                });
+                
+                socket.on('game_start', (data) => {
         
                     if(window.innerHeight > window.innerWidth) {
                         const warning = document.getElementById('landscapeWarning');
@@ -3134,12 +3134,14 @@
 
                 socket.on('game_ended_notification', (data) => {
                     this.showNotification(`🏁 انتهت المعركة في الغرفة ${data.roomId}. الفائز: ${data.winnerUsername}`, 'info');
-                }                socket.on(\'room_details\', (data) => {
+});
+
+                socket.on('room_details', (data) => {
                     const opponentCount = data.maxSeats - data.players.length;
-                    const opponentText = opponentCount > 0 ? `تنتظر ${opponentCount} خصوم` : \'اكتملت المقاعد\';
-                    this.showNotification(`✅ انضممت إلى الغرفة ${data.roomId}. ${opponentText}.`, \'success\');
+                    const opponentText = opponentCount > 0 ? `تنتظر ${opponentCount} خصوم` : 'اكتملت المقاعد';
+                    this.showNotification(`✅ انضممت إلى الغرفة ${data.roomId}. ${opponentText}.`, 'success');
                     this.openRoomScreen(data);
-                });            },
+});
 
             showNotification(message, type = 'info') {
                 const notificationDiv = document.createElement('div');
@@ -3173,83 +3175,106 @@
                             <div class="price-value">${room.seatPrice}$</div>
                             <div class="players-count">${room.players.map(p => p.username).join(', ')}</div>
                         </div>
-                                     roomCard.addEventListener(\'click\', () => {
+    `;
+                    roomCard.addEventListener('click', () => {
                         this.openRoomScreen(room);
-                    });
+    });
                     roomsGrid.appendChild(roomCard);
-                });
-            },
-
+});
+},
             openRoomScreen(room) {
-                document.getElementById(\'lobby\').style.display = \'flex\';
-                if(document.getElementById(\'roomScreen\')) document.getElementById(\'roomScreen\').style.display = \'none\';
-                if(document.getElementById(\'roomScreen\')) document.getElementById(\'roomScreen\').style.display = \'none\';
-                document.getElementById(\'roomScreen\').style.display = \'flex\';
-                document.getElementById(\'currentRoomTitle\').innerText = `غرفة ${room.roomId}`;
+                document.getElementById('lobby').style.display = 'flex';
+                if(document.getElementById('roomScreen')) document.getElementById('roomScreen').style.display = 'none';
+                
+                document.getElementById('roomScreen').style.display = 'flex';
+                document.getElementById('currentRoomTitle').innerText = `غرفة ${room.roomId}`;
                 this.currentRoom = room;
                 this.renderSeats(room);
             },
 
             renderSeats(room) {
-                const redSeatsContainer = document.getElementById(\'redTeamSeats\');
-                const blueSeatsContainer = document.getElementById(\'blueTeamSeats\');
-                redSeatsContainer.innerHTML = \'\';
-                blueSeatsContainer.innerHTML = \'\';
+                const redSeatsContainer = document.getElementById('redTeamSeats');
+                const blueSeatsContainer = document.getElementById('blueTeamSeats');
+                redSeatsContainer.innerHTML = '';
+                blueSeatsContainer.innerHTML = '';
 
                 const maxPerTeam = Math.ceil(room.maxSeats / 2);
-                
-                const redPlayers = room.players.filter(p => p.team === 1 || p.team === \'red\');
-                const bluePlayers = room.players.filter(p => p.team === 2 || p.team === \'blue\');
-                
+    
+                const redPlayers = room.players.filter(p => p.team === 1 || p.team === 'red');
+                const bluePlayers = room.players.filter(p => p.team === 2 || p.team === 'blue');
+    
                 if (redPlayers.length === 0 && bluePlayers.length === 0 && room.players.length > 0) {
                     room.players.forEach((p, index) => {
                         if (index % 2 === 0) redPlayers.push(p);
                         else bluePlayers.push(p);
-                    });
-                }
+        });
+    }
 
-                document.getElementById(\'redTeamCount\').innerText = `${redPlayers.length}/${maxPerTeam}`;
-                document.getElementById(\'blueTeamCount\').innerText = `${bluePlayers.length}/${maxPerTeam}`;
+                document.getElementById('redTeamCount').innerText = `${redPlayers.length}/${maxPerTeam}`;
+                document.getElementById('blueTeamCount').innerText = `${bluePlayers.length}/${maxPerTeam}`;
 
                 let myPlayerInRoom = room.players.find(p => p.userId === currentUser?.uid);
-                
-                const leaveBtn = document.getElementById(\'leaveRoomBtn\');
-                const backBtn = document.getElementById(\'backFromRoomBtn\');
-                
+    
+                const leaveBtn = document.getElementById('leaveRoomBtn');
+                const backBtn = document.getElementById('backFromRoomBtn');
+    
                 if (myPlayerInRoom) {
-                    leaveBtn.style.display = \'block\';
-                    backBtn.style.display = \'none\';
-                    document.getElementById(\'roomStatusText\').innerText = \'أنت في هذه الغرفة بانتظار بدء المعركة...\';
-                    
+                    leaveBtn.style.display = 'block';
+                    backBtn.style.display = 'none';
+                    document.getElementById('roomStatusText').innerText = 'أنت في هذه الغرفة بانتظار بدء المعركة...';
+        
                     if (room.players.length === room.maxSeats) {
                         leaveBtn.disabled = true;
-                        leaveBtn.innerText = \'🔒 اكتملت المقاعد (لا يمكن المغادرة)\
-';
+                        leaveBtn.innerText = '🔒 اكتملت المقاعد (لا يمكن المغادرة)';
                     } else {
                         leaveBtn.disabled = false;
-                        leaveBtn.innerText = \'🚪 مغادرة المقعد\';
-                    }
+                        leaveBtn.innerText = '🚪 مغادرة المقعد';
+        }
                 } else {
-                    leaveBtn.style.display = \'none\';
-                    backBtn.style.display = \'block\';
-                    document.getElementById(\'roomStatusText\').innerText = \'اختر مقعدك للانضمام\';
-                }
+                    leaveBtn.style.display = 'none';
+                    backBtn.style.display = 'block';
+                    document.getElementById('roomStatusText').innerText = 'اختر مقعدك للانضمام';
+    }
 
                 for (let i = 0; i < maxPerTeam; i++) {
                     const player = redPlayers[i];
-                    const seatBtn = document.createElement(\'button\');
-                    seatBtn.className = \'seat-btn\';
-                    
+                    const seatBtn = document.createElement('button');
+                    seatBtn.className = 'seat-btn';
+        
                     if (player) {
-                        seatBtn.classList.add(\'occupied\');
-                        if (player.userId === currentUser?.uid) seatBtn.classList.add(\'my-seat\');
-                        seatBtn.innerHTML = `<div class=\
-                document.getElementById('loginScreen').style.display = 'flex';
-                document.getElementById('mainScreen').style.display = 'none';
-                document.getElementById('lobby').style.display = 'none';
-                document.getElementById('adminPanel').style.display = 'none';
-                document.getElementById('reportScreen').style.display = 'none';
-                document.getElementById('hud').style.display = 'none';
+                        seatBtn.classList.add('occupied');
+                        if (player.userId === currentUser?.uid) seatBtn.classList.add('my-seat');
+                        seatBtn.innerHTML = `<div class="seat-icon">🔴</div><div>${player.username || 'لاعب'}</div>`;
+                        seatBtn.disabled = true;
+                    } else {
+                        seatBtn.innerHTML = `<div class="seat-icon">🪑</div><div>مقعد ${i + 1}</div>`;
+                        seatBtn.onclick = () => this.joinRoomAsTeam(room.roomId, 'red', i);
+        }
+                    redSeatsContainer.appendChild(seatBtn);
+    }
+
+                for (let i = 0; i < maxPerTeam; i++) {
+                    const player = bluePlayers[i];
+                    const seatBtn = document.createElement('button');
+                    seatBtn.className = 'seat-btn';
+        
+                    if (player) {
+                        seatBtn.classList.add('occupied');
+                        if (player.userId === currentUser?.uid) seatBtn.classList.add('my-seat');
+                        seatBtn.innerHTML = `<div class="seat-icon">🔵</div><div>${player.username || 'لاعب'}</div>`;
+                        seatBtn.disabled = true;
+                    } else {
+                        seatBtn.innerHTML = `<div class="seat-icon">🪑</div><div>مقعد ${i + 1}</div>`;
+                        seatBtn.onclick = () => this.joinRoomAsTeam(room.roomId, 'blue', i);
+        }
+                    blueSeatsContainer.appendChild(seatBtn);
+    }
+},
+            joinRoomAsTeam(roomId, team, seatIndex) {
+                socket.emit('join_room', { roomId, team, seatIndex });
+                },
+            leaveRoom() {
+                socket.emit('leave_room');
             },
 
             showMainScreen() {
@@ -3547,12 +3572,12 @@
                 document.getElementById('playBtn').addEventListener('click', () => this.showLobbyScreen());
                 document.getElementById('walletBtn').addEventListener('click', () => this.goToWallet());
                 document.getElementById('adminBtn').addEventListener('click', () => this.showAdminPanel());
-               document.getElementById(\'backFromLobbyBtn\').addEventListener(\'click\', () => this.showMainScreen());
-                document.getElementById(\'backFromRoomBtn\').addEventListener(\'click\', () => {
-                    document.getElementById(\'roomScreen\').style.display = \'none\';
-                    document.getElementById(\'lobby\').style.display = \'none\';\n                if(document.getElementById(\'roomScreen\')) document.getElementById(\'roomScreen\').style.display = \'none\';
+               document.getElementById('backFromLobbyBtn').addEventListener('click', () => this.showMainScreen());
+                document.getElementById('backFromRoomBtn').addEventListener('click', () => {
+                    document.getElementById('roomScreen').style.display = 'none';
+                    document.getElementById('lobby').style.display = 'none';\n                if(document.getElementById('roomScreen')) document.getElementById('roomScreen').style.display = 'none';
                 });
-                document.getElementById(\'leaveRoomBtn\').addEventListener(\'click\', () => this.leaveRoom());
+                document.getElementById('leaveRoomBtn').addEventListener('click', () => this.leaveRoom());
               document.getElementById('closeAdminBtn').addEventListener('click', () => this.showMainScreen());
                 document.getElementById('saveSeatPriceBtn').addEventListener('click', () => this.saveSeatPrice());
                 document.getElementById('saveMaxPlayersBtn').addEventListener('click', () => this.saveMaxPlayers());
