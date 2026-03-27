@@ -799,13 +799,108 @@
         let isFullscreen = false;
         
         class AudioEngine {
-            constructor() { this.ctx = null; this.engineOsc = null; this.engineGain = null; }
-            init() { if (this.ctx) return; try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
-            startEngine() { if (!this.ctx) this.init(); if (this.engineOsc) return; try { this.engineOsc = this.ctx.createOscillator(); this.engineGain = this.ctx.createGain(); const filter = this.ctx.createBiquadFilter(); this.engineOsc.type = 'sawtooth'; this.engineOsc.frequency.value = 42; filter.type = 'lowpass'; filter.frequency.value = 180; this.engineGain.gain.value = 0.08; this.engineOsc.connect(filter); filter.connect(this.engineGain); this.engineGain.connect(this.ctx.destination); this.engineOsc.start(); } catch(e) {} }
-            updateEngine(speed) { if (!this.engineOsc) return; const freq = 42 + speed * 40; this.engineOsc.frequency.setTargetAtTime(freq, this.ctx.currentTime, 0.05); this.engineGain.gain.setTargetAtTime(0.08 + speed * 0.1, this.ctx.currentTime, 0.05); }
-            fire() { if (!this.ctx) return; const now = this.ctx.currentTime; const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain(); osc.type = 'square'; osc.frequency.setValueAtTime(170, now); osc.frequency.exponentialRampToValueAtTime(55, now + 0.28); gain.gain.setValueAtTime(0.7, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.32); osc.connect(gain); gain.connect(this.ctx.destination); osc.start(now); osc.stop(now + 0.32); }
-            explosion(distance) { if (!this.ctx) return; const vol = Math.max(0.2, Math.min(0.9, 1 - distance / 60)); const now = this.ctx.currentTime; const noise = this.ctx.createBufferSource(); const buffer = this.ctx.createBuffer(1, this.ctx.sampleRate * 1.0, this.ctx.sampleRate); const data = buffer.getChannelData(0); for (let i = 0; i < buffer.length; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / buffer.length, 1.3); noise.buffer = buffer; const gain = this.ctx.createGain(); gain.gain.setValueAtTime(vol, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 1.0); noise.connect(gain); gain.connect(this.ctx.destination); noise.start(now); }
+            constructor() { 
+                this.ctx = null; 
+                this.engineOsc = null; 
+                this.engineGain = null; 
+                this.filter = null;
+    }
+    
+            init() { 
+                if (this.ctx) return; 
+                try { 
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)(); 
+                } catch(e) {} 
+    }
+    
+            startEngine() { 
+                if (!this.ctx) this.init(); 
+                if (this.engineOsc) return; 
+                try { 
+                    this.engineOsc = this.ctx.createOscillator(); 
+                    this.engineGain = this.ctx.createGain(); 
+                    this.filter = this.ctx.createBiquadFilter(); 
+                    this.engineOsc.type = 'sawtooth'; 
+                    this.engineOsc.frequency.value = 42; 
+                    this.filter.type = 'lowpass'; 
+                    this.filter.frequency.value = 180; 
+                    this.engineGain.gain.value = 0.08; 
+                    this.engineOsc.connect(this.filter); 
+                    this.filter.connect(this.engineGain); 
+                    this.engineGain.connect(this.ctx.destination); 
+                    this.engineOsc.start(); 
+                } catch(e) {} 
+    }
+    
+            // ✅ دالة إيقاف الصوت
+            stopEngine() {
+                try {
+                    if (this.engineGain) {
+                        // تخفيض الصوت تدريجياً
+                        this.engineGain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.05);
+                        setTimeout(() => {
+                            if (this.engineOsc) {
+                                try {
+                                    this.engineOsc.stop();
+                                    this.engineOsc.disconnect();
+                                } catch(e) {}
+                                this.engineOsc = null;
+                    }
+                            if (this.filter) {
+                                this.filter.disconnect();
+                                this.filter = null;
+                    }
+                            if (this.engineGain) {
+                                this.engineGain.disconnect();
+                                this.engineGain = null;
+                    }
+                        }, 200);
+            }
+                } catch(e) {
+                    console.log('Error stopping engine:', e);
         }
+    }
+    
+            updateEngine(speed) { 
+                if (!this.engineOsc || !this.engineGain) return; 
+                const freq = 42 + speed * 40; 
+                this.engineOsc.frequency.setTargetAtTime(freq, this.ctx.currentTime, 0.05); 
+                this.engineGain.gain.setTargetAtTime(0.08 + speed * 0.1, this.ctx.currentTime, 0.05); 
+    }
+    
+            fire() { 
+                if (!this.ctx) return; 
+                const now = this.ctx.currentTime; 
+                const osc = this.ctx.createOscillator(); 
+                const gain = this.ctx.createGain(); 
+                osc.type = 'square'; 
+                osc.frequency.setValueAtTime(170, now); 
+                osc.frequency.exponentialRampToValueAtTime(55, now + 0.28); 
+                gain.gain.setValueAtTime(0.7, now); 
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.32); 
+                osc.connect(gain); 
+                gain.connect(this.ctx.destination); 
+                osc.start(now); 
+                osc.stop(now + 0.32); 
+    }
+    
+            explosion(distance) { 
+                if (!this.ctx) return; 
+                const vol = Math.max(0.2, Math.min(0.9, 1 - distance / 60)); 
+                const now = this.ctx.currentTime; 
+                const noise = this.ctx.createBufferSource(); 
+                const buffer = this.ctx.createBuffer(1, this.ctx.sampleRate * 1.0, this.ctx.sampleRate); 
+                const data = buffer.getChannelData(0); 
+                for (let i = 0; i < buffer.length; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / buffer.length, 1.3); 
+                noise.buffer = buffer; 
+                const gain = this.ctx.createGain(); 
+                gain.gain.setValueAtTime(vol, now); 
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 1.0); 
+                noise.connect(gain); 
+                gain.connect(this.ctx.destination); 
+                noise.start(now); 
+    }
+}
 
         class GameSimulation {
             constructor() { 
@@ -1450,7 +1545,53 @@
             
             initSocket() {
                 socket.on('connect', () => console.log('✅ Connected to server'));
-                
+    
+                // ✅ إضافة معالجة إعادة الاتصال
+                socket.on('reconnect', () => {
+                    console.log('🔄 Reconnected to server');
+                    // إعادة المصادقة بعد إعادة الاتصال
+                    const savedToken = localStorage.getItem('firebaseToken');
+                    if (savedToken && currentUser) {
+                        socket.emit('auth', { token: savedToken });
+        }
+    });
+    
+                // ✅ إضافة حدث التحقق من حالة الإقصاء من الخادم
+                socket.on('check_elimination_status', (data) => {
+                    console.log('📡 Elimination status check:', data);
+                    if (data.isEliminated && this.sim && this.sim.gameActive) {
+                        // اللاعب كان مقتولاً قبل الانقطاع
+                        this.sim.isEliminated = true;
+                        this.sim.gameActive = false;
+            
+                        if (this.sim.playerTank) {
+                            this.sim.createExplosion(this.sim.playerTank.position, 2.5);
+                            this.sim.scene.remove(this.sim.playerTank);
+                            this.sim.playerTank = null;
+            }
+            
+                        // إظهار رسالة الإقصاء
+                        const eliminationMessage = document.createElement('div');
+                        eliminationMessage.className = 'elimination-message';
+                        eliminationMessage.innerHTML = '💀 لقد تم تدمير دبابتك سابقاً! 💀';
+                        document.body.appendChild(eliminationMessage);
+            
+                        document.getElementById('joystickBase').style.opacity = '0.3';
+                        document.getElementById('fireBtn').style.opacity = '0.3';
+                        document.getElementById('joystickBase').style.pointerEvents = 'none';
+                        document.getElementById('fireBtn').style.pointerEvents = 'none';
+            
+                        setTimeout(() => {
+                            if (eliminationMessage) eliminationMessage.remove();
+                            document.getElementById('joystickBase').style.opacity = '1';
+                            document.getElementById('fireBtn').style.opacity = '1';
+                            document.getElementById('joystickBase').style.pointerEvents = 'auto';
+                            document.getElementById('fireBtn').style.pointerEvents = 'auto';
+                            this.endBattle('لقد تم إقصاؤك من المعركة');
+                        }, 3000);
+        }
+    });
+    
                 socket.on('auth_success', (data) => {
                     console.log('✅ Auth success:', data);
                     document.getElementById('loading').style.display = 'none';
@@ -1458,25 +1599,34 @@
                     currentBalance = data.balance;
                     isAdmin = data.isAdmin;
                     this.sim.playerId = data.userId;
-                    
+        
+                    // ✅ حفظ التوكن و userId في localStorage
+                    localStorage.setItem('firebaseToken', data.token || '');
                     localStorage.setItem('adminToken', 'authenticated');
                     localStorage.setItem('userEmail', data.email);
                     localStorage.setItem('isAdmin', data.isAdmin);
+                    localStorage.setItem('userId', data.userId); // ✅ مهم للوحة التحكم
+        
                     document.getElementById('balance').innerText = currentBalance;
                     document.getElementById('gameBalance').innerText = currentBalance;
                     document.getElementById('username').innerText = data.username || data.email.split('@')[0];
                     document.getElementById('gameUsername').innerText = data.username || data.email.split('@')[0];
                     document.getElementById('gamesPlayed').innerText = data.gamesPlayed || 0;
                     document.getElementById('wins').innerText = data.wins || 0;
+        
                     if(isAdmin) document.getElementById('adminBtn').style.display = 'block';
+        
+                    // ✅ بعد المصادقة، تحقق من حالة الإقصاء (إذا كان في معركة سابقة)
+                    socket.emit('check_elimination', {});
+        
                     this.showMainScreen();
-                });
-                
+    });
+    
                 socket.on('auth_error', (data) => {
                     document.getElementById('loading').style.display = 'none';
-                    alert('خطأ في المصادقة: ' + data.message);
-                });
-                
+        alert('خطأ في المصادقة: ' + data.message);
+    });
+    
                 socket.on('lobby_joined', (data) => {
                     currentBalance = data.balance;
                     document.getElementById('balance').innerText = currentBalance;
@@ -1485,28 +1635,31 @@
                         gameSettings = data.settings;
                         document.getElementById('seatPrice').value = data.settings.seatPrice;
                         document.getElementById('maxPlayers').value = data.settings.maxPlayers;
-    }
+        }
                     socket.emit('list_rooms');
-});
+    });
 
                 socket.on('rooms_list', (data) => {
                     this.displayRooms(data.rooms);
-});
+    });
 
                 socket.on('room_created', (data) => {
                     document.getElementById('lobbyStatus').innerHTML = '✅ تم إنشاء الغرفة، جاري انتظار لاعبين...';
                     socket.emit('list_rooms');
-});
+    });
 
                 socket.on('room_update', (data) => {
                     console.log('Room update:', data);
                     socket.emit('list_rooms');
                     if(data.players && data.players.length === data.maxSeats) {
                         document.getElementById('lobbyStatus').innerHTML = '🚀 اكتملت المقاعد! جاري بدء المعركة...';
-    }
-});
-                
+        }
+    });
+    
                 socket.on('game_start', (data) => {
+                    // ✅ مسح حالة الإقصاء المحفوظة عند بدء معركة جديدة
+                    localStorage.removeItem('wasEliminated');
+        
                     if(window.innerHeight > window.innerWidth) {
                         const warning = document.getElementById('landscapeWarning');
                         warning.style.display = 'flex';
@@ -1517,72 +1670,75 @@
                                 warning.style.display = 'none';
                                 this._startGame(this.pendingGameStart);
                                 this.pendingGameStart = null;
-                            }
+                }
                         }, 200);
                     } else {
                         this._startGame(data);
-                    }
-                });
-                
+        }
+    });
+    
                 socket.on('game_ended', (data) => {
                     this.endBattle(data.winner || (data.yourTeam === 1 ? 'الفريق الأزرق' : 'الفريق الأحمر'));
                     if(data.reward) {
                         currentBalance = data.yourBalance;
                         document.getElementById('balance').innerText = currentBalance;
-                    }
-                });
-                
+        }
+    });
+    
                 socket.on('player_moved', (data) => {
                     if(this.sim && this.sim.gameActive) this.sim.updateOtherPlayer(data);
-                });
-                
+    });
+    
                 socket.on('player_shot', (data) => {
                     console.log('Player shot:', data.userId);
                     if(this.sim && this.sim.gameActive && data.userId !== currentUser?.uid) {
                         this.sim.createRemoteBullet(data);
-    }
-});
-                
+        }
+    });
+    
                 socket.on('game_state_update', (data) => {
                     if(this.sim && this.sim.gameActive && data.players) {
                         data.players.forEach(player => {
                             if(player.userId !== currentUser?.uid) {
                                 this.sim.updateOtherPlayer(player);
-                            }
-                        });
-                    }
-                });
-                
+                }
+            });
+        }
+    });
+    
                 socket.on('player_eliminated', (data) => {
                     console.log('Player eliminated:', data.userId);
                     if (this.sim && this.sim.gameActive && data.userId !== currentUser?.uid) {
                         this.sim.removeTank(data.userId);
-                    }
-                });
-                
+        }
+    });
+    
                 socket.on('you_were_eliminated', (data) => {
                     console.log('You were eliminated by:', data.killerId);
-                    
+        
                     if (this.sim && this.sim.gameActive) {
                         this.sim.isEliminated = true;
                         this.sim.gameActive = false;
-                        
+            
+                        // ✅ حفظ حالة الإقصاء في localStorage
+                        localStorage.setItem('wasEliminated', 'true');
+            
                         if (this.sim.playerTank) {
                             this.sim.createExplosion(this.sim.playerTank.position, 2.5);
                             this.sim.scene.remove(this.sim.playerTank);
                             this.sim.playerTank = null;
-                        }
-                        
+            }
+            
                         const eliminationMessage = document.createElement('div');
                         eliminationMessage.className = 'elimination-message';
                         eliminationMessage.innerHTML = '💀 لقد تم تدمير دبابتك! 💀';
                         document.body.appendChild(eliminationMessage);
-                        
+            
                         document.getElementById('joystickBase').style.opacity = '0.3';
                         document.getElementById('fireBtn').style.opacity = '0.3';
                         document.getElementById('joystickBase').style.pointerEvents = 'none';
                         document.getElementById('fireBtn').style.pointerEvents = 'none';
-                        
+            
                         setTimeout(() => {
                             if (eliminationMessage) eliminationMessage.remove();
                             document.getElementById('joystickBase').style.opacity = '1';
@@ -1591,34 +1747,34 @@
                             document.getElementById('fireBtn').style.pointerEvents = 'auto';
                             this.endBattle('لقد تم إقصاؤك من المعركة');
                         }, 2500);
-                    }
-                });
-                
+        }
+    });
+    
                 socket.on('players_list_update', (data) => {
                     if (this.sim && this.sim.gameActive && data.players) {
                         const existingTanks = new Set(this.sim.tanks.keys());
                         const newPlayers = new Set(data.players.map(p => p.userId));
-                        
+            
                         for (const userId of existingTanks) {
                             if (!newPlayers.has(userId) && userId !== currentUser?.uid) {
                                 this.sim.removeTank(userId);
-                            }
-                        }
-                        
+                }
+            }
+            
                         this.sim.updateCounts();
-                    }
-                });
-                
+        }
+    });
+    
                 socket.on('health_update', (data) => {
                     if (data.userId === currentUser?.uid) {
                         document.getElementById('health').innerText = data.health;
-                    }
-                });
-                
+        }
+    });
+    
                 socket.on('error', (data) => {
                     alert(data.message);
-                });
-            },
+    });
+},
             
             async login(email, password) {
                 if(!email || !password) return alert('الرجاء إدخال البريد وكلمة المرور');
@@ -1771,6 +1927,7 @@
             
             _startGame(data) {
                 // تنظيف المحاكاة القديمة قبل بدء محاكاة جديدة
+                
                 if(this.sim && this.sim.renderer) {
                     this.sim.gameActive = false;
                     this.sim.isEliminated = false;
@@ -1793,8 +1950,13 @@
                     this.sim.bullets = [];
                     this.sim.particles = [];
                     this.sim.obstacles = [];
+                
     }
-    
+                if (this.audio) {
+                    this.audio.stopEngine();
+                      
+                    this.audio.startEngine();
+    }
                 document.getElementById('lobby').style.display = 'none';
                 document.getElementById('hud').style.display = 'block';
                 document.getElementById('health').innerText = '100';
@@ -1899,6 +2061,8 @@
             },
             
             endBattle(winner) {
+                if (this.audio) {
+                    this.audio.stopEngine();
                 if(this.sim) {
                     this.sim.gameActive = false;
                     this.sim.isEliminated = false;
