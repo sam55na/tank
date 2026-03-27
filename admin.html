@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battle Tanks Admin - لوحة التحكم</title>
+    <title>لوحة التحكم - Battle Tanks Admin</title>
     <style>
         * {
             margin: 0;
@@ -24,18 +24,16 @@
             margin: 0 auto;
         }
 
-        header {
+        .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
             border-bottom: 2px solid #d4af37;
-            flex-wrap: wrap;
-            gap: 15px;
         }
 
-        header h1 {
+        .header h1 {
             color: #d4af37;
             font-size: 28px;
         }
@@ -49,7 +47,6 @@
             cursor: pointer;
             font-weight: bold;
             text-decoration: none;
-            display: inline-block;
         }
 
         .stats-grid {
@@ -80,19 +77,17 @@
             font-weight: bold;
         }
 
-        section {
+        .section {
             background: rgba(255,255,255,0.05);
             border-radius: 20px;
             padding: 20px;
             margin-bottom: 30px;
         }
 
-        section h2 {
+        .section h2 {
             color: #d4af37;
             margin-bottom: 20px;
             font-size: 20px;
-            border-right: 3px solid #d4af37;
-            padding-right: 15px;
         }
 
         .users-table {
@@ -195,11 +190,101 @@
             color: #d4af37;
         }
 
+        /* أنماط الغرف */
+        .rooms-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .room-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid #d4af37;
+            border-radius: 15px;
+            padding: 15px;
+        }
+
+        .room-card h3 {
+            color: #d4af37;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .room-info {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .room-info span {
+            background: rgba(212,175,55,0.2);
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+
+        .room-controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            margin-top: 10px;
+        }
+
+        .room-controls .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .room-controls label {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .room-controls input {
+            width: 100px;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #d4af37;
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .room-controls button {
+            background: #d4af37;
+            color: #1a1a2e;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .room-controls button.danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .status-waiting {
+            color: #27ae60;
+        }
+
+        .status-active {
+            color: #f39c12;
+        }
+
+        .status-ended {
+            color: #e74c3c;
+        }
+
         /* أنماط أنواع الغرف */
         .room-types-list {
             display: flex;
             flex-direction: column;
             gap: 20px;
+            margin-bottom: 20px;
         }
 
         .room-type-card {
@@ -207,17 +292,11 @@
             border: 1px solid #d4af37;
             border-radius: 15px;
             padding: 15px;
-            transition: all 0.3s;
-        }
-
-        .room-type-card:hover {
-            background: rgba(255,255,255,0.1);
         }
 
         .room-type-card h3 {
             color: #d4af37;
             margin-bottom: 10px;
-            font-size: 18px;
         }
 
         .room-type-info {
@@ -229,9 +308,9 @@
 
         .room-type-info span {
             background: rgba(212,175,55,0.2);
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 13px;
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-size: 12px;
         }
 
         .room-type-controls {
@@ -239,74 +318,53 @@
             gap: 15px;
             flex-wrap: wrap;
             align-items: flex-end;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid rgba(212,175,55,0.3);
         }
 
-        .control-group {
+        .room-type-controls .control-group {
             display: flex;
             flex-direction: column;
             gap: 5px;
         }
 
-        .control-group label {
+        .room-type-controls label {
             font-size: 12px;
             color: #aaa;
         }
 
-        .control-group input {
-            width: 120px;
-            padding: 8px 12px;
+        .room-type-controls input {
+            width: 100px;
+            padding: 8px;
             border-radius: 8px;
             border: 1px solid #d4af37;
             background: rgba(255,255,255,0.1);
             color: white;
-            font-size: 14px;
         }
 
         .room-type-controls button {
             background: #d4af37;
             color: #1a1a2e;
-            padding: 8px 20px;
+            padding: 8px 15px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
         }
 
-        /* أنماط الغرف النشطة */
         .active-room-card {
             background: rgba(255,255,255,0.05);
             border: 1px solid #d4af37;
             border-radius: 10px;
-            padding: 12px 15px;
+            padding: 10px 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
-            flex-wrap: wrap;
-            gap: 10px;
         }
 
-        .active-room-card strong {
-            color: #d4af37;
-        }
-
-        .room-status {
+        .active-room-card .room-status {
             font-size: 12px;
-            padding: 3px 10px;
+            padding: 3px 8px;
             border-radius: 15px;
-            background: rgba(0,0,0,0.5);
-        }
-
-        .status-waiting { color: #27ae60; }
-        .status-active { color: #f39c12; }
-        .status-ended { color: #e74c3c; }
-
-        hr {
-            border-color: rgba(212,175,55,0.3);
-            margin: 20px 0;
         }
 
         @media (max-width: 768px) {
@@ -317,11 +375,11 @@
                 padding: 8px;
                 font-size: 12px;
             }
-            .room-type-controls {
+            .room-controls {
                 flex-direction: column;
-                align-items: stretch;
+                align-items: flex-start;
             }
-            .control-group input {
+            .room-controls input {
                 width: 100%;
             }
         }
@@ -329,112 +387,96 @@
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>🛡️ لوحة تحكم المشرف - Battle Tanks Elite</h1>
-            <button class="back-btn" onclick="window.location.href='index.html'">🏠 العودة للعبة</button>
-        </header>
+        <div class="header">
+            <h1>⚙️ لوحة تحكم الآدمن</h1>
+            <a href="index.html" class="back-btn">🏠 العودة للعبة</a>
+        </div>
 
-        <!-- إحصائيات عامة -->
-        <div class="stats-grid">
+        <div class="stats-grid" id="statsGrid">
             <div class="stat-card">
-                <h3>👥 إجمالي المستخدمين</h3>
-                <div class="value" id="totalUsers">0</div>
+                <h3>إجمالي اللاعبين</h3>
+                <div class="value" id="totalUsers">-</div>
             </div>
             <div class="stat-card">
-                <h3>💰 إجمالي الرصيد</h3>
-                <div class="value" id="totalBalance">0 $</div>
+                <h3>إجمالي الأرصدة</h3>
+                <div class="value" id="totalBalance">-</div>
             </div>
             <div class="stat-card">
-                <h3>🎮 إجمالي المعارك</h3>
-                <div class="value" id="totalGames">0</div>
+                <h3>المباريات المنتهية</h3>
+                <div class="value" id="totalGames">-</div>
             </div>
         </div>
 
-        <!-- أنواع الغرف -->
-        <section>
-            <h2>🏷️ إدارة أنواع الغرف</h2>
-            <div id="roomTypesList" class="room-types-list">
-                <div class="loading">⏳ جاري تحميل أنواع الغرف...</div>
-            </div>
-            <div id="roomTypesMessage" class="message"></div>
-        </section>
-
-        <!-- الغرف النشطة -->
-        <section>
-            <h2>🚀 الغرف النشطة حالياً</h2>
-            <div id="activeRoomsList">
-                <div class="loading">⏳ جاري تحميل الغرف...</div>
-            </div>
-            <div id="roomsMessage" class="message"></div>
-        </section>
-
-        <!-- إدارة الرصيد -->
-        <section>
-            <h2>💰 إدارة رصيد اللاعبين</h2>
+        <div class="section">
+            <h2>💰 إدارة الأرصدة</h2>
             <div class="form-row">
                 <div class="form-group">
-                    <label>📧 البريد الإلكتروني</label>
+                    <label>البريد الإلكتروني للاعب</label>
                     <input type="email" id="targetEmail" placeholder="example@email.com">
                 </div>
                 <div class="form-group">
-                    <label>💵 المبلغ ($)</label>
-                    <input type="number" id="amount" placeholder="100" min="1">
+                    <label>المبلغ</label>
+                    <input type="number" id="amount" placeholder="المبلغ بالدولار">
                 </div>
             </div>
             <div class="form-row">
-                <button class="submit-btn" onclick="deposit()">➕ إيداع</button>
-                <button class="submit-btn danger" onclick="withdraw()">➖ سحب</button>
+                <button class="submit-btn" id="depositBtn">➕ إيداع</button>
+                <button class="submit-btn danger" id="withdrawBtn">➖ سحب</button>
             </div>
             <div id="balanceMessage" class="message"></div>
-        </section>
+        </div>
 
-        <!-- قائمة المستخدمين -->
-        <section>
+        <div class="section">
+            <h2>🏠 إدارة أنواع الغرف</h2>
+            <div id="roomTypesList" class="room-types-list">
+                <div class="loading">جاري تحميل أنواع الغرف...</div>
+            </div>
+            <div id="roomTypesMessage" class="message"></div>
+        </div>
+
+        <div class="section">
+            <h2>📋 الغرف النشطة</h2>
+            <div id="activeRoomsList" class="rooms-list">
+                <div class="loading">جاري تحميل الغرف...</div>
+            </div>
+            <div class="form-group" style="margin-top: 15px;">
+                <button class="submit-btn" id="refreshRoomsBtn">🔄 تحديث الغرف</button>
+            </div>
+            <div id="roomsMessage" class="message"></div>
+        </div>
+
+        <div class="section">
             <h2>👥 قائمة اللاعبين</h2>
             <div class="users-table">
                 <table id="usersTable">
                     <thead>
-                        <tr>
-                            <th>البريد الإلكتروني</th>
-                            <th>اسم المستخدم</th>
-                            <th>💰 الرصيد</th>
-                            <th>🎮 المعارك</th>
-                            <th>🏆 الفوز</th>
-                            <th>👑 الصلاحية</th>
-                            <th>⚡ إجراءات</th>
-                        </tr>
+                        <tr><th>البريد الإلكتروني</th><th>اسم المستخدم</th><th>الرصيد</th><th>مباريات</th><th>فوز</th><th>مدير</th><th>إجراءات</th>\\
                     </thead>
                     <tbody id="usersList">
-                        <tr><td colspan="7" class="loading">⏳ جاري تحميل المستخدمين...</td></tr>
+                        <tr><td colspan="7" class="loading">جاري التحميل...</td>\\
                     </tbody>
-                </table>
+                \\
             </div>
-            <button class="submit-btn" onclick="fetchStats()" style="margin-top: 15px;">🔄 تحديث القائمة</button>
-        </section>
-
-        <hr>
-        <div class="form-row">
-            <button class="submit-btn danger" id="resetDataBtn">🗑️ مسح جميع بيانات اللاعبين</button>
-            <button class="submit-btn" id="refreshStatsBtn">🔄 تحديث الإحصائيات</button>
         </div>
     </div>
 
     <script>
         const SERVER_URL = "https://tank-yf0p.onrender.com";
-
-        // الحصول على التوكن
+        
+        // الحصول على التوكن من localStorage
         function getAdminToken() {
             return localStorage.getItem('adminToken');
         }
 
-        // الحصول على userId من localStorage
-        function getUserId() {
-            return localStorage.getItem('userId');
+        function getStatusText(status) {
+            if (status === 'waiting') return '⏳ في الانتظار';
+            if (status === 'active') return '🔥 جارية';
+            if (status === 'ended') return '✅ منتهية';
+            return '❓ غير معروف';
         }
 
-        // عرض الرسائل
-        function showMessage(messageId, msg, type) {
-            const messageDiv = document.getElementById(messageId);
+        function showMessage(elementId, msg, type) {
+            const messageDiv = document.getElementById(elementId);
             if (!messageDiv) return;
             messageDiv.className = `message ${type}`;
             messageDiv.innerText = msg;
@@ -456,27 +498,14 @@
         }
 
         // ==================== إدارة أنواع الغرف ====================
+
         async function fetchRoomTypes() {
             const token = getAdminToken();
-            const userId = getUserId();
+            if (!token) return;
             
-            if (!token) {
-                console.log('No token found');
-                showRoomTypesMessage('يرجى تسجيل الدخول أولاً', 'error');
-                return;
-            }
-
-            if (!userId) {
-                console.log('No userId found');
-                showRoomTypesMessage('لم يتم العثور على معرف المستخدم', 'error');
-                return;
-            }
-
             try {
-                console.log('Fetching room types with userId:', userId);
-                const response = await fetch(`${SERVER_URL}/api/admin/roomTypes?adminToken=${token}&userId=${userId}`);
+                const response = await fetch(`${SERVER_URL}/api/admin/roomTypes?adminToken=${token}`);
                 const data = await response.json();
-                console.log('Room types response:', data);
                 
                 if (data.success) {
                     displayRoomTypes(data.types);
@@ -492,30 +521,30 @@
         function displayRoomTypes(types) {
             const container = document.getElementById('roomTypesList');
             if (!container) return;
-
+            
             if (!types || types.length === 0) {
-                container.innerHTML = '<div class="loading">📭 لا توجد أنواع غرف متاحة</div>';
+                container.innerHTML = '<div class="loading">لا توجد أنواع غرف</div>';
                 return;
             }
-
+            
             container.innerHTML = types.map(type => `
                 <div class="room-type-card">
-                    <h3>🏷️ ${type.name}</h3>
+                    <h3>${type.name}</h3>
                     <div class="room-type-info">
                         <span>👥 الحد الأقصى: ${type.maxSeats} لاعب</span>
-                        <span>💰 سعر المقعد: ${type.seatPrice} $</span>
-                        <span>🏠 الحد الأقصى للغرف: ${type.maxRooms || 'غير محدود'}</span>
-                        <span>📌 غرف متاحة: ${type.availableRooms || 0}</span>
-                        <span>⚔️ غرف نشطة: ${type.activeRooms || 0}</span>
+                        <span>💰 سعر المقعد: ${type.seatPrice}$</span>
+                        <span>🏠 الحد الأقصى للغرف: ${type.maxRooms}</span>
+                        <span>📌 الغرف المتاحة: ${type.availableRooms}</span>
+                        <span>⚔️ غرف نشطة: ${type.activeRooms}</span>
                     </div>
                     <div class="room-type-controls">
                         <div class="control-group">
                             <label>عدد اللاعبين (2-16)</label>
-                            <input type="number" id="maxSeats_${type.name.replace(/\s/g, '_')}" value="${type.maxSeats}" min="2" max="16">
+                            <input type="number" id="maxSeats_${type.name}" value="${type.maxSeats}" min="2" max="16">
                         </div>
                         <div class="control-group">
                             <label>سعر المقعد ($)</label>
-                            <input type="number" id="price_${type.name.replace(/\s/g, '_')}" value="${type.seatPrice}" min="1" max="1000">
+                            <input type="number" id="price_${type.name}" value="${type.seatPrice}" min="1" max="1000">
                         </div>
                         <button onclick="updateRoomType('${type.name}')">💾 حفظ التغييرات</button>
                     </div>
@@ -525,43 +554,24 @@
 
         async function updateRoomType(typeName) {
             const token = getAdminToken();
-            const userId = getUserId();
+            if (!token) return;
             
-            if (!token) {
-                showRoomTypesMessage('يرجى تسجيل الدخول أولاً', 'error');
-                return;
-            }
-
-            if (!userId) {
-                showRoomTypesMessage('لم يتم العثور على معرف المستخدم', 'error');
-                return;
-            }
-
-            const safeName = typeName.replace(/\s/g, '_');
-            const maxSeatsInput = document.getElementById(`maxSeats_${safeName}`);
-            const priceInput = document.getElementById(`price_${safeName}`);
-
+            const maxSeatsInput = document.getElementById(`maxSeats_${typeName}`);
+            const priceInput = document.getElementById(`price_${typeName}`);
+            
             const maxSeats = parseInt(maxSeatsInput?.value) || 2;
             const seatPrice = parseInt(priceInput?.value) || 1;
-
-            if (maxSeats < 2 || maxSeats > 16) {
-                showRoomTypesMessage('عدد اللاعبين يجب أن يكون بين 2 و 16', 'error');
-                return;
-            }
-            if (seatPrice < 1) {
-                showRoomTypesMessage('سعر المقعد يجب أن يكون 1 على الأقل', 'error');
-                return;
-            }
-
+            
             try {
                 const response = await fetch(`${SERVER_URL}/api/admin/updateRoomType`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ adminToken: token, userId: userId, typeName, maxSeats, seatPrice })
+                    body: JSON.stringify({ adminToken: token, typeName, maxSeats, seatPrice })
                 });
                 const data = await response.json();
+                
                 if (data.success) {
-                    showRoomTypesMessage(`✅ تم تحديث إعدادات ${typeName} بنجاح`, 'success');
+                    showRoomTypesMessage(`تم تحديث إعدادات ${typeName} بنجاح`, 'success');
                     fetchRoomTypes();
                     fetchActiveRooms();
                 } else {
@@ -574,25 +584,14 @@
         }
 
         // ==================== الغرف النشطة ====================
+
         async function fetchActiveRooms() {
             const token = getAdminToken();
-            const userId = getUserId();
+            if (!token) return;
             
-            if (!token) {
-                console.log('No token for active rooms');
-                return;
-            }
-
-            if (!userId) {
-                console.log('No userId for active rooms');
-                return;
-            }
-
             try {
-                console.log('Fetching active rooms with userId:', userId);
-                const response = await fetch(`${SERVER_URL}/api/admin/rooms?adminToken=${token}&userId=${userId}`);
+                const response = await fetch(`${SERVER_URL}/api/admin/rooms?adminToken=${token}`);
                 const data = await response.json();
-                console.log('Active rooms response:', data);
                 
                 if (data.success && data.rooms) {
                     displayActiveRooms(data.rooms);
@@ -605,112 +604,88 @@
             }
         }
 
-        function getStatusText(status) {
-            switch(status) {
-                case 'waiting': return '⏳ في الانتظار';
-                case 'active': return '⚔️ جارية';
-                case 'ended': return '🏁 منتهية';
-                default: return status;
-            }
-        }
-
         function displayActiveRooms(rooms) {
             const container = document.getElementById('activeRoomsList');
             if (!container) return;
-
+            
             if (!rooms || rooms.length === 0) {
-                container.innerHTML = '<div class="loading">📭 لا توجد غرف نشطة حالياً</div>';
+                container.innerHTML = '<div class="loading">لا توجد غرف نشطة</div>';
                 return;
             }
-
+            
             container.innerHTML = rooms.map(room => `
                 <div class="active-room-card">
                     <div>
-                        <strong>🏠 ${room.name || 'غرفة غير مسماة'}</strong><br>
-                        <small style="color:#aaa;">ID: ${room.id}</small>
+                        <strong>${room.name}</strong><br>
+                        <small>ID: ${room.id}</small>
                     </div>
                     <div>
                         <span>👥 ${room.playersCount || 0}/${room.maxSeats}</span>
-                        <span style="margin-left:15px;">💰 ${room.seatPrice || 1}$</span>
-                        <span class="room-status status-${room.status}" style="margin-left:15px;">${getStatusText(room.status)}</span>
+                        <span>💰 ${room.seatPrice || 1}$</span>
+                        <span class="room-status status-${room.status}">${getStatusText(room.status)}</span>
                     </div>
                 </div>
             `).join('');
         }
 
-        // ==================== إحصائيات المستخدمين ====================
+        // ==================== إدارة اللاعبين ====================
+
         async function fetchStats() {
             const token = getAdminToken();
-            const userId = getUserId();
+            if (!token) return;
             
-            if (!token) {
-                console.log('No token for stats');
-                const usersList = document.getElementById('usersList');
-                if (usersList) usersList.innerHTML = '<tr><td colspan="7" class="loading">❌ يرجى تسجيل الدخول أولاً</td></tr>';
-                return;
-            }
-
-            if (!userId) {
-                console.log('No userId for stats');
-                const usersList = document.getElementById('usersList');
-                if (usersList) usersList.innerHTML = '<tr><td colspan="7" class="loading">❌ لم يتم العثور على معرف المستخدم</td></tr>';
-                return;
-            }
-
             try {
-                console.log('Fetching stats with userId:', userId);
-                const response = await fetch(`${SERVER_URL}/api/admin/stats?adminToken=${token}&userId=${userId}`);
+                const response = await fetch(`${SERVER_URL}/api/admin/stats?adminToken=${token}`);
                 const data = await response.json();
-                console.log('Stats response:', data);
-
+                
                 if (data.success) {
                     document.getElementById('totalUsers').innerText = data.report?.totalUsers || 0;
                     document.getElementById('totalBalance').innerText = (data.report?.totalBalance || 0) + ' $';
                     document.getElementById('totalGames').innerText = data.report?.totalGames || 0;
-
+                    
                     const usersList = document.getElementById('usersList');
                     usersList.innerHTML = '';
-
+                    
                     if (data.report?.users && data.report.users.length > 0) {
                         data.report.users.forEach(user => {
                             const row = usersList.insertRow();
                             row.insertCell(0).innerText = user.email || user.id;
                             row.insertCell(1).innerText = user.username || user.email?.split('@')[0] || 'لاعب';
-                            row.insertCell(2).innerHTML = `<span style="color:#d4af37; font-weight:bold;">${user.balance || 100} $</span>`;
+                            row.insertCell(2).innerHTML = `<span style="color:#d4af37;">${user.balance || 100} $</span>`;
                             row.insertCell(3).innerText = user.gamesPlayed || 0;
                             row.insertCell(4).innerText = user.wins || 0;
-                            row.insertCell(5).innerText = user.isAdmin ? '✅ مشرف' : '👤 عادي';
-                            row.insertCell(6).innerHTML = `
+                            row.insertCell(5).innerText = user.isAdmin ? '✅' : '❌';
+                            row.insertCell(5).innerHTML = `
                                 <button class="action-btn" onclick="quickDeposit('${user.email || user.id}', 10)">+10$</button>
                                 <button class="action-btn danger" onclick="quickWithdraw('${user.email || user.id}', 10)">-10$</button>
                             `;
                         });
                     } else {
-                        usersList.innerHTML = '<tr><td colspan="7" class="loading">📭 لا يوجد لاعبين</td></tr>';
+                        usersList.innerHTML = '<tr><td colspan="7" class="loading">لا يوجد لاعبين</td></tr>';
                     }
                 } else {
                     showBalanceMessage(data.error || 'خطأ في تحميل البيانات', 'error');
                 }
             } catch (error) {
-                console.error('Error fetching stats:', error);
+                console.error('Error:', error);
                 showBalanceMessage('فشل الاتصال بالخادم', 'error');
             }
         }
 
         async function quickDeposit(email, amount) {
             const token = getAdminToken();
-            const userId = getUserId();
-            if (!token || !userId) return;
-
+            if (!token) return;
+            
             try {
                 const response = await fetch(`${SERVER_URL}/api/admin/balance`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ adminToken: token, userId: email, adminId: userId, amount, action: 'deposit' })
+                    body: JSON.stringify({ adminToken: token, userId: email, amount, action: 'deposit' })
                 });
                 const data = await response.json();
+                
                 if (data.success) {
-                    showBalanceMessage(`✅ تم إيداع ${amount}$ للمستخدم`, 'success');
+                    showBalanceMessage(`تم إيداع ${amount}$ للمستخدم`, 'success');
                     fetchStats();
                 } else {
                     showBalanceMessage(data.error, 'error');
@@ -722,18 +697,18 @@
 
         async function quickWithdraw(email, amount) {
             const token = getAdminToken();
-            const userId = getUserId();
-            if (!token || !userId) return;
-
+            if (!token) return;
+            
             try {
                 const response = await fetch(`${SERVER_URL}/api/admin/balance`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ adminToken: token, userId: email, adminId: userId, amount, action: 'withdraw' })
+                    body: JSON.stringify({ adminToken: token, userId: email, amount, action: 'withdraw' })
                 });
                 const data = await response.json();
+                
                 if (data.success) {
-                    showBalanceMessage(`✅ تم سحب ${amount}$ من المستخدم`, 'success');
+                    showBalanceMessage(`تم سحب ${amount}$ من المستخدم`, 'success');
                     fetchStats();
                 } else {
                     showBalanceMessage(data.error, 'error');
@@ -747,27 +722,22 @@
             const email = document.getElementById('targetEmail').value;
             const amount = parseFloat(document.getElementById('amount').value);
             const token = getAdminToken();
-            const userId = getUserId();
-
+            
             if (!email || !amount) {
-                showBalanceMessage('⚠️ الرجاء إدخال البريد الإلكتروني والمبلغ', 'error');
+                showBalanceMessage('الرجاء إدخال البريد الإلكتروني والمبلغ', 'error');
                 return;
             }
-
-            if (!token || !userId) {
-                showBalanceMessage('⚠️ يرجى تسجيل الدخول أولاً', 'error');
-                return;
-            }
-
+            
             try {
                 const response = await fetch(`${SERVER_URL}/api/admin/balance`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ adminToken: token, userId: email, adminId: userId, amount, action: 'deposit' })
+                    body: JSON.stringify({ adminToken: token, userId: email, amount, action: 'deposit' })
                 });
                 const data = await response.json();
+                
                 if (data.success) {
-                    showBalanceMessage(`✅ تم إيداع ${amount}$ بنجاح`, 'success');
+                    showBalanceMessage(`تم إيداع ${amount}$ بنجاح`, 'success');
                     document.getElementById('targetEmail').value = '';
                     document.getElementById('amount').value = '';
                     fetchStats();
@@ -783,27 +753,22 @@
             const email = document.getElementById('targetEmail').value;
             const amount = parseFloat(document.getElementById('amount').value);
             const token = getAdminToken();
-            const userId = getUserId();
-
+            
             if (!email || !amount) {
-                showBalanceMessage('⚠️ الرجاء إدخال البريد الإلكتروني والمبلغ', 'error');
+                showBalanceMessage('الرجاء إدخال البريد الإلكتروني والمبلغ', 'error');
                 return;
             }
-
-            if (!token || !userId) {
-                showBalanceMessage('⚠️ يرجى تسجيل الدخول أولاً', 'error');
-                return;
-            }
-
+            
             try {
                 const response = await fetch(`${SERVER_URL}/api/admin/balance`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ adminToken: token, userId: email, adminId: userId, amount, action: 'withdraw' })
+                    body: JSON.stringify({ adminToken: token, userId: email, amount, action: 'withdraw' })
                 });
                 const data = await response.json();
+                
                 if (data.success) {
-                    showBalanceMessage(`✅ تم سحب ${amount}$ بنجاح`, 'success');
+                    showBalanceMessage(`تم سحب ${amount}$ بنجاح`, 'success');
                     document.getElementById('targetEmail').value = '';
                     document.getElementById('amount').value = '';
                     fetchStats();
@@ -815,77 +780,38 @@
             }
         }
 
-        async function resetAllData() {
-            const token = getAdminToken();
-            const userId = getUserId();
-            
-            if (!token || !userId) {
-                showBalanceMessage('⚠️ يرجى تسجيل الدخول أولاً', 'error');
-                return;
-            }
-            
-            if (!confirm('⚠️ تحذير نهائي! سيتم مسح جميع بيانات اللاعبين بشكل دائم. هل أنت متأكد؟')) return;
-            const confirmText = prompt('اكتب كلمة "مسح" للتأكيد النهائي:');
-            if (confirmText !== 'مسح') return;
-
-            try {
-                const response = await fetch(`${SERVER_URL}/api/admin/resetData`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ adminToken: token, userId: userId })
-                });
-                const data = await response.json();
-                if (data.success) {
-                    showBalanceMessage('✅ تم مسح جميع بيانات اللاعبين بنجاح', 'success');
-                    fetchStats();
-                } else {
-                    showBalanceMessage(data.error, 'error');
-                }
-            } catch (error) {
-                showBalanceMessage('خطأ في الاتصال', 'error');
-            }
-        }
-
-        // ==================== التحقق من الصلاحية ====================
+        // التحقق من صلاحية الآدمن
         async function checkAdmin() {
             const token = getAdminToken();
             const isAdmin = localStorage.getItem('isAdmin');
-            const userId = getUserId();
             
-            console.log('🔐 Checking admin access:', { hasToken: !!token, isAdmin, userId });
+            console.log('Checking admin access:', { hasToken: !!token, isAdmin });
             
             if (!token || isAdmin !== 'true') {
-                console.log('❌ Not admin, redirecting to login');
-                alert('❌ غير مصرح بالدخول. يجب تسجيل الدخول كمشرف أولاً.');
+                console.log('Not admin, redirecting to login');
                 window.location.href = 'index.html';
                 return;
             }
             
-            if (!userId) {
-                console.log('⚠️ No userId found in localStorage');
-                alert('⚠️ خطأ: لم يتم العثور على معرف المستخدم. يرجى تسجيل الخروج وتسجيل الدخول مرة أخرى.');
-                window.location.href = 'index.html';
-                return;
-            }
-            
-            console.log('✅ Admin access granted, loading data...');
-            
-            // تحميل جميع البيانات
             await fetchStats();
             await fetchRoomTypes();
             await fetchActiveRooms();
         }
 
-        // ربط الأزرار
-        document.getElementById('resetDataBtn').onclick = resetAllData;
-        document.getElementById('refreshStatsBtn').onclick = () => {
+        // إضافة الأحداث
+        document.getElementById('depositBtn').onclick = deposit;
+        document.getElementById('withdrawBtn').onclick = withdraw;
+        document.getElementById('refreshRoomsBtn').onclick = () => fetchActiveRooms();
+
+        // تنفيذ عند تحميل الصفحة
+        checkAdmin();
+        
+        // تحديث البيانات كل 10 ثوانٍ
+        setInterval(() => {
             fetchStats();
             fetchRoomTypes();
             fetchActiveRooms();
-        };
-
-        // بدء التشغيل
-        checkAdmin();
+        }, 10000);
     </script>
 </body>
 </html>
