@@ -1666,18 +1666,86 @@
                     grid.innerHTML = '<div style="text-align:center; padding:20px;">لا توجد غرف متاحة حالياً</div>';
                     return;
     }
-                grid.innerHTML = rooms.map(room => `
-                    <div class="room-card ${room.players >= room.maxSeats ? 'full' : ''}" onclick="${room.players >= room.maxSeats ? '' : `gameApp.joinRoom('${room.id}')`}">
-                        <div class="room-info">
-                            <div class="room-name">${room.name || '🏠 غرفة المعركة'}</div>
-                            <div class="room-details">👥 ${room.players}/${room.maxSeats} لاعب</div>
+    
+                // تجميع الغرف حسب النوع
+                const roomsByType = {
+                    'غرفة المبتدئين': [],
+                    'غرفة المتقدمين': [],
+                    'غرفة المحترفين': []
+    };
+    
+                rooms.forEach(room => {
+                    if (room.name.includes('المبتدئين')) {
+                        roomsByType['غرفة المبتدئين'].push(room);
+                    } else if (room.name.includes('المتقدمين')) {
+                        roomsByType['غرفة المتقدمين'].push(room);
+                    } else if (room.name.includes('المحترفين')) {
+                        roomsByType['غرفة المحترفين'].push(room);
+        }
+    });
+    
+                // عرض غرفة واحدة فقط من كل نوع
+                let html = '';
+    
+                // غرفة المبتدئين (أول غرفة متاحة)
+                if (roomsByType['غرفة المبتدئين'].length > 0) {
+                    const room = roomsByType['غرفة المبتدئين'][0];
+                    html += `
+                        <div class="room-card ${room.players >= room.maxSeats ? 'full' : ''}" 
+                             onclick="${room.players >= room.maxSeats ? '' : `gameApp.joinRoom('${room.id}')`}">
+                            <div class="room-info">
+                                <div class="room-name">🏠 ${room.name}</div>
+                                <div class="room-details">👥 ${room.players}/${room.maxSeats} لاعب</div>
+                                <div class="room-details">💰 ${room.seatPrice || 1}$</div>
+                            </div>
+                            <div class="room-price">
+                                <div class="players-count">${room.players >= room.maxSeats ? '🟢 مكتملة' : '🔓 متاحة للانضمام'}</div>
+                            </div>
                         </div>
-                        <div class="room-price">
-                            <div class="price-value">💰 ${room.seatPrice || 1}$</div>
-                            <div class="players-count">${room.players >= room.maxSeats ? '🟢 مكتملة' : '🔓 متاحة للانضمام'}</div>
+        `;
+    }
+    
+                // غرفة المتقدمين (أول غرفة متاحة)
+                if (roomsByType['غرفة المتقدمين'].length > 0) {
+                    const room = roomsByType['غرفة المتقدمين'][0];
+                    html += `
+                        <div class="room-card ${room.players >= room.maxSeats ? 'full' : ''}" 
+                             onclick="${room.players >= room.maxSeats ? '' : `gameApp.joinRoom('${room.id}')`}">
+                            <div class="room-info">
+                                <div class="room-name">🏠 ${room.name}</div>
+                                <div class="room-details">👥 ${room.players}/${room.maxSeats} لاعب</div>
+                                <div class="room-details">💰 ${room.seatPrice || 1}$</div>
+                            </div>
+                            <div class="room-price">
+                                <div class="players-count">${room.players >= room.maxSeats ? '🟢 مكتملة' : '🔓 متاحة للانضمام'}</div>
+                            </div>
                         </div>
-                    </div>
-                `).join('');
+        `;
+    }
+    
+                // غرفة المحترفين (أول غرفة متاحة)
+                if (roomsByType['غرفة المحترفين'].length > 0) {
+                    const room = roomsByType['غرفة المحترفين'][0];
+                    html += `
+                        <div class="room-card ${room.players >= room.maxSeats ? 'full' : ''}" 
+                             onclick="${room.players >= room.maxSeats ? '' : `gameApp.joinRoom('${room.id}')`}">
+                            <div class="room-info">
+                                <div class="room-name">🏠 ${room.name}</div>
+                                <div class="room-details">👥 ${room.players}/${room.maxSeats} لاعب</div>
+                                <div class="room-details">💰 ${room.seatPrice || 1}$</div>
+                            </div>
+                            <div class="room-price">
+                                <div class="players-count">${room.players >= room.maxSeats ? '🟢 مكتملة' : '🔓 متاحة للانضمام'}</div>
+                            </div>
+                        </div>
+        `;
+    }
+    
+                if (html === '') {
+                    html = '<div style="text-align:center; padding:20px;">لا توجد غرف متاحة حالياً</div>';
+    }
+    
+                grid.innerHTML = html;
 },
             
             updateSeatsDisplay(players, maxSeats) {
