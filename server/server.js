@@ -2,8 +2,8 @@
 // 🚀 خادم لعبة Battle Tanks - النسخة النهائية للإنتاج
 // ============================================
 // Author: Battle Tanks Team
-// Version: 3.5.0
-// Description: خادم متكامل للألعاب متعددة اللاعبين - غرف انتظار دائم حتى اكتمال العدد
+// Version: 3.6.0
+// Description: خادم متكامل للألعاب متعددة اللاعبين - 10 غرف من كل نوع
 // ============================================
 
 const express = require('express');
@@ -69,67 +69,102 @@ const players = new Map();      // socketId -> player data
 const rooms = new Map();        // roomId -> room data
 
 // ============================================
-// 🏠 نظام الغرف - غرفة واحدة من كل نوع (انتظار دائم حتى اكتمال العدد)
+// 🏠 نظام الغرف - 10 غرف من كل نوع
 // ============================================
 const ROOM_TYPES = [
-    { name: 'غرفة المبتدئين', maxSeats: 2, seatPrice: 1, roomId: 'beginner_room' },
-    { name: 'غرفة المتقدمين', maxSeats: 4, seatPrice: 5, roomId: 'advanced_room' },
-    { name: 'غرفة المحترفين', maxSeats: 6, seatPrice: 10, roomId: 'pro_room' }
+    { name: 'غرفة المبتدئين', maxSeats: 2, seatPrice: 1, prefix: 'beginner' },
+    { name: 'غرفة المتقدمين', maxSeats: 4, seatPrice: 5, prefix: 'advanced' },
+    { name: 'غرفة المحترفين', maxSeats: 6, seatPrice: 10, prefix: 'pro' }
 ];
 
-// تهيئة غرفة واحدة من كل نوع
-function initializeSingleRooms() {
+const ROOMS_PER_TYPE = 10; // 10 غرف من كل نوع
+
+// تهيئة 10 غرف من كل نوع
+function initializeRooms() {
     for (const type of ROOM_TYPES) {
-        const room = {
-            id: type.roomId,
-            name: type.name,
+        for (let i = 1; i <= ROOMS_PER_TYPE; i++) {
+            const roomId = `${type.prefix}_room_${i}`;
+            const room = {
+                id: roomId,
+                name: `${type.name} ${i}`,
+                maxSeats: type.maxSeats,
+                seatPrice: type.seatPrice,
+                players: [],
+                status: 'waiting', // waiting, active, ended
+                createdAt: Date.now(),
+                typeName: type.name,
+                gameInterval: null,
+                startTime: null,
+                roomNumber: i
+            };
+            rooms.set(roomId, room);
+            console.log(`🏠 Created room: ${room.name} (${type.maxSeats} players, ${type.seatPrice}$)`);
+        }
+    }
+    console.log(`✅ Total rooms: ${rooms.size} (${ROOM_TYPES.length} types × ${ROOMS_PER_TYPE} rooms each = ${ROOM_TYPES.length * ROOMS_PER_TYPE} rooms)`);
+}
+
+// إعادة تعيين الغرفة بعد انتهاء المعركة وإنشاء غرفة جديدة
+function resetRoom(roomId) {
+    const oldRoom = rooms.get(roomId);
+    if (!oldRoom) return;
+    
+    // تنظيف الغرفة المنتهية
+    if (oldRoom.gameInterval) {
+        clearInterval(oldRoom.gameInterval);
+        oldRoom.gameInterval = null;
+    }
+    
+    // إزالة الغرفة المنتهية
+    rooms.delete(roomId);
+    
+    // إنشاء غرفة جديدة من نفس النوع
+    const type = ROOM_TYPES.find(t => t.name === oldRoom.typeName);
+    if (type) {
+        // البحث عن رقم الغرفة التالي المتاح
+        let roomNumber = 1;
+        let newRoomId = `${type.prefix}_room_${roomNumber}`;
+        
+        // العثور على رقم غرفة غير مستخدم
+        while (rooms.has(newRoomId)) {
+            roomNumber++;
+            newRoomId = `${type.prefix}_room_${roomNumber}`;
+        }
+        
+        const newRoom = {
+            id: newRoomId,
+            name: `${type.name} ${roomNumber}`,
             maxSeats: type.maxSeats,
             seatPrice: type.seatPrice,
             players: [],
-            status: 'waiting', // waiting, active, ended
+            status: 'waiting',
             createdAt: Date.now(),
             typeName: type.name,
             gameInterval: null,
-            startTime: null
+            startTime: null,
+            roomNumber: roomNumber
         };
-        rooms.set(type.roomId, room);
-        console.log(`🏠 Created room: ${type.name} (${type.maxSeats} players, ${type.seatPrice}$)`);
-    }
-    console.log(`✅ Total rooms: ${rooms.size}`);
-}
-
-// إعادة تعيين الغرفة بعد انتهاء المعركة
-function resetRoom(roomId) {
-    const room = rooms.get(roomId);
-    if (!room) return;
-    
-    // تنظيف الغرفة بالكامل
-    room.players = [];
-    room.status = 'waiting';
-    room.startTime = null;
-    if (room.gameInterval) {
-        clearInterval(room.gameInterval);
-        room.gameInterval = null;
+        
+        rooms.set(newRoomId, newRoom);
+        console.log(`🔄 Created new room: ${newRoom.name} (replacing finished room ${oldRoom.name})`);
+        
+        // إخطار اللاعبين بالغرفة الجديدة
+        io.emit('room_created', {
+            roomId: newRoomId,
+            name: newRoom.name,
+            maxSeats: newRoom.maxSeats,
+            seatPrice: newRoom.seatPrice
+        });
     }
     
-    console.log(`🔄 Room reset: ${room.name} is now waiting for new players (needs ${room.maxSeats} players to start)`);
-    
-    // بث تحديث للاعبين أن الغرفة جاهزة
-    io.to(roomId).emit('room_reset', {
-        message: `الغرفة جاهزة لمعركة جديدة (تحتاج ${room.maxSeats} لاعبين للبدء)`,
-        roomId: roomId,
-        maxSeats: room.maxSeats,
-        seatPrice: room.seatPrice,
-        roomName: room.name,
-        playersCount: 0
-    });
-    
-    // إعادة بث قائمة الغرف
+    // بث تحديث قائمة الغرف
     broadcastRoomsList();
+    
+    console.log(`✅ Room reset complete: ${oldRoom.name} ended, new room created`);
 }
 
 // استدعاء التهيئة
-initializeSingleRooms();
+initializeRooms();
 
 // ============================================
 // 🔧 دوال مساعدة
@@ -155,7 +190,7 @@ function broadcastRoomsList() {
         }
     }
     io.emit('rooms_list', { rooms: roomsList });
-    console.log(`📢 Broadcast rooms: ${roomsList.length} waiting rooms`);
+    console.log(`📢 Broadcast rooms: ${roomsList.length} waiting rooms (total rooms: ${rooms.size})`);
 }
 
 function updateRoom(roomId) {
@@ -284,6 +319,13 @@ function startGame(roomId) {
     
     console.log(`🎮 Game started in ${room.name} with ${playersList.length} players`);
     
+    // بث أن الغرفة بدأت
+    io.emit('game_started', {
+        roomId: roomId,
+        roomName: room.name,
+        playersCount: playersList.length
+    });
+    
     // بدء بث حالة اللعبة كل 50ms (20 مرة في الثانية)
     const gameInterval = setInterval(() => {
         const currentRoom = rooms.get(roomId);
@@ -404,7 +446,7 @@ async function endGame(roomId, reason) {
         resetRoom(roomId);
     }, 5000);
     
-    // تحديث قائمة الغرف (الغرفة الآن في حالة ended، لن تظهر)
+    // تحديث قائمة الغرف
     broadcastRoomsList();
 }
 
@@ -414,7 +456,7 @@ async function endGame(roomId, reason) {
 
 // التحقق من صحة الخادم
 app.get('/health', (req, res) => {
-    res.json({ status: 'online', timestamp: Date.now(), version: '3.5.0' });
+    res.json({ status: 'online', timestamp: Date.now(), version: '3.6.0' });
 });
 
 app.get('/api/health', (req, res) => {
@@ -439,7 +481,7 @@ app.get('/api/balance/:userId', async (req, res) => {
 });
 
 // ============================================
-// 🏷️ إدارة أنواع الغرف (API جديدة)
+// 🏷️ إدارة أنواع الغرف (API)
 // ============================================
 
 // الحصول على أنواع الغرف
@@ -459,17 +501,19 @@ app.get('/api/admin/roomTypes', async (req, res) => {
         
         // إعداد أنواع الغرف مع الإحصائيات الحية
         const roomTypesWithStats = ROOM_TYPES.map(type => {
-            const room = rooms.get(type.roomId);
+            // حساب عدد الغرف من هذا النوع
+            const typeRooms = Array.from(rooms.values()).filter(r => r.typeName === type.name);
+            const waitingRooms = typeRooms.filter(r => r.status === 'waiting').length;
+            const activeRooms = typeRooms.filter(r => r.status === 'active').length;
+            
             return {
                 name: type.name,
                 maxSeats: type.maxSeats,
                 seatPrice: type.seatPrice,
-                maxRooms: 1, // غرفة واحدة من كل نوع
-                availableRooms: room && room.status === 'waiting' ? 1 : 0,
-                activeRooms: room && room.status === 'active' ? 1 : 0,
-                roomId: type.roomId,
-                playersCount: room ? room.players.length : 0,
-                status: room ? room.status : 'waiting'
+                maxRooms: ROOMS_PER_TYPE,
+                availableRooms: waitingRooms,
+                activeRooms: activeRooms,
+                totalRooms: typeRooms.length
             };
         });
         
@@ -509,15 +553,15 @@ app.post('/api/admin/updateRoomType', async (req, res) => {
         roomType.maxSeats = newMaxSeats;
         roomType.seatPrice = newSeatPrice;
         
-        // تحديث الغرفة الفعلية
-        const room = rooms.get(roomType.roomId);
-        if (room) {
+        // تحديث جميع الغرف من هذا النوع
+        const typeRooms = Array.from(rooms.values()).filter(r => r.typeName === typeName);
+        for (const room of typeRooms) {
             room.maxSeats = newMaxSeats;
             room.seatPrice = newSeatPrice;
             
-            // إرسال إشعار لجميع اللاعبين في الغرفة (إذا كانت في وضع الانتظار)
+            // إرسال إشعار للاعبين في الغرف المنتظرة
             if (room.status === 'waiting') {
-                io.to(roomType.roomId).emit('room_settings_updated', {
+                io.to(room.id).emit('room_settings_updated', {
                     maxSeats: newMaxSeats,
                     seatPrice: newSeatPrice,
                     message: `تم تحديث إعدادات الغرفة: ${newMaxSeats} لاعبين، ${newSeatPrice}$ للمقعد`
@@ -528,10 +572,10 @@ app.post('/api/admin/updateRoomType', async (req, res) => {
         // بث تحديث قائمة الغرف
         broadcastRoomsList();
         
-        console.log(`📝 Admin updated room type: ${typeName} -> ${newMaxSeats} players, ${newSeatPrice}$`);
+        console.log(`📝 Admin updated room type: ${typeName} -> ${newMaxSeats} players, ${newSeatPrice}$ (applied to ${typeRooms.length} rooms)`);
         res.json({ 
             success: true, 
-            message: `تم تحديث ${typeName} بنجاح`,
+            message: `تم تحديث ${typeName} بنجاح لـ ${typeRooms.length} غرفة`,
             maxSeats: newMaxSeats,
             seatPrice: newSeatPrice
         });
@@ -1268,11 +1312,9 @@ server.listen(PORT, () => {
 ║  🔥 Firebase: Connected
 ║  👑 Admin email: admin@boomb.com
 ║  ⏱️  Game duration: ${globalGameSettings.gameDuration / 1000} seconds
-║  🏠 Single room system (permanent waiting until full):
-║     - ${ROOM_TYPES[0].name}: ${ROOM_TYPES[0].maxSeats} players, ${ROOM_TYPES[0].seatPrice}$
-║     - ${ROOM_TYPES[1].name}: ${ROOM_TYPES[1].maxSeats} players, ${ROOM_TYPES[1].seatPrice}$
-║     - ${ROOM_TYPES[2].name}: ${ROOM_TYPES[2].maxSeats} players, ${ROOM_TYPES[2].seatPrice}$
-║  🔄 Rooms start only when full, then reset after match
+║  🏠 Multi-room system (${ROOMS_PER_TYPE} rooms per type, total ${ROOM_TYPES.length * ROOMS_PER_TYPE} rooms):
+${ROOM_TYPES.map(type => `║     - ${type.name}: ${type.maxSeats} players, ${type.seatPrice}$ (${ROOMS_PER_TYPE} rooms)`).join('\n║     ')}
+║  🔄 Rooms start when full, new room created after match
 ║  💰 Balance deducted on join, refunded on leave (before game starts)
 ║  🛡️ Admin Panel APIs: 
 ║     - GET /api/admin/stats
