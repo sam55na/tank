@@ -2,7 +2,7 @@
 // 🚀 خادم لعبة Battle Tanks - النسخة النهائية للإنتاج
 // ============================================
 // Author: Battle Tanks Team
-// Version: 3.4.0
+// Version: 3.5.0
 // Description: خادم متكامل للألعاب متعددة اللاعبين - غرف انتظار دائم حتى اكتمال العدد
 // ============================================
 
@@ -414,7 +414,7 @@ async function endGame(roomId, reason) {
 
 // التحقق من صحة الخادم
 app.get('/health', (req, res) => {
-    res.json({ status: 'online', timestamp: Date.now(), version: '3.4.0' });
+    res.json({ status: 'online', timestamp: Date.now(), version: '3.5.0' });
 });
 
 app.get('/api/health', (req, res) => {
@@ -438,16 +438,164 @@ app.get('/api/balance/:userId', async (req, res) => {
     }
 });
 
-// إدارة الأرصدة (للمدير)
-app.post('/api/admin/balance', async (req, res) => {
+// ============================================
+// 🏷️ إدارة أنواع الغرف (API جديدة)
+// ============================================
+
+// الحصول على أنواع الغرف
+app.get('/api/admin/roomTypes', async (req, res) => {
     try {
-        const { adminToken, userId, amount, action } = req.body;
+        const { adminToken, userId } = req.query;
         
         if (adminToken !== 'authenticated' && adminToken !== process.env.ADMIN_SECRET) {
             return res.status(403).json({ success: false, error: 'Unauthorized' });
         }
         
+        // التحقق من صلاحيات المشرف
         const adminSnapshot = await db.ref(`users/${userId}`).once('value');
+        if (!adminSnapshot.val()?.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Not admin' });
+        }
+        
+        // إعداد أنواع الغرف مع الإحصائيات الحية
+        const roomTypesWithStats = ROOM_TYPES.map(type => {
+            const room = rooms.get(type.roomId);
+            return {
+                name: type.name,
+                maxSeats: type.maxSeats,
+                seatPrice: type.seatPrice,
+                maxRooms: 1, // غرفة واحدة من كل نوع
+                availableRooms: room && room.status === 'waiting' ? 1 : 0,
+                activeRooms: room && room.status === 'active' ? 1 : 0,
+                roomId: type.roomId,
+                playersCount: room ? room.players.length : 0,
+                status: room ? room.status : 'waiting'
+            };
+        });
+        
+        res.json({ success: true, types: roomTypesWithStats });
+    } catch (error) {
+        console.error('Error fetching room types:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// تحديث إعدادات نوع الغرفة
+app.post('/api/admin/updateRoomType', async (req, res) => {
+    try {
+        const { adminToken, userId, typeName, maxSeats, seatPrice } = req.body;
+        
+        if (adminToken !== 'authenticated' && adminToken !== process.env.ADMIN_SECRET) {
+            return res.status(403).json({ success: false, error: 'Unauthorized' });
+        }
+        
+        // التحقق من صلاحيات المشرف
+        const adminSnapshot = await db.ref(`users/${userId}`).once('value');
+        if (!adminSnapshot.val()?.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Not admin' });
+        }
+        
+        // التحقق من القيم
+        const newMaxSeats = Math.max(2, Math.min(16, maxSeats || 2));
+        const newSeatPrice = Math.max(1, Math.min(1000, seatPrice || 1));
+        
+        // البحث عن نوع الغرفة
+        const roomType = ROOM_TYPES.find(t => t.name === typeName);
+        if (!roomType) {
+            return res.status(404).json({ success: false, error: 'Room type not found' });
+        }
+        
+        // تحديث الإعدادات في ROOM_TYPES
+        roomType.maxSeats = newMaxSeats;
+        roomType.seatPrice = newSeatPrice;
+        
+        // تحديث الغرفة الفعلية
+        const room = rooms.get(roomType.roomId);
+        if (room) {
+            room.maxSeats = newMaxSeats;
+            room.seatPrice = newSeatPrice;
+            
+            // إرسال إشعار لجميع اللاعبين في الغرفة (إذا كانت في وضع الانتظار)
+            if (room.status === 'waiting') {
+                io.to(roomType.roomId).emit('room_settings_updated', {
+                    maxSeats: newMaxSeats,
+                    seatPrice: newSeatPrice,
+                    message: `تم تحديث إعدادات الغرفة: ${newMaxSeats} لاعبين، ${newSeatPrice}$ للمقعد`
+                });
+            }
+        }
+        
+        // بث تحديث قائمة الغرف
+        broadcastRoomsList();
+        
+        console.log(`📝 Admin updated room type: ${typeName} -> ${newMaxSeats} players, ${newSeatPrice}$`);
+        res.json({ 
+            success: true, 
+            message: `تم تحديث ${typeName} بنجاح`,
+            maxSeats: newMaxSeats,
+            seatPrice: newSeatPrice
+        });
+    } catch (error) {
+        console.error('Error updating room type:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// الحصول على تفاصيل غرفة محددة (للوحة التحكم)
+app.get('/api/admin/room/:roomId', async (req, res) => {
+    try {
+        const { adminToken, userId } = req.query;
+        const { roomId } = req.params;
+        
+        if (adminToken !== 'authenticated' && adminToken !== process.env.ADMIN_SECRET) {
+            return res.status(403).json({ success: false, error: 'Unauthorized' });
+        }
+        
+        // التحقق من صلاحيات المشرف
+        const adminSnapshot = await db.ref(`users/${userId}`).once('value');
+        if (!adminSnapshot.val()?.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Not admin' });
+        }
+        
+        const room = rooms.get(roomId);
+        if (!room) {
+            return res.status(404).json({ success: false, error: 'Room not found' });
+        }
+        
+        res.json({ 
+            success: true, 
+            room: {
+                id: room.id,
+                name: room.name,
+                maxSeats: room.maxSeats,
+                seatPrice: room.seatPrice,
+                status: room.status,
+                players: room.players.map(p => ({
+                    userId: p.userId,
+                    email: p.email,
+                    health: p.health,
+                    team: p.team,
+                    paidAmount: p.paidAmount
+                })),
+                createdAt: room.createdAt,
+                startTime: room.startTime
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// إدارة الأرصدة (للمدير)
+app.post('/api/admin/balance', async (req, res) => {
+    try {
+        const { adminToken, userId, adminId, amount, action } = req.body;
+        
+        if (adminToken !== 'authenticated' && adminToken !== process.env.ADMIN_SECRET) {
+            return res.status(403).json({ success: false, error: 'Unauthorized' });
+        }
+        
+        const adminSnapshot = await db.ref(`users/${adminId}`).once('value');
         if (!adminSnapshot.val()?.isAdmin) {
             return res.status(403).json({ success: false, error: 'Not admin' });
         }
@@ -475,7 +623,8 @@ app.post('/api/admin/balance', async (req, res) => {
             amount: amount,
             balanceAfter: currentBalance,
             timestamp: Date.now(),
-            admin: true
+            admin: true,
+            adminId: adminId
         });
         
         res.json({ success: true, newBalance: currentBalance });
@@ -583,10 +732,15 @@ app.post('/api/admin/setMaxPlayers', async (req, res) => {
 // الحصول على الإعدادات الحالية
 app.get('/api/admin/settings', async (req, res) => {
     try {
-        const { adminToken } = req.query;
+        const { adminToken, userId } = req.query;
         
         if (adminToken !== 'authenticated' && adminToken !== process.env.ADMIN_SECRET) {
             return res.status(403).json({ success: false, error: 'Unauthorized' });
+        }
+        
+        const snapshot = await db.ref(`users/${userId}`).once('value');
+        if (!snapshot.val()?.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Not admin' });
         }
         
         res.json({ 
@@ -637,7 +791,7 @@ app.post('/api/admin/resetData', async (req, res) => {
     }
 });
 
-// الحصول على قائمة الغرف
+// الحصول على قائمة الغرف (للوحة التحكم)
 app.get('/api/admin/rooms', async (req, res) => {
     try {
         const { adminToken, userId } = req.query;
@@ -659,7 +813,8 @@ app.get('/api/admin/rooms', async (req, res) => {
                 maxSeats: room.maxSeats,
                 seatPrice: room.seatPrice,
                 status: room.status,
-                playersCount: room.players.length
+                playersCount: room.players.length,
+                players: room.players.map(p => ({ userId: p.userId, email: p.email, health: p.health }))
             });
         }
         
@@ -1119,6 +1274,13 @@ server.listen(PORT, () => {
 ║     - ${ROOM_TYPES[2].name}: ${ROOM_TYPES[2].maxSeats} players, ${ROOM_TYPES[2].seatPrice}$
 ║  🔄 Rooms start only when full, then reset after match
 ║  💰 Balance deducted on join, refunded on leave (before game starts)
+║  🛡️ Admin Panel APIs: 
+║     - GET /api/admin/stats
+║     - GET /api/admin/rooms
+║     - GET /api/admin/roomTypes
+║     - POST /api/admin/balance
+║     - POST /api/admin/updateRoomType
+║     - POST /api/admin/resetData
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
     `);
