@@ -964,6 +964,32 @@ io.on('connection', (socket) => {
         }
     });
     
+    
+    
+        // ============================================
+    // ✅ أضف هنا - التحقق من حالة اللاعب عند إعادة الاتصال
+    // ============================================
+    socket.on('check_elimination', async (data) => {
+        const player = players.get(socket.id);
+        if (player && player.userId && player.roomId) {
+            const room = rooms.get(player.roomId);
+            if (room && room.status === 'active') {
+                const roomPlayer = room.players.find(p => p.userId === player.userId);
+                if (roomPlayer && roomPlayer.health <= 0) {
+                    // اللاعب كان مقتولاً
+                    socket.emit('check_elimination_status', {
+                        isEliminated: true,
+                        roomId: room.id
+                    });
+                } else {
+                    socket.emit('check_elimination_status', {
+                        isEliminated: false
+                    });
+                }
+            }
+        }
+    });
+    
     // ============================================
     // 🏠 اللوبي والغرف
     // ============================================
