@@ -36,7 +36,6 @@
             left: 0;
         }
 
-        /* خلفية متحركة */
         .bg-animation {
             position: fixed;
             top: 0;
@@ -64,7 +63,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* شاشة تسجيل الدخول */
         .login-screen {
             position: fixed;
             inset: 0;
@@ -126,7 +124,6 @@
             transform: scale(0.98);
         }
 
-        /* الواجهة الرئيسية */
         .main-screen {
             background: radial-gradient(ellipse at 20% 30%, #0f1725, #03050a);
             display: none;
@@ -137,7 +134,6 @@
             overflow-x: hidden;
         }
 
-        /* الشريط العلوي */
         .top-bar {
             position: sticky;
             top: 0;
@@ -199,7 +195,6 @@
             white-space: nowrap;
         }
 
-        /* زر القائمة الدائري */
         .menu-fab {
             position: fixed;
             bottom: 20px;
@@ -231,7 +226,6 @@
             transform: rotate(90deg);
         }
 
-        /* القائمة المنسدلة */
         .menu-dropdown {
             position: fixed;
             bottom: 90px;
@@ -302,7 +296,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* عناصر التبويبات */
         .search-input {
             width: 100%;
             background: rgba(0,0,0,0.5);
@@ -409,7 +402,6 @@
             font-size: 13px;
         }
 
-        /* بطاقة المستخدم */
         .user-card {
             background: var(--card-bg);
             backdrop-filter: blur(15px);
@@ -477,10 +469,8 @@
 
         .copy-btn:active {
             transform: scale(0.96);
-            background: rgba(212,175,55,0.3);
         }
 
-        /* زر الخروج */
         .logout-btn {
             position: fixed;
             bottom: 20px;
@@ -505,7 +495,6 @@
             transform: scale(0.96);
         }
 
-        /* مؤشر التحميل */
         .loading {
             position: fixed;
             top: 50%;
@@ -524,7 +513,6 @@
             white-space: nowrap;
         }
 
-        /* إشعارات */
         .toast-notify {
             position: fixed;
             bottom: 30px;
@@ -551,7 +539,41 @@
             100% { opacity: 0; transform: translateX(-50%) translateY(-20px); visibility: hidden; }
         }
 
-        /* تحسينات للشاشات الصغيرة */
+        .server-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #95a5a6;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.connected {
+            background: #2ecc71;
+        }
+
+        .status-dot.error {
+            background: #e74c3c;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1.2); }
+        }
+
         @media (max-width: 480px) {
             .balance-label, .stat-label {
                 display: none;
@@ -579,26 +601,17 @@
                 right: 15px;
             }
         }
-
-        /* تنسيق للشاشات الأفقية */
-        @media (orientation: landscape) and (max-height: 500px) {
-            .user-card {
-                padding: 12px 20px;
-                margin: 10px;
-            }
-            .user-avatar {
-                width: 50px;
-                height: 50px;
-            }
-            .tab-content {
-                max-height: 40vh;
-            }
-        }
     </style>
 </head>
 <body>
 
 <div class="bg-animation"></div>
+
+<!-- مؤشر حالة السيرفر -->
+<div class="server-status" id="serverStatus">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">جاري الاتصال...</span>
+</div>
 
 <!-- شاشة تسجيل الدخول -->
 <div class="login-screen" id="loginScreen">
@@ -649,12 +662,10 @@
         </div>
     </div>
 
-    <!-- الزر الدائري -->
     <div class="menu-fab" id="menuFab">
         <span>👥</span>
     </div>
 
-    <!-- القائمة المنسدلة -->
     <div class="menu-dropdown" id="menuDropdown">
         <div class="menu-tabs">
             <button class="tab-btn active" data-tab="add">➕ إضافة</button>
@@ -720,6 +731,8 @@
     let userStats = { gamesPlayed: 0, wins: 0 };
     let currentUserCode = null;
     let keepAliveInterval = null;
+    let retryCount = 0;
+    const MAX_RETRIES = 3;
 
     // DOM Elements
     const elements = {
@@ -742,7 +755,9 @@
         addFriendBtn: document.getElementById('addFriendBtn'),
         addFriendResult: document.getElementById('addFriendResult'),
         requestsList: document.getElementById('requestsList'),
-        friendsList: document.getElementById('friendsList')
+        friendsList: document.getElementById('friendsList'),
+        statusDot: document.getElementById('statusDot'),
+        statusText: document.getElementById('statusText')
     };
 
     // Helper Functions
@@ -760,6 +775,16 @@
         elements.loading.style.display = show ? 'flex' : 'none';
     };
 
+    const updateServerStatus = (connected, message) => {
+        if (connected) {
+            elements.statusDot.className = 'status-dot connected';
+            elements.statusText.textContent = message || 'متصل';
+        } else {
+            elements.statusDot.className = 'status-dot error';
+            elements.statusText.textContent = message || 'غير متصل';
+        }
+    };
+
     const getFirebaseToken = async () => {
         const user = auth.currentUser;
         if (!user) return null;
@@ -771,32 +796,88 @@
         }
     };
 
-    // API Functions
+    // API Functions with Retry
+    const apiRequest = async (endpoint, options = {}, retries = MAX_RETRIES) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                ...options,
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            retryCount = 0;
+            updateServerStatus(true, 'متصل');
+            return await response.json();
+        } catch (error) {
+            console.error(`API Error (${endpoint}):`, error);
+            
+            if (retries > 0) {
+                console.log(`Retrying... (${MAX_RETRIES - retries + 1}/${MAX_RETRIES})`);
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                return apiRequest(endpoint, options, retries - 1);
+            }
+            
+            updateServerStatus(false, 'فشل الاتصال');
+            retryCount++;
+            throw error;
+        }
+    };
+
+    const checkServerHealth = async () => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/health`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            
+            if (response.ok) {
+                updateServerStatus(true, 'متصل');
+                console.log('✅ Server is online');
+                return true;
+            } else {
+                throw new Error('Server not responding');
+            }
+        } catch (error) {
+            updateServerStatus(false, 'غير متصل');
+            console.log('⚠️ Server is offline');
+            return false;
+        }
+    };
+
     const fetchUserFromServer = async () => {
         const user = auth.currentUser;
         if (!user) return false;
         
         try {
             const token = await getFirebaseToken();
-            if (!token) return false;
+            if (!token) {
+                console.error('No Firebase token');
+                return false;
+            }
             
-            const response = await fetch(`${API_BASE_URL}/api/user/data?uid=${user.uid}`, {
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+            const data = await apiRequest(`/api/user/data?uid=${user.uid}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
             });
             
-            if (!response.ok) throw new Error('Fetch failed');
-            const data = await response.json();
-            
             if (data.success) {
-                currentBalance = data.balance;
-                userStats = { gamesPlayed: data.gamesPlayed, wins: data.wins };
+                currentBalance = data.balance ?? 100;
+                userStats = { 
+                    gamesPlayed: data.gamesPlayed ?? 0, 
+                    wins: data.wins ?? 0 
+                };
                 currentUserCode = data.userIdCode;
                 updateUI();
                 return true;
             }
             return false;
         } catch (error) {
-            console.error('Fetch error:', error);
+            console.error('Fetch user error:', error);
             return false;
         }
     };
@@ -809,20 +890,24 @@
             const token = await getFirebaseToken();
             if (!token) return false;
             
-            const response = await fetch(`${API_BASE_URL}/api/user/create`, {
+            const data = await apiRequest('/api/user/create', {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ uid: user.uid, email: user.email, displayName: user.displayName })
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ 
+                    uid: user.uid, 
+                    email: user.email, 
+                    displayName: user.displayName 
+                })
             });
             
-            const data = await response.json();
             if (data.success && data.userIdCode) {
                 currentUserCode = data.userIdCode;
+                showToast(`✨ تم إنشاء حسابك! كودك: ${data.userIdCode}`, false);
                 return true;
             }
             return false;
         } catch (error) {
-            console.error('Create error:', error);
+            console.error('Create user error:', error);
             return false;
         }
     };
@@ -835,14 +920,19 @@
             const token = await getFirebaseToken();
             if (!token) return false;
             
-            await fetch(`${API_BASE_URL}/api/user/update`, {
+            await apiRequest('/api/user/update', {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ uid: user.uid, balance: currentBalance, gamesPlayed: userStats.gamesPlayed, wins: userStats.wins })
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ 
+                    uid: user.uid, 
+                    balance: currentBalance, 
+                    gamesPlayed: userStats.gamesPlayed, 
+                    wins: userStats.wins 
+                })
             });
             return true;
         } catch (error) {
-            console.error('Save error:', error);
+            console.error('Save user error:', error);
             return false;
         }
     };
@@ -855,13 +945,13 @@
             const token = await getFirebaseToken();
             if (!token) return null;
             
-            const response = await fetch(`${API_BASE_URL}/api/user/bycode/${code}`, {
+            const data = await apiRequest(`/api/user/bycode/${code}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            const data = await response.json();
+            
             return data.success ? data.user : null;
         } catch (error) {
-            console.error('Find error:', error);
+            console.error('Find user error:', error);
             return null;
         }
     };
@@ -874,16 +964,16 @@
             const token = await getFirebaseToken();
             if (!token) return false;
             
-            const response = await fetch(`${API_BASE_URL}/api/friends/request`, {
+            const data = await apiRequest('/api/friends/request', {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                headers: { 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ fromUid: user.uid, toUserIdCode: code })
             });
-            const data = await response.json();
+            
             showToast(data.message, !data.success);
             return data.success;
         } catch (error) {
-            showToast('خطأ في الإرسال', true);
+            showToast('خطأ في الاتصال بالسيرفر', true);
             return false;
         }
     };
@@ -896,12 +986,13 @@
             const token = await getFirebaseToken();
             if (!token) return [];
             
-            const response = await fetch(`${API_BASE_URL}/api/friends/requests/${user.uid}`, {
+            const data = await apiRequest(`/api/friends/requests/${user.uid}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            const data = await response.json();
+            
             return data.success ? data.requests : [];
         } catch (error) {
+            console.error('Fetch requests error:', error);
             return [];
         }
     };
@@ -914,12 +1005,13 @@
             const token = await getFirebaseToken();
             if (!token) return [];
             
-            const response = await fetch(`${API_BASE_URL}/api/friends/list/${user.uid}`, {
+            const data = await apiRequest(`/api/friends/list/${user.uid}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            const data = await response.json();
+            
             return data.success ? data.friends : [];
         } catch (error) {
+            console.error('Fetch friends error:', error);
             return [];
         }
     };
@@ -932,12 +1024,12 @@
             const token = await getFirebaseToken();
             if (!token) return false;
             
-            const response = await fetch(`${API_BASE_URL}/api/friends/accept`, {
+            const data = await apiRequest('/api/friends/accept', {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                headers: { 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ userUid: user.uid, requesterUid })
             });
-            const data = await response.json();
+            
             if (data.success) showToast('✅ تم قبول الصديق', false);
             return data.success;
         } catch (error) {
@@ -953,12 +1045,12 @@
             const token = await getFirebaseToken();
             if (!token) return false;
             
-            const response = await fetch(`${API_BASE_URL}/api/friends/reject`, {
+            const data = await apiRequest('/api/friends/reject', {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                headers: { 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ userUid: user.uid, requesterUid })
             });
-            const data = await response.json();
+            
             if (data.success) showToast('❌ تم رفض الطلب', false);
             return data.success;
         } catch (error) {
@@ -1049,7 +1141,9 @@
     const saveLocalData = () => {
         if (currentUser) {
             localStorage.setItem(`user_${currentUser.uid}`, JSON.stringify({
-                balance: currentBalance, stats: userStats, userCode: currentUserCode
+                balance: currentBalance, 
+                stats: userStats, 
+                userCode: currentUserCode
             }));
         }
     };
@@ -1069,27 +1163,15 @@
         return false;
     };
 
-    // Keep Alive Function - منع خمول الخادم
+    // Keep Alive Function
     const startKeepAlive = () => {
         if (keepAliveInterval) clearInterval(keepAliveInterval);
         
         const pingServer = async () => {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/health`, {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                if (response.ok) {
-                    console.log('✅ Keep-alive ping successful');
-                }
-            } catch (error) {
-                console.log('⚠️ Keep-alive ping failed:', error.message);
-            }
+            await checkServerHealth();
         };
         
-        // فوراً
         pingServer();
-        // كل 10 دقائق (600000 مللي ثانية)
         keepAliveInterval = setInterval(pingServer, 600000);
     };
 
@@ -1107,26 +1189,34 @@
             const result = await signInWithPopup(auth, googleProvider);
             const user = result.user;
             currentUser = {
-                uid: user.uid, email: user.email,
+                uid: user.uid, 
+                email: user.email,
                 displayName: user.displayName || user.email.split('@')[0],
                 photoURL: user.photoURL
             };
             
+            // محاولة جلب البيانات من السيرفر
             const serverData = await fetchUserFromServer();
+            
             if (!serverData) {
-                loadLocalData();
-                await createUserOnServer();
-                await fetchUserFromServer();
+                // إذا لم توجد بيانات، جرب المحلية
+                const localData = loadLocalData();
+                if (!localData) {
+                    // إنشاء مستخدم جديد
+                    await createUserOnServer();
+                    await fetchUserFromServer();
+                }
             }
             
             updateUI();
             saveLocalData();
             showLoading(false);
             showMainScreen();
-            startKeepAlive(); // بدء الـ keep-alive بعد تسجيل الدخول
+            startKeepAlive();
             showToast(`🌟 مرحباً ${currentUser.displayName}`, false);
         } catch (error) {
             showLoading(false);
+            console.error('Login error:', error);
             showToast('فشل تسجيل الدخول', true);
         }
     };
@@ -1143,7 +1233,7 @@
             elements.mainScreen.style.display = 'none';
             elements.loginScreen.style.display = 'flex';
             showLoading(false);
-            stopKeepAlive(); // إيقاف الـ keep-alive عند الخروج
+            stopKeepAlive();
             showToast('👋 تم تسجيل الخروج', false);
         } catch (error) {
             showLoading(false);
@@ -1167,10 +1257,13 @@
             if (currentUserCode) {
                 navigator.clipboard.writeText(currentUserCode);
                 showToast('✅ تم نسخ الكود', false);
+            } else {
+                showToast('⚠️ لا يوجد كود للنسخ', true);
             }
         });
         
-        elements.menuFab.addEventListener('click', () => {
+        elements.menuFab.addEventListener('click', (e) => {
+            e.stopPropagation();
             elements.menuDropdown.classList.toggle('active');
             elements.menuFab.classList.toggle('active');
         });
@@ -1190,8 +1283,14 @@
         
         elements.addFriendBtn.addEventListener('click', async () => {
             const code = elements.friendCodeInput.value.trim();
-            if (!code) { showToast('⚠️ أدخل الكود', true); return; }
-            if (code === currentUserCode) { showToast('❌ لا يمكن إضافة نفسك', true); return; }
+            if (!code) { 
+                showToast('⚠️ أدخل الكود', true); 
+                return; 
+            }
+            if (code === currentUserCode) { 
+                showToast('❌ لا يمكن إضافة نفسك', true); 
+                return; 
+            }
             
             showLoading(true);
             const user = await findUserByCode(code);
@@ -1230,12 +1329,21 @@
     onAuthStateChanged(auth, async (user) => {
         if (user && !currentUser) {
             currentUser = {
-                uid: user.uid, email: user.email,
+                uid: user.uid, 
+                email: user.email,
                 displayName: user.displayName || user.email.split('@')[0],
                 photoURL: user.photoURL
             };
-            await fetchUserFromServer();
-            if (currentBalance === 0) loadLocalData();
+            
+            const serverData = await fetchUserFromServer();
+            if (!serverData) {
+                loadLocalData();
+                if (currentBalance === 0 && userStats.gamesPlayed === 0) {
+                    await createUserOnServer();
+                    await fetchUserFromServer();
+                }
+            }
+            
             updateUI();
             saveLocalData();
             showMainScreen();
@@ -1245,6 +1353,7 @@
 
     // Initialize
     initEventListeners();
+    checkServerHealth();
 </script>
 </body>
 </html>
