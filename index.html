@@ -139,7 +139,7 @@
             overflow: hidden;
         }
 
-        /* الشريط العلوي - سطر واحد متكامل */
+        /* الشريط العلوي */
         .top-bar {
             position: fixed;
             top: 0;
@@ -157,7 +157,6 @@
             flex-wrap: nowrap;
         }
 
-        /* قسم الرصيد */
         .balance-card {
             display: flex;
             align-items: center;
@@ -169,34 +168,12 @@
             min-width: 95px;
         }
 
-        .balance-icon {
-            font-size: 20px;
-        }
+        .balance-icon { font-size: 20px; }
+        .balance-info { display: flex; flex-direction: column; line-height: 1.2; }
+        .balance-label { font-size: 10px; color: #8a9aa8; }
+        .balance-amount { font-size: 18px; font-weight: bold; color: #d4af37; }
 
-        .balance-info {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.2;
-        }
-
-        .balance-label {
-            font-size: 10px;
-            color: #8a9aa8;
-            letter-spacing: 0.5px;
-        }
-
-        .balance-amount {
-            font-size: 18px;
-            font-weight: bold;
-            color: #d4af37;
-        }
-
-        /* عنوان TNT WARS مع تأثير نيون */
-        .title-card {
-            text-align: center;
-            flex: 1;
-        }
-
+        .title-card { text-align: center; flex: 1; }
         .neon-title {
             font-size: 24px;
             font-weight: 800;
@@ -211,17 +188,10 @@
         }
 
         @keyframes neonPulse {
-            0% {
-                text-shadow: 0 0 2px rgba(212, 175, 55, 0.3);
-                opacity: 0.9;
-            }
-            100% {
-                text-shadow: 0 0 12px rgba(212, 175, 55, 0.8), 0 0 20px rgba(212, 175, 55, 0.5);
-                opacity: 1;
-            }
+            0% { text-shadow: 0 0 2px rgba(212, 175, 55, 0.3); opacity: 0.9; }
+            100% { text-shadow: 0 0 12px rgba(212, 175, 55, 0.8), 0 0 20px rgba(212, 175, 55, 0.5); opacity: 1; }
         }
 
-        /* قسم الإحصائيات */
         .stats-card {
             display: flex;
             gap: 12px;
@@ -232,193 +202,42 @@
             min-width: 115px;
         }
 
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
+        .stat-item { display: flex; align-items: center; gap: 6px; }
+        .stat-icon { font-size: 16px; }
+        .stat-info { display: flex; flex-direction: column; line-height: 1.2; }
+        .stat-label { font-size: 10px; color: #8a9aa8; }
+        .stat-value { font-size: 15px; font-weight: bold; color: #d4af37; }
+        .separator { width: 1px; height: 25px; background: rgba(212, 175, 55, 0.3); margin: 0 4px; }
 
-        .stat-icon {
-            font-size: 16px;
-        }
-
-        .stat-info {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.2;
-        }
-
-        .stat-label {
-            font-size: 10px;
-            color: #8a9aa8;
-        }
-
-        .stat-value {
-            font-size: 15px;
-            font-weight: bold;
-            color: #d4af37;
-        }
-
-        .separator {
-            width: 1px;
-            height: 25px;
-            background: rgba(212, 175, 55, 0.3);
-            margin: 0 4px;
-        }
-
-        /* المحتوى الرئيسي */
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
-            padding-top: 80px;
-            padding-bottom: 30px;
-            overflow-y: auto;
-        }
-
-        /* زر تسجيل الخروج - مصغر */
-        .logout-btn {
+        /* زر مجتمعي الدائري */
+        .community-btn {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(231, 76, 60, 0.85);
-            backdrop-filter: blur(8px);
-            border: none;
-            border-radius: 40px;
-            padding: 8px 18px;
-            font-size: 13px;
-            font-weight: 600;
-            color: white;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            z-index: 100;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-
-        .logout-btn:active {
-            transform: scale(0.95);
-        }
-
-        .user-card {
-            background: rgba(10, 15, 25, 0.7);
-            backdrop-filter: blur(15px);
-            padding: 25px 35px;
-            border-radius: 50px;
-            margin-top: 20px;
-            text-align: center;
-            color: white;
-            width: 90%;
-            max-width: 420px;
-            border: 1px solid rgba(212, 175, 55, 0.35);
-            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.4);
-        }
-
-        .user-avatar {
-            width: 80px;
-            height: 80px;
+            top: 80px;
+            left: 20px;
+            width: 55px;
+            height: 55px;
             border-radius: 50%;
-            margin-bottom: 12px;
-            border: 3px solid #d4af37;
-            object-fit: cover;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-            background: #1e2a3a;
-        }
-
-        .user-name {
-            font-size: 22px;
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: #d4af37;
-        }
-
-        .user-email {
-            font-size: 12px;
-            color: #9aaebf;
-            word-break: break-all;
-        }
-
-        /* كود المستخدم - تصميم مميز */
-        .user-id-card {
-            margin-top: 15px;
-            background: rgba(0,0,0,0.5);
-            border-radius: 40px;
-            padding: 10px 20px;
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(212, 175, 55, 0.3);
-        }
-
-        .user-id-label {
-            font-size: 11px;
-            color: #8a9aa8;
-            letter-spacing: 1px;
-        }
-
-        .user-id-value {
-            font-size: 16px;
-            font-weight: bold;
-            color: #d4af37;
-            letter-spacing: 1px;
-            font-family: monospace;
-        }
-
-        .copy-id-btn {
-            background: rgba(212, 175, 55, 0.2);
-            border: none;
-            border-radius: 30px;
-            padding: 4px 12px;
-            font-size: 11px;
-            color: #d4af37;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .copy-id-btn:active {
-            transform: scale(0.95);
-            background: rgba(212, 175, 55, 0.4);
-        }
-
-        /* أزرار الأصدقاء */
-        .friends-section {
-            margin-top: 20px;
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            border: 2px solid rgba(255,215,0,0.6);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3), 0 0 10px rgba(212,175,55,0.5);
             display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
+            align-items: center;
             justify-content: center;
-        }
-
-        .friend-btn {
-            background: rgba(212, 175, 55, 0.15);
-            border: 1px solid rgba(212, 175, 55, 0.4);
-            border-radius: 40px;
-            padding: 8px 20px;
-            font-size: 13px;
-            font-weight: 500;
-            color: #d4af37;
             cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            z-index: 110;
+            transition: all 0.2s ease;
         }
 
-        .friend-btn:active {
-            transform: scale(0.96);
-            background: rgba(212, 175, 55, 0.3);
+        .community-btn:active {
+            transform: scale(0.95);
         }
 
-        /* نافذة إضافة صديق */
-        .add-friend-overlay {
+        .community-btn span {
+            font-size: 28px;
+        }
+
+        /* نافذة المجتمع */
+        .community-overlay {
             position: fixed;
             top: 0;
             left: 0;
@@ -432,24 +251,125 @@
             align-items: center;
         }
 
-        .add-friend-container {
+        .community-container {
             background: linear-gradient(135deg, #1a1f2e, #0f1420);
             border-radius: 40px;
-            padding: 30px;
             width: 90%;
-            max-width: 400px;
-            text-align: center;
+            max-width: 500px;
+            max-height: 80vh;
             border: 1px solid #d4af37;
             box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
-        .add-friend-container h3 {
+        /* تبويبات المجتمع */
+        .community-tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+            background: rgba(0,0,0,0.3);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 15px 10px;
+            background: transparent;
+            border: none;
+            color: #9aaebf;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .tab-btn.active {
             color: #d4af37;
-            margin-bottom: 20px;
-            font-size: 22px;
+            border-bottom: 2px solid #d4af37;
+            background: rgba(212, 175, 55, 0.1);
         }
 
-        .friend-id-input {
+        .tab-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            max-height: 60vh;
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        /* عناصر الأصدقاء */
+        .friend-item {
+            background: rgba(255,255,255,0.08);
+            border-radius: 25px;
+            padding: 12px 18px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            transition: all 0.2s;
+        }
+
+        .friend-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .friend-name {
+            color: white;
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        .friend-id {
+            color: #8a9aa8;
+            font-size: 10px;
+            font-family: monospace;
+        }
+
+        .friend-status {
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+            display: inline-block;
+        }
+
+        .friend-status.offline {
+            background: rgba(149, 165, 166, 0.2);
+            color: #95a5a6;
+        }
+
+        .remove-friend-btn {
+            background: rgba(231, 76, 60, 0.7);
+            border: none;
+            border-radius: 30px;
+            padding: 6px 14px;
+            color: white;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .remove-friend-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* إضافة صديق */
+        .add-friend-input {
             width: 100%;
             padding: 14px 18px;
             border-radius: 60px;
@@ -472,92 +392,117 @@
             font-weight: bold;
             cursor: pointer;
             width: 100%;
-            margin-top: 10px;
         }
 
-        .close-friend-btn {
+        .close-community-btn {
             background: transparent;
             border: 1px solid rgba(212,175,55,0.4);
             color: #d4af37;
-            padding: 10px 20px;
-            border-radius: 60px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 12px;
-        }
-
-        /* قائمة الأصدقاء */
-        .friends-list-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(15px);
-            z-index: 200;
-            display: none;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .friends-list-container {
-            background: linear-gradient(135deg, #1a1f2e, #0f1420);
-            border-radius: 40px;
-            padding: 25px;
-            width: 90%;
-            max-width: 450px;
-            max-height: 70vh;
-            overflow-y: auto;
-            text-align: center;
-            border: 1px solid #d4af37;
-        }
-
-        .friends-list-container h3 {
-            color: #d4af37;
-            margin-bottom: 20px;
-            font-size: 22px;
-        }
-
-        .friend-item {
-            background: rgba(255,255,255,0.1);
+            padding: 12px;
             border-radius: 30px;
-            padding: 12px 18px;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .friend-info {
-            text-align: left;
-        }
-
-        .friend-name {
-            color: white;
+            cursor: pointer;
+            width: calc(100% - 40px);
+            margin: 15px 20px;
             font-weight: bold;
-            font-size: 14px;
-        }
-
-        .friend-id {
-            color: #8a9aa8;
-            font-size: 10px;
-            font-family: monospace;
-        }
-
-        .remove-friend-btn {
-            background: rgba(231, 76, 60, 0.7);
-            border: none;
-            border-radius: 30px;
-            padding: 5px 12px;
-            color: white;
-            font-size: 11px;
-            cursor: pointer;
         }
 
         .no-friends {
+            text-align: center;
             color: #8a9aa8;
-            padding: 20px;
+            padding: 30px;
+        }
+
+        /* باقي العناصر */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            padding-top: 130px;
+            padding-bottom: 30px;
+            overflow-y: auto;
+        }
+
+        .logout-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(231, 76, 60, 0.85);
+            backdrop-filter: blur(8px);
+            border: none;
+            border-radius: 40px;
+            padding: 8px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            z-index: 100;
+        }
+
+        .user-card {
+            background: rgba(10, 15, 25, 0.7);
+            backdrop-filter: blur(15px);
+            padding: 25px 35px;
+            border-radius: 50px;
+            text-align: center;
+            color: white;
+            width: 90%;
+            max-width: 420px;
+            border: 1px solid rgba(212, 175, 55, 0.35);
+        }
+
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 12px;
+            border: 3px solid #d4af37;
+            object-fit: cover;
+        }
+
+        .user-name {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #d4af37;
+        }
+
+        .user-email {
+            font-size: 12px;
+            color: #9aaebf;
+        }
+
+        .user-id-card {
+            margin-top: 15px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 40px;
+            padding: 8px 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-id-value {
+            font-size: 14px;
+            font-weight: bold;
+            color: #d4af37;
+            font-family: monospace;
+        }
+
+        .copy-id-btn {
+            background: rgba(212, 175, 55, 0.2);
+            border: none;
+            border-radius: 30px;
+            padding: 4px 10px;
+            font-size: 10px;
+            color: #d4af37;
+            cursor: pointer;
         }
 
         .loading {
@@ -566,17 +511,12 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: rgba(0,0,0,0.92);
-            backdrop-filter: blur(12px);
             padding: 20px 40px;
             border-radius: 70px;
             color: #d4af37;
             display: none;
             z-index: 10001;
-            font-size: 18px;
-            font-weight: bold;
             border: 1px solid #d4af37;
-            white-space: nowrap;
-            box-shadow: 0 0 30px rgba(212,175,55,0.3);
         }
 
         .toast-notify {
@@ -585,61 +525,30 @@
             left: 50%;
             transform: translateX(-50%);
             background: rgba(0,0,0,0.9);
-            backdrop-filter: blur(10px);
             color: #d4af37;
             padding: 12px 28px;
             border-radius: 60px;
-            font-size: 14px;
             z-index: 10002;
             border: 1px solid #d4af37;
             animation: slideUpFade 2.8s ease forwards;
-            max-width: 85vw;
-            text-align: center;
-            font-weight: 500;
-            pointer-events: none;
         }
 
         @keyframes slideUpFade {
             0% { opacity: 0; transform: translateX(-50%) translateY(30px); }
             15% { opacity: 1; transform: translateX(-50%) translateY(0); }
             85% { opacity: 1; transform: translateX(-50%) translateY(0); }
-            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); visibility: hidden; }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
         }
 
         @media (max-width: 600px) {
-            .top-bar {
-                padding: 8px 12px;
-                gap: 8px;
-            }
-            .balance-card, .stats-card {
-                padding: 4px 10px;
-            }
-            .balance-amount {
-                font-size: 14px;
-            }
-            .neon-title {
-                font-size: 16px;
-            }
-            .stat-value {
-                font-size: 12px;
-            }
-            .user-card {
-                padding: 18px 25px;
-            }
-            .user-avatar {
-                width: 65px;
-                height: 65px;
-            }
-            .user-name {
-                font-size: 18px;
-            }
-            .user-id-value {
-                font-size: 12px;
-            }
-            .friend-btn {
-                padding: 6px 14px;
-                font-size: 11px;
-            }
+            .community-btn { width: 45px; height: 45px; top: 70px; left: 15px; }
+            .community-btn span { font-size: 24px; }
+            .main-content { padding-top: 110px; }
+            .neon-title { font-size: 16px; }
+            .balance-amount { font-size: 14px; }
+            .stat-value { font-size: 12px; }
+            .tab-btn { padding: 12px 5px; font-size: 12px; }
+            .tab-btn span { font-size: 16px; }
         }
     </style>
 </head>
@@ -652,7 +561,6 @@
     <div class="login-container">
         <h1>💣 TNT WARS 💣</h1>
         <div class="subtitle">ELITE BATTLEFIELD | ساحة المعركة</div>
-
         <button class="google-btn" id="googleLoginBtn">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24" height="24">
                 <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
@@ -697,48 +605,60 @@
         </div>
     </div>
 
+    <!-- زر مجتمعي دائري -->
+    <div class="community-btn" id="communityBtn">
+        <span>👥</span>
+    </div>
+
     <div class="main-content">
         <div class="user-card">
             <img class="user-avatar" id="userAvatar" alt="صورة المستخدم">
             <div class="user-name" id="username">اللاعب</div>
             <div class="user-email" id="userEmail">-</div>
-            
-            <!-- كود المستخدم الفريد -->
             <div class="user-id-card">
-                <span class="user-id-label">🆔 المعرف الشخصي</span>
                 <span class="user-id-value" id="userIdCode">-----</span>
                 <button class="copy-id-btn" id="copyIdBtn">📋 نسخ</button>
-            </div>
-            
-            <!-- أزرار الأصدقاء -->
-            <div class="friends-section">
-                <button class="friend-btn" id="addFriendBtn">➕ إضافة صديق</button>
-                <button class="friend-btn" id="showFriendsBtn">👥 أصدقائي (<span id="friendsCount">0</span>)</button>
             </div>
         </div>
     </div>
 
-    <button class="logout-btn" id="logoutBtn">
-        <span>🚪</span> <span>خروج</span>
-    </button>
+    <button class="logout-btn" id="logoutBtn">🚪 خروج</button>
 </div>
 
-<!-- نافذة إضافة صديق -->
-<div class="add-friend-overlay" id="addFriendOverlay">
-    <div class="add-friend-container">
-        <h3>➕ إضافة صديق جديد</h3>
-        <input type="text" class="friend-id-input" id="friendIdInput" placeholder="أدخل المعرف الشخصي (10 أرقام)" maxlength="10">
-        <button class="send-request-btn" id="sendFriendRequestBtn">إرسال طلب صداقة</button>
-        <button class="close-friend-btn" id="closeAddFriendBtn">إلغاء</button>
-    </div>
-</div>
-
-<!-- نافذة قائمة الأصدقاء -->
-<div class="friends-list-overlay" id="friendsListOverlay">
-    <div class="friends-list-container">
-        <h3>👥 قائمة الأصدقاء</h3>
-        <div id="friendsListContent"></div>
-        <button class="close-friend-btn" id="closeFriendsListBtn">إغلاق</button>
+<!-- نافذة المجتمع مع التبويبات -->
+<div class="community-overlay" id="communityOverlay">
+    <div class="community-container">
+        <div class="community-tabs">
+            <button class="tab-btn active" data-tab="active">
+                <span>🟢</span> النشطين
+            </button>
+            <button class="tab-btn" data-tab="add">
+                <span>➕</span> إضافة صديق
+            </button>
+            <button class="tab-btn" data-tab="all">
+                <span>👥</span> جميع الأصدقاء
+            </button>
+        </div>
+        
+        <div class="tab-content">
+            <!-- تبويب الأصدقاء النشطين -->
+            <div class="tab-pane active" id="tabActive">
+                <div id="activeFriendsList"></div>
+            </div>
+            
+            <!-- تبويب إضافة صديق -->
+            <div class="tab-pane" id="tabAdd">
+                <input type="text" class="add-friend-input" id="friendIdInput" placeholder="أدخل المعرف الشخصي (10 أرقام)" maxlength="10">
+                <button class="send-request-btn" id="sendFriendRequestBtn">➕ إرسال طلب صداقة</button>
+            </div>
+            
+            <!-- تبويب جميع الأصدقاء -->
+            <div class="tab-pane" id="tabAll">
+                <div id="allFriendsList"></div>
+            </div>
+        </div>
+        
+        <button class="close-community-btn" id="closeCommunityBtn">إغلاق</button>
     </div>
 </div>
 
@@ -769,48 +689,10 @@
     let userIdCode = null;
     let friendsList = [];
 
-    // دالة توليد ID فريد من 10 أرقام
     function generateUniqueId() {
         return Math.floor(1000000000 + Math.random() * 9000000000).toString();
     }
 
-    // تحميل بيانات المستخدم
-    function loadUserData() {
-        if (!currentUser) return;
-        const userKey = `tnt_user_${currentUser.uid}`;
-        const saved = localStorage.getItem(userKey);
-        if (saved) {
-            try {
-                const data = JSON.parse(saved);
-                currentBalance = data.balance ?? 100;
-                userStats = data.stats || { gamesPlayed: 0, wins: 0 };
-                userIdCode = data.userIdCode;
-                friendsList = data.friends || [];
-            } catch(e) {}
-        }
-        
-        // إذا لم يكن هناك ID، قم بإنشاء واحد جديد
-        if (!userIdCode) {
-            userIdCode = generateUniqueId();
-            saveUserData();
-        }
-    }
-
-    // حفظ بيانات المستخدم
-    function saveUserData() {
-        if (!currentUser) return;
-        const userKey = `tnt_user_${currentUser.uid}`;
-        localStorage.setItem(userKey, JSON.stringify({
-            balance: currentBalance,
-            stats: userStats,
-            userIdCode: userIdCode,
-            friends: friendsList,
-            name: currentUser.displayName,
-            email: currentUser.email
-        }));
-    }
-
-    // الحصول على بيانات مستخدم بواسطة ID
     function getUserByCode(code) {
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
@@ -826,7 +708,50 @@
         return null;
     }
 
-    // تحديث الواجهة
+    // محاكاة حالة النشاط (يمكن تطويرها لاحقاً مع Socket.io)
+    function isUserActive(userIdCode) {
+        // محاكاة: الأصدقاء الذين تم إضافتهم خلال آخر 5 دقائق يعتبرون نشطين
+        const friend = friendsList.find(f => f.userIdCode === userIdCode);
+        if (friend && friend.lastActive) {
+            return (Date.now() - friend.lastActive) < 5 * 60 * 1000;
+        }
+        // محاكاة عشوائية للعرض
+        return Math.random() > 0.6;
+    }
+
+    function loadUserData() {
+        if (!currentUser) return;
+        const userKey = `tnt_user_${currentUser.uid}`;
+        const saved = localStorage.getItem(userKey);
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                currentBalance = data.balance ?? 100;
+                userStats = data.stats || { gamesPlayed: 0, wins: 0 };
+                userIdCode = data.userIdCode;
+                friendsList = data.friends || [];
+            } catch(e) {}
+        }
+        if (!userIdCode) {
+            userIdCode = generateUniqueId();
+            saveUserData();
+        }
+    }
+
+    function saveUserData() {
+        if (!currentUser) return;
+        const userKey = `tnt_user_${currentUser.uid}`;
+        localStorage.setItem(userKey, JSON.stringify({
+            balance: currentBalance,
+            stats: userStats,
+            userIdCode: userIdCode,
+            friends: friendsList,
+            name: currentUser.displayName,
+            email: currentUser.email,
+            lastActive: Date.now()
+        }));
+    }
+
     function updateUI() {
         if (currentUser) {
             const displayName = currentUser.displayName || currentUser.email.split('@')[0];
@@ -836,61 +761,85 @@
             document.getElementById('topGames').textContent = userStats.gamesPlayed;
             document.getElementById('topWins').textContent = userStats.wins;
             document.getElementById('userIdCode').textContent = userIdCode || '-----';
-            document.getElementById('friendsCount').textContent = friendsList.length;
-
             if (currentUser.photoURL) {
                 document.getElementById('userAvatar').src = currentUser.photoURL;
             }
         }
     }
 
-    // عرض قائمة الأصدقاء
-    function renderFriendsList() {
-        const container = document.getElementById('friendsListContent');
-        if (!container) return;
+    function renderFriendsLists() {
+        const activeContainer = document.getElementById('activeFriendsList');
+        const allContainer = document.getElementById('allFriendsList');
         
-        if (friendsList.length === 0) {
-            container.innerHTML = '<div class="no-friends">📭 لا يوجد أصدقاء بعد<br>أضف أصدقاء باستخدام المعرف الشخصي</div>';
-            return;
+        if (!activeContainer || !allContainer) return;
+        
+        const activeFriends = friendsList.filter(f => isUserActive(f.userIdCode));
+        const allFriends = friendsList;
+        
+        if (activeFriends.length === 0) {
+            activeContainer.innerHTML = '<div class="no-friends">🟢 لا يوجد أصدقاء نشطاء حالياً</div>';
+        } else {
+            activeContainer.innerHTML = '';
+            activeFriends.forEach((friend, idx) => {
+                const friendData = getUserByCode(friend.userIdCode);
+                const friendName = friendData ? friendData.name || friend.userIdCode : friend.userIdCode;
+                const friendDiv = document.createElement('div');
+                friendDiv.className = 'friend-item';
+                friendDiv.innerHTML = `
+                    <div class="friend-info">
+                        <div class="friend-name">${friendName}</div>
+                        <div class="friend-id">🆔 ${friend.userIdCode}</div>
+                        <span class="friend-status">🟢 نشط الآن</span>
+                    </div>
+                    <button class="remove-friend-btn" data-code="${friend.userIdCode}">🗑️</button>
+                `;
+                activeContainer.appendChild(friendDiv);
+            });
         }
         
-        container.innerHTML = '';
-        friendsList.forEach((friend, index) => {
-            const friendData = getUserByCode(friend.userIdCode);
-            const friendName = friendData ? friendData.name || friend.userIdCode : friend.userIdCode;
-            
-            const friendDiv = document.createElement('div');
-            friendDiv.className = 'friend-item';
-            friendDiv.innerHTML = `
-                <div class="friend-info">
-                    <div class="friend-name">${friendName}</div>
-                    <div class="friend-id">🆔 ${friend.userIdCode}</div>
-                </div>
-                <button class="remove-friend-btn" data-index="${index}">🗑️ إزالة</button>
-            `;
-            container.appendChild(friendDiv);
-        });
+        if (allFriends.length === 0) {
+            allContainer.innerHTML = '<div class="no-friends">👥 لا يوجد أصدقاء بعد<br>أضف أصدقاء باستخدام المعرف الشخصي</div>';
+        } else {
+            allContainer.innerHTML = '';
+            allFriends.forEach((friend, idx) => {
+                const friendData = getUserByCode(friend.userIdCode);
+                const friendName = friendData ? friendData.name || friend.userIdCode : friend.userIdCode;
+                const isActive = isUserActive(friend.userIdCode);
+                const friendDiv = document.createElement('div');
+                friendDiv.className = 'friend-item';
+                friendDiv.innerHTML = `
+                    <div class="friend-info">
+                        <div class="friend-name">${friendName}</div>
+                        <div class="friend-id">🆔 ${friend.userIdCode}</div>
+                        <span class="friend-status ${isActive ? '' : 'offline'}">${isActive ? '🟢 نشط' : '⚫ غير نشط'}</span>
+                    </div>
+                    <button class="remove-friend-btn" data-code="${friend.userIdCode}">🗑️</button>
+                `;
+                allContainer.appendChild(friendDiv);
+            });
+        }
         
         document.querySelectorAll('.remove-friend-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const index = parseInt(btn.dataset.index);
-                removeFriend(index);
+                const code = btn.dataset.code;
+                removeFriendByCode(code);
             });
         });
     }
     
-    // إزالة صديق
-    function removeFriend(index) {
+    function removeFriendByCode(code) {
         if (confirm('هل أنت متأكد من إزالة هذا الصديق؟')) {
-            friendsList.splice(index, 1);
-            saveUserData();
-            renderFriendsList();
-            updateUI();
-            showToast('✅ تم إزالة الصديق بنجاح', false);
+            const index = friendsList.findIndex(f => f.userIdCode === code);
+            if (index !== -1) {
+                friendsList.splice(index, 1);
+                saveUserData();
+                renderFriendsLists();
+                updateUI();
+                showToast('✅ تم إزالة الصديق بنجاح', false);
+            }
         }
     }
     
-    // إرسال طلب صداقة
     function sendFriendRequest() {
         const friendCode = document.getElementById('friendIdInput').value.trim();
         
@@ -898,12 +847,10 @@
             showToast('⚠️ الرجاء إدخال المعرف الشخصي', true);
             return;
         }
-        
         if (friendCode.length !== 10 || !/^\d+$/.test(friendCode)) {
             showToast('⚠️ المعرف الشخصي يجب أن يكون 10 أرقام', true);
             return;
         }
-        
         if (friendCode === userIdCode) {
             showToast('⚠️ لا يمكن إضافة نفسك كصديق', true);
             return;
@@ -914,33 +861,39 @@
             showToast('❌ لا يوجد مستخدم بهذا المعرف', true);
             return;
         }
-        
-        // التحقق من وجود الصديق مسبقاً
         if (friendsList.some(f => f.userIdCode === friendCode)) {
             showToast('⚠️ هذا المستخدم موجود بالفعل في قائمة أصدقائك', true);
             return;
         }
         
-        // إضافة الصديق
         friendsList.push({
             userIdCode: friendCode,
             name: friendData.name,
-            addedAt: Date.now()
+            addedAt: Date.now(),
+            lastActive: Date.now()
         });
         
         saveUserData();
         updateUI();
+        renderFriendsLists();
         document.getElementById('friendIdInput').value = '';
-        document.getElementById('addFriendOverlay').style.display = 'none';
         showToast(`✅ تم إضافة ${friendData.name || friendCode} إلى قائمة أصدقائك`, false);
     }
     
-    // نسخ المعرف
     function copyUserId() {
         if (userIdCode) {
             navigator.clipboard.writeText(userIdCode);
             showToast('📋 تم نسخ المعرف الشخصي', false);
         }
+    }
+    
+    function openCommunity() {
+        renderFriendsLists();
+        document.getElementById('communityOverlay').style.display = 'flex';
+    }
+    
+    function closeCommunity() {
+        document.getElementById('communityOverlay').style.display = 'none';
     }
 
     function showToast(message, isError = false) {
@@ -948,7 +901,6 @@
         toast.className = 'toast-notify';
         toast.textContent = message;
         toast.style.background = isError ? 'rgba(231, 76, 60, 0.95)' : 'rgba(0,0,0,0.92)';
-        toast.style.borderColor = isError ? '#e74c3c' : '#d4af37';
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 2800);
     }
@@ -994,29 +946,30 @@
         }
     }
 
-    function showMainScreen() {
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('mainScreen').style.display = 'flex';
+    // تبويبات المجتمع
+    function setupTabs() {
+        const tabs = document.querySelectorAll('.tab-btn');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.dataset.tab;
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+                if (tabId === 'active') document.getElementById('tabActive').classList.add('active');
+                else if (tabId === 'add') document.getElementById('tabAdd').classList.add('active');
+                else if (tabId === 'all') document.getElementById('tabAll').classList.add('active');
+            });
+        });
     }
 
-    // ربط الأحداث
     document.getElementById('googleLoginBtn').addEventListener('click', loginWithGoogle);
     document.getElementById('logoutBtn').addEventListener('click', handleLogout);
     document.getElementById('copyIdBtn').addEventListener('click', copyUserId);
-    document.getElementById('addFriendBtn').addEventListener('click', () => {
-        document.getElementById('addFriendOverlay').style.display = 'flex';
-    });
-    document.getElementById('showFriendsBtn').addEventListener('click', () => {
-        renderFriendsList();
-        document.getElementById('friendsListOverlay').style.display = 'flex';
-    });
-    document.getElementById('closeAddFriendBtn').addEventListener('click', () => {
-        document.getElementById('addFriendOverlay').style.display = 'none';
-    });
-    document.getElementById('closeFriendsListBtn').addEventListener('click', () => {
-        document.getElementById('friendsListOverlay').style.display = 'none';
-    });
+    document.getElementById('communityBtn').addEventListener('click', openCommunity);
+    document.getElementById('closeCommunityBtn').addEventListener('click', closeCommunity);
     document.getElementById('sendFriendRequestBtn').addEventListener('click', sendFriendRequest);
+    
+    setupTabs();
 
     onAuthStateChanged(auth, async (user) => {
         if (user && (!currentUser)) {
@@ -1030,7 +983,8 @@
             loadUserData();
             updateUI();
             saveUserData();
-            showMainScreen();
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainScreen').style.display = 'flex';
         }
     });
 </script>
