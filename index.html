@@ -142,7 +142,7 @@
             border-bottom: 1px solid rgba(212, 175, 55, 0.3);
             padding: 12px 20px;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
             z-index: 100;
         }
@@ -163,10 +163,17 @@
             white-space: nowrap;
         }
 
-        .info-fab {
+        /* الأزرار العلوية */
+        .top-buttons {
+            display: flex;
+            gap: 12px;
             position: fixed;
             top: 80px;
             right: 20px;
+            z-index: 200;
+        }
+
+        .top-fab {
             width: 50px;
             height: 50px;
             background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark));
@@ -175,21 +182,21 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            z-index: 200;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             transition: all 0.3s ease;
             border: 2px solid rgba(255,215,0,0.5);
         }
 
-        .info-fab:active {
+        .top-fab:active {
             transform: scale(0.92);
         }
 
-        .info-fab span {
+        .top-fab span {
             font-size: 28px;
         }
 
-        .info-dropdown {
+        /* القوائم المنبثقة */
+        .dropdown-menu {
             position: fixed;
             top: 140px;
             right: 20px;
@@ -207,12 +214,13 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
 
-        .info-dropdown.active {
+        .dropdown-menu.active {
             transform: translateY(0) scale(1);
             opacity: 1;
             visibility: visible;
         }
 
+        /* محتوى معلومات المستخدم */
         .info-content {
             padding: 24px;
             text-align: center;
@@ -303,59 +311,11 @@
             transform: scale(0.96);
         }
 
-        .friends-fab {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            width: 56px;
-            height: 56px;
-            background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 200;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            transition: all 0.3s ease;
-            border: 2px solid rgba(255,215,0,0.5);
-        }
-
-        .friends-fab:active {
-            transform: scale(0.92);
-        }
-
-        .friends-fab span {
-            font-size: 28px;
-            transition: transform 0.3s;
-        }
-
-        .friends-fab.active span {
-            transform: rotate(90deg);
-        }
-
-        .friends-dropdown {
-            position: fixed;
-            bottom: 90px;
-            left: 20px;
-            right: 20px;
-            max-width: 400px;
-            background: rgba(10, 15, 25, 0.98);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
-            z-index: 199;
-            transform: translateY(20px) scale(0.95);
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-        }
-
-        .friends-dropdown.active {
-            transform: translateY(0) scale(1);
-            opacity: 1;
-            visibility: visible;
+        /* محتوى الأصدقاء */
+        .friends-content {
+            padding: 16px;
+            max-height: 60vh;
+            overflow-y: auto;
         }
 
         .friends-tabs {
@@ -384,14 +344,9 @@
             background: rgba(212, 175, 55, 0.1);
         }
 
-        .friends-content {
-            padding: 16px;
-            max-height: 50vh;
-            overflow-y: auto;
-        }
-
         .friends-pane {
             display: none;
+            padding: 16px 0;
         }
 
         .friends-pane.active {
@@ -521,22 +476,72 @@
             transform: scale(0.96);
         }
 
-        .loading {
+        /* لودينغ جميل */
+        .loading-overlay {
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.95);
-            backdrop-filter: blur(12px);
-            padding: 16px 32px;
-            border-radius: 60px;
-            color: var(--gold-primary);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
             display: none;
+            justify-content: center;
+            align-items: center;
             z-index: 10001;
-            font-size: 16px;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(212, 175, 55, 0.2);
+            border-top: 4px solid var(--gold-primary);
+            border-right: 4px solid var(--gold-primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: var(--gold-primary);
+            font-size: 18px;
             font-weight: bold;
-            border: 1px solid var(--gold-primary);
-            white-space: nowrap;
+            letter-spacing: 2px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .loading-dots {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .loading-dots span {
+            width: 8px;
+            height: 8px;
+            background: var(--gold-primary);
+            border-radius: 50%;
+            animation: bounce 1.4s ease-in-out infinite;
+        }
+
+        .loading-dots span:nth-child(1) { animation-delay: 0s; }
+        .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
         }
 
         .toast-notify {
@@ -566,31 +571,23 @@
         }
 
         @media (max-width: 480px) {
-            .info-fab, .friends-fab {
-                width: 48px;
-                height: 48px;
-            }
-            .info-fab span, .friends-fab span {
-                font-size: 24px;
-            }
-            .info-fab {
+            .top-buttons {
                 top: 70px;
                 right: 15px;
+                gap: 8px;
             }
-            .info-dropdown {
-                top: 130px;
+            .top-fab {
+                width: 45px;
+                height: 45px;
+            }
+            .top-fab span {
+                font-size: 24px;
+            }
+            .dropdown-menu {
+                top: 125px;
                 right: 15px;
                 left: 15px;
                 width: auto;
-            }
-            .friends-fab {
-                bottom: 15px;
-                left: 15px;
-            }
-            .friends-dropdown {
-                bottom: 75px;
-                left: 15px;
-                right: 15px;
             }
             .logout-btn {
                 padding: 8px 16px;
@@ -629,13 +626,18 @@
         </div>
     </div>
 
-    <!-- زر المعلومات الدائري -->
-    <div class="info-fab" id="infoFab">
-        <span>ℹ️</span>
+    <!-- الأزرار العلوية -->
+    <div class="top-buttons">
+        <div class="top-fab" id="infoFab">
+            <span>ℹ️</span>
+        </div>
+        <div class="top-fab" id="friendsFab">
+            <span>👥</span>
+        </div>
     </div>
 
-    <!-- قائمة المعلومات -->
-    <div class="info-dropdown" id="infoDropdown">
+    <!-- قائمة معلومات المستخدم -->
+    <div class="dropdown-menu" id="infoDropdown">
         <div class="info-content">
             <img class="info-avatar" id="infoAvatar" alt="صورة المستخدم">
             <div class="info-name" id="infoName">اللاعب</div>
@@ -656,19 +658,14 @@
             </div>
             <div class="info-code">
                 <div class="info-code-label">🎫 كود المعركة</div>
-                <div class="info-code-value" id="infoCode">-</div>
+                <div class="info-code-value" id="infoCode">---</div>
                 <button class="copy-info-btn" id="copyInfoCodeBtn">📋 نسخ الكود</button>
             </div>
         </div>
     </div>
 
-    <!-- زر الأصدقاء الدائري -->
-    <div class="friends-fab" id="friendsFab">
-        <span>👥</span>
-    </div>
-
     <!-- قائمة الأصدقاء -->
-    <div class="friends-dropdown" id="friendsDropdown">
+    <div class="dropdown-menu" id="friendsDropdown">
         <div class="friends-tabs">
             <button class="tab-btn active" data-tab="add">➕ إضافة</button>
             <button class="tab-btn" data-tab="requests">📨 طلبات</button>
@@ -694,7 +691,16 @@
     </button>
 </div>
 
-<div class="loading" id="loading">⏳ جاري التحميل...</div>
+<!-- لودينغ جميل -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">جاري التحميل</div>
+    <div class="loading-dots">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+</div>
 
 <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js';
@@ -730,7 +736,7 @@
     const elements = {
         loginScreen: document.getElementById('loginScreen'),
         mainScreen: document.getElementById('mainScreen'),
-        loading: document.getElementById('loading'),
+        loadingOverlay: document.getElementById('loadingOverlay'),
         googleLogin: document.getElementById('googleLoginBtn'),
         logout: document.getElementById('logoutBtn'),
         infoFab: document.getElementById('infoFab'),
@@ -764,7 +770,7 @@
     };
 
     const showLoading = (show) => {
-        elements.loading.style.display = show ? 'flex' : 'none';
+        elements.loadingOverlay.style.display = show ? 'flex' : 'none';
     };
 
     const getFirebaseToken = async () => {
@@ -821,6 +827,7 @@
                     wins: data.wins,
                     userCode: data.userIdCode
                 };
+                console.log('User data loaded:', currentUserData);
                 return true;
             } else {
                 // المستخدم غير موجود، قم بإنشائه
@@ -841,6 +848,7 @@
                         wins: 0,
                         userCode: createData.userIdCode
                     };
+                    console.log('User created with code:', createData.userIdCode);
                     showToast(`✨ تم إنشاء حسابك! كودك: ${createData.userIdCode}`, false);
                     return true;
                 }
@@ -1012,7 +1020,14 @@
         elements.infoBalance.textContent = currentUserData.balance;
         elements.infoGames.textContent = currentUserData.gamesPlayed;
         elements.infoWins.textContent = currentUserData.wins;
-        elements.infoCode.textContent = currentUserData.userCode || 'جاري التحميل...';
+        
+        // عرض الكود بشكل صحيح
+        if (currentUserData.userCode) {
+            elements.infoCode.textContent = currentUserData.userCode;
+        } else {
+            elements.infoCode.textContent = '---';
+        }
+        
         elements.infoAvatar.src = currentUser.photoURL || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23d4af37"%3E%3Cpath d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"%3E%3C/path%3E%3C/svg%3E';
     };
 
@@ -1178,6 +1193,16 @@
         elements.infoFab.addEventListener('click', (e) => {
             e.stopPropagation();
             elements.infoDropdown.classList.toggle('active');
+            // إغلاق القائمة الأخرى إذا كانت مفتوحة
+            elements.friendsDropdown.classList.remove('active');
+        });
+        
+        // Friends dropdown
+        elements.friendsFab.addEventListener('click', (e) => {
+            e.stopPropagation();
+            elements.friendsDropdown.classList.toggle('active');
+            // إغلاق القائمة الأخرى إذا كانت مفتوحة
+            elements.infoDropdown.classList.remove('active');
         });
         
         elements.copyInfoCodeBtn.addEventListener('click', () => {
@@ -1187,13 +1212,6 @@
             } else {
                 showToast('⚠️ لا يوجد كود للنسخ', true);
             }
-        });
-        
-        // Friends dropdown
-        elements.friendsFab.addEventListener('click', (e) => {
-            e.stopPropagation();
-            elements.friendsDropdown.classList.toggle('active');
-            elements.friendsFab.classList.toggle('active');
         });
         
         // Tabs
@@ -1254,7 +1272,6 @@
             }
             if (!elements.friendsFab.contains(e.target) && !elements.friendsDropdown.contains(e.target)) {
                 elements.friendsDropdown.classList.remove('active');
-                elements.friendsFab.classList.remove('active');
             }
         });
     };
