@@ -253,6 +253,217 @@
             margin: 0 4px;
         }
 
+        /* زر الدائري الجديد */
+        .menu-fab {
+            position: fixed;
+            top: 80px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 200;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border: 2px solid rgba(255,215,0,0.5);
+        }
+
+        .menu-fab:active {
+            transform: scale(0.9);
+        }
+
+        .menu-fab span {
+            font-size: 28px;
+            transition: transform 0.3s;
+        }
+
+        .menu-fab.active span {
+            transform: rotate(90deg);
+        }
+
+        /* القائمة المنسدلة */
+        .menu-dropdown {
+            position: fixed;
+            top: 140px;
+            left: 20px;
+            background: rgba(10, 15, 25, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            width: calc(100% - 40px);
+            max-width: 350px;
+            z-index: 199;
+            transform: translateY(-20px) scale(0.95);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .menu-dropdown.active {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .menu-tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+            padding: 0 10px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 8px;
+            background: transparent;
+            border: none;
+            color: #9aaebf;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            font-family: inherit;
+        }
+
+        .tab-btn.active {
+            color: #d4af37;
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #d4af37, #ffd700);
+            border-radius: 2px;
+        }
+
+        .tab-content {
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* تنسيق محتوى التبويبات */
+        .search-input {
+            width: 100%;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(212,175,55,0.3);
+            padding: 10px 15px;
+            border-radius: 30px;
+            color: white;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #d4af37;
+        }
+
+        .search-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            border: none;
+            padding: 8px;
+            border-radius: 30px;
+            color: #1e2a3a;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .search-btn:active {
+            transform: scale(0.98);
+        }
+
+        .friend-item {
+            background: rgba(212,175,55,0.1);
+            border-radius: 15px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .friend-info {
+            flex: 1;
+        }
+
+        .friend-name {
+            font-weight: bold;
+            color: #d4af37;
+            font-size: 14px;
+        }
+
+        .friend-email {
+            font-size: 11px;
+            color: #8a9aa8;
+        }
+
+        .friend-status {
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+        }
+
+        .friend-status.offline {
+            background: rgba(149, 165, 166, 0.2);
+            color: #95a5a6;
+        }
+
+        .accept-btn, .reject-btn {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 5px;
+            border: none;
+        }
+
+        .accept-btn {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .reject-btn {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #8a9aa8;
+            font-size: 13px;
+        }
+
         .main-content {
             flex: 1;
             display: flex;
@@ -362,60 +573,6 @@
             transition: all 0.2s;
         }
 
-        .copy-btn:active {
-            transform: scale(0.95);
-            background: rgba(212,175,55,0.4);
-        }
-
-        .friend-section {
-            margin-top: 15px;
-            padding: 15px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 25px;
-        }
-
-        .search-input {
-            width: 100%;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid rgba(212,175,55,0.3);
-            padding: 10px 15px;
-            border-radius: 30px;
-            color: white;
-            font-size: 14px;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: #d4af37;
-        }
-
-        .search-btn {
-            width: 100%;
-            background: linear-gradient(135deg, #d4af37, #b8860b);
-            border: none;
-            padding: 8px;
-            border-radius: 30px;
-            color: #1e2a3a;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .search-btn:active {
-            transform: scale(0.98);
-        }
-
-        .friend-result {
-            margin-top: 10px;
-            padding: 10px;
-            background: rgba(212,175,55,0.1);
-            border-radius: 20px;
-            font-size: 12px;
-            display: none;
-        }
-
         .loading {
             position: fixed;
             top: 50%;
@@ -467,15 +624,18 @@
                 padding: 8px 12px;
                 gap: 8px;
             }
-            .balance-card, .stats-card {
-                padding: 4px 10px;
+            .menu-fab {
+                top: 70px;
+                width: 45px;
+                height: 45px;
             }
-            .balance-amount {
-                font-size: 14px;
+            .menu-fab span {
+                font-size: 24px;
             }
-            .neon-title {
-                font-size: 16px;
-                letter-spacing: 1.5px;
+            .menu-dropdown {
+                top: 125px;
+                left: 15px;
+                width: calc(100% - 30px);
             }
             .user-card {
                 padding: 18px 25px;
@@ -483,15 +643,6 @@
             .user-avatar {
                 width: 65px;
                 height: 65px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .balance-label, .stat-label {
-                display: none;
-            }
-            .neon-title {
-                font-size: 14px;
             }
         }
     </style>
@@ -549,6 +700,42 @@
         </div>
     </div>
 
+    <!-- الزر الدائري -->
+    <div class="menu-fab" id="menuFab">
+        <span>👥</span>
+    </div>
+
+    <!-- القائمة المنسدلة مع التبويبات -->
+    <div class="menu-dropdown" id="menuDropdown">
+        <div class="menu-tabs">
+            <button class="tab-btn active" data-tab="add">➕ إضافة صديق</button>
+            <button class="tab-btn" data-tab="requests">📨 طلبات الصداقة</button>
+            <button class="tab-btn" data-tab="friends">🌟 أصدقائي النشطين</button>
+        </div>
+        <div class="tab-content">
+            <!-- تبويب إضافة صديق -->
+            <div class="tab-pane active" id="addTab">
+                <input type="text" id="friendCodeInput" class="search-input" placeholder="🔍 أدخل كود الصديق">
+                <button id="addFriendBtn" class="search-btn">➕ إضافة صديق</button>
+                <div id="addFriendResult" style="margin-top: 10px;"></div>
+            </div>
+
+            <!-- تبويب طلبات الصداقة -->
+            <div class="tab-pane" id="requestsTab">
+                <div id="requestsList">
+                    <div class="empty-state">📭 لا توجد طلبات صداقة</div>
+                </div>
+            </div>
+
+            <!-- تبويب الأصدقاء النشطين -->
+            <div class="tab-pane" id="friendsTab">
+                <div id="friendsList">
+                    <div class="empty-state">👥 لا يوجد أصدقاء بعد</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="main-content">
         <div class="user-card">
             <img class="user-avatar" id="userAvatar" alt="صورة المستخدم">
@@ -559,12 +746,6 @@
                 <div class="code-label">🎫 كود المعركة</div>
                 <div class="code-value" id="userCodeDisplay">-</div>
                 <button class="copy-btn" id="copyCodeBtn">📋 نسخ الكود</button>
-            </div>
-            
-            <div class="friend-section">
-                <input type="text" id="searchCodeInput" class="search-input" placeholder="🔍 أدخل كود صديق">
-                <button id="searchFriendBtn" class="search-btn">➕ إضافة صديق</button>
-                <div id="friendResult" class="friend-result"></div>
             </div>
         </div>
     </div>
@@ -615,9 +796,17 @@
     const topWins = document.getElementById('topWins');
     const userCodeDisplay = document.getElementById('userCodeDisplay');
     const copyCodeBtn = document.getElementById('copyCodeBtn');
-    const searchCodeInput = document.getElementById('searchCodeInput');
-    const searchFriendBtn = document.getElementById('searchFriendBtn');
-    const friendResult = document.getElementById('friendResult');
+    
+    // عناصر القائمة
+    const menuFab = document.getElementById('menuFab');
+    const menuDropdown = document.getElementById('menuDropdown');
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabPanes = document.querySelectorAll('.tab-pane');
+    const friendCodeInput = document.getElementById('friendCodeInput');
+    const addFriendBtn = document.getElementById('addFriendBtn');
+    const addFriendResult = document.getElementById('addFriendResult');
+    const requestsList = document.getElementById('requestsList');
+    const friendsList = document.getElementById('friendsList');
 
     function showToast(message, isError = false) {
         const toast = document.createElement('div');
@@ -805,6 +994,184 @@
         }
     }
 
+    async function fetchFriendRequests() {
+        const user = auth.currentUser;
+        if (!user) return [];
+        
+        try {
+            const token = await getFirebaseToken();
+            if (!token) return [];
+            
+            const response = await fetch(`${API_BASE_URL}/api/friends/requests/${user.uid}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                return data.requests;
+            }
+            return [];
+        } catch (error) {
+            console.error('خطأ في جلب الطلبات:', error);
+            return [];
+        }
+    }
+
+    async function fetchFriendsList() {
+        const user = auth.currentUser;
+        if (!user) return [];
+        
+        try {
+            const token = await getFirebaseToken();
+            if (!token) return [];
+            
+            const response = await fetch(`${API_BASE_URL}/api/friends/list/${user.uid}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                return data.friends;
+            }
+            return [];
+        } catch (error) {
+            console.error('خطأ في جلب الأصدقاء:', error);
+            return [];
+        }
+    }
+
+    async function acceptFriendRequest(requesterUid) {
+        const user = auth.currentUser;
+        if (!user) return false;
+        
+        try {
+            const token = await getFirebaseToken();
+            if (!token) return false;
+            
+            const response = await fetch(`${API_BASE_URL}/api/friends/accept`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userUid: user.uid,
+                    requesterUid: requesterUid
+                })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                showToast('✅ تم قبول طلب الصداقة', false);
+                return true;
+            } else {
+                showToast(data.error, true);
+                return false;
+            }
+        } catch (error) {
+            console.error('خطأ في قبول الطلب:', error);
+            return false;
+        }
+    }
+
+    async function rejectFriendRequest(requesterUid) {
+        const user = auth.currentUser;
+        if (!user) return false;
+        
+        try {
+            const token = await getFirebaseToken();
+            if (!token) return false;
+            
+            const response = await fetch(`${API_BASE_URL}/api/friends/reject`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userUid: user.uid,
+                    requesterUid: requesterUid
+                })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                showToast('❌ تم رفض طلب الصداقة', false);
+                return true;
+            } else {
+                showToast(data.error, true);
+                return false;
+            }
+        } catch (error) {
+            console.error('خطأ في رفض الطلب:', error);
+            return false;
+        }
+    }
+
+    async function loadRequests() {
+        const requests = await fetchFriendRequests();
+        if (requests.length === 0) {
+            requestsList.innerHTML = '<div class="empty-state">📭 لا توجد طلبات صداقة</div>';
+            return;
+        }
+        
+        requestsList.innerHTML = requests.map(req => `
+            <div class="friend-item">
+                <div class="friend-info">
+                    <div class="friend-name">${req.username}</div>
+                    <div class="friend-email">${req.email}</div>
+                </div>
+                <div>
+                    <button class="accept-btn" data-uid="${req.uid}">قبول</button>
+                    <button class="reject-btn" data-uid="${req.uid}">رفض</button>
+                </div>
+            </div>
+        `).join('');
+        
+        document.querySelectorAll('.accept-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const uid = btn.dataset.uid;
+                await acceptFriendRequest(uid);
+                loadRequests();
+                loadFriends();
+            });
+        });
+        
+        document.querySelectorAll('.reject-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const uid = btn.dataset.uid;
+                await rejectFriendRequest(uid);
+                loadRequests();
+            });
+        });
+    }
+
+    async function loadFriends() {
+        const friends = await fetchFriendsList();
+        if (friends.length === 0) {
+            friendsList.innerHTML = '<div class="empty-state">👥 لا يوجد أصدقاء بعد</div>';
+            return;
+        }
+        
+        friendsList.innerHTML = friends.map(friend => `
+            <div class="friend-item">
+                <div class="friend-info">
+                    <div class="friend-name">${friend.username}</div>
+                    <div class="friend-email">${friend.email}</div>
+                </div>
+                <div class="friend-status ${friend.isActive ? '' : 'offline'}">
+                    ${friend.isActive ? '🟢 نشط' : '⚫ غير نشط'}
+                </div>
+            </div>
+        `).join('');
+    }
+
     function updateUI() {
         if (currentUser) {
             const displayName = currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'مقاتل');
@@ -920,19 +1287,38 @@
     function showMainScreen() {
         loginScreen.style.display = 'none';
         mainScreen.style.display = 'flex';
+        loadRequests();
+        loadFriends();
     }
 
-    copyCodeBtn.addEventListener('click', () => {
-        if (currentUserCode) {
-            navigator.clipboard.writeText(currentUserCode);
-            showToast('✅ تم نسخ الكود', false);
-        } else {
-            showToast('⚠️ لا يوجد كود للنسخ', true);
-        }
+    // تفعيل القائمة المنسدلة
+    menuFab.addEventListener('click', () => {
+        menuDropdown.classList.toggle('active');
+        menuFab.classList.toggle('active');
     });
 
-    searchFriendBtn.addEventListener('click', async () => {
-        const code = searchCodeInput.value.trim();
+    // تبديل التبويبات
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabId = btn.dataset.tab;
+            
+            tabBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            tabPanes.forEach(pane => pane.classList.remove('active'));
+            document.getElementById(`${tabId}Tab`).classList.add('active');
+            
+            if (tabId === 'requests') {
+                loadRequests();
+            } else if (tabId === 'friends') {
+                loadFriends();
+            }
+        });
+    });
+
+    // إضافة صديق
+    addFriendBtn.addEventListener('click', async () => {
+        const code = friendCodeInput.value.trim();
         if (!code) {
             showToast('⚠️ الرجاء إدخال الكود', true);
             return;
@@ -948,28 +1334,35 @@
         loadingDiv.style.display = 'none';
         
         if (user) {
-            friendResult.style.display = 'block';
-            friendResult.innerHTML = `
-                <div style="text-align: center;">
+            addFriendResult.innerHTML = `
+                <div style="background: rgba(212,175,55,0.1); border-radius: 15px; padding: 12px; text-align: center;">
                     <div style="font-weight: bold; color: #d4af37;">${user.username}</div>
                     <div style="font-size: 11px; color: #8a9aa8; margin: 5px 0;">${user.email}</div>
-                    <button id="confirmAddFriend" style="background: #d4af37; border: none; padding: 5px 20px; border-radius: 20px; margin-top: 8px; cursor: pointer; font-weight: bold;">➕ إضافة</button>
+                    <button id="confirmAdd" style="background: #d4af37; border: none; padding: 8px 20px; border-radius: 25px; margin-top: 8px; cursor: pointer; font-weight: bold;">➕ إضافة</button>
                 </div>
             `;
             
-            document.getElementById('confirmAddFriend').addEventListener('click', async () => {
+            document.getElementById('confirmAdd').addEventListener('click', async () => {
                 loadingDiv.style.display = 'flex';
                 await sendFriendRequest(code);
                 loadingDiv.style.display = 'none';
-                friendResult.style.display = 'none';
-                searchCodeInput.value = '';
+                addFriendResult.innerHTML = '';
+                friendCodeInput.value = '';
             });
         } else {
-            friendResult.style.display = 'block';
-            friendResult.innerHTML = `<div style="text-align: center; color: #e74c3c;">❌ لم يتم العثور على مستخدم بهذا الكود</div>`;
+            addFriendResult.innerHTML = `<div style="text-align: center; color: #e74c3c; padding: 10px;">❌ لم يتم العثور على مستخدم بهذا الكود</div>`;
             setTimeout(() => {
-                friendResult.style.display = 'none';
+                addFriendResult.innerHTML = '';
             }, 3000);
+        }
+    });
+
+    copyCodeBtn.addEventListener('click', () => {
+        if (currentUserCode) {
+            navigator.clipboard.writeText(currentUserCode);
+            showToast('✅ تم نسخ الكود', false);
+        } else {
+            showToast('⚠️ لا يوجد كود للنسخ', true);
         }
     });
 
