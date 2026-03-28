@@ -1,121 +1,85 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>تسجيل الدخول - منصة الألعاب</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Battle Tanks Elite - دبابات</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             font-family: 'Segoe UI', 'Cairo', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0a0f1a 0%, #05070c 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             overflow: hidden;
-            position: relative;
+            background: linear-gradient(145deg, #0a0f1a 0%, #05070c 100%);
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
         }
 
-        .bg-animation {
+        /* شاشة تسجيل الدخول */
+        .login-screen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 0;
-        }
-
-        .bg-animation::before {
-            content: '';
-            position: absolute;
-            width: 200%;
-            height: 200%;
-            top: -50%;
-            left: -50%;
-            background: radial-gradient(circle at center, rgba(212,175,55,0.1) 0%, transparent 70%);
-            animation: rotate 20s linear infinite;
-        }
-
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            background: radial-gradient(circle at 30% 10%, #1e2a3a, #0a0f1f);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
         }
 
         .login-container {
-            position: relative;
-            z-index: 10;
             background: rgba(10, 15, 30, 0.85);
-            backdrop-filter: blur(20px);
+            backdrop-filter: blur(25px);
+            padding: 40px 30px;
             border-radius: 48px;
-            padding: 50px 40px;
             width: 90%;
-            max-width: 480px;
+            max-width: 420px;
             text-align: center;
             border: 1px solid rgba(212, 175, 55, 0.5);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            animation: fadeInUp 0.6s ease-out;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.4);
         }
 
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .logo {
-            margin-bottom: 30px;
-        }
-
-        .logo h1 {
+        .login-container h1 {
             color: #d4af37;
-            font-size: 42px;
-            letter-spacing: 2px;
-            text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+            font-size: clamp(24px, 8vw, 36px);
+            margin-bottom: 10px;
+            letter-spacing: 1px;
         }
 
-        .logo p {
+        .login-container p {
             color: #8a9aa8;
-            margin-top: 10px;
+            margin-bottom: 30px;
             font-size: 14px;
         }
 
         .google-btn {
             width: 100%;
-            padding: 16px 24px;
-            background: rgba(255, 255, 255, 0.95);
+            padding: 16px;
+            margin: 10px 0;
+            background: white;
             border: none;
             border-radius: 60px;
             font-size: 18px;
-            font-weight: 600;
+            font-weight: bold;
             cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            color: #1a1a2a;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 12px;
-            transition: all 0.3s ease;
-            margin: 20px 0;
-            color: #1a1a2e;
-        }
-
-        .google-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-            background: white;
-        }
-
-        .google-btn:active {
-            transform: translateY(0);
+            font-family: inherit;
         }
 
         .google-btn img {
@@ -123,144 +87,211 @@
             height: 24px;
         }
 
-        .loading {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.95);
-            padding: 20px 40px;
-            border-radius: 60px;
-            color: #d4af37;
-            display: none;
-            z-index: 1000;
-            font-size: 18px;
-            backdrop-filter: blur(10px);
-            border: 1px solid #d4af37;
+        .google-btn:active {
+            transform: scale(0.97);
         }
 
-        .error-message {
-            color: #ff6b6b;
-            background: rgba(255, 0, 0, 0.1);
-            padding: 12px;
-            border-radius: 12px;
-            margin: 15px 0;
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            color: #8a9aa8;
             font-size: 14px;
-            display: none;
-            border: 1px solid rgba(255, 0, 0, 0.3);
         }
 
-        .user-info {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(212, 175, 55, 0.3);
+        .divider::before,
+        .divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: rgba(212, 175, 55, 0.3);
+        }
+
+        .divider span {
+            padding: 0 15px;
+        }
+
+        .guest-btn {
+            width: 100%;
+            padding: 16px;
+            background: transparent;
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            border-radius: 60px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #d4af37;
+        }
+
+        .guest-btn:active {
+            transform: scale(0.97);
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        /* الواجهة الرئيسية */
+        .main-screen {
+            background: linear-gradient(145deg, #0f1725, #070b14);
             display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 900;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .main-screen h2 {
+            color: #d4af37;
+            font-size: clamp(24px, 8vw, 36px);
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 20px;
+            margin: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .play-btn, .wallet-btn, .logout-btn {
+            padding: clamp(12px, 4vw, 18px) clamp(25px, 8vw, 40px);
+            border: none;
+            border-radius: 60px;
+            font-size: clamp(18px, 5vw, 24px);
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .play-btn {
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            color: #1e2a2a;
+        }
+
+        .wallet-btn {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: clamp(10px, 3vw, 14px) clamp(20px, 6vw, 30px);
+            font-size: clamp(14px, 4vw, 18px);
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+
+        .play-btn:active, .wallet-btn:active, .logout-btn:active {
+            transform: scale(0.96);
+        }
+
+        .user-card {
+            background: rgba(255,255,255,0.1);
+            padding: 20px 30px;
+            border-radius: 50px;
+            margin-top: 30px;
+            text-align: center;
+            color: white;
+            backdrop-filter: blur(5px);
+            width: 90%;
+            max-width: 350px;
+        }
+
+        .user-card div {
+            margin: 8px 0;
+            font-size: clamp(12px, 4vw, 16px);
         }
 
         .user-avatar {
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            margin: 0 auto 10px;
+            margin-bottom: 12px;
             border: 2px solid #d4af37;
+            object-fit: cover;
         }
 
-        .user-name {
-            color: white;
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            padding: 20px 40px;
+            border-radius: 60px;
+            color: #d4af37;
+            display: none;
+            z-index: 10001;
             font-size: 18px;
             font-weight: bold;
-        }
-
-        .user-email {
-            color: #8a9aa8;
-            font-size: 14px;
-            margin: 5px 0;
-        }
-
-        .logout-btn {
-            background: rgba(212, 175, 55, 0.2);
-            border: 1px solid #d4af37;
-            color: #d4af37;
-            padding: 8px 20px;
-            border-radius: 30px;
-            cursor: pointer;
-            margin-top: 15px;
-            transition: all 0.2s;
-        }
-
-        .logout-btn:hover {
-            background: rgba(212, 175, 55, 0.4);
-        }
-
-        .footer {
-            margin-top: 30px;
-            color: #4a5568;
-            font-size: 12px;
-        }
-
-        @media (max-width: 480px) {
-            .login-container {
-                padding: 30px 25px;
-                width: 95%;
-            }
-            .logo h1 {
-                font-size: 32px;
-            }
-            .google-btn {
-                padding: 14px 20px;
-                font-size: 16px;
-            }
         }
     </style>
 </head>
 <body>
-    <div class="bg-animation"></div>
-    
-    <div class="login-container" id="loginContainer">
-        <div class="logo">
-            <h1>🎮 منصة الألعاب</h1>
-            <p>سجل دخولك بواسطة Google للمتابعة</p>
+
+    <!-- شاشة تسجيل الدخول -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-container">
+            <h1>⚡ BATTLE TANKS ⚡</h1>
+            <p>ساحة المعركة الإلكترونية</p>
+            
+            <!-- زر تسجيل الدخول عبر Google -->
+            <button class="google-btn" id="googleLoginBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24" height="24">
+                    <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z" />
+                    <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z" />
+                    <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z" />
+                    <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z" />
+                </svg>
+                تسجيل الدخول بحساب Google
+            </button>
+            
+            <div class="divider">
+                <span>أو</span>
+            </div>
+            
+            <button class="guest-btn" id="guestBtn">👤 دخول كزائر</button>
         </div>
-        
-        <div class="error-message" id="errorMessage"></div>
-        
-        <button class="google-btn" id="googleLoginBtn">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
-            تسجيل الدخول بحساب Google
-        </button>
-        
-        <div class="user-info" id="userInfo">
-            <img class="user-avatar" id="userAvatar" alt="Avatar">
-            <div class="user-name" id="userName"></div>
-            <div class="user-email" id="userEmail"></div>
-            <button class="logout-btn" id="logoutBtn">تسجيل الخروج</button>
-        </div>
-        
-        <div class="footer">
-            <p>🔒 جميع البيانات مشفرة وتُمر عبر السيرفر الآمن</p>
-        </div>
-    </div>
-    
-    <div class="loading" id="loading">
-        ⏳ جاري التحقق من الحساب...
     </div>
 
-    <script type="importmap">
-        {
-            "imports": {
-                "firebase/app": "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js",
-                "firebase/auth": "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js"
-            }
-        }
-    </script>
-    
+    <!-- الواجهة الرئيسية بعد تسجيل الدخول -->
+    <div class="main-screen" id="mainScreen">
+        <button class="logout-btn" id="logoutBtn">🚪 تسجيل خروج</button>
+        <h2>🔥 BATTLE TANKS ELITE 🔥</h2>
+        <div class="btn-group">
+            <button class="play-btn" id="playBtn">🎮 اللعب</button>
+            <button class="wallet-btn" id="walletBtn">💰 المحفظة</button>
+        </div>
+        <div class="user-card">
+            <img class="user-avatar" id="userAvatar" src="" alt="صورة المستخدم">
+            <div>👤 <span id="username">اللاعب</span></div>
+            <div>📧 <span id="userEmail">-</span></div>
+            <div>💰 <span id="balance">0</span> $</div>
+            <div>🏆 <span id="gamesPlayed">0</span> مباراة</div>
+            <div>⚔️ <span id="wins">0</span> فوز</div>
+        </div>
+    </div>
+
+    <div class="loading" id="loading">⏳ جاري التحميل...</div>
+
     <script type="module">
-        import { initializeApp } from 'firebase/app';
-        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js';
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js';
         
-        // إعدادات Firebase (نفس الكود المرفق)
+        // Firebase config
         const firebaseConfig = {
-            apiKey: "AIzaSyCvPo4HlsNhyf1WBmTzIr6CdR1c2lQ5sHU",
+            apiKey: "AlzaSyCvPo4HIsNhyf1WBmTzlr6CdR1c2lQ5sHU",
             authDomain: "boomb-fa3e7.firebaseapp.com",
             databaseURL: "https://boomb-fa3e7-default-rtdb.firebaseio.com",
             projectId: "boomb-fa3e7",
@@ -271,147 +302,236 @@
         
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
+        const googleProvider = new GoogleAuthProvider();
         
-        // رابط السيرفر (نفس الرابط الموجود)
+        // إعدادات إضافية لـ Google
+        googleProvider.setCustomParameters({
+            prompt: 'select_account'
+        });
+        
+        // رابط السيرفر الخلفي
         const SERVER_URL = "https://tank-yf0p.onrender.com";
         
-        // العناصر
-        const googleBtn = document.getElementById('googleLoginBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const loginContainer = document.getElementById('loginContainer');
-        const userInfoDiv = document.getElementById('userInfo');
+        // متغيرات الحالة
+        let currentUser = null;
+        let currentBalance = 0;
+        let userStats = { gamesPlayed: 0, wins: 0 };
+        
+        // عناصر DOM
+        const loginScreen = document.getElementById('loginScreen');
+        const mainScreen = document.getElementById('mainScreen');
         const loadingDiv = document.getElementById('loading');
-        const errorMessageDiv = document.getElementById('errorMessage');
-        const userNameSpan = document.getElementById('userName');
+        const googleLoginBtn = document.getElementById('googleLoginBtn');
+        const guestBtn = document.getElementById('guestBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const playBtn = document.getElementById('playBtn');
+        const walletBtn = document.getElementById('walletBtn');
+        const usernameSpan = document.getElementById('username');
         const userEmailSpan = document.getElementById('userEmail');
-        const userAvatarImg = document.getElementById('userAvatar');
+        const balanceSpan = document.getElementById('balance');
+        const gamesPlayedSpan = document.getElementById('gamesPlayed');
+        const winsSpan = document.getElementById('wins');
+        const userAvatar = document.getElementById('userAvatar');
         
-        function showError(msg) {
-            errorMessageDiv.textContent = msg;
-            errorMessageDiv.style.display = 'block';
-            setTimeout(() => errorMessageDiv.style.display = 'none', 5000);
+        // عرض رسالة
+        function showMessage(msg, isError = true) {
+            if (isError) {
+                alert(msg);
+            } else {
+                alert(msg);
+            }
         }
         
-        function showLoading(show) {
-            loadingDiv.style.display = show ? 'flex' : 'none';
-        }
-        
-        async function authenticateWithServer(idToken, userData) {
-            try {
-                const res = await fetch(`${SERVER_URL}/api/auth/google`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ idToken, userData })
-                });
-                const result = await res.json();
+        // تحديث واجهة المستخدم بالبيانات
+        function updateUserUI() {
+            if (currentUser) {
+                const displayName = currentUser.displayName || currentUser.email.split('@')[0];
+                usernameSpan.textContent = displayName;
+                userEmailSpan.textContent = currentUser.email;
+                balanceSpan.textContent = currentBalance;
+                gamesPlayedSpan.textContent = userStats.gamesPlayed;
+                winsSpan.textContent = userStats.wins;
                 
-                if (result.success) {
-                    localStorage.setItem('user', JSON.stringify({
-                        uid: userData.uid,
-                        email: userData.email,
-                        name: userData.displayName,
-                        photoURL: userData.photoURL,
-                        token: result.token,
-                        balance: result.balance
-                    }));
-                    showUserInfo(userData, result.balance);
-                    return true;
+                if (currentUser.photoURL) {
+                    userAvatar.src = currentUser.photoURL;
                 } else {
-                    showError(result.error || 'فشل المصادقة');
-                    return false;
+                    userAvatar.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23d4af37"%3E%3Cpath d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"%3E%3C/path%3E%3C/svg%3E';
                 }
-            } catch (error) {
-                showError('لا يمكن الاتصال بالسيرفر');
-                return false;
             }
         }
         
-        function showUserInfo(userData) {
-            document.querySelector('.logo h1').style.fontSize = '28px';
-            document.querySelector('.logo p').style.display = 'none';
-            googleBtn.style.display = 'none';
-            userInfoDiv.style.display = 'block';
-            userNameSpan.textContent = userData.displayName || userData.email.split('@')[0];
-            userEmailSpan.textContent = userData.email;
-            userAvatarImg.src = userData.photoURL || `https://ui-avatars.com/api/?background=d4af37&color=fff&name=${encodeURIComponent(userData.displayName || 'User')}`;
-        }
-        
-        async function loginWithGoogle() {
-            showLoading(true);
+        // جلب بيانات المستخدم من السيرفر
+        async function fetchUserData(uid, token) {
             try {
-                const result = await signInWithPopup(auth, provider);
-                const user = result.user;
-                const idToken = await user.getIdToken();
-                await authenticateWithServer(idToken, {
-                    uid: user.uid,
-                    email: user.email,
-                    displayName: user.displayName,
-                    photoURL: user.photoURL
-                });
-            } catch (error) {
-                if (error.code === 'auth/popup-blocked') showError('الرجاء السماح بالنوافذ المنبثقة');
-                else if (error.code === 'auth/popup-closed-by-user') showError('تم إغلاق النافذة');
-                else showError('فشل تسجيل الدخول');
-            } finally {
-                showLoading(false);
-            }
-        }
-        
-        async function logout() {
-            showLoading(true);
-            try {
-                await signOut(auth);
-                const saved = localStorage.getItem('user');
-                if (saved) {
-                    const { token } = JSON.parse(saved);
-                    await fetch(`${SERVER_URL}/api/auth/logout`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ token })
-                    });
-                }
-                localStorage.removeItem('user');
-                document.querySelector('.logo h1').style.fontSize = '42px';
-                document.querySelector('.logo p').style.display = 'block';
-                googleBtn.style.display = 'flex';
-                userInfoDiv.style.display = 'none';
-            } catch (error) {
-                showError('خطأ في تسجيل الخروج');
-            } finally {
-                showLoading(false);
-            }
-        }
-        
-        async function checkAuthState() {
-            const saved = localStorage.getItem('user');
-            if (saved) {
-                try {
-                    const userData = JSON.parse(saved);
-                    const res = await fetch(`${SERVER_URL}/api/auth/verify`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ token: userData.token })
-                    });
-                    const result = await res.json();
-                    if (result.valid) {
-                        showUserInfo({
-                            displayName: userData.name,
-                            email: userData.email,
-                            photoURL: userData.photoURL
-                        });
-                    } else {
-                        localStorage.removeItem('user');
+                const response = await fetch(`${SERVER_URL}/api/user/data?uid=${uid}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
                     }
-                } catch (error) {
-                    localStorage.removeItem('user');
+                });
+                const data = await response.json();
+                if (data.success) {
+                    currentBalance = data.balance || 100;
+                    userStats.gamesPlayed = data.gamesPlayed || 0;
+                    userStats.wins = data.wins || 0;
+                } else {
+                    currentBalance = 100;
                 }
+                updateUserUI();
+            } catch (err) {
+                console.warn("فشل جلب بيانات المستخدم، استخدام بيانات افتراضية");
+                currentBalance = 100;
+                updateUserUI();
             }
         }
         
-        googleBtn.addEventListener('click', loginWithGoogle);
-        logoutBtn.addEventListener('click', logout);
-        checkAuthState();
+        // إنشاء مستخدم جديد على السيرفر
+        async function createUserOnServer(uid, email, displayName, token) {
+            try {
+                await fetch(`${SERVER_URL}/api/user/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ uid, email, displayName })
+                });
+            } catch (err) {
+                console.warn("فشل إنشاء المستخدم على السيرفر");
+            }
+        }
+        
+        // معالجة تسجيل الدخول عبر Google
+        async function loginWithGoogle() {
+            loadingDiv.style.display = 'flex';
+            try {
+                const result = await signInWithPopup(auth, googleProvider);
+                const user = result.user;
+                currentUser = user;
+                const token = await user.getIdToken();
+                
+                // محاولة جلب البيانات، إذا فشلت نقوم بإنشاء المستخدم
+                try {
+                    await fetchUserData(user.uid, token);
+                } catch {
+                    await createUserOnServer(user.uid, user.email, user.displayName, token);
+                    currentBalance = 100;
+                    userStats = { gamesPlayed: 0, wins: 0 };
+                    updateUserUI();
+                }
+                
+                loadingDiv.style.display = 'none';
+                showMainScreen();
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                console.error(error);
+                let errorMsg = 'فشل تسجيل الدخول بحساب Google';
+                if (error.code === 'auth/popup-blocked') {
+                    errorMsg = 'تم حظر النافذة المنبثقة، يرجى السماح بالنوافذ المنبثقة للموقع';
+                } else if (error.code === 'auth/popup-closed-by-user') {
+                    errorMsg = 'تم إغلاق نافذة التسجيل قبل اكتمال العملية';
+                } else if (error.code === 'auth/cancelled-popup-request') {
+                    errorMsg = 'تم إلغاء طلب تسجيل الدخول';
+                }
+                showMessage(errorMsg);
+            }
+        }
+        
+        // تسجيل الدخول كزائر (بدون حساب)
+        function loginAsGuest() {
+            loadingDiv.style.display = 'flex';
+            
+            // إنشاء مستخدم ضيف مؤقت
+            const guestId = 'guest_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+            const guestEmail = `${guestId}@guest.tankgame`;
+            const guestName = 'زائر_' + Math.floor(Math.random() * 1000);
+            
+            currentUser = {
+                uid: guestId,
+                email: guestEmail,
+                displayName: guestName,
+                photoURL: null,
+                isGuest: true
+            };
+            
+            currentBalance = 50;
+            userStats = { gamesPlayed: 0, wins: 0 };
+            updateUserUI();
+            
+            loadingDiv.style.display = 'none';
+            showMainScreen();
+            showMessage('🌟 مرحباً بك كزائر! رصيدك الافتتاحي 50 $', false);
+        }
+        
+        // تسجيل الخروج
+        async function handleLogout() {
+            loadingDiv.style.display = 'flex';
+            try {
+                if (currentUser && !currentUser.isGuest) {
+                    await signOut(auth);
+                }
+                currentUser = null;
+                mainScreen.style.display = 'none';
+                loginScreen.style.display = 'flex';
+                loadingDiv.style.display = 'none';
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                showMessage('حدث خطأ أثناء تسجيل الخروج');
+            }
+        }
+        
+        // إظهار الواجهة الرئيسية
+        function showMainScreen() {
+            loginScreen.style.display = 'none';
+            mainScreen.style.display = 'flex';
+        }
+        
+        // المحفظة
+        function goToWallet() {
+            showMessage(`💰 رصيدك الحالي: ${currentBalance} $\n\n🏆 المباريات: ${userStats.gamesPlayed}\n⚔️ الفوز: ${userStats.wins}\n\n(سيتم فتح صفحة المحفظة قريبًا)`, false);
+        }
+        
+        // بدء اللعب
+        function startGame() {
+            if (currentBalance < 1) {
+                showMessage('⚠️ رصيدك غير كافٍ لدخول المعركة! قم بشحن الرصيد من المحفظة.');
+                return;
+            }
+            showMessage(`🎮 جاري البحث عن معركة...\n💰 سيتم خصم 1 $ عند الانضمام.\n\n(سيتم توجيهك إلى ساحة المعركة قريبًا)`, false);
+        }
+        
+        // ربط الأحداث
+        googleLoginBtn.addEventListener('click', loginWithGoogle);
+        guestBtn.addEventListener('click', loginAsGuest);
+        logoutBtn.addEventListener('click', handleLogout);
+        playBtn.addEventListener('click', startGame);
+        walletBtn.addEventListener('click', goToWallet);
+        
+        // مراقبة حالة تسجيل الدخول من Firebase
+        onAuthStateChanged(auth, async (user) => {
+            if (user && !currentUser) {
+                // مستخدم مسجل دخول من Firebase
+                currentUser = user;
+                const token = await user.getIdToken();
+                try {
+                    await fetchUserData(user.uid, token);
+                } catch {
+                    await createUserOnServer(user.uid, user.email, user.displayName, token);
+                    currentBalance = 100;
+                    userStats = { gamesPlayed: 0, wins: 0 };
+                    updateUserUI();
+                }
+                showMainScreen();
+            } else if (!user && currentUser && !currentUser.isGuest) {
+                // تم تسجيل الخروج من Firebase
+                currentUser = null;
+                if (mainScreen.style.display === 'flex') {
+                    mainScreen.style.display = 'none';
+                    loginScreen.style.display = 'flex';
+                }
+            }
+        });
+        
+        console.log('✅ واجهة تسجيل الدخول عبر Google جاهزة');
     </script>
 </body>
 </html>
