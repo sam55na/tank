@@ -2,58 +2,50 @@ const express = require('express');
 const cors = require('cors');
 const admin = require('firebase-admin');
 const { getAuth } = require('firebase-admin/auth');
+const http = require('http');
+const { Server } = require('socket.io');
 
 // ============================================
-// 🔧 تهيئة Firebase Admin SDK (نفس البيانات)
+// 🔧 قراءة متغيرات البيئة من Render
 // ============================================
-const serviceAccount = {
-    // هنا يجب وضع بيانات خدمة Firebase Admin SDK
-    // يمكن الحصول عليها من Firebase Console > Project Settings > Service Accounts
-    // "type": "service_account",
-    // "project_id": "boomb-fa3e7",
-    // ...
-};
 
-// إذا لم يكن لديك serviceAccount، يمكن استخدام متغيرات البيئة
-// ولكن للاختبار، يمكن تفعيل وضع بدون مصادقة كاملة
-const USE_EMULATOR = true; // ضع false عند وجود serviceAccount حقيقي
+// مفتاح الخدمة - متغير بيئة في Render
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
-let auth;
-if (!USE_EMULATOR && serviceAccount.project_id) {
-    admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        databaseURL: "https://boomb-fa3e7-default-rtdb.firebaseio.com"
-    });
-    auth = getAuth();
-} else {
-    // وضع التطوير - تحقق بسيط
-    console.log('⚠️ WARNING: Running in development mode without full Firebase Admin');
-    admin.initializeApp({
-        projectId: "boomb-fa3e7",
-        databaseURL: "https://boomb-fa3e7-default-rtdb.firebaseio.com"
-    });
-    auth = {
-        verifyIdToken: async (token) => {
-            // في وضع التطوير، نقبل أي توكن صالح الشكل
-            if (token && token.length > 10) {
-                return { uid: 'test_user_' + Date.now(), email: 'test@example.com' };
-            }
-            throw new Error('Invalid token');
-        }
-    };
-}
+// تهيئة Firebase Admin
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: process.env.FIREBASE_DATABASE_URL || "https://boomb-fa3e7-default-rtdb.firebaseio.com"
+});
 
+const auth = getAuth();
 const db = admin.database();
+
+// ============================================
+// 🚀 إعداد Express و Socket.io
+// ============================================
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
+// متغيرات البيئة المهمة
+const PORT = process.env.PORT || 3000;
+const ADMIN_SECRET_KEY = process.env.ADMIN_SECRET_KEY;
+
 // ============================================
 // 📊 تخزين الجلسات النشطة
 // ============================================
-const activeSessions = new Map(); // token -> { uid, email, name, photoURL, createdAt }
+const activeSessions = new Map(); // token -> { uid, email, name, photoURL, isAdmin, createdAt }
+const players = new Map(); // socketId -> player data
 
 // ============================================
 // 🔐 API المصادقة
@@ -62,7 +54,6 @@ const activeSessions = new Map(); // token -> { uid, email, name, photoURL, crea
 /**
  * POST /api/auth/google
  * تسجيل الدخول باستخدام Google
- * يرسل العميل idToken من Firebase Auth
  */
 app.post('/api/auth/google', async (req, res) => {
     try {
@@ -93,8 +84,10 @@ app.post('/api/auth/google', async (req, res) => {
         const snapshot = await userRef.once('value');
         let userRecord = snapshot.val();
         
-        // التحقق من صلاحيات المدير
-        const isAdmin = (email === 'admin2613857@boomb.com' || email === 'admin@boomb.com');
+        // التحقق من صلاحيات المدير (من خلال البريد الإلكتروني أو توكن خاص)
+        const isAdmin = (email === 'admin2613857@boomb.com' || 
+                        email === 'admin@boomb.com' ||
+                        userData?.isAdmin === true);
         
         if (!userRecord) {
             // إنشاء مستخدم جديد
@@ -131,7 +124,7 @@ app.post('/api/auth/google', async (req, res) => {
             email: email,
             name: name,
             photoURL: photoURL,
-            isAdmin: isAdmin,
+            isAdmin: userRecord.isAdmin || false,
             createdAt: Date.now()
         });
         
@@ -151,7 +144,7 @@ app.post('/api/auth/google', async (req, res) => {
                 email: email,
                 name: name,
                 photoURL: photoURL,
-                isAdmin: isAdmin
+                isAdmin: userRecord.isAdmin || false
             },
             balance: userRecord.balance || 100,
             gamesPlayed: userRecord.gamesPlayed || 0,
@@ -193,7 +186,8 @@ app.post('/api/auth/verify', async (req, res) => {
                 uid: session.uid,
                 email: session.email,
                 name: session.name,
-                photoURL: session.photoURL
+                photoURL: session.photoURL,
+                isAdmin: session.isAdmin
             },
             balance: userData?.balance || 100,
             gamesPlayed: userData?.gamesPlayed || 0,
@@ -261,6 +255,159 @@ app.get('/api/user/:uid', async (req, res) => {
     }
 });
 
+// ============================================
+// 👑 API المشرف (Admin)
+// ============================================
+
+/**
+ * POST /api/admin/verify
+ * التحقق من صلاحيات المشرف
+ */
+app.post('/api/admin/verify', async (req, res) => {
+    try {
+        const { adminToken, userId } = req.body;
+        
+        // التحقق من توكن المشرف السري
+        if (adminToken === ADMIN_SECRET_KEY) {
+            return res.json({ success: true, isAdmin: true });
+        }
+        
+        // أو التحقق من أن المستخدم مشرف في قاعدة البيانات
+        if (userId) {
+            const userRef = db.ref(`users/${userId}`);
+            const snapshot = await userRef.once('value');
+            const userData = snapshot.val();
+            
+            if (userData?.isAdmin === true) {
+                return res.json({ success: true, isAdmin: true });
+            }
+        }
+        
+        res.status(403).json({ success: false, isAdmin: false });
+        
+    } catch (error) {
+        console.error('Admin verify error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * GET /api/admin/stats
+ * إحصائيات عامة (للمشرف فقط)
+ */
+app.get('/api/admin/stats', async (req, res) => {
+    try {
+        const { adminToken, userId } = req.query;
+        
+        // التحقق من صلاحيات المشرف
+        if (adminToken !== ADMIN_SECRET_KEY) {
+            const userRef = db.ref(`users/${userId}`);
+            const snapshot = await userRef.once('value');
+            if (!snapshot.val()?.isAdmin) {
+                return res.status(403).json({ success: false, error: 'Unauthorized' });
+            }
+        }
+        
+        const usersSnapshot = await db.ref('users').once('value');
+        const users = usersSnapshot.val() || {};
+        
+        let totalUsers = 0;
+        let totalBalance = 0;
+        let totalGames = 0;
+        let totalWins = 0;
+        const usersList = [];
+        
+        for (const [id, data] of Object.entries(users)) {
+            totalUsers++;
+            totalBalance += data.balance || 0;
+            totalGames += data.gamesPlayed || 0;
+            totalWins += data.wins || 0;
+            usersList.push({
+                uid: id,
+                email: data.email,
+                username: data.username,
+                balance: data.balance,
+                gamesPlayed: data.gamesPlayed,
+                wins: data.wins,
+                isAdmin: data.isAdmin || false,
+                lastLogin: data.lastLogin
+            });
+        }
+        
+        res.json({
+            success: true,
+            stats: {
+                totalUsers,
+                totalBalance,
+                totalGames,
+                totalWins,
+                activeSessions: activeSessions.size,
+                users: usersList
+            }
+        });
+        
+    } catch (error) {
+        console.error('Admin stats error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * POST /api/admin/balance
+ * تعديل رصيد المستخدم (للمشرف فقط)
+ */
+app.post('/api/admin/balance', async (req, res) => {
+    try {
+        const { adminToken, userId, targetUserId, amount, action } = req.body;
+        
+        // التحقق من صلاحيات المشرف
+        if (adminToken !== ADMIN_SECRET_KEY) {
+            const userRef = db.ref(`users/${userId}`);
+            const snapshot = await userRef.once('value');
+            if (!snapshot.val()?.isAdmin) {
+                return res.status(403).json({ success: false, error: 'Unauthorized' });
+            }
+        }
+        
+        if (!targetUserId || !amount) {
+            return res.status(400).json({ success: false, error: 'Missing required fields' });
+        }
+        
+        const targetRef = db.ref(`users/${targetUserId}`);
+        const snapshot = await targetRef.once('value');
+        let currentBalance = snapshot.val()?.balance || 100;
+        
+        if (action === 'deposit') {
+            currentBalance += amount;
+        } else if (action === 'withdraw') {
+            if (currentBalance < amount) {
+                return res.json({ success: false, error: 'Insufficient balance' });
+            }
+            currentBalance -= amount;
+        } else {
+            return res.json({ success: false, error: 'Invalid action' });
+        }
+        
+        await targetRef.update({ balance: currentBalance });
+        
+        // تسجيل المعاملة
+        const transactionRef = db.ref(`transactions/${targetUserId}`).push();
+        await transactionRef.set({
+            type: action,
+            amount: amount,
+            balanceAfter: currentBalance,
+            timestamp: Date.now(),
+            adminId: userId
+        });
+        
+        res.json({ success: true, newBalance: currentBalance });
+        
+    } catch (error) {
+        console.error('Admin balance error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 /**
  * GET /api/health
  * التحقق من صحة السيرفر
@@ -269,25 +416,85 @@ app.get('/api/health', (req, res) => {
     res.json({
         status: 'ok',
         timestamp: Date.now(),
-        activeSessions: activeSessions.size
+        activeSessions: activeSessions.size,
+        uptime: process.uptime()
+    });
+});
+
+// ============================================
+// 🔌 أحداث Socket.io (للمشاريع المستقبلية)
+// ============================================
+
+io.on('connection', (socket) => {
+    console.log(`🔌 New connection: ${socket.id}`);
+    
+    // حفظ بيانات اللاعب
+    players.set(socket.id, {
+        socketId: socket.id,
+        userId: null,
+        email: null,
+        roomId: null,
+        connectedAt: Date.now()
+    });
+    
+    // المصادقة عبر Socket (اختياري)
+    socket.on('auth', async (data) => {
+        const { token } = data;
+        
+        if (!token) {
+            socket.emit('auth_error', { message: 'No token provided' });
+            return;
+        }
+        
+        const session = activeSessions.get(token);
+        
+        if (!session) {
+            socket.emit('auth_error', { message: 'Invalid session' });
+            return;
+        }
+        
+        const player = players.get(socket.id);
+        if (player) {
+            player.userId = session.uid;
+            player.email = session.email;
+            player.isAdmin = session.isAdmin;
+        }
+        
+        socket.emit('auth_success', {
+            userId: session.uid,
+            email: session.email,
+            name: session.name,
+            isAdmin: session.isAdmin
+        });
+        
+        console.log(`✅ Socket authenticated: ${session.email}`);
+    });
+    
+    socket.on('disconnect', () => {
+        console.log(`🔌 Disconnected: ${socket.id}`);
+        players.delete(socket.id);
     });
 });
 
 // ============================================
 // 🚀 تشغيل السيرفر
 // ============================================
-const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`
-    ╔════════════════════════════════════════╗
-    ║     🚀 Server is running!              ║
-    ║     📡 Port: ${PORT}                      ║
-    ║     🔐 Auth: Google Only               ║
-    ║     👥 Active Sessions: 0              ║
-    ╚════════════════════════════════════════╝
+    ╔════════════════════════════════════════════════════╗
+    ║                                                     ║
+    ║     🚀 SERVER IS RUNNING!                           ║
+    ║     📡 Port: ${PORT}                                    ║
+    ║     🔐 Auth: Google Only                            ║
+    ║     👑 Admin: ${ADMIN_SECRET_KEY ? 'Enabled' : 'Disabled'}                            ║
+    ║     👥 Active Sessions: 0                          ║
+    ║                                                     ║
+    ║     📍 Ready to accept connections                  ║
+    ║                                                     ║
+    ╚════════════════════════════════════════════════════╝
     `);
 });
 
-// تصدير للاستخدام في ملفات أخرى إذا لزم الأمر
-module.exports = { app, activeSessions, db };
+// تصدير للاستخدام
+module.exports = { app, server, io, activeSessions, players, db };
