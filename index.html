@@ -22,7 +22,6 @@
             position: relative;
         }
 
-        /* خلفية متحركة */
         .bg-animation {
             position: fixed;
             top: 0;
@@ -48,7 +47,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* الحاوية الرئيسية */
         .login-container {
             position: relative;
             z-index: 10;
@@ -75,7 +73,6 @@
             }
         }
 
-        /* الشعار */
         .logo {
             margin-bottom: 30px;
         }
@@ -93,7 +90,6 @@
             font-size: 14px;
         }
 
-        /* زر Google */
         .google-btn {
             width: 100%;
             padding: 16px 24px;
@@ -127,7 +123,6 @@
             height: 24px;
         }
 
-        /* حالة التحميل */
         .loading {
             position: fixed;
             top: 50%;
@@ -144,7 +139,6 @@
             border: 1px solid #d4af37;
         }
 
-        /* رسالة الخطأ */
         .error-message {
             color: #ff6b6b;
             background: rgba(255, 0, 0, 0.1);
@@ -156,7 +150,6 @@
             border: 1px solid rgba(255, 0, 0, 0.3);
         }
 
-        /* معلومات المستخدم بعد الدخول */
         .user-info {
             margin-top: 20px;
             padding-top: 20px;
@@ -199,24 +192,20 @@
             background: rgba(212, 175, 55, 0.4);
         }
 
-        /* تذييل */
         .footer {
             margin-top: 30px;
             color: #4a5568;
             font-size: 12px;
         }
 
-        /* للشاشات الصغيرة */
         @media (max-width: 480px) {
             .login-container {
                 padding: 30px 25px;
                 width: 95%;
             }
-            
             .logo h1 {
                 font-size: 32px;
             }
-            
             .google-btn {
                 padding: 14px 20px;
                 font-size: 16px;
@@ -256,7 +245,6 @@
         ⏳ جاري التحقق من الحساب...
     </div>
 
-    <!-- Import Firebase Modules -->
     <script type="importmap">
         {
             "imports": {
@@ -268,11 +256,9 @@
     
     <script type="module">
         import { initializeApp } from 'firebase/app';
-        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'firebase/auth';
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
         
-        // ============================================
-        // 🔧 إعدادات Firebase (نفس البيانات الموجودة في الكود المرفق)
-        // ============================================
+        // إعدادات Firebase (نفس الكود المرفق)
         const firebaseConfig = {
             apiKey: "AlzaSyCvPo4HIsNhyf1WBmTzlr6CdR1c2lQ5sHU",
             authDomain: "boomb-fa3e7.firebaseapp.com",
@@ -283,15 +269,14 @@
             appId: "1:499624996530:web:235f71e450845c748523ab"
         };
         
-        // تهيئة Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
         
-        // عنوان السيرفر
+        // رابط السيرفر (نفس الرابط الموجود)
         const SERVER_URL = "https://tank-yf0p.onrender.com";
         
-        // عناصر DOM
+        // العناصر
         const googleBtn = document.getElementById('googleLoginBtn');
         const logoutBtn = document.getElementById('logoutBtn');
         const loginContainer = document.getElementById('loginContainer');
@@ -302,43 +287,26 @@
         const userEmailSpan = document.getElementById('userEmail');
         const userAvatarImg = document.getElementById('userAvatar');
         
-        // عرض رسالة خطأ
-        function showError(message) {
-            errorMessageDiv.textContent = message;
+        function showError(msg) {
+            errorMessageDiv.textContent = msg;
             errorMessageDiv.style.display = 'block';
-            setTimeout(() => {
-                errorMessageDiv.style.display = 'none';
-            }, 5000);
+            setTimeout(() => errorMessageDiv.style.display = 'none', 5000);
         }
         
-        // عرض حالة التحميل
         function showLoading(show) {
             loadingDiv.style.display = show ? 'flex' : 'none';
         }
         
-        // إرسال التوكن إلى السيرفر للتحقق
         async function authenticateWithServer(idToken, userData) {
             try {
-                const response = await fetch(`${SERVER_URL}/api/auth/google`, {
+                const res = await fetch(`${SERVER_URL}/api/auth/google`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        idToken: idToken,
-                        userData: {
-                            uid: userData.uid,
-                            email: userData.email,
-                            name: userData.displayName,
-                            photoURL: userData.photoURL
-                        }
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idToken, userData })
                 });
-                
-                const result = await response.json();
+                const result = await res.json();
                 
                 if (result.success) {
-                    // تخزين معلومات الجلسة
                     localStorage.setItem('user', JSON.stringify({
                         uid: userData.uid,
                         email: userData.email,
@@ -347,169 +315,103 @@
                         token: result.token,
                         balance: result.balance
                     }));
-                    
-                    // عرض معلومات المستخدم
                     showUserInfo(userData, result.balance);
                     return true;
                 } else {
-                    showError(result.error || 'فشل المصادقة مع السيرفر');
+                    showError(result.error || 'فشل المصادقة');
                     return false;
                 }
             } catch (error) {
-                console.error('Server auth error:', error);
-                showError('لا يمكن الاتصال بالسيرفر. تأكد من اتصالك بالإنترنت');
+                showError('لا يمكن الاتصال بالسيرفر');
                 return false;
             }
         }
         
-        // عرض معلومات المستخدم في الواجهة
-        function showUserInfo(userData, balance = 0) {
-            loginContainer.style.maxWidth = '480px';
+        function showUserInfo(userData) {
             document.querySelector('.logo h1').style.fontSize = '28px';
             document.querySelector('.logo p').style.display = 'none';
             googleBtn.style.display = 'none';
             userInfoDiv.style.display = 'block';
-            
             userNameSpan.textContent = userData.displayName || userData.email.split('@')[0];
             userEmailSpan.textContent = userData.email;
-            userAvatarImg.src = userData.photoURL || 'https://ui-avatars.com/api/?background=d4af37&color=fff&bold=true&name=' + encodeURIComponent(userData.displayName || 'User');
-            
-            // يمكن إضافة رصيد المستخدم هنا إذا أردت
-            // userInfoDiv.innerHTML += `<div class="user-balance">💰 الرصيد: ${balance} $</div>`;
+            userAvatarImg.src = userData.photoURL || `https://ui-avatars.com/api/?background=d4af37&color=fff&name=${encodeURIComponent(userData.displayName || 'User')}`;
         }
         
-        // تسجيل الدخول بحساب Google
         async function loginWithGoogle() {
             showLoading(true);
-            
             try {
-                // فتح نافذة اختيار حساب Google
                 const result = await signInWithPopup(auth, provider);
                 const user = result.user;
                 const idToken = await user.getIdToken();
-                
-                console.log('✅ Google login successful:', user.email);
-                
-                // إرسال التوكن إلى السيرفر للمصادقة
-                const authenticated = await authenticateWithServer(idToken, {
+                await authenticateWithServer(idToken, {
                     uid: user.uid,
                     email: user.email,
                     displayName: user.displayName,
                     photoURL: user.photoURL
                 });
-                
-                if (authenticated) {
-                    console.log('✅ Server authentication successful');
-                }
-                
             } catch (error) {
-                console.error('Google login error:', error);
-                
-                if (error.code === 'auth/popup-blocked') {
-                    showError('تم حظر النافذة المنبثقة. يرجى السماح بالنوافذ المنبثقة لهذا الموقع');
-                } else if (error.code === 'auth/popup-closed-by-user') {
-                    showError('تم إغلاق نافذة تسجيل الدخول قبل اكتمال العملية');
-                } else {
-                    showError('فشل تسجيل الدخول: ' + (error.message || 'خطأ غير معروف'));
-                }
+                if (error.code === 'auth/popup-blocked') showError('الرجاء السماح بالنوافذ المنبثقة');
+                else if (error.code === 'auth/popup-closed-by-user') showError('تم إغلاق النافذة');
+                else showError('فشل تسجيل الدخول');
             } finally {
                 showLoading(false);
             }
         }
         
-        // تسجيل الخروج
         async function logout() {
             showLoading(true);
-            
             try {
-                // تسجيل الخروج من Firebase
                 await signOut(auth);
-                
-                // إعلام السيرفر بتسجيل الخروج
-                const token = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).token : null;
-                if (token) {
+                const saved = localStorage.getItem('user');
+                if (saved) {
+                    const { token } = JSON.parse(saved);
                     await fetch(`${SERVER_URL}/api/auth/logout`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ token })
                     });
                 }
-                
-                // مسح البيانات المحلية
                 localStorage.removeItem('user');
-                
-                // إعادة تعيين الواجهة
-                loginContainer.style.maxWidth = '480px';
                 document.querySelector('.logo h1').style.fontSize = '42px';
                 document.querySelector('.logo p').style.display = 'block';
                 googleBtn.style.display = 'flex';
                 userInfoDiv.style.display = 'none';
-                errorMessageDiv.style.display = 'none';
-                
-                console.log('✅ Logged out successfully');
-                
             } catch (error) {
-                console.error('Logout error:', error);
-                showError('حدث خطأ أثناء تسجيل الخروج');
+                showError('خطأ في تسجيل الخروج');
             } finally {
                 showLoading(false);
             }
         }
         
-        // التحقق من حالة تسجيل الدخول عند تحميل الصفحة
         async function checkAuthState() {
-            const savedUser = localStorage.getItem('user');
-            
-            if (savedUser) {
+            const saved = localStorage.getItem('user');
+            if (saved) {
                 try {
-                    const userData = JSON.parse(savedUser);
-                    
-                    // التحقق من صحة التوكن مع السيرفر
-                    const response = await fetch(`${SERVER_URL}/api/auth/verify`, {
+                    const userData = JSON.parse(saved);
+                    const res = await fetch(`${SERVER_URL}/api/auth/verify`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ token: userData.token })
                     });
-                    
-                    const result = await response.json();
-                    
+                    const result = await res.json();
                     if (result.valid) {
                         showUserInfo({
-                            uid: userData.uid,
-                            email: userData.email,
                             displayName: userData.name,
+                            email: userData.email,
                             photoURL: userData.photoURL
-                        }, result.balance);
+                        });
                     } else {
-                        // التوكن غير صالح، مسح البيانات
                         localStorage.removeItem('user');
                     }
                 } catch (error) {
-                    console.error('Token verification error:', error);
                     localStorage.removeItem('user');
                 }
             }
         }
         
-        // مراقبة حالة المصادقة في Firebase (للتغييرات)
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                // المستخدم مسجل الدخول في Firebase
-                console.log('Firebase auth state: user logged in', user.email);
-            } else {
-                // المستخدم غير مسجل الدخول في Firebase
-                console.log('Firebase auth state: user logged out');
-            }
-        });
-        
-        // ربط الأحداث
         googleBtn.addEventListener('click', loginWithGoogle);
         logoutBtn.addEventListener('click', logout);
-        
-        // التحقق من الحالة عند بدء التشغيل
         checkAuthState();
-        
-        console.log('✅ Google Login UI Ready');
     </script>
 </body>
 </html>
