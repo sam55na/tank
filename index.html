@@ -24,7 +24,6 @@
             left: 0;
         }
 
-        /* طبقة الخلفية المتحركة */
         .bg-animation {
             position: fixed;
             top: 0;
@@ -52,7 +51,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* شاشة تسجيل الدخول */
         .login-screen {
             position: fixed;
             top: 0;
@@ -88,7 +86,6 @@
             margin-bottom: 12px;
             letter-spacing: 2px;
             font-weight: 800;
-            white-space: nowrap;
         }
 
         .subtitle {
@@ -116,16 +113,10 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.2);
         }
 
-        .google-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 28px rgba(0,0,0,0.3);
-        }
-
         .google-btn:active {
             transform: scale(0.97);
         }
 
-        /* الواجهة الرئيسية */
         .main-screen {
             background: radial-gradient(ellipse at 20% 30%, #0f1725, #03050a);
             display: none;
@@ -139,7 +130,6 @@
             overflow: hidden;
         }
 
-        /* الشريط العلوي - سطر واحد متكامل */
         .top-bar {
             position: fixed;
             top: 0;
@@ -157,7 +147,6 @@
             flex-wrap: nowrap;
         }
 
-        /* قسم الرصيد */
         .balance-card {
             display: flex;
             align-items: center;
@@ -191,7 +180,6 @@
             color: #d4af37;
         }
 
-        /* عنوان TNT WARS مع تأثير نيون */
         .title-card {
             text-align: center;
             flex: 1;
@@ -221,7 +209,6 @@
             }
         }
 
-        /* قسم الإحصائيات */
         .stats-card {
             display: flex;
             gap: 12px;
@@ -266,7 +253,6 @@
             margin: 0 4px;
         }
 
-        /* المحتوى الرئيسي */
         .main-content {
             flex: 1;
             display: flex;
@@ -280,7 +266,6 @@
             overflow-y: auto;
         }
 
-        /* زر تسجيل الخروج - مصغر */
         .logout-btn {
             position: fixed;
             bottom: 20px;
@@ -345,6 +330,92 @@
             word-break: break-all;
         }
 
+        .code-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(212,175,55,0.3);
+        }
+
+        .code-label {
+            font-size: 12px;
+            color: #8a9aa8;
+            margin-bottom: 8px;
+        }
+
+        .code-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #d4af37;
+            font-family: monospace;
+            letter-spacing: 2px;
+        }
+
+        .copy-btn {
+            margin-top: 8px;
+            background: rgba(212,175,55,0.2);
+            border: 1px solid #d4af37;
+            color: #d4af37;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:active {
+            transform: scale(0.95);
+            background: rgba(212,175,55,0.4);
+        }
+
+        .friend-section {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 25px;
+        }
+
+        .search-input {
+            width: 100%;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(212,175,55,0.3);
+            padding: 10px 15px;
+            border-radius: 30px;
+            color: white;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #d4af37;
+        }
+
+        .search-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            border: none;
+            padding: 8px;
+            border-radius: 30px;
+            color: #1e2a3a;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .search-btn:active {
+            transform: scale(0.98);
+        }
+
+        .friend-result {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(212,175,55,0.1);
+            border-radius: 20px;
+            font-size: 12px;
+            display: none;
+        }
+
         .loading {
             position: fixed;
             top: 50%;
@@ -391,7 +462,6 @@
             100% { opacity: 0; transform: translateX(-50%) translateY(-20px); visibility: hidden; }
         }
 
-        /* للشاشات الصغيرة */
         @media (max-width: 600px) {
             .top-bar {
                 padding: 8px 12px;
@@ -403,24 +473,9 @@
             .balance-amount {
                 font-size: 14px;
             }
-            .balance-icon {
-                font-size: 16px;
-            }
             .neon-title {
                 font-size: 16px;
                 letter-spacing: 1.5px;
-            }
-            .stat-value {
-                font-size: 12px;
-            }
-            .stat-icon {
-                font-size: 12px;
-            }
-            .stat-label {
-                font-size: 8px;
-            }
-            .separator {
-                height: 20px;
             }
             .user-card {
                 padding: 18px 25px;
@@ -429,52 +484,14 @@
                 width: 65px;
                 height: 65px;
             }
-            .user-name {
-                font-size: 18px;
-            }
-            .logout-btn {
-                padding: 6px 14px;
-                font-size: 11px;
-                bottom: 15px;
-                right: 15px;
-            }
         }
 
         @media (max-width: 480px) {
             .balance-label, .stat-label {
                 display: none;
             }
-            .balance-card, .stats-card {
-                padding: 4px 8px;
-            }
             .neon-title {
                 font-size: 14px;
-                letter-spacing: 1px;
-            }
-            .balance-amount {
-                font-size: 12px;
-            }
-            .stat-value {
-                font-size: 10px;
-            }
-        }
-
-        @media (orientation: landscape) and (max-height: 550px) {
-            .main-content {
-                padding-top: 65px;
-            }
-            .user-card {
-                padding: 12px 20px;
-            }
-            .user-avatar {
-                width: 55px;
-                height: 55px;
-            }
-            .logout-btn {
-                bottom: 10px;
-                right: 10px;
-                padding: 5px 12px;
-                font-size: 10px;
             }
         }
     </style>
@@ -488,7 +505,6 @@
     <div class="login-container">
         <h1>💣 TNT WARS 💣</h1>
         <div class="subtitle">ELITE BATTLEFIELD | ساحة المعركة</div>
-
         <button class="google-btn" id="googleLoginBtn">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24" height="24">
                 <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
@@ -503,9 +519,7 @@
 
 <!-- الواجهة الرئيسية -->
 <div class="main-screen" id="mainScreen">
-    <!-- الشريط العلوي - سطر واحد متكامل -->
     <div class="top-bar">
-        <!-- الرصيد -->
         <div class="balance-card">
             <span class="balance-icon">💰</span>
             <div class="balance-info">
@@ -513,13 +527,9 @@
                 <span class="balance-amount" id="topBalance">0</span>
             </div>
         </div>
-
-        <!-- عنوان TNT WARS مع تأثير نيون -->
         <div class="title-card">
             <div class="neon-title">💣 TNT WARS 💣</div>
         </div>
-
-        <!-- الإحصائيات -->
         <div class="stats-card">
             <div class="stat-item">
                 <span class="stat-icon">🏆</span>
@@ -539,12 +549,23 @@
         </div>
     </div>
 
-    <!-- المحتوى الرئيسي -->
     <div class="main-content">
         <div class="user-card">
             <img class="user-avatar" id="userAvatar" alt="صورة المستخدم">
             <div class="user-name" id="username">اللاعب</div>
             <div class="user-email" id="userEmail">-</div>
+            
+            <div class="code-section">
+                <div class="code-label">🎫 كود المعركة</div>
+                <div class="code-value" id="userCodeDisplay">-</div>
+                <button class="copy-btn" id="copyCodeBtn">📋 نسخ الكود</button>
+            </div>
+            
+            <div class="friend-section">
+                <input type="text" id="searchCodeInput" class="search-input" placeholder="🔍 أدخل كود صديق">
+                <button id="searchFriendBtn" class="search-btn">➕ إضافة صديق</button>
+                <div id="friendResult" class="friend-result"></div>
+            </div>
         </div>
     </div>
 
@@ -574,9 +595,12 @@
     const googleProvider = new GoogleAuthProvider();
     googleProvider.setCustomParameters({ prompt: 'select_account' });
 
+    const API_BASE_URL = 'https://tank-yf0p.onrender.com';
+
     let currentUser = null;
     let currentBalance = 0;
     let userStats = { gamesPlayed: 0, wins: 0 };
+    let currentUserCode = null;
 
     const loginScreen = document.getElementById('loginScreen');
     const mainScreen = document.getElementById('mainScreen');
@@ -589,6 +613,11 @@
     const topBalance = document.getElementById('topBalance');
     const topGames = document.getElementById('topGames');
     const topWins = document.getElementById('topWins');
+    const userCodeDisplay = document.getElementById('userCodeDisplay');
+    const copyCodeBtn = document.getElementById('copyCodeBtn');
+    const searchCodeInput = document.getElementById('searchCodeInput');
+    const searchFriendBtn = document.getElementById('searchFriendBtn');
+    const friendResult = document.getElementById('friendResult');
 
     function showToast(message, isError = false) {
         const toast = document.createElement('div');
@@ -601,6 +630,181 @@
         setTimeout(() => toast.remove(), 2800);
     }
 
+    async function getFirebaseToken() {
+        const user = auth.currentUser;
+        if (!user) return null;
+        try {
+            return await user.getIdToken();
+        } catch (error) {
+            console.error('خطأ في جلب التوكن:', error);
+            return null;
+        }
+    }
+
+    async function fetchUserFromServer() {
+        const user = auth.currentUser;
+        if (!user) return false;
+        
+        try {
+            const token = await getFirebaseToken();
+            if (!token) return false;
+            
+            const response = await fetch(`${API_BASE_URL}/api/user/data?uid=${user.uid}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (!response.ok) throw new Error('فشل جلب البيانات');
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                currentBalance = data.balance;
+                userStats = {
+                    gamesPlayed: data.gamesPlayed,
+                    wins: data.wins
+                };
+                currentUserCode = data.userIdCode;
+                updateUI();
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error('خطأ في جلب بيانات السيرفر:', error);
+            return false;
+        }
+    }
+
+    async function createUserOnServer() {
+        const user = auth.currentUser;
+        if (!user) return false;
+        
+        try {
+            const token = await getFirebaseToken();
+            if (!token) return false;
+            
+            const response = await fetch(`${API_BASE_URL}/api/user/create`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                if (data.userIdCode) {
+                    currentUserCode = data.userIdCode;
+                    showToast(`✨ كود المستخدم: ${data.userIdCode}`, false);
+                }
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error('خطأ في إنشاء المستخدم:', error);
+            return false;
+        }
+    }
+
+    async function saveUserToServer() {
+        const user = auth.currentUser;
+        if (!user) return false;
+        
+        try {
+            const token = await getFirebaseToken();
+            if (!token) return false;
+            
+            const response = await fetch(`${API_BASE_URL}/api/user/update`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    uid: user.uid,
+                    balance: currentBalance,
+                    gamesPlayed: userStats.gamesPlayed,
+                    wins: userStats.wins
+                })
+            });
+            
+            const data = await response.json();
+            return data.success;
+        } catch (error) {
+            console.error('خطأ في حفظ البيانات:', error);
+            return false;
+        }
+    }
+
+    async function findUserByCode(code) {
+        const user = auth.currentUser;
+        if (!user) return null;
+        
+        try {
+            const token = await getFirebaseToken();
+            if (!token) return null;
+            
+            const response = await fetch(`${API_BASE_URL}/api/user/bycode/${code}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                return data.user;
+            }
+            return null;
+        } catch (error) {
+            console.error('خطأ في البحث:', error);
+            return null;
+        }
+    }
+
+    async function sendFriendRequest(toUserIdCode) {
+        const user = auth.currentUser;
+        if (!user) return false;
+        
+        try {
+            const token = await getFirebaseToken();
+            if (!token) return false;
+            
+            const response = await fetch(`${API_BASE_URL}/api/friends/request`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    fromUid: user.uid,
+                    toUserIdCode: toUserIdCode
+                })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                showToast(data.message, false);
+                return true;
+            } else {
+                showToast(data.error, true);
+                return false;
+            }
+        } catch (error) {
+            console.error('خطأ في إرسال الطلب:', error);
+            showToast('حدث خطأ في إرسال الطلب', true);
+            return false;
+        }
+    }
+
     function updateUI() {
         if (currentUser) {
             const displayName = currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'مقاتل');
@@ -609,6 +813,12 @@
             topBalance.textContent = currentBalance;
             topGames.textContent = userStats.gamesPlayed;
             topWins.textContent = userStats.wins;
+            
+            if (currentUserCode) {
+                userCodeDisplay.textContent = currentUserCode;
+            } else {
+                userCodeDisplay.textContent = 'جاري التحميل...';
+            }
 
             if (currentUser.photoURL) {
                 userAvatar.src = currentUser.photoURL;
@@ -625,8 +835,10 @@
                 balance: currentBalance,
                 stats: userStats,
                 name: currentUser.displayName,
-                email: currentUser.email
+                email: currentUser.email,
+                userCode: currentUserCode
             }));
+            saveUserToServer();
         }
     }
 
@@ -639,6 +851,7 @@
                 const data = JSON.parse(saved);
                 currentBalance = data.balance ?? 100;
                 userStats = data.stats || { gamesPlayed: 0, wins: 0 };
+                currentUserCode = data.userCode || null;
                 return true;
             } catch(e) {}
         }
@@ -659,14 +872,28 @@
                 photoURL: user.photoURL,
                 isGuest: false
             };
-            loadUserData();
+            
+            const serverDataLoaded = await fetchUserFromServer();
+            
+            if (!serverDataLoaded) {
+                loadUserData();
+                await createUserOnServer();
+                await fetchUserFromServer();
+            }
+            
             updateUI();
             saveUserData();
             loadingDiv.style.display = 'none';
             showMainScreen();
-            showToast(`🌟 مرحباً ${currentUser.displayName} !`, false);
+            
+            if (currentUserCode) {
+                showToast(`🎫 كود المعركة: ${currentUserCode}`, false);
+            } else {
+                showToast(`🌟 مرحباً ${currentUser.displayName} !`, false);
+            }
         } catch (error) {
             loadingDiv.style.display = 'none';
+            console.error('خطأ في تسجيل الدخول:', error);
             showToast('فشل تسجيل الدخول بحساب Google', true);
         }
     }
@@ -675,6 +902,7 @@
         loadingDiv.style.display = 'flex';
         try {
             if (currentUser) {
+                await saveUserToServer();
                 saveUserData();
                 await signOut(auth);
             }
@@ -694,6 +922,57 @@
         mainScreen.style.display = 'flex';
     }
 
+    copyCodeBtn.addEventListener('click', () => {
+        if (currentUserCode) {
+            navigator.clipboard.writeText(currentUserCode);
+            showToast('✅ تم نسخ الكود', false);
+        } else {
+            showToast('⚠️ لا يوجد كود للنسخ', true);
+        }
+    });
+
+    searchFriendBtn.addEventListener('click', async () => {
+        const code = searchCodeInput.value.trim();
+        if (!code) {
+            showToast('⚠️ الرجاء إدخال الكود', true);
+            return;
+        }
+        
+        if (code === currentUserCode) {
+            showToast('❌ لا يمكن إضافة نفسك كصديق', true);
+            return;
+        }
+        
+        loadingDiv.style.display = 'flex';
+        const user = await findUserByCode(code);
+        loadingDiv.style.display = 'none';
+        
+        if (user) {
+            friendResult.style.display = 'block';
+            friendResult.innerHTML = `
+                <div style="text-align: center;">
+                    <div style="font-weight: bold; color: #d4af37;">${user.username}</div>
+                    <div style="font-size: 11px; color: #8a9aa8; margin: 5px 0;">${user.email}</div>
+                    <button id="confirmAddFriend" style="background: #d4af37; border: none; padding: 5px 20px; border-radius: 20px; margin-top: 8px; cursor: pointer; font-weight: bold;">➕ إضافة</button>
+                </div>
+            `;
+            
+            document.getElementById('confirmAddFriend').addEventListener('click', async () => {
+                loadingDiv.style.display = 'flex';
+                await sendFriendRequest(code);
+                loadingDiv.style.display = 'none';
+                friendResult.style.display = 'none';
+                searchCodeInput.value = '';
+            });
+        } else {
+            friendResult.style.display = 'block';
+            friendResult.innerHTML = `<div style="text-align: center; color: #e74c3c;">❌ لم يتم العثور على مستخدم بهذا الكود</div>`;
+            setTimeout(() => {
+                friendResult.style.display = 'none';
+            }, 3000);
+        }
+    });
+
     googleLoginBtn.addEventListener('click', loginWithGoogle);
     logoutBtn.addEventListener('click', handleLogout);
 
@@ -706,7 +985,13 @@
                 photoURL: user.photoURL,
                 isGuest: false
             };
-            loadUserData();
+            
+            await fetchUserFromServer();
+            
+            if (currentBalance === 0 && userStats.gamesPlayed === 0) {
+                loadUserData();
+            }
+            
             updateUI();
             saveUserData();
             showMainScreen();
