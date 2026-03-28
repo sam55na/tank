@@ -24,7 +24,6 @@
             left: 0;
         }
 
-        /* طبقة الخلفية المتحركة */
         .bg-animation {
             position: fixed;
             top: 0;
@@ -52,7 +51,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* شاشة تسجيل الدخول */
         .login-screen {
             position: fixed;
             top: 0;
@@ -116,16 +114,10 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.2);
         }
 
-        .google-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 28px rgba(0,0,0,0.3);
-        }
-
         .google-btn:active {
             transform: scale(0.97);
         }
 
-        /* الواجهة الرئيسية */
         .main-screen {
             background: radial-gradient(ellipse at 20% 30%, #0f1725, #03050a);
             display: none;
@@ -136,10 +128,10 @@
             width: 100%;
             height: 100%;
             z-index: 900;
-            overflow: hidden;
+            overflow-y: auto;
+            overflow-x: hidden;
         }
 
-        /* الشريط العلوي */
         .top-bar {
             position: fixed;
             top: 0;
@@ -148,36 +140,34 @@
             background: rgba(5, 8, 15, 0.92);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid rgba(212, 175, 55, 0.4);
-            padding: 12px 20px;
+            padding: 12px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             z-index: 100;
-            gap: 12px;
-            flex-wrap: nowrap;
+            gap: 8px;
         }
 
         .balance-card {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             background: linear-gradient(135deg, rgba(0,0,0,0.6), rgba(0,0,0,0.4));
-            padding: 6px 16px;
+            padding: 5px 12px;
             border-radius: 50px;
             border: 1px solid rgba(212, 175, 55, 0.4);
-            min-width: 95px;
         }
 
-        .balance-icon { font-size: 20px; }
+        .balance-icon { font-size: 18px; }
         .balance-info { display: flex; flex-direction: column; line-height: 1.2; }
-        .balance-label { font-size: 10px; color: #8a9aa8; }
-        .balance-amount { font-size: 18px; font-weight: bold; color: #d4af37; }
+        .balance-label { font-size: 9px; color: #8a9aa8; }
+        .balance-amount { font-size: 16px; font-weight: bold; color: #d4af37; }
 
         .title-card { text-align: center; flex: 1; }
         .neon-title {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 800;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
             background: linear-gradient(135deg, #fff8e7, #d4af37, #ffd966);
             -webkit-background-clip: text;
             background-clip: text;
@@ -194,28 +184,26 @@
 
         .stats-card {
             display: flex;
-            gap: 12px;
+            gap: 8px;
             background: linear-gradient(135deg, rgba(0,0,0,0.6), rgba(0,0,0,0.4));
-            padding: 6px 16px;
+            padding: 5px 12px;
             border-radius: 50px;
             border: 1px solid rgba(212, 175, 55, 0.3);
-            min-width: 115px;
         }
 
-        .stat-item { display: flex; align-items: center; gap: 6px; }
-        .stat-icon { font-size: 16px; }
+        .stat-item { display: flex; align-items: center; gap: 4px; }
+        .stat-icon { font-size: 14px; }
         .stat-info { display: flex; flex-direction: column; line-height: 1.2; }
-        .stat-label { font-size: 10px; color: #8a9aa8; }
-        .stat-value { font-size: 15px; font-weight: bold; color: #d4af37; }
-        .separator { width: 1px; height: 25px; background: rgba(212, 175, 55, 0.3); margin: 0 4px; }
+        .stat-label { font-size: 9px; color: #8a9aa8; }
+        .stat-value { font-size: 13px; font-weight: bold; color: #d4af37; }
+        .separator { width: 1px; height: 20px; background: rgba(212, 175, 55, 0.3); margin: 0 4px; }
 
-        /* زر مجتمعي الدائري */
         .community-btn {
             position: fixed;
-            top: 80px;
-            left: 20px;
-            width: 55px;
-            height: 55px;
+            top: 75px;
+            left: 16px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             background: linear-gradient(135deg, #d4af37, #b8860b);
             border: 2px solid rgba(255,215,0,0.6);
@@ -225,25 +213,98 @@
             justify-content: center;
             cursor: pointer;
             z-index: 110;
-            transition: all 0.2s ease;
         }
 
-        .community-btn:active {
-            transform: scale(0.95);
+        .community-btn:active { transform: scale(0.95); }
+        .community-btn span { font-size: 26px; }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            min-height: 100vh;
+            padding-top: 100px;
+            padding-bottom: 80px;
+            padding-left: 16px;
+            padding-right: 16px;
         }
 
-        .community-btn span {
-            font-size: 28px;
+        .logout-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(231, 76, 60, 0.85);
+            backdrop-filter: blur(8px);
+            border: none;
+            border-radius: 40px;
+            padding: 8px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            z-index: 100;
         }
 
-        /* نافذة المجتمع */
+        .user-card {
+            background: rgba(10, 15, 25, 0.7);
+            backdrop-filter: blur(15px);
+            padding: 25px 30px;
+            border-radius: 50px;
+            text-align: center;
+            color: white;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid rgba(212, 175, 55, 0.35);
+        }
+
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 12px;
+            border: 3px solid #d4af37;
+            object-fit: cover;
+        }
+
+        .user-name { font-size: 20px; font-weight: bold; margin-bottom: 8px; color: #d4af37; }
+        .user-email { font-size: 11px; color: #9aaebf; word-break: break-all; }
+
+        .user-id-card {
+            margin-top: 15px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 40px;
+            padding: 8px 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .user-id-value { font-size: 14px; font-weight: bold; color: #d4af37; font-family: monospace; }
+        .copy-id-btn {
+            background: rgba(212, 175, 55, 0.2);
+            border: none;
+            border-radius: 30px;
+            padding: 4px 10px;
+            font-size: 10px;
+            color: #d4af37;
+            cursor: pointer;
+        }
+
         .community-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.85);
+            background: rgba(0,0,0,0.92);
             backdrop-filter: blur(15px);
             z-index: 200;
             display: none;
@@ -255,16 +316,14 @@
             background: linear-gradient(135deg, #1a1f2e, #0f1420);
             border-radius: 40px;
             width: 90%;
-            max-width: 500px;
-            max-height: 80vh;
+            max-width: 480px;
+            max-height: 85vh;
             border: 1px solid #d4af37;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
             overflow: hidden;
             display: flex;
             flex-direction: column;
         }
 
-        /* تبويبات المجتمع */
         .community-tabs {
             display: flex;
             border-bottom: 1px solid rgba(212, 175, 55, 0.3);
@@ -273,102 +332,45 @@
 
         .tab-btn {
             flex: 1;
-            padding: 15px 10px;
+            padding: 14px 8px;
             background: transparent;
             border: none;
             color: #9aaebf;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
         }
 
-        .tab-btn.active {
-            color: #d4af37;
-            border-bottom: 2px solid #d4af37;
-            background: rgba(212, 175, 55, 0.1);
-        }
+        .tab-btn.active { color: #d4af37; border-bottom: 2px solid #d4af37; background: rgba(212, 175, 55, 0.1); }
 
-        .tab-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            max-height: 60vh;
-        }
+        .tab-content { flex: 1; overflow-y: auto; padding: 20px; max-height: 55vh; }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
 
-        .tab-pane {
-            display: none;
-        }
-
-        .tab-pane.active {
-            display: block;
-        }
-
-        /* عناصر الأصدقاء */
         .friend-item {
             background: rgba(255,255,255,0.08);
             border-radius: 25px;
-            padding: 12px 18px;
+            padding: 12px 15px;
             margin-bottom: 12px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             border: 1px solid rgba(212, 175, 55, 0.2);
-            transition: all 0.2s;
         }
 
-        .friend-info {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
+        .friend-info { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+        .friend-name { color: white; font-weight: bold; font-size: 14px; }
+        .friend-id { color: #8a9aa8; font-size: 10px; font-family: monospace; }
 
-        .friend-name {
-            color: white;
-            font-weight: bold;
-            font-size: 15px;
-        }
+        .request-btns { display: flex; gap: 8px; }
+        .accept-btn { background: #2ecc71; border: none; border-radius: 30px; padding: 5px 12px; color: white; font-size: 11px; cursor: pointer; }
+        .reject-btn { background: #e74c3c; border: none; border-radius: 30px; padding: 5px 12px; color: white; font-size: 11px; cursor: pointer; }
+        .remove-friend-btn { background: rgba(231, 76, 60, 0.7); border: none; border-radius: 30px; padding: 5px 12px; color: white; font-size: 11px; cursor: pointer; }
 
-        .friend-id {
-            color: #8a9aa8;
-            font-size: 10px;
-            font-family: monospace;
-        }
-
-        .friend-status {
-            font-size: 10px;
-            padding: 3px 8px;
-            border-radius: 20px;
-            background: rgba(46, 204, 113, 0.2);
-            color: #2ecc71;
-            display: inline-block;
-        }
-
-        .friend-status.offline {
-            background: rgba(149, 165, 166, 0.2);
-            color: #95a5a6;
-        }
-
-        .remove-friend-btn {
-            background: rgba(231, 76, 60, 0.7);
-            border: none;
-            border-radius: 30px;
-            padding: 6px 14px;
-            color: white;
-            font-size: 11px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .remove-friend-btn:active {
-            transform: scale(0.95);
-        }
-
-        /* إضافة صديق */
         .add-friend-input {
             width: 100%;
             padding: 14px 18px;
@@ -378,7 +380,6 @@
             color: white;
             font-size: 16px;
             text-align: center;
-            letter-spacing: 1px;
             font-family: monospace;
             margin-bottom: 15px;
         }
@@ -406,105 +407,7 @@
             font-weight: bold;
         }
 
-        .no-friends {
-            text-align: center;
-            color: #8a9aa8;
-            padding: 30px;
-        }
-
-        /* باقي العناصر */
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
-            padding-top: 130px;
-            padding-bottom: 30px;
-            overflow-y: auto;
-        }
-
-        .logout-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(231, 76, 60, 0.85);
-            backdrop-filter: blur(8px);
-            border: none;
-            border-radius: 40px;
-            padding: 8px 18px;
-            font-size: 13px;
-            font-weight: 600;
-            color: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            z-index: 100;
-        }
-
-        .user-card {
-            background: rgba(10, 15, 25, 0.7);
-            backdrop-filter: blur(15px);
-            padding: 25px 35px;
-            border-radius: 50px;
-            text-align: center;
-            color: white;
-            width: 90%;
-            max-width: 420px;
-            border: 1px solid rgba(212, 175, 55, 0.35);
-        }
-
-        .user-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            margin-bottom: 12px;
-            border: 3px solid #d4af37;
-            object-fit: cover;
-        }
-
-        .user-name {
-            font-size: 22px;
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: #d4af37;
-        }
-
-        .user-email {
-            font-size: 12px;
-            color: #9aaebf;
-        }
-
-        .user-id-card {
-            margin-top: 15px;
-            background: rgba(0,0,0,0.5);
-            border-radius: 40px;
-            padding: 8px 15px;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .user-id-value {
-            font-size: 14px;
-            font-weight: bold;
-            color: #d4af37;
-            font-family: monospace;
-        }
-
-        .copy-id-btn {
-            background: rgba(212, 175, 55, 0.2);
-            border: none;
-            border-radius: 30px;
-            padding: 4px 10px;
-            font-size: 10px;
-            color: #d4af37;
-            cursor: pointer;
-        }
-
+        .no-friends { text-align: center; color: #8a9aa8; padding: 30px; }
         .loading {
             position: fixed;
             top: 50%;
@@ -540,15 +443,19 @@
             100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
         }
 
-        @media (max-width: 600px) {
-            .community-btn { width: 45px; height: 45px; top: 70px; left: 15px; }
-            .community-btn span { font-size: 24px; }
-            .main-content { padding-top: 110px; }
-            .neon-title { font-size: 16px; }
+        @media (max-width: 550px) {
+            .top-bar { padding: 8px 12px; }
+            .balance-card { padding: 4px 10px; }
             .balance-amount { font-size: 14px; }
-            .stat-value { font-size: 12px; }
-            .tab-btn { padding: 12px 5px; font-size: 12px; }
-            .tab-btn span { font-size: 16px; }
+            .neon-title { font-size: 16px; letter-spacing: 1px; }
+            .stat-value { font-size: 11px; }
+            .community-btn { width: 42px; height: 42px; top: 70px; left: 12px; }
+            .community-btn span { font-size: 22px; }
+            .main-content { padding-top: 90px; }
+            .user-card { padding: 18px 20px; }
+            .user-avatar { width: 65px; height: 65px; }
+            .user-name { font-size: 18px; }
+            .tab-btn { padding: 10px 5px; font-size: 11px; }
         }
     </style>
 </head>
@@ -556,7 +463,6 @@
 
 <div class="bg-animation"></div>
 
-<!-- شاشة تسجيل الدخول -->
 <div class="login-screen" id="loginScreen">
     <div class="login-container">
         <h1>💣 TNT WARS 💣</h1>
@@ -573,7 +479,6 @@
     </div>
 </div>
 
-<!-- الواجهة الرئيسية -->
 <div class="main-screen" id="mainScreen">
     <div class="top-bar">
         <div class="balance-card">
@@ -605,7 +510,6 @@
         </div>
     </div>
 
-    <!-- زر مجتمعي دائري -->
     <div class="community-btn" id="communityBtn">
         <span>👥</span>
     </div>
@@ -625,11 +529,13 @@
     <button class="logout-btn" id="logoutBtn">🚪 خروج</button>
 </div>
 
-<!-- نافذة المجتمع مع التبويبات -->
 <div class="community-overlay" id="communityOverlay">
     <div class="community-container">
         <div class="community-tabs">
-            <button class="tab-btn active" data-tab="active">
+            <button class="tab-btn active" data-tab="requests">
+                <span>📨</span> طلبات الصداقة
+            </button>
+            <button class="tab-btn" data-tab="active">
                 <span>🟢</span> النشطين
             </button>
             <button class="tab-btn" data-tab="add">
@@ -641,18 +547,16 @@
         </div>
         
         <div class="tab-content">
-            <!-- تبويب الأصدقاء النشطين -->
-            <div class="tab-pane active" id="tabActive">
+            <div class="tab-pane active" id="tabRequests">
+                <div id="requestsList"></div>
+            </div>
+            <div class="tab-pane" id="tabActive">
                 <div id="activeFriendsList"></div>
             </div>
-            
-            <!-- تبويب إضافة صديق -->
             <div class="tab-pane" id="tabAdd">
                 <input type="text" class="add-friend-input" id="friendIdInput" placeholder="أدخل المعرف الشخصي (10 أرقام)" maxlength="10">
                 <button class="send-request-btn" id="sendFriendRequestBtn">➕ إرسال طلب صداقة</button>
             </div>
-            
-            <!-- تبويب جميع الأصدقاء -->
             <div class="tab-pane" id="tabAll">
                 <div id="allFriendsList"></div>
             </div>
@@ -683,73 +587,287 @@
     const googleProvider = new GoogleAuthProvider();
     googleProvider.setCustomParameters({ prompt: 'select_account' });
 
+    const SERVER_URL = "https://tank-yf0p.onrender.com"; // غير الرابط حسب سيرفرك
+
     let currentUser = null;
     let currentBalance = 0;
     let userStats = { gamesPlayed: 0, wins: 0 };
     let userIdCode = null;
     let friendsList = [];
+    let friendRequests = [];
 
-    function generateUniqueId() {
-        return Math.floor(1000000000 + Math.random() * 9000000000).toString();
-    }
-
-    function getUserByCode(code) {
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && key.startsWith('tnt_user_')) {
-                try {
-                    const data = JSON.parse(localStorage.getItem(key));
-                    if (data.userIdCode === code) {
-                        return data;
-                    }
-                } catch(e) {}
+    async function fetchWithAuth(url, options = {}) {
+        const token = await currentUser?.getIdToken();
+        return fetch(url, {
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                ...options.headers
             }
-        }
-        return null;
+        });
     }
 
-    // محاكاة حالة النشاط (يمكن تطويرها لاحقاً مع Socket.io)
-    function isUserActive(userIdCode) {
-        // محاكاة: الأصدقاء الذين تم إضافتهم خلال آخر 5 دقائق يعتبرون نشطين
-        const friend = friendsList.find(f => f.userIdCode === userIdCode);
-        if (friend && friend.lastActive) {
-            return (Date.now() - friend.lastActive) < 5 * 60 * 1000;
-        }
-        // محاكاة عشوائية للعرض
-        return Math.random() > 0.6;
-    }
-
-    function loadUserData() {
+    async function loadUserData() {
         if (!currentUser) return;
-        const userKey = `tnt_user_${currentUser.uid}`;
-        const saved = localStorage.getItem(userKey);
-        if (saved) {
-            try {
-                const data = JSON.parse(saved);
-                currentBalance = data.balance ?? 100;
-                userStats = data.stats || { gamesPlayed: 0, wins: 0 };
+        try {
+            const response = await fetchWithAuth(`${SERVER_URL}/api/user/data?uid=${currentUser.uid}`);
+            const data = await response.json();
+            if (data.success) {
+                currentBalance = data.balance;
+                userStats = { gamesPlayed: data.gamesPlayed, wins: data.wins };
                 userIdCode = data.userIdCode;
                 friendsList = data.friends || [];
-            } catch(e) {}
-        }
-        if (!userIdCode) {
-            userIdCode = generateUniqueId();
-            saveUserData();
+                friendRequests = data.friendRequests || [];
+                updateUI();
+            }
+        } catch (error) {
+            console.error('Error loading user data:', error);
         }
     }
 
-    function saveUserData() {
+    async function createUserOnServer() {
+        try {
+            const response = await fetchWithAuth(`${SERVER_URL}/api/user/create`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    uid: currentUser.uid,
+                    email: currentUser.email,
+                    displayName: currentUser.displayName
+                })
+            });
+            const data = await response.json();
+            if (data.success && data.userIdCode) {
+                userIdCode = data.userIdCode;
+            }
+        } catch (error) {
+            console.error('Error creating user:', error);
+        }
+    }
+
+    async function updateUserOnServer() {
+        try {
+            await fetchWithAuth(`${SERVER_URL}/api/user/update`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    uid: currentUser.uid,
+                    balance: currentBalance,
+                    gamesPlayed: userStats.gamesPlayed,
+                    wins: userStats.wins
+                })
+            });
+        } catch (error) {
+            console.error('Error updating user:', error);
+        }
+    }
+
+    async function fetchFriendsData() {
         if (!currentUser) return;
-        const userKey = `tnt_user_${currentUser.uid}`;
-        localStorage.setItem(userKey, JSON.stringify({
-            balance: currentBalance,
-            stats: userStats,
-            userIdCode: userIdCode,
-            friends: friendsList,
-            name: currentUser.displayName,
-            email: currentUser.email,
-            lastActive: Date.now()
-        }));
+        try {
+            const response = await fetchWithAuth(`${SERVER_URL}/api/friends/list/${currentUser.uid}`);
+            const data = await response.json();
+            if (data.success) {
+                friendsList = data.friends;
+                updateUI();
+            }
+        } catch (error) {
+            console.error('Error fetching friends:', error);
+        }
+    }
+
+    async function fetchFriendRequests() {
+        if (!currentUser) return;
+        try {
+            const response = await fetchWithAuth(`${SERVER_URL}/api/friends/requests/${currentUser.uid}`);
+            const data = await response.json();
+            if (data.success) {
+                friendRequests = data.requests;
+                renderRequestsList();
+            }
+        } catch (error) {
+            console.error('Error fetching requests:', error);
+        }
+    }
+
+    async function sendFriendRequest() {
+        const friendCode = document.getElementById('friendIdInput').value.trim();
+        if (!friendCode) {
+            showToast('⚠️ الرجاء إدخال المعرف الشخصي', true);
+            return;
+        }
+        if (friendCode.length !== 10 || !/^\d+$/.test(friendCode)) {
+            showToast('⚠️ المعرف الشخصي يجب أن يكون 10 أرقام', true);
+            return;
+        }
+        
+        try {
+            const response = await fetchWithAuth(`${SERVER_URL}/api/friends/request`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    fromUid: currentUser.uid,
+                    toUserIdCode: friendCode
+                })
+            });
+            const data = await response.json();
+            if (data.success) {
+                showToast('✅ تم إرسال طلب الصداقة بنجاح', false);
+                document.getElementById('friendIdInput').value = '';
+            } else {
+                showToast(data.error || 'فشل إرسال الطلب', true);
+            }
+        } catch (error) {
+            showToast('خطأ في الاتصال', true);
+        }
+    }
+
+    async function acceptRequest(requesterUid) {
+        try {
+            const response = await fetchWithAuth(`${SERVER_URL}/api/friends/accept`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    userUid: currentUser.uid,
+                    requesterUid: requesterUid
+                })
+            });
+            const data = await response.json();
+            if (data.success) {
+                showToast('✅ تم قبول طلب الصداقة', false);
+                await fetchFriendRequests();
+                await fetchFriendsData();
+                renderAllTabs();
+            }
+        } catch (error) {
+            showToast('حدث خطأ', true);
+        }
+    }
+
+    async function rejectRequest(requesterUid) {
+        try {
+            const response = await fetchWithAuth(`${SERVER_URL}/api/friends/reject`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    userUid: currentUser.uid,
+                    requesterUid: requesterUid
+                })
+            });
+            const data = await response.json();
+            if (data.success) {
+                showToast('❌ تم رفض طلب الصداقة', false);
+                await fetchFriendRequests();
+                renderRequestsList();
+            }
+        } catch (error) {
+            showToast('حدث خطأ', true);
+        }
+    }
+
+    async function removeFriend(friendUid) {
+        if (!confirm('هل أنت متأكد من إزالة هذا الصديق؟')) return;
+        try {
+            const response = await fetchWithAuth(`${SERVER_URL}/api/friends/remove`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    userUid: currentUser.uid,
+                    friendUid: friendUid
+                })
+            });
+            const data = await response.json();
+            if (data.success) {
+                showToast('✅ تم إزالة الصديق', false);
+                await fetchFriendsData();
+                renderAllTabs();
+            }
+        } catch (error) {
+            showToast('حدث خطأ', true);
+        }
+    }
+
+    function renderRequestsList() {
+        const container = document.getElementById('requestsList');
+        if (!container) return;
+        
+        if (friendRequests.length === 0) {
+            container.innerHTML = '<div class="no-friends">📭 لا توجد طلبات صداقة</div>';
+            return;
+        }
+        
+        container.innerHTML = '';
+        friendRequests.forEach(request => {
+            const div = document.createElement('div');
+            div.className = 'friend-item';
+            div.innerHTML = `
+                <div class="friend-info">
+                    <div class="friend-name">${request.username}</div>
+                    <div class="friend-id">🆔 ${request.userIdCode}</div>
+                </div>
+                <div class="request-btns">
+                    <button class="accept-btn" data-uid="${request.uid}">قبول</button>
+                    <button class="reject-btn" data-uid="${request.uid}">رفض</button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+        
+        container.querySelectorAll('.accept-btn').forEach(btn => {
+            btn.addEventListener('click', () => acceptRequest(btn.dataset.uid));
+        });
+        container.querySelectorAll('.reject-btn').forEach(btn => {
+            btn.addEventListener('click', () => rejectRequest(btn.dataset.uid));
+        });
+    }
+
+    function renderFriendsLists() {
+        const activeContainer = document.getElementById('activeFriendsList');
+        const allContainer = document.getElementById('allFriendsList');
+        
+        const activeFriends = friendsList.filter(f => f.isActive);
+        
+        if (activeFriends.length === 0) {
+            activeContainer.innerHTML = '<div class="no-friends">🟢 لا يوجد أصدقاء نشطاء حالياً</div>';
+        } else {
+            activeContainer.innerHTML = '';
+            activeFriends.forEach(friend => {
+                const div = document.createElement('div');
+                div.className = 'friend-item';
+                div.innerHTML = `
+                    <div class="friend-info">
+                        <div class="friend-name">${friend.username}</div>
+                        <div class="friend-id">🆔 ${friend.userIdCode}</div>
+                        <span class="friend-status">🟢 نشط الآن</span>
+                    </div>
+                    <button class="remove-friend-btn" data-uid="${friend.uid}">🗑️</button>
+                `;
+                activeContainer.appendChild(div);
+            });
+        }
+        
+        if (friendsList.length === 0) {
+            allContainer.innerHTML = '<div class="no-friends">👥 لا يوجد أصدقاء بعد<br>أضف أصدقاء باستخدام المعرف الشخصي</div>';
+        } else {
+            allContainer.innerHTML = '';
+            friendsList.forEach(friend => {
+                const div = document.createElement('div');
+                div.className = 'friend-item';
+                div.innerHTML = `
+                    <div class="friend-info">
+                        <div class="friend-name">${friend.username}</div>
+                        <div class="friend-id">🆔 ${friend.userIdCode}</div>
+                        <span class="friend-status ${friend.isActive ? '' : 'offline'}">${friend.isActive ? '🟢 نشط' : '⚫ غير نشط'}</span>
+                    </div>
+                    <button class="remove-friend-btn" data-uid="${friend.uid}">🗑️</button>
+                `;
+                allContainer.appendChild(div);
+            });
+        }
+        
+        document.querySelectorAll('.remove-friend-btn').forEach(btn => {
+            btn.addEventListener('click', () => removeFriend(btn.dataset.uid));
+        });
+    }
+
+    function renderAllTabs() {
+        renderRequestsList();
+        renderFriendsLists();
     }
 
     function updateUI() {
@@ -767,131 +885,19 @@
         }
     }
 
-    function renderFriendsLists() {
-        const activeContainer = document.getElementById('activeFriendsList');
-        const allContainer = document.getElementById('allFriendsList');
-        
-        if (!activeContainer || !allContainer) return;
-        
-        const activeFriends = friendsList.filter(f => isUserActive(f.userIdCode));
-        const allFriends = friendsList;
-        
-        if (activeFriends.length === 0) {
-            activeContainer.innerHTML = '<div class="no-friends">🟢 لا يوجد أصدقاء نشطاء حالياً</div>';
-        } else {
-            activeContainer.innerHTML = '';
-            activeFriends.forEach((friend, idx) => {
-                const friendData = getUserByCode(friend.userIdCode);
-                const friendName = friendData ? friendData.name || friend.userIdCode : friend.userIdCode;
-                const friendDiv = document.createElement('div');
-                friendDiv.className = 'friend-item';
-                friendDiv.innerHTML = `
-                    <div class="friend-info">
-                        <div class="friend-name">${friendName}</div>
-                        <div class="friend-id">🆔 ${friend.userIdCode}</div>
-                        <span class="friend-status">🟢 نشط الآن</span>
-                    </div>
-                    <button class="remove-friend-btn" data-code="${friend.userIdCode}">🗑️</button>
-                `;
-                activeContainer.appendChild(friendDiv);
-            });
-        }
-        
-        if (allFriends.length === 0) {
-            allContainer.innerHTML = '<div class="no-friends">👥 لا يوجد أصدقاء بعد<br>أضف أصدقاء باستخدام المعرف الشخصي</div>';
-        } else {
-            allContainer.innerHTML = '';
-            allFriends.forEach((friend, idx) => {
-                const friendData = getUserByCode(friend.userIdCode);
-                const friendName = friendData ? friendData.name || friend.userIdCode : friend.userIdCode;
-                const isActive = isUserActive(friend.userIdCode);
-                const friendDiv = document.createElement('div');
-                friendDiv.className = 'friend-item';
-                friendDiv.innerHTML = `
-                    <div class="friend-info">
-                        <div class="friend-name">${friendName}</div>
-                        <div class="friend-id">🆔 ${friend.userIdCode}</div>
-                        <span class="friend-status ${isActive ? '' : 'offline'}">${isActive ? '🟢 نشط' : '⚫ غير نشط'}</span>
-                    </div>
-                    <button class="remove-friend-btn" data-code="${friend.userIdCode}">🗑️</button>
-                `;
-                allContainer.appendChild(friendDiv);
-            });
-        }
-        
-        document.querySelectorAll('.remove-friend-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const code = btn.dataset.code;
-                removeFriendByCode(code);
-            });
-        });
-    }
-    
-    function removeFriendByCode(code) {
-        if (confirm('هل أنت متأكد من إزالة هذا الصديق؟')) {
-            const index = friendsList.findIndex(f => f.userIdCode === code);
-            if (index !== -1) {
-                friendsList.splice(index, 1);
-                saveUserData();
-                renderFriendsLists();
-                updateUI();
-                showToast('✅ تم إزالة الصديق بنجاح', false);
-            }
-        }
-    }
-    
-    function sendFriendRequest() {
-        const friendCode = document.getElementById('friendIdInput').value.trim();
-        
-        if (!friendCode) {
-            showToast('⚠️ الرجاء إدخال المعرف الشخصي', true);
-            return;
-        }
-        if (friendCode.length !== 10 || !/^\d+$/.test(friendCode)) {
-            showToast('⚠️ المعرف الشخصي يجب أن يكون 10 أرقام', true);
-            return;
-        }
-        if (friendCode === userIdCode) {
-            showToast('⚠️ لا يمكن إضافة نفسك كصديق', true);
-            return;
-        }
-        
-        const friendData = getUserByCode(friendCode);
-        if (!friendData) {
-            showToast('❌ لا يوجد مستخدم بهذا المعرف', true);
-            return;
-        }
-        if (friendsList.some(f => f.userIdCode === friendCode)) {
-            showToast('⚠️ هذا المستخدم موجود بالفعل في قائمة أصدقائك', true);
-            return;
-        }
-        
-        friendsList.push({
-            userIdCode: friendCode,
-            name: friendData.name,
-            addedAt: Date.now(),
-            lastActive: Date.now()
-        });
-        
-        saveUserData();
-        updateUI();
-        renderFriendsLists();
-        document.getElementById('friendIdInput').value = '';
-        showToast(`✅ تم إضافة ${friendData.name || friendCode} إلى قائمة أصدقائك`, false);
-    }
-    
     function copyUserId() {
         if (userIdCode) {
             navigator.clipboard.writeText(userIdCode);
             showToast('📋 تم نسخ المعرف الشخصي', false);
         }
     }
-    
+
     function openCommunity() {
-        renderFriendsLists();
+        fetchFriendRequests();
+        fetchFriendsData().then(() => renderAllTabs());
         document.getElementById('communityOverlay').style.display = 'flex';
     }
-    
+
     function closeCommunity() {
         document.getElementById('communityOverlay').style.display = 'none';
     }
@@ -909,21 +915,16 @@
         document.getElementById('loading').style.display = 'flex';
         try {
             const result = await signInWithPopup(auth, googleProvider);
-            const user = result.user;
-            currentUser = {
-                uid: user.uid,
-                email: user.email,
-                displayName: user.displayName || user.email.split('@')[0],
-                photoURL: user.photoURL,
-                isGuest: false
-            };
-            loadUserData();
-            updateUI();
-            saveUserData();
+            currentUser = result.user;
+            await loadUserData();
+            if (!userIdCode) {
+                await createUserOnServer();
+                await loadUserData();
+            }
             document.getElementById('loading').style.display = 'none';
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('mainScreen').style.display = 'flex';
-            showToast(`🌟 مرحباً ${currentUser.displayName} !`, false);
+            showToast(`🌟 مرحباً ${currentUser.displayName}!`, false);
         } catch (error) {
             document.getElementById('loading').style.display = 'none';
             showToast('فشل تسجيل الدخول بحساب Google', true);
@@ -933,7 +934,7 @@
     async function handleLogout() {
         document.getElementById('loading').style.display = 'flex';
         try {
-            if (currentUser) saveUserData();
+            if (currentUser) await updateUserOnServer();
             await signOut(auth);
             currentUser = null;
             document.getElementById('mainScreen').style.display = 'none';
@@ -946,7 +947,6 @@
         }
     }
 
-    // تبويبات المجتمع
     function setupTabs() {
         const tabs = document.querySelectorAll('.tab-btn');
         tabs.forEach(tab => {
@@ -955,34 +955,27 @@
                 tabs.forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
                 document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
-                if (tabId === 'active') document.getElementById('tabActive').classList.add('active');
-                else if (tabId === 'add') document.getElementById('tabAdd').classList.add('active');
-                else if (tabId === 'all') document.getElementById('tabAll').classList.add('active');
+                document.getElementById(`tab${tabId.charAt(0).toUpperCase() + tabId.slice(1)}`).classList.add('active');
             });
         });
     }
 
+    document.addEventListener('DOMContentLoaded', setupTabs);
     document.getElementById('googleLoginBtn').addEventListener('click', loginWithGoogle);
     document.getElementById('logoutBtn').addEventListener('click', handleLogout);
     document.getElementById('copyIdBtn').addEventListener('click', copyUserId);
     document.getElementById('communityBtn').addEventListener('click', openCommunity);
     document.getElementById('closeCommunityBtn').addEventListener('click', closeCommunity);
     document.getElementById('sendFriendRequestBtn').addEventListener('click', sendFriendRequest);
-    
-    setupTabs();
 
     onAuthStateChanged(auth, async (user) => {
-        if (user && (!currentUser)) {
-            currentUser = {
-                uid: user.uid,
-                email: user.email,
-                displayName: user.displayName || user.email.split('@')[0],
-                photoURL: user.photoURL,
-                isGuest: false
-            };
-            loadUserData();
-            updateUI();
-            saveUserData();
+        if (user && !currentUser) {
+            currentUser = user;
+            await loadUserData();
+            if (!userIdCode) {
+                await createUserOnServer();
+                await loadUserData();
+            }
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('mainScreen').style.display = 'flex';
         }
