@@ -5,71 +5,487 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>TNT Wars - ساحة الدبابات</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Segoe UI', 'Cairo', system-ui, sans-serif; overflow: hidden; background: #05070c; position: fixed; width: 100%; height: 100%; top: 0; left: 0; }
-        .bg-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.4; }
-        .bg-animation::before { content: ''; position: absolute; width: 200%; height: 200%; top: -50%; left: -50%; background: radial-gradient(circle at 30% 40%, rgba(212,175,55,0.15) 0%, transparent 50%), repeating-linear-gradient(45deg, rgba(212,175,55,0.05) 0px, rgba(212,175,55,0.05) 2px, transparent 2px, transparent 8px); animation: rotateBg 60s linear infinite; }
-        @keyframes rotateBg { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(ellipse at 30% 40%, #0a0f1a, #03050a); display: flex; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(2px); }
-        .login-container { background: rgba(8, 12, 20, 0.75); backdrop-filter: blur(20px); padding: clamp(30px, 6vw, 50px) clamp(25px, 5vw, 45px); border-radius: min(60px, 12vw); width: calc(100% - 40px); max-width: 480px; text-align: center; border: 1px solid rgba(212, 175, 55, 0.4); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
-        .login-container h1 { background: linear-gradient(135deg, #f3e6b0, #d4af37, #b8860b); -webkit-background-clip: text; background-clip: text; color: transparent; font-size: clamp(28px, 7vw, 48px); margin-bottom: 12px; letter-spacing: 2px; font-weight: 800; white-space: nowrap; }
-        .subtitle { color: #9aaebf; font-size: clamp(12px, 3.5vw, 15px); margin-bottom: clamp(30px, 7vw, 45px); }
-        .google-btn { width: 100%; padding: clamp(14px, 4vw, 18px); background: white; border: none; border-radius: min(80px, 15vw); font-size: clamp(16px, 4.5vw, 18px); font-weight: 600; cursor: pointer; transition: all 0.25s; color: #1e2a3a; display: flex; align-items: center; justify-content: center; gap: 12px; font-family: inherit; box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Cairo', system-ui, sans-serif;
+            overflow: hidden;
+            background: #05070c;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.4;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background: radial-gradient(circle at 30% 40%, rgba(212,175,55,0.15) 0%, transparent 50%),
+                        repeating-linear-gradient(45deg, rgba(212,175,55,0.05) 0px, rgba(212,175,55,0.05) 2px, transparent 2px, transparent 8px);
+            animation: rotateBg 60s linear infinite;
+        }
+
+        @keyframes rotateBg {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* شاشة تسجيل الدخول */
+        .login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at 30% 40%, #0a0f1a, #03050a);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(2px);
+        }
+
+        .login-container {
+            background: rgba(8, 12, 20, 0.75);
+            backdrop-filter: blur(20px);
+            padding: clamp(30px, 6vw, 50px) clamp(25px, 5vw, 45px);
+            border-radius: min(60px, 12vw);
+            width: calc(100% - 40px);
+            max-width: 480px;
+            text-align: center;
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+
+        .login-container h1 {
+            background: linear-gradient(135deg, #f3e6b0, #d4af37, #b8860b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-size: clamp(28px, 7vw, 48px);
+            margin-bottom: 12px;
+            letter-spacing: 2px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .subtitle {
+            color: #9aaebf;
+            font-size: clamp(12px, 3.5vw, 15px);
+            margin-bottom: clamp(30px, 7vw, 45px);
+        }
+
+        .google-btn {
+            width: 100%;
+            padding: clamp(14px, 4vw, 18px);
+            background: white;
+            border: none;
+            border-radius: min(80px, 15vw);
+            font-size: clamp(16px, 4.5vw, 18px);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
+            color: #1e2a3a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-family: inherit;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
         .google-btn:active { transform: scale(0.97); }
-        .main-screen { background: radial-gradient(ellipse at 20% 30%, #0f1725, #03050a); display: none; flex-direction: column; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 900; overflow-y: auto; }
-        .top-bar { position: fixed; top: 0; left: 0; right: 0; background: rgba(5, 8, 15, 0.92); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(212, 175, 55, 0.4); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; z-index: 100; gap: 8px; }
-        .balance-card { display: flex; align-items: center; gap: 6px; background: linear-gradient(135deg, rgba(0,0,0,0.6), rgba(0,0,0,0.4)); padding: 5px 12px; border-radius: 50px; border: 1px solid rgba(212, 175, 55, 0.4); }
+
+        /* الواجهة الرئيسية */
+        .main-screen {
+            background: radial-gradient(ellipse at 20% 30%, #0f1725, #03050a);
+            display: none;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 900;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        /* الشريط العلوي - متجاوب */
+        .top-bar {
+            position: sticky;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(5, 8, 15, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.4);
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .balance-card {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, rgba(0,0,0,0.6), rgba(0,0,0,0.4));
+            padding: 6px 14px;
+            border-radius: 50px;
+            border: 1px solid rgba(212, 175, 55, 0.4);
+        }
+
         .balance-icon { font-size: 18px; }
         .balance-info { display: flex; flex-direction: column; line-height: 1.2; }
         .balance-label { font-size: 9px; color: #8a9aa8; }
         .balance-amount { font-size: 16px; font-weight: bold; color: #d4af37; }
+
         .title-card { text-align: center; flex: 1; }
-        .neon-title { font-size: 20px; font-weight: 800; letter-spacing: 2px; background: linear-gradient(135deg, #fff8e7, #d4af37, #ffd966); -webkit-background-clip: text; background-clip: text; color: transparent; animation: neonPulse 1.8s ease-in-out infinite alternate; white-space: nowrap; }
-        @keyframes neonPulse { 0% { text-shadow: 0 0 2px rgba(212, 175, 55, 0.3); opacity: 0.9; } 100% { text-shadow: 0 0 12px rgba(212, 175, 55, 0.8); opacity: 1; } }
-        .stats-card { display: flex; gap: 8px; background: linear-gradient(135deg, rgba(0,0,0,0.6), rgba(0,0,0,0.4)); padding: 5px 12px; border-radius: 50px; border: 1px solid rgba(212, 175, 55, 0.3); }
+        .neon-title {
+            font-size: clamp(16px, 5vw, 22px);
+            font-weight: 800;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #fff8e7, #d4af37, #ffd966);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: neonPulse 1.8s ease-in-out infinite alternate;
+            white-space: nowrap;
+        }
+
+        @keyframes neonPulse {
+            0% { text-shadow: 0 0 2px rgba(212, 175, 55, 0.3); opacity: 0.9; }
+            100% { text-shadow: 0 0 12px rgba(212, 175, 55, 0.8); opacity: 1; }
+        }
+
+        .stats-card {
+            display: flex;
+            gap: 8px;
+            background: linear-gradient(135deg, rgba(0,0,0,0.6), rgba(0,0,0,0.4));
+            padding: 6px 14px;
+            border-radius: 50px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
         .stat-item { display: flex; align-items: center; gap: 4px; }
         .stat-icon { font-size: 14px; }
         .stat-info { display: flex; flex-direction: column; line-height: 1.2; }
         .stat-label { font-size: 9px; color: #8a9aa8; }
         .stat-value { font-size: 13px; font-weight: bold; color: #d4af37; }
         .separator { width: 1px; height: 20px; background: rgba(212, 175, 55, 0.3); margin: 0 4px; }
-        .community-btn { position: fixed; top: 75px; left: 16px; width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #d4af37, #b8860b); border: 2px solid rgba(255,215,0,0.6); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 110; }
+
+        /* زر مجتمعي دائري */
+        .community-btn {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            border: 2px solid rgba(255,215,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 110;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
         .community-btn:active { transform: scale(0.95); }
-        .community-btn span { font-size: 26px; }
-        .main-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; min-height: 100vh; padding-top: 100px; padding-bottom: 80px; padding-left: 16px; padding-right: 16px; }
-        .logout-btn { position: fixed; bottom: 20px; right: 20px; background: rgba(231, 76, 60, 0.85); border: none; border-radius: 40px; padding: 8px 18px; font-size: 13px; font-weight: 600; color: white; cursor: pointer; display: flex; align-items: center; gap: 6px; z-index: 100; }
-        .user-card { background: rgba(10, 15, 25, 0.7); backdrop-filter: blur(15px); padding: 25px 30px; border-radius: 50px; text-align: center; color: white; width: 100%; max-width: 400px; border: 1px solid rgba(212, 175, 55, 0.35); }
-        .user-avatar { width: 80px; height: 80px; border-radius: 50%; margin-bottom: 12px; border: 3px solid #d4af37; object-fit: cover; }
+        .community-btn span { font-size: 28px; }
+
+        /* المحتوى الرئيسي */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            min-height: calc(100vh - 70px);
+            padding: 20px 16px 100px 16px;
+        }
+
+        .logout-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(231, 76, 60, 0.85);
+            border: none;
+            border-radius: 40px;
+            padding: 8px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            z-index: 100;
+        }
+
+        .user-card {
+            background: rgba(10, 15, 25, 0.7);
+            backdrop-filter: blur(15px);
+            padding: 25px 30px;
+            border-radius: 50px;
+            text-align: center;
+            color: white;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid rgba(212, 175, 55, 0.35);
+        }
+
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 12px;
+            border: 3px solid #d4af37;
+            object-fit: cover;
+        }
+
         .user-name { font-size: 20px; font-weight: bold; margin-bottom: 8px; color: #d4af37; }
-        .user-email { font-size: 11px; color: #9aaebf; }
-        .user-id-card { margin-top: 15px; background: rgba(0,0,0,0.5); border-radius: 40px; padding: 8px 15px; display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        .user-email { font-size: 11px; color: #9aaebf; word-break: break-all; }
+
+        .user-id-card {
+            margin-top: 15px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 40px;
+            padding: 8px 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
         .user-id-value { font-size: 14px; font-weight: bold; color: #d4af37; font-family: monospace; }
-        .copy-id-btn { background: rgba(212, 175, 55, 0.2); border: none; border-radius: 30px; padding: 4px 10px; font-size: 10px; color: #d4af37; cursor: pointer; }
-        .community-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); backdrop-filter: blur(15px); z-index: 200; display: none; justify-content: center; align-items: center; }
-        .community-container { background: linear-gradient(135deg, #1a1f2e, #0f1420); border-radius: 40px; width: 90%; max-width: 480px; max-height: 85vh; border: 1px solid #d4af37; overflow: hidden; display: flex; flex-direction: column; }
-        .community-tabs { display: flex; border-bottom: 1px solid rgba(212, 175, 55, 0.3); background: rgba(0,0,0,0.3); }
-        .tab-btn { flex: 1; padding: 14px 8px; background: transparent; border: none; color: #9aaebf; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .copy-id-btn {
+            background: rgba(212, 175, 55, 0.2);
+            border: none;
+            border-radius: 30px;
+            padding: 4px 10px;
+            font-size: 10px;
+            color: #d4af37;
+            cursor: pointer;
+        }
+
+        /* نافذة المجتمع */
+        .community-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(15px);
+            z-index: 200;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .community-container {
+            background: linear-gradient(135deg, #1a1f2e, #0f1420);
+            border-radius: 30px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 85vh;
+            border: 1px solid #d4af37;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .community-tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+            background: rgba(0,0,0,0.3);
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            flex: 1;
+            min-width: 80px;
+            padding: 12px 8px;
+            background: transparent;
+            border: none;
+            color: #9aaebf;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
         .tab-btn.active { color: #d4af37; border-bottom: 2px solid #d4af37; }
-        .tab-content { flex: 1; overflow-y: auto; padding: 20px; max-height: 55vh; }
+
+        .tab-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            max-height: 55vh;
+        }
+
         .tab-pane { display: none; }
         .tab-pane.active { display: block; }
-        .friend-item { background: rgba(255,255,255,0.08); border-radius: 25px; padding: 12px 15px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(212, 175, 55, 0.2); }
+
+        .friend-item {
+            background: rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
         .friend-info { display: flex; flex-direction: column; gap: 4px; flex: 1; }
         .friend-name { color: white; font-weight: bold; font-size: 14px; }
         .friend-id { color: #8a9aa8; font-size: 10px; font-family: monospace; }
         .friend-status { font-size: 10px; padding: 3px 8px; border-radius: 20px; background: rgba(46, 204, 113, 0.2); color: #2ecc71; display: inline-block; width: fit-content; }
         .friend-status.offline { background: rgba(149, 165, 166, 0.2); color: #95a5a6; }
-        .remove-friend-btn, .accept-btn, .reject-btn { background: rgba(231, 76, 60, 0.7); border: none; border-radius: 30px; padding: 5px 12px; color: white; font-size: 11px; cursor: pointer; }
-        .accept-btn { background: rgba(46, 204, 113, 0.7); }
+
+        .remove-friend-btn, .accept-btn, .reject-btn {
+            border: none;
+            border-radius: 25px;
+            padding: 6px 14px;
+            color: white;
+            font-size: 11px;
+            cursor: pointer;
+        }
+        .remove-friend-btn { background: rgba(231, 76, 60, 0.8); }
+        .accept-btn { background: rgba(46, 204, 113, 0.8); }
+        .reject-btn { background: rgba(231, 76, 60, 0.8); }
+
         .request-btns { display: flex; gap: 8px; }
-        .add-friend-input { width: 100%; padding: 14px 18px; border-radius: 60px; border: 1px solid rgba(212,175,55,0.4); background: rgba(0,0,0,0.5); color: white; font-size: 16px; text-align: center; font-family: monospace; margin-bottom: 15px; }
-        .send-request-btn { background: #d4af37; color: #0a0f1a; border: none; padding: 12px 25px; border-radius: 60px; font-weight: bold; cursor: pointer; width: 100%; }
-        .close-community-btn { background: transparent; border: 1px solid rgba(212,175,55,0.4); color: #d4af37; padding: 12px; border-radius: 30px; cursor: pointer; width: calc(100% - 40px); margin: 15px 20px; font-weight: bold; }
+
+        .add-friend-input {
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: 60px;
+            border: 1px solid rgba(212,175,55,0.4);
+            background: rgba(0,0,0,0.5);
+            color: white;
+            font-size: 16px;
+            text-align: center;
+            font-family: monospace;
+            margin-bottom: 15px;
+        }
+
+        .send-request-btn {
+            background: #d4af37;
+            color: #0a0f1a;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 60px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .close-community-btn {
+            background: transparent;
+            border: 1px solid rgba(212,175,55,0.4);
+            color: #d4af37;
+            padding: 12px;
+            border-radius: 30px;
+            cursor: pointer;
+            width: calc(100% - 40px);
+            margin: 15px 20px;
+            font-weight: bold;
+        }
+
         .no-friends { text-align: center; color: #8a9aa8; padding: 30px; }
-        .loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.92); padding: 20px 40px; border-radius: 70px; color: #d4af37; display: none; z-index: 10001; border: 1px solid #d4af37; }
-        .toast-notify { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: #d4af37; padding: 12px 28px; border-radius: 60px; z-index: 10002; border: 1px solid #d4af37; animation: slideUpFade 2.8s ease forwards; }
-        @keyframes slideUpFade { 0% { opacity: 0; transform: translateX(-50%) translateY(30px); } 15% { opacity: 1; transform: translateX(-50%) translateY(0); } 85% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; transform: translateX(-50%) translateY(-20px); } }
-        @media (max-width: 550px) { .community-btn { width: 42px; height: 42px; top: 70px; left: 12px; } .community-btn span { font-size: 22px; } .main-content { padding-top: 90px; } .neon-title { font-size: 16px; } }
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.92);
+            padding: 20px 40px;
+            border-radius: 70px;
+            color: #d4af37;
+            display: none;
+            z-index: 10001;
+            border: 1px solid #d4af37;
+        }
+
+        .toast-notify {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            color: #d4af37;
+            padding: 12px 28px;
+            border-radius: 60px;
+            z-index: 10002;
+            border: 1px solid #d4af37;
+            animation: slideUpFade 2.8s ease forwards;
+            white-space: nowrap;
+        }
+
+        @keyframes slideUpFade {
+            0% { opacity: 0; transform: translateX(-50%) translateY(30px); }
+            15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
+
+        @media (max-width: 550px) {
+            .community-btn { width: 48px; height: 48px; bottom: 70px; right: 15px; }
+            .community-btn span { font-size: 24px; }
+            .top-bar { padding: 8px 12px; }
+            .balance-card, .stats-card { padding: 4px 10px; }
+            .balance-amount { font-size: 14px; }
+            .stat-value { font-size: 11px; }
+            .neon-title { font-size: 14px; }
+            .user-card { padding: 18px 20px; }
+            .user-avatar { width: 65px; height: 65px; }
+            .user-name { font-size: 18px; }
+            .tab-btn { padding: 10px 5px; font-size: 10px; }
+            .toast-notify { white-space: normal; max-width: 85vw; }
+        }
+
+        @media (orientation: landscape) and (max-height: 500px) {
+            .community-btn { bottom: 15px; right: 15px; width: 42px; height: 42px; }
+            .community-btn span { font-size: 20px; }
+            .main-content { padding-bottom: 70px; }
+            .logout-btn { bottom: 10px; left: 10px; padding: 5px 12px; font-size: 11px; }
+        }
     </style>
 </head>
 <body>
@@ -94,16 +510,38 @@
 
 <div class="main-screen" id="mainScreen">
     <div class="top-bar">
-        <div class="balance-card"><span class="balance-icon">💰</span><div class="balance-info"><span class="balance-label">الرصيد</span><span class="balance-amount" id="topBalance">0</span></div></div>
-        <div class="title-card"><div class="neon-title">💣 TNT WARS 💣</div></div>
+        <div class="balance-card">
+            <span class="balance-icon">💰</span>
+            <div class="balance-info">
+                <span class="balance-label">الرصيد</span>
+                <span class="balance-amount" id="topBalance">0</span>
+            </div>
+        </div>
+        <div class="title-card">
+            <div class="neon-title">💣 TNT WARS 💣</div>
+        </div>
         <div class="stats-card">
-            <div class="stat-item"><span class="stat-icon">🏆</span><div class="stat-info"><span class="stat-label">مباريات</span><span class="stat-value" id="topGames">0</span></div></div>
+            <div class="stat-item">
+                <span class="stat-icon">🏆</span>
+                <div class="stat-info">
+                    <span class="stat-label">مباريات</span>
+                    <span class="stat-value" id="topGames">0</span>
+                </div>
+            </div>
             <div class="separator"></div>
-            <div class="stat-item"><span class="stat-icon">⚔️</span><div class="stat-info"><span class="stat-label">انتصارات</span><span class="stat-value" id="topWins">0</span></div></div>
+            <div class="stat-item">
+                <span class="stat-icon">⚔️</span>
+                <div class="stat-info">
+                    <span class="stat-label">انتصارات</span>
+                    <span class="stat-value" id="topWins">0</span>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="community-btn" id="communityBtn"><span>👥</span></div>
+    <div class="community-btn" id="communityBtn">
+        <span>👥</span>
+    </div>
 
     <div class="main-content">
         <div class="user-card">
@@ -123,19 +561,21 @@
 <div class="community-overlay" id="communityOverlay">
     <div class="community-container">
         <div class="community-tabs">
-            <button class="tab-btn active" data-tab="requests">📨 طلبات الصداقة</button>
-            <button class="tab-btn" data-tab="active">🟢 النشطين</button>
-            <button class="tab-btn" data-tab="add">➕ إضافة صديق</button>
-            <button class="tab-btn" data-tab="all">👥 جميع الأصدقاء</button>
+            <button class="tab-btn active" data-tab="requests">📨 طلبات</button>
+            <button class="tab-btn" data-tab="add">➕ إضافة</button>
+            <button class="tab-btn" data-tab="all">👥 أصدقائي</button>
         </div>
         <div class="tab-content">
-            <div class="tab-pane active" id="tabRequests"><div id="requestsList"></div></div>
-            <div class="tab-pane" id="tabActive"><div id="activeFriendsList"></div></div>
+            <div class="tab-pane active" id="tabRequests">
+                <div id="requestsList"></div>
+            </div>
             <div class="tab-pane" id="tabAdd">
-                <input type="text" class="add-friend-input" id="friendIdInput" placeholder="أدخل المعرف الشخصي (10 أرقام)" maxlength="10">
+                <input type="text" class="add-friend-input" id="friendIdInput" placeholder="أدخل المعرف الشخصي (10 أرقام)" maxlength="10" inputmode="numeric">
                 <button class="send-request-btn" id="sendFriendRequestBtn">➕ إرسال طلب صداقة</button>
             </div>
-            <div class="tab-pane" id="tabAll"><div id="allFriendsList"></div></div>
+            <div class="tab-pane" id="tabAll">
+                <div id="allFriendsList"></div>
+            </div>
         </div>
         <button class="close-community-btn" id="closeCommunityBtn">إغلاق</button>
     </div>
@@ -162,7 +602,6 @@
     const googleProvider = new GoogleAuthProvider();
     googleProvider.setCustomParameters({ prompt: 'select_account' });
 
-    // ========== رابط السيرفر الجديد ==========
     const SERVER_URL = "https://tank-yf0p.onrender.com";
 
     let currentUser = null;
@@ -197,11 +636,10 @@
                 friendsList = data.friends || [];
                 friendRequests = data.friendRequests || [];
                 updateUI();
-                renderAllTabs();
+                renderAll();
             }
         } catch (error) {
             console.error('Error loading user data:', error);
-            showToast('فشل تحميل البيانات', true);
         }
     }
 
@@ -216,58 +654,13 @@
                 })
             });
             const data = await response.json();
-            if (data.success && data.userIdCode) {
-                userIdCode = data.userIdCode;
+            if (data.success) {
                 return true;
             }
             return false;
         } catch (error) {
             console.error('Error creating user:', error);
             return false;
-        }
-    }
-
-    async function updateUserOnServer() {
-        try {
-            await fetchWithAuth(`${SERVER_URL}/api/user/update`, {
-                method: 'POST',
-                body: JSON.stringify({
-                    uid: currentUser.uid,
-                    balance: currentBalance,
-                    gamesPlayed: userStats.gamesPlayed,
-                    wins: userStats.wins
-                })
-            });
-        } catch (error) {
-            console.error('Error updating user:', error);
-        }
-    }
-
-    async function fetchFriendsData() {
-        if (!currentUser) return;
-        try {
-            const response = await fetchWithAuth(`${SERVER_URL}/api/friends/list/${currentUser.uid}`);
-            const data = await response.json();
-            if (data.success) {
-                friendsList = data.friends;
-                renderAllTabs();
-            }
-        } catch (error) {
-            console.error('Error fetching friends:', error);
-        }
-    }
-
-    async function fetchFriendRequests() {
-        if (!currentUser) return;
-        try {
-            const response = await fetchWithAuth(`${SERVER_URL}/api/friends/requests/${currentUser.uid}`);
-            const data = await response.json();
-            if (data.success) {
-                friendRequests = data.requests;
-                renderRequestsList();
-            }
-        } catch (error) {
-            console.error('Error fetching requests:', error);
         }
     }
 
@@ -281,6 +674,10 @@
             showToast('⚠️ المعرف الشخصي يجب أن يكون 10 أرقام', true);
             return;
         }
+        if (friendCode === userIdCode) {
+            showToast('⚠️ لا يمكن إضافة نفسك', true);
+            return;
+        }
         
         try {
             const response = await fetchWithAuth(`${SERVER_URL}/api/friends/request`, {
@@ -292,13 +689,13 @@
             });
             const data = await response.json();
             if (data.success) {
-                showToast('✅ تم إرسال طلب الصداقة بنجاح', false);
+                showToast('✅ تم إرسال طلب الصداقة', false);
                 document.getElementById('friendIdInput').value = '';
             } else {
                 showToast(data.error || 'فشل إرسال الطلب', true);
             }
         } catch (error) {
-            showToast('خطأ في الاتصال بالسيرفر', true);
+            showToast('خطأ في الاتصال', true);
         }
     }
 
@@ -314,8 +711,7 @@
             const data = await response.json();
             if (data.success) {
                 showToast('✅ تم قبول طلب الصداقة', false);
-                await fetchFriendRequests();
-                await fetchFriendsData();
+                await loadUserData();
             } else {
                 showToast(data.error || 'فشل قبول الطلب', true);
             }
@@ -336,7 +732,7 @@
             const data = await response.json();
             if (data.success) {
                 showToast('❌ تم رفض طلب الصداقة', false);
-                await fetchFriendRequests();
+                await loadUserData();
             } else {
                 showToast(data.error || 'فشل رفض الطلب', true);
             }
@@ -358,18 +754,18 @@
             const data = await response.json();
             if (data.success) {
                 showToast('✅ تم إزالة الصديق', false);
-                await fetchFriendsData();
+                await loadUserData();
             }
         } catch (error) {
             showToast('خطأ في الاتصال', true);
         }
     }
 
-    function renderRequestsList() {
+    function renderRequests() {
         const container = document.getElementById('requestsList');
         if (!container) return;
         
-        if (friendRequests.length === 0) {
+        if (!friendRequests || friendRequests.length === 0) {
             container.innerHTML = '<div class="no-friends">📭 لا توجد طلبات صداقة</div>';
             return;
         }
@@ -380,7 +776,7 @@
             div.className = 'friend-item';
             div.innerHTML = `
                 <div class="friend-info">
-                    <div class="friend-name">${request.username}</div>
+                    <div class="friend-name">${request.username || request.userIdCode}</div>
                     <div class="friend-id">🆔 ${request.userIdCode}</div>
                 </div>
                 <div class="request-btns">
@@ -399,58 +795,37 @@
         });
     }
 
-    function renderFriendsLists() {
-        const activeContainer = document.getElementById('activeFriendsList');
-        const allContainer = document.getElementById('allFriendsList');
+    function renderAllFriends() {
+        const container = document.getElementById('allFriendsList');
+        if (!container) return;
         
-        const activeFriends = friendsList.filter(f => f.isActive);
-        
-        if (activeFriends.length === 0) {
-            activeContainer.innerHTML = '<div class="no-friends">🟢 لا يوجد أصدقاء نشطاء حالياً</div>';
-        } else {
-            activeContainer.innerHTML = '';
-            activeFriends.forEach(friend => {
-                const div = document.createElement('div');
-                div.className = 'friend-item';
-                div.innerHTML = `
-                    <div class="friend-info">
-                        <div class="friend-name">${friend.username}</div>
-                        <div class="friend-id">🆔 ${friend.userIdCode}</div>
-                        <span class="friend-status">🟢 نشط الآن</span>
-                    </div>
-                    <button class="remove-friend-btn" data-uid="${friend.uid}">🗑️</button>
-                `;
-                activeContainer.appendChild(div);
-            });
+        if (!friendsList || friendsList.length === 0) {
+            container.innerHTML = '<div class="no-friends">👥 لا يوجد أصدقاء بعد<br>أضف أصدقاء باستخدام المعرف الشخصي</div>';
+            return;
         }
         
-        if (friendsList.length === 0) {
-            allContainer.innerHTML = '<div class="no-friends">👥 لا يوجد أصدقاء بعد<br>أضف أصدقاء باستخدام المعرف الشخصي</div>';
-        } else {
-            allContainer.innerHTML = '';
-            friendsList.forEach(friend => {
-                const div = document.createElement('div');
-                div.className = 'friend-item';
-                div.innerHTML = `
-                    <div class="friend-info">
-                        <div class="friend-name">${friend.username}</div>
-                        <div class="friend-id">🆔 ${friend.userIdCode}</div>
-                        <span class="friend-status ${friend.isActive ? '' : 'offline'}">${friend.isActive ? '🟢 نشط' : '⚫ غير نشط'}</span>
-                    </div>
-                    <button class="remove-friend-btn" data-uid="${friend.uid}">🗑️</button>
-                `;
-                allContainer.appendChild(div);
-            });
-        }
+        container.innerHTML = '';
+        friendsList.forEach(friend => {
+            const div = document.createElement('div');
+            div.className = 'friend-item';
+            div.innerHTML = `
+                <div class="friend-info">
+                    <div class="friend-name">${friend.username || friend.userIdCode}</div>
+                    <div class="friend-id">🆔 ${friend.userIdCode}</div>
+                </div>
+                <button class="remove-friend-btn" data-uid="${friend.uid}">🗑️ إزالة</button>
+            `;
+            container.appendChild(div);
+        });
         
-        document.querySelectorAll('.remove-friend-btn').forEach(btn => {
+        container.querySelectorAll('.remove-friend-btn').forEach(btn => {
             btn.addEventListener('click', () => removeFriend(btn.dataset.uid));
         });
     }
 
-    function renderAllTabs() {
-        renderRequestsList();
-        renderFriendsLists();
+    function renderAll() {
+        renderRequests();
+        renderAllFriends();
     }
 
     function updateUI() {
@@ -476,8 +851,7 @@
     }
 
     function openCommunity() {
-        fetchFriendRequests();
-        fetchFriendsData();
+        loadUserData();
         document.getElementById('communityOverlay').style.display = 'flex';
     }
 
@@ -517,7 +891,6 @@
     async function handleLogout() {
         document.getElementById('loading').style.display = 'flex';
         try {
-            if (currentUser) await updateUserOnServer();
             await signOut(auth);
             currentUser = null;
             document.getElementById('mainScreen').style.display = 'none';
