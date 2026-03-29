@@ -2,1053 +2,498 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>💣 TNT Wars 💣</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شخصية 3D احترافية - Three.js</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        :root {
-            --gold-primary: #d4af37;
-            --gold-dark: #b8860b;
-            --gold-light: #f3e6b0;
-            --dark-bg: #05070c;
-            --card-bg: rgba(10, 15, 25, 0.85);
-            --text-muted: #8a9aa8;
-            --success: #2ecc71;
-            --danger: #e74c3c;
-        }
-
         body {
-            font-family: 'Segoe UI', 'Cairo', system-ui, sans-serif;
+            margin: 0;
             overflow: hidden;
-            background: var(--dark-bg);
-            position: fixed;
-            width: 100%;
-            height: 100%;
+            font-family: 'Arial', sans-serif;
         }
-
-        .bg-animation {
-            position: fixed;
-            inset: 0;
-            z-index: 0;
-            opacity: 0.3;
-        }
-
-        .bg-animation::before {
-            content: '';
+        
+        #info {
             position: absolute;
-            width: 200%;
-            height: 200%;
-            top: -50%;
-            left: -50%;
-            background: radial-gradient(circle at 30% 40%, rgba(212,175,55,0.1) 0%, transparent 50%),
-                        repeating-linear-gradient(45deg, rgba(212,175,55,0.03) 0px, rgba(212,175,55,0.03) 2px, transparent 2px, transparent 8px);
-            animation: rotateBg 60s linear infinite;
-        }
-
-        @keyframes rotateBg {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .login-screen {
-            position: fixed;
-            inset: 0;
-            background: radial-gradient(ellipse at 30% 40%, #0a0f1a, #03050a);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .login-container {
-            background: rgba(8, 12, 20, 0.85);
-            backdrop-filter: blur(20px);
-            padding: min(8vw, 50px) min(6vw, 45px);
-            border-radius: min(8vw, 60px);
-            width: calc(100% - 40px);
-            max-width: 480px;
-            text-align: center;
-            border: 1px solid rgba(212, 175, 55, 0.4);
-        }
-
-        .login-container h1 {
-            background: linear-gradient(135deg, var(--gold-light), var(--gold-primary), var(--gold-dark));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            font-size: clamp(28px, 8vw, 48px);
-            margin-bottom: 12px;
-            font-weight: 800;
-        }
-
-        .subtitle {
-            color: var(--text-muted);
-            font-size: clamp(12px, 3.5vw, 15px);
-            margin-bottom: min(8vw, 45px);
-        }
-
-        .google-btn {
-            width: 100%;
-            padding: clamp(12px, 4vw, 16px);
-            background: white;
-            border: none;
-            border-radius: 80px;
-            font-size: clamp(14px, 4vw, 16px);
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            font-family: inherit;
-        }
-
-        .google-btn:active {
-            transform: scale(0.98);
-        }
-
-        .main-screen {
-            background: radial-gradient(ellipse at 20% 30%, #0f1725, #03050a);
-            display: none;
-            position: fixed;
-            inset: 0;
-            z-index: 900;
-            overflow-y: auto;
-        }
-
-        .top-bar {
-            position: sticky;
-            top: 0;
-            background: rgba(5, 8, 15, 0.95);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
-            padding: 15px 20px;
-            text-align: center;
-        }
-
-        .neon-title {
-            font-size: clamp(20px, 5vw, 28px);
-            font-weight: 800;
-            letter-spacing: 3px;
-            background: linear-gradient(135deg, var(--gold-light), var(--gold-primary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .top-buttons {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            display: flex;
-            gap: 12px;
-            z-index: 200;
-        }
-
-        .top-fab {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            transition: transform 0.2s;
-            border: 2px solid rgba(255,215,0,0.5);
-        }
-
-        .top-fab:active {
-            transform: scale(0.92);
-        }
-
-        .top-fab span {
-            font-size: 28px;
-        }
-
-        .dropdown-menu {
-            position: fixed;
-            top: 140px;
-            right: 20px;
-            width: calc(100% - 40px);
-            max-width: 360px;
-            background: rgba(10, 15, 25, 0.98);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
-            z-index: 199;
-            transform: translateY(-20px) scale(0.95);
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            border: 1px solid rgba(212, 175, 55, 0.3);
-        }
-
-        .dropdown-menu.active {
-            transform: translateY(0) scale(1);
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .info-content {
-            padding: 24px;
-            text-align: center;
-        }
-
-        .info-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            margin: 0 auto 16px;
-            border: 3px solid var(--gold-primary);
-            object-fit: cover;
-        }
-
-        .info-name {
-            font-size: 20px;
-            font-weight: bold;
-            color: var(--gold-primary);
-            margin-bottom: 8px;
-        }
-
-        .info-email {
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-bottom: 16px;
-        }
-
-        .info-stats {
-            background: rgba(0,0,0,0.3);
-            border-radius: 16px;
-            padding: 16px;
-            margin: 16px 0;
-            display: flex;
-            justify-content: space-around;
-        }
-
-        .info-stat-item {
-            text-align: center;
-        }
-
-        .info-stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--gold-primary);
-        }
-
-        .info-stat-label {
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-top: 4px;
-        }
-
-        .info-code {
-            background: rgba(212,175,55,0.1);
-            border-radius: 12px;
-            padding: 12px;
-            margin: 16px 0;
-        }
-
-        .info-code-value {
-            font-size: 18px;
-            font-weight: bold;
-            color: var(--gold-primary);
-            font-family: monospace;
-            letter-spacing: 2px;
-        }
-
-        .copy-btn {
-            background: rgba(212,175,55,0.2);
-            border: 1px solid var(--gold-primary);
-            color: var(--gold-primary);
-            padding: 8px 20px;
-            border-radius: 40px;
-            font-size: 12px;
-            cursor: pointer;
-            margin-top: 8px;
-        }
-
-        .friends-tabs {
-            display: flex;
-            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
-            padding: 8px;
-            gap: 4px;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 12px 8px;
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            border-radius: 12px;
-        }
-
-        .tab-btn.active {
-            color: var(--gold-primary);
-            background: rgba(212, 175, 55, 0.1);
-        }
-
-        .friends-content {
-            padding: 16px;
-            max-height: 50vh;
-            overflow-y: auto;
-        }
-
-        .friends-pane {
-            display: none;
-        }
-
-        .friends-pane.active {
-            display: block;
-        }
-
-        .search-input {
-            width: 100%;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid rgba(212,175,55,0.3);
-            padding: 12px 16px;
-            border-radius: 40px;
+            top: 20px;
+            left: 20px;
             color: white;
-            font-size: 14px;
-            text-align: center;
-            margin-bottom: 12px;
-        }
-
-        .search-btn {
-            width: 100%;
-            background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark));
-            border: none;
-            padding: 12px;
-            border-radius: 40px;
-            color: #1e2a3a;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .friend-item {
-            background: rgba(212,175,55,0.08);
-            border-radius: 16px;
-            padding: 12px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .friend-name {
-            font-weight: bold;
-            color: var(--gold-primary);
-            font-size: 14px;
-        }
-
-        .friend-email {
-            font-size: 11px;
-            color: var(--text-muted);
-        }
-
-        .accept-btn, .reject-btn {
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: bold;
-            cursor: pointer;
-            border: none;
-        }
-
-        .accept-btn {
-            background: var(--success);
-            color: white;
-        }
-
-        .reject-btn {
-            background: var(--danger);
-            color: white;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 30px;
-            color: var(--text-muted);
-        }
-
-        .logout-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(231, 76, 60, 0.9);
-            border: none;
-            border-radius: 40px;
+            background: rgba(0,0,0,0.7);
             padding: 10px 20px;
-            font-size: 13px;
-            font-weight: 600;
-            color: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            border-radius: 8px;
             z-index: 100;
+            pointer-events: none;
+            backdrop-filter: blur(5px);
         }
-
-        .loading-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.9);
-            backdrop-filter: blur(10px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 10001;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .loading-spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid rgba(212, 175, 55, 0.2);
-            border-top: 4px solid var(--gold-primary);
-            border-right: 4px solid var(--gold-primary);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .loading-text {
-            color: var(--gold-primary);
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        .toast-notify {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.95);
-            color: var(--gold-primary);
-            padding: 12px 24px;
-            border-radius: 60px;
-            font-size: 13px;
-            z-index: 10002;
-            border: 1px solid var(--gold-primary);
-            animation: fadeOut 2.8s ease forwards;
-        }
-
-        @keyframes fadeOut {
-            0% { opacity: 0; transform: translateX(-50%) translateY(30px); }
-            15% { opacity: 1; transform: translateX(-50%) translateY(0); }
-            85% { opacity: 1; transform: translateX(-50%) translateY(0); }
-            100% { opacity: 0; visibility: hidden; }
-        }
-
-        @media (max-width: 480px) {
-            .top-buttons {
-                top: 70px;
-                right: 15px;
-                gap: 8px;
-            }
-            .top-fab {
-                width: 45px;
-                height: 45px;
-            }
-            .top-fab span {
-                font-size: 24px;
-            }
-            .dropdown-menu {
-                top: 125px;
-                right: 15px;
-                left: 15px;
-                width: auto;
-            }
+        
+        #controls-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0,0,0,0.7);
+            padding: 10px 20px;
+            border-radius: 8px;
+            z-index: 100;
+            font-size: 12px;
+            pointer-events: none;
+            backdrop-filter: blur(5px);
         }
     </style>
 </head>
 <body>
-
-<div class="bg-animation"></div>
-
-<div class="login-screen" id="loginScreen">
-    <div class="login-container">
-        <h1>💣 TNT WARS 💣</h1>
-        <div class="subtitle">Elite Battlefield</div>
-        <button class="google-btn" id="googleLoginBtn">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="22" height="22">
-                <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
-                <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
-                <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
-                <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
-            </svg>
-            <span>تسجيل الدخول بـ Google</span>
-        </button>
+    <div id="info">
+        <h2>شخصية 3D احترافية</h2>
+        <p>شخصية واقعية مع إضاءة ديناميكية وظلال</p>
     </div>
-</div>
-
-<div class="main-screen" id="mainScreen">
-    <div class="top-bar">
-        <div class="neon-title">💣 TNT WARS 💣</div>
+    <div id="controls-panel">
+        🖱️ اسحب للتدوير | 🔍 مرر للتكبير | 🖱️ زر يمين للتحريك
     </div>
 
-    <div class="top-buttons">
-        <div class="top-fab" id="infoFab"><span>👤</span></div>
-        <div class="top-fab" id="friendsFab"><span>👥</span></div>
-    </div>
-
-    <div class="dropdown-menu" id="infoDropdown">
-        <div class="info-content">
-            <img class="info-avatar" id="infoAvatar">
-            <div class="info-name" id="infoName">-</div>
-            <div class="info-email" id="infoEmail">-</div>
-            <div class="info-stats">
-                <div class="info-stat-item">
-                    <div class="info-stat-value" id="infoBalance">0</div>
-                    <div class="info-stat-label">💰 الرصيد</div>
-                </div>
-                <div class="info-stat-item">
-                    <div class="info-stat-value" id="infoGames">0</div>
-                    <div class="info-stat-label">🏆 مباريات</div>
-                </div>
-                <div class="info-stat-item">
-                    <div class="info-stat-value" id="infoWins">0</div>
-                    <div class="info-stat-label">⚔️ انتصارات</div>
-                </div>
-            </div>
-            <div class="info-code">
-                <div class="info-code-value" id="infoCode">---</div>
-                <button class="copy-btn" id="copyCodeBtn">📋 نسخ الكود</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="dropdown-menu" id="friendsDropdown">
-        <div class="friends-tabs">
-            <button class="tab-btn active" data-tab="add">➕ إضافة</button>
-            <button class="tab-btn" data-tab="requests">📨 طلبات</button>
-            <button class="tab-btn" data-tab="friends">🌟 أصدقائي</button>
-        </div>
-        <div class="friends-content">
-            <div class="friends-pane active" id="addPane">
-                <input type="text" id="friendCodeInput" class="search-input" placeholder="🔍 أدخل كود الصديق">
-                <button id="addFriendBtn" class="search-btn">➕ إضافة صديق</button>
-                <div id="addFriendResult"></div>
-            </div>
-            <div class="friends-pane" id="requestsPane">
-                <div id="requestsList"><div class="empty-state">📭 لا توجد طلبات</div></div>
-            </div>
-            <div class="friends-pane" id="friendsPane">
-                <div id="friendsList"><div class="empty-state">👥 لا يوجد أصدقاء</div></div>
-            </div>
-        </div>
-    </div>
-
-    <button class="logout-btn" id="logoutBtn"><span>🚪</span> <span>خروج</span></button>
-</div>
-
-<div class="loading-overlay" id="loadingOverlay">
-    <div class="loading-spinner"></div>
-    <div class="loading-text">جاري التحميل</div>
-</div>
-
-<script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js';
-    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js';
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyCvPo4HlsNhyf1WBmTzIr6CdR1c2lQ5sHU",
-        authDomain: "boomb-fa3e7.firebaseapp.com",
-        projectId: "boomb-fa3e7",
-        storageBucket: "boomb-fa3e7.firebasestorage.app",
-        messagingSenderId: "499624996530",
-        appId: "1:499624996530:web:235f71e450845c748523ab"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
-    
-    const API_URL = 'https://tank-yf0p.onrender.com';
-    
-    let currentUser = null;
-    let userData = {
-        balance: 0,
-        gamesPlayed: 0,
-        wins: 0,
-        userCode: null
-    };
-    
-    // DOM Elements
-    const elements = {
-        loginScreen: document.getElementById('loginScreen'),
-        mainScreen: document.getElementById('mainScreen'),
-        loading: document.getElementById('loadingOverlay'),
-        googleBtn: document.getElementById('googleLoginBtn'),
-        logoutBtn: document.getElementById('logoutBtn'),
-        infoFab: document.getElementById('infoFab'),
-        infoDropdown: document.getElementById('infoDropdown'),
-        friendsFab: document.getElementById('friendsFab'),
-        friendsDropdown: document.getElementById('friendsDropdown'),
-        infoAvatar: document.getElementById('infoAvatar'),
-        infoName: document.getElementById('infoName'),
-        infoEmail: document.getElementById('infoEmail'),
-        infoBalance: document.getElementById('infoBalance'),
-        infoGames: document.getElementById('infoGames'),
-        infoWins: document.getElementById('infoWins'),
-        infoCode: document.getElementById('infoCode'),
-        copyCodeBtn: document.getElementById('copyCodeBtn'),
-        friendCodeInput: document.getElementById('friendCodeInput'),
-        addFriendBtn: document.getElementById('addFriendBtn'),
-        addFriendResult: document.getElementById('addFriendResult'),
-        requestsList: document.getElementById('requestsList'),
-        friendsList: document.getElementById('friendsList')
-    };
-    
-    function showToast(msg, isError = false) {
-        const toast = document.createElement('div');
-        toast.className = 'toast-notify';
-        toast.textContent = msg;
-        toast.style.background = isError ? 'rgba(231,76,60,0.95)' : 'rgba(0,0,0,0.95)';
-        toast.style.borderColor = isError ? '#e74c3c' : '#d4af37';
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 2800);
-    }
-    
-    function showLoading(show) {
-        elements.loading.style.display = show ? 'flex' : 'none';
-    }
-    
-    async function getToken() {
-        const user = auth.currentUser;
-        if (!user) return null;
-        return await user.getIdToken();
-    }
-    
-    async function fetchUserData() {
-        const user = auth.currentUser;
-        if (!user) return false;
-        
-        try {
-            const token = await getToken();
-            if (!token) return false;
-            
-            const response = await fetch(`${API_URL}/api/user/data?uid=${user.uid}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                userData = {
-                    balance: data.balance,
-                    gamesPlayed: data.gamesPlayed,
-                    wins: data.wins,
-                    userCode: data.userIdCode
-                };
-                updateUI();
-                return true;
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
             }
-            return false;
-        } catch (error) {
-            console.error('Fetch error:', error);
-            return false;
         }
-    }
-    
-    async function createUser() {
-        const user = auth.currentUser;
-        if (!user) return false;
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+        // إعداد المشهد
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x050b1a);
+        scene.fog = new THREE.FogExp2(0x050b1a, 0.008); // ضباب خفيف للعمق
+
+        // إعداد الكاميرا
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(5, 3, 7);
+        camera.lookAt(0, 1.5, 0);
+
+        // إعداد الـ Renderer
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true; // تفعيل الظلال
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap; // ظلال ناعمة
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+        // CSS2 Renderer للنصوص
+        const labelRenderer = new CSS2DRenderer();
+        labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        labelRenderer.domElement.style.position = 'absolute';
+        labelRenderer.domElement.style.top = '0px';
+        labelRenderer.domElement.style.left = '0px';
+        labelRenderer.domElement.style.pointerEvents = 'none';
+        document.body.appendChild(labelRenderer.domElement);
+
+        // إعداد عناصر التحكم
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.rotateSpeed = 1.5;
+        controls.zoomSpeed = 1.2;
+        controls.panSpeed = 0.8;
+        controls.enableZoom = true;
+        controls.enablePan = true;
+        controls.target.set(0, 1.5, 0);
+
+        // ==================== الإضاءة الاحترافية ====================
         
-        try {
-            const token = await getToken();
-            if (!token) return false;
-            
-            const response = await fetch(`${API_URL}/api/user/create`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    uid: user.uid,
-                    email: user.email,
-                    displayName: user.displayName
-                })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                if (data.userIdCode) {
-                    userData.userCode = data.userIdCode;
-                    showToast(`✨ كود المعركة: ${data.userIdCode}`, false);
-                }
-                return true;
-            }
-            return false;
-        } catch (error) {
-            console.error('Create error:', error);
-            return false;
-        }
-    }
-    
-    async function ensureUser() {
-        const exists = await fetchUserData();
-        if (!exists || !userData.userCode) {
-            await createUser();
-            await fetchUserData();
-        }
-    }
-    
-    async function findUserByCode(code) {
-        const user = auth.currentUser;
-        if (!user) return null;
+        // Ambient Light - إضاءة محيطية
+        const ambientLight = new THREE.AmbientLight(0x404060, 0.6);
+        scene.add(ambientLight);
         
-        try {
-            const token = await getToken();
-            const response = await fetch(`${API_URL}/api/user/bycode/${code}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
-            return data.success ? data.user : null;
-        } catch (error) {
-            return null;
-        }
-    }
-    
-    async function sendFriendRequest(code) {
-        const user = auth.currentUser;
-        if (!user) return false;
+        // Main Directional Light - الضوء الرئيسي
+        const mainLight = new THREE.DirectionalLight(0xfff5e6, 1.2);
+        mainLight.position.set(5, 8, 3);
+        mainLight.castShadow = true;
+        mainLight.receiveShadow = true;
+        mainLight.shadow.mapSize.width = 1024;
+        mainLight.shadow.mapSize.height = 1024;
+        mainLight.shadow.camera.near = 0.5;
+        mainLight.shadow.camera.far = 15;
+        mainLight.shadow.camera.left = -5;
+        mainLight.shadow.camera.right = 5;
+        mainLight.shadow.camera.top = 5;
+        mainLight.shadow.camera.bottom = -5;
+        scene.add(mainLight);
         
-        try {
-            const token = await getToken();
-            const response = await fetch(`${API_URL}/api/friends/request`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    fromUid: user.uid,
-                    toUserIdCode: code
-                })
-            });
-            const data = await response.json();
-            showToast(data.message, !data.success);
-            return data.success;
-        } catch (error) {
-            showToast('خطأ في الاتصال', true);
-            return false;
-        }
-    }
-    
-    async function getFriendRequests() {
-        const user = auth.currentUser;
-        if (!user) return [];
+        // Fill Light from below - إضاءة تعبئة من الأسفل
+        const fillLight = new THREE.PointLight(0x4466cc, 0.4);
+        fillLight.position.set(0, -1, 0);
+        scene.add(fillLight);
         
-        try {
-            const token = await getToken();
-            const response = await fetch(`${API_URL}/api/friends/requests/${user.uid}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
-            return data.success ? data.requests : [];
-        } catch (error) {
-            return [];
-        }
-    }
-    
-    async function getFriendsList() {
-        const user = auth.currentUser;
-        if (!user) return [];
+        // Back Rim Light - إضاءة خلفية لتحديد الحواف
+        const rimLight = new THREE.PointLight(0xffaa66, 0.6);
+        rimLight.position.set(-3, 2, -4);
+        scene.add(rimLight);
         
-        try {
-            const token = await getToken();
-            const response = await fetch(`${API_URL}/api/friends/list/${user.uid}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
-            return data.success ? data.friends : [];
-        } catch (error) {
-            return [];
-        }
-    }
-    
-    async function acceptRequest(requesterUid) {
-        const user = auth.currentUser;
-        try {
-            const token = await getToken();
-            const response = await fetch(`${API_URL}/api/friends/accept`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    userUid: user.uid,
-                    requesterUid: requesterUid
-                })
-            });
-            const data = await response.json();
-            if (data.success) showToast('✅ تم قبول الصديق', false);
-            return data.success;
-        } catch (error) {
-            return false;
-        }
-    }
-    
-    async function rejectRequest(requesterUid) {
-        const user = auth.currentUser;
-        try {
-            const token = await getToken();
-            const response = await fetch(`${API_URL}/api/friends/reject`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    userUid: user.uid,
-                    requesterUid: requesterUid
-                })
-            });
-            const data = await response.json();
-            if (data.success) showToast('❌ تم رفض الطلب', false);
-            return data.success;
-        } catch (error) {
-            return false;
-        }
-    }
-    
-    function updateUI() {
-        if (!currentUser) return;
+        // Colored accent lights - إضاءات ملونة جانبية
+        const leftAccent = new THREE.PointLight(0xff66aa, 0.3);
+        leftAccent.position.set(-3, 2, 2);
+        scene.add(leftAccent);
         
-        const name = currentUser.displayName || currentUser.email.split('@')[0];
-        elements.infoName.textContent = name;
-        elements.infoEmail.textContent = currentUser.email;
-        elements.infoBalance.textContent = userData.balance;
-        elements.infoGames.textContent = userData.gamesPlayed;
-        elements.infoWins.textContent = userData.wins;
-        elements.infoCode.textContent = userData.userCode || '---';
-        elements.infoAvatar.src = currentUser.photoURL || 'https://via.placeholder.com/80?text=User';
-    }
-    
-    async function loadRequests() {
-        const requests = await getFriendRequests();
-        if (requests.length === 0) {
-            elements.requestsList.innerHTML = '<div class="empty-state">📭 لا توجد طلبات</div>';
-            return;
-        }
+        const rightAccent = new THREE.PointLight(0x66ffaa, 0.3);
+        rightAccent.position.set(3, 2, 2);
+        scene.add(rightAccent);
         
-        elements.requestsList.innerHTML = requests.map(r => `
-            <div class="friend-item">
-                <div class="friend-info">
-                    <div class="friend-name">${escapeHtml(r.username)}</div>
-                    <div class="friend-email">${escapeHtml(r.email)}</div>
-                </div>
-                <div class="action-buttons">
-                    <button class="accept-btn" data-uid="${r.uid}">قبول</button>
-                    <button class="reject-btn" data-uid="${r.uid}">رفض</button>
-                </div>
-            </div>
-        `).join('');
+        // Spotlight for dramatic effect
+        const spotLight = new THREE.SpotLight(0xffaa66, 0.5);
+        spotLight.position.set(2, 5, 3);
+        spotLight.castShadow = true;
+        spotLight.angle = 0.3;
+        spotLight.penumbra = 0.5;
+        spotLight.distance = 15;
+        scene.add(spotLight);
         
-        document.querySelectorAll('.accept-btn').forEach(btn => {
-            btn.onclick = async () => {
-                await acceptRequest(btn.dataset.uid);
-                loadRequests();
-                loadFriends();
-            };
+        // Helper lights visualization (optional - للتصحيح)
+        // const helper = new THREE.DirectionalLightHelper(mainLight, 0.5);
+        // scene.add(helper);
+        
+        // ==================== إنشاء الشخصية ====================
+        const character = new THREE.Group();
+        
+        // مواد واقعية
+        const skinMaterial = new THREE.MeshStandardMaterial({
+            color: 0xf5d0a9,
+            roughness: 0.35,
+            metalness: 0.05,
+            emissive: 0x000000,
+            emissiveIntensity: 0
         });
         
-        document.querySelectorAll('.reject-btn').forEach(btn => {
-            btn.onclick = async () => {
-                await rejectRequest(btn.dataset.uid);
-                loadRequests();
-            };
+        const eyeMaterial = new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            roughness: 0.2,
+            metalness: 0.9,
+            emissive: 0x4488ff,
+            emissiveIntensity: 0.1
         });
-    }
-    
-    async function loadFriends() {
-        const friends = await getFriendsList();
-        if (friends.length === 0) {
-            elements.friendsList.innerHTML = '<div class="empty-state">👥 لا يوجد أصدقاء</div>';
-            return;
-        }
         
-        elements.friendsList.innerHTML = friends.map(f => `
-            <div class="friend-item">
-                <div class="friend-info">
-                    <div class="friend-name">${escapeHtml(f.username)}</div>
-                    <div class="friend-email">${escapeHtml(f.email)}</div>
-                </div>
-            </div>
-        `).join('');
-    }
-    
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, m => {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
+        const pupilMaterial = new THREE.MeshStandardMaterial({
+            color: 0x000000,
+            roughness: 0.1,
+            metalness: 0.1
         });
-    }
-    
-    async function login() {
-        showLoading(true);
-        try {
-            const result = await signInWithPopup(auth, provider);
-            currentUser = {
-                uid: result.user.uid,
-                email: result.user.email,
-                displayName: result.user.displayName,
-                photoURL: result.user.photoURL
-            };
-            
-            await ensureUser();
-            
-            elements.loginScreen.style.display = 'none';
-            elements.mainScreen.style.display = 'block';
-            loadRequests();
-            loadFriends();
-            showToast(`🌟 مرحباً ${currentUser.displayName}`, false);
-        } catch (error) {
-            showToast('فشل تسجيل الدخول', true);
-        }
-        showLoading(false);
-    }
-    
-    async function logout() {
-        showLoading(true);
-        try {
-            await signOut(auth);
-            currentUser = null;
-            elements.mainScreen.style.display = 'none';
-            elements.loginScreen.style.display = 'flex';
-            showToast('👋 تم تسجيل الخروج', false);
-        } catch (error) {
-            showToast('حدث خطأ', true);
-        }
-        showLoading(false);
-    }
-    
-    // Event Listeners
-    elements.googleBtn.onclick = login;
-    elements.logoutBtn.onclick = logout;
-    
-    elements.infoFab.onclick = (e) => {
-        e.stopPropagation();
-        elements.infoDropdown.classList.toggle('active');
-        elements.friendsDropdown.classList.remove('active');
-    };
-    
-    elements.friendsFab.onclick = (e) => {
-        e.stopPropagation();
-        elements.friendsDropdown.classList.toggle('active');
-        elements.infoDropdown.classList.remove('active');
-    };
-    
-    elements.copyCodeBtn.onclick = () => {
-        if (userData.userCode) {
-            navigator.clipboard.writeText(userData.userCode);
-            showToast('✅ تم نسخ الكود', false);
-        }
-    };
-    
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.onclick = () => {
-            const tab = btn.dataset.tab;
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            document.querySelectorAll('.friends-pane').forEach(p => p.classList.remove('active'));
-            document.getElementById(`${tab}Pane`).classList.add('active');
-            if (tab === 'requests') loadRequests();
-            if (tab === 'friends') loadFriends();
-        };
-    });
-    
-    elements.addFriendBtn.onclick = async () => {
-        const code = elements.friendCodeInput.value.trim();
-        if (!code) {
-            showToast('⚠️ أدخل الكود', true);
-            return;
-        }
-        if (code === userData.userCode) {
-            showToast('❌ لا يمكن إضافة نفسك', true);
-            return;
+        
+        const hairMaterial = new THREE.MeshStandardMaterial({
+            color: 0x4a3728,
+            roughness: 0.6,
+            metalness: 0.1
+        });
+        
+        const clothesMaterial = new THREE.MeshStandardMaterial({
+            color: 0x2c5530,
+            roughness: 0.4,
+            metalness: 0.1,
+            emissive: 0x112211,
+            emissiveIntensity: 0.1
+        });
+        
+        const pantsMaterial = new THREE.MeshStandardMaterial({
+            color: 0x2a2a3a,
+            roughness: 0.5,
+            metalness: 0.05
+        });
+        
+        // الجسم
+        const body = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.45, 0.5, 1.2, 32),
+            clothesMaterial
+        );
+        body.position.y = 0.6;
+        body.castShadow = true;
+        body.receiveShadow = true;
+        character.add(body);
+        
+        // الرأس
+        const head = new THREE.Mesh(
+            new THREE.SphereGeometry(0.45, 64, 64),
+            skinMaterial
+        );
+        head.position.y = 1.25;
+        head.castShadow = true;
+        head.receiveShadow = true;
+        character.add(head);
+        
+        // العين اليسرى
+        const leftEye = new THREE.Mesh(
+            new THREE.SphereGeometry(0.12, 32, 32),
+            eyeMaterial
+        );
+        leftEye.position.set(-0.16, 1.38, 0.42);
+        leftEye.castShadow = true;
+        character.add(leftEye);
+        
+        // العين اليمنى
+        const rightEye = new THREE.Mesh(
+            new THREE.SphereGeometry(0.12, 32, 32),
+            eyeMaterial
+        );
+        rightEye.position.set(0.16, 1.38, 0.42);
+        rightEye.castShadow = true;
+        character.add(rightEye);
+        
+        // بؤبؤ العين
+        const leftPupil = new THREE.Mesh(
+            new THREE.SphereGeometry(0.06, 32, 32),
+            pupilMaterial
+        );
+        leftPupil.position.set(-0.16, 1.36, 0.54);
+        character.add(leftPupil);
+        
+        const rightPupil = new THREE.Mesh(
+            new THREE.SphereGeometry(0.06, 32, 32),
+            pupilMaterial
+        );
+        rightPupil.position.set(0.16, 1.36, 0.54);
+        character.add(rightPupil);
+        
+        // الأنف
+        const nose = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.08, 0.1, 0.12, 16),
+            skinMaterial
+        );
+        nose.position.set(0, 1.28, 0.48);
+        nose.castShadow = true;
+        character.add(nose);
+        
+        // الفم (قوس)
+        const mouth = new THREE.Mesh(
+            new THREE.TorusGeometry(0.1, 0.03, 16, 32, Math.PI),
+            new THREE.MeshStandardMaterial({ color: 0xcc8866, roughness: 0.3 })
+        );
+        mouth.rotation.x = 0.1;
+        mouth.rotation.z = 0.1;
+        mouth.position.set(0, 1.18, 0.48);
+        character.add(mouth);
+        
+        // الشعر
+        const hair = new THREE.Mesh(
+            new THREE.SphereGeometry(0.48, 32, 32),
+            hairMaterial
+        );
+        hair.scale.set(1.05, 0.4, 1.1);
+        hair.position.y = 1.62;
+        hair.castShadow = true;
+        character.add(hair);
+        
+        // خصلة شعر أمامية
+        const hairFront = new THREE.Mesh(
+            new THREE.ConeGeometry(0.15, 0.12, 16),
+            hairMaterial
+        );
+        hairFront.position.set(0, 1.7, 0.42);
+        hairFront.castShadow = true;
+        character.add(hairFront);
+        
+        // الأذنين
+        const leftEar = new THREE.Mesh(
+            new THREE.SphereGeometry(0.12, 32, 32),
+            skinMaterial
+        );
+        leftEar.position.set(-0.45, 1.28, 0);
+        leftEar.castShadow = true;
+        character.add(leftEar);
+        
+        const rightEar = new THREE.Mesh(
+            new THREE.SphereGeometry(0.12, 32, 32),
+            skinMaterial
+        );
+        rightEar.position.set(0.45, 1.28, 0);
+        rightEar.castShadow = true;
+        character.add(rightEar);
+        
+        // الذراع الأيسر
+        const leftArm = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.12, 0.1, 0.9, 16),
+            clothesMaterial
+        );
+        leftArm.position.set(-0.55, 1.05, 0);
+        leftArm.castShadow = true;
+        character.add(leftArm);
+        
+        // الذراع الأيمن
+        const rightArm = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.12, 0.1, 0.9, 16),
+            clothesMaterial
+        );
+        rightArm.position.set(0.55, 1.05, 0);
+        rightArm.castShadow = true;
+        character.add(rightArm);
+        
+        // الساق اليسرى
+        const leftLeg = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.14, 0.12, 0.85, 16),
+            pantsMaterial
+        );
+        leftLeg.position.set(-0.22, 0.2, 0);
+        leftLeg.castShadow = true;
+        character.add(leftLeg);
+        
+        // الساق اليمنى
+        const rightLeg = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.14, 0.12, 0.85, 16),
+            pantsMaterial
+        );
+        rightLeg.position.set(0.22, 0.2, 0);
+        rightLeg.castShadow = true;
+        character.add(rightLeg);
+        
+        // إضافة حزام
+        const belt = new THREE.Mesh(
+            new THREE.TorusGeometry(0.48, 0.05, 16, 64),
+            new THREE.MeshStandardMaterial({ color: 0x8b5a2b, metalness: 0.6, roughness: 0.4 })
+        );
+        belt.rotation.x = Math.PI / 2;
+        belt.position.y = 0.55;
+        character.add(belt);
+        
+        scene.add(character);
+        
+        // ==================== إضافة كرة بلورية سحرية ====================
+        const crystalBall = new THREE.Mesh(
+            new THREE.SphereGeometry(0.25, 64, 64),
+            new THREE.MeshStandardMaterial({
+                color: 0x88aaff,
+                metalness: 0.9,
+                roughness: 0.2,
+                emissive: 0x224466,
+                emissiveIntensity: 0.3,
+                transparent: true,
+                opacity: 0.85
+            })
+        );
+        crystalBall.position.set(0.8, 1.4, 0.6);
+        crystalBall.castShadow = true;
+        scene.add(crystalBall);
+        
+        // ==================== الأرضية ====================
+        const groundPlane = new THREE.Mesh(
+            new THREE.PlaneGeometry(12, 12),
+            new THREE.MeshStandardMaterial({
+                color: 0x2a2a3a,
+                roughness: 0.7,
+                metalness: 0.1,
+                side: THREE.DoubleSide
+            })
+        );
+        groundPlane.rotation.x = -Math.PI / 2;
+        groundPlane.position.y = -0.1;
+        groundPlane.receiveShadow = true;
+        scene.add(groundPlane);
+        
+        // شبكة مساعدة على الأرض
+        const gridHelper = new THREE.GridHelper(12, 20, 0x88aaff, 0x335588);
+        gridHelper.position.y = -0.08;
+        gridHelper.material.transparent = true;
+        gridHelper.material.opacity = 0.3;
+        scene.add(gridHelper);
+        
+        // ==================== جزيئات متطايرة (تأثير سحري) ====================
+        const particleCount = 400;
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlePositions = new Float32Array(particleCount * 3);
+        
+        for (let i = 0; i < particleCount; i++) {
+            particlePositions[i * 3] = (Math.random() - 0.5) * 12;
+            particlePositions[i * 3 + 1] = Math.random() * 4;
+            particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 10 - 2;
         }
         
-        showLoading(true);
-        const user = await findUserByCode(code);
-        showLoading(false);
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
         
-        if (user) {
-            elements.addFriendResult.innerHTML = `
-                <div style="background: rgba(212,175,55,0.1); border-radius: 16px; padding: 12px; text-align: center;">
-                    <div style="font-weight: bold; color: #d4af37;">${escapeHtml(user.username)}</div>
-                    <div style="font-size: 11px; color: #8a9aa8; margin: 5px 0;">${escapeHtml(user.email)}</div>
-                    <button id="confirmAdd" style="background: #d4af37; border: none; padding: 8px 20px; border-radius: 25px; margin-top: 8px; cursor: pointer;">➕ إضافة</button>
-                </div>
-            `;
-            document.getElementById('confirmAdd').onclick = async () => {
-                showLoading(true);
-                await sendFriendRequest(code);
-                showLoading(false);
-                elements.addFriendResult.innerHTML = '';
-                elements.friendCodeInput.value = '';
-            };
-        } else {
-            elements.addFriendResult.innerHTML = '<div style="text-align: center; color: #e74c3c;">❌ لم يتم العثور على المستخدم</div>';
-            setTimeout(() => elements.addFriendResult.innerHTML = '', 3000);
+        const particleMaterial = new THREE.PointsMaterial({
+            color: 0x88aaff,
+            size: 0.03,
+            transparent: true,
+            opacity: 0.6,
+            blending: THREE.AdditiveBlending
+        });
+        
+        const particles = new THREE.Points(particlesGeometry, particleMaterial);
+        scene.add(particles);
+        
+        // ==================== نص CSS2D ====================
+        const nameDiv = document.createElement('div');
+        nameDiv.textContent = '✨ شخصية واقعية ✨';
+        nameDiv.style.color = '#fff';
+        nameDiv.style.fontSize = '18px';
+        nameDiv.style.fontWeight = 'bold';
+        nameDiv.style.textShadow = '0 0 10px rgba(0,0,0,0.5)';
+        nameDiv.style.background = 'rgba(0,0,0,0.6)';
+        nameDiv.style.padding = '5px 15px';
+        nameDiv.style.borderRadius = '20px';
+        nameDiv.style.backdropFilter = 'blur(5px)';
+        nameDiv.style.border = '1px solid rgba(255,255,255,0.3)';
+        
+        const nameLabel = new CSS2DObject(nameDiv);
+        nameLabel.position.set(0, 2.1, 0);
+        character.add(nameLabel);
+        
+        // ==================== حلقة التحريك ====================
+        let time = 0;
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.008;
+            
+            // حركة خفيفة للشخصية (تنفس)
+            const breath = Math.sin(time * 2) * 0.003;
+            character.position.y = breath;
+            
+            // حركة العيون (نظرات خفيفة)
+            leftPupil.position.x = -0.16 + Math.sin(time * 0.8) * 0.008;
+            rightPupil.position.x = 0.16 + Math.sin(time * 0.8) * 0.008;
+            
+            // دوران الكرة البلورية
+            crystalBall.rotation.y = time * 0.5;
+            crystalBall.rotation.x = Math.sin(time * 0.7) * 0.3;
+            
+            // حركة الجزيئات
+            particles.rotation.y = time * 0.05;
+            particles.rotation.x = Math.sin(time * 0.1) * 0.1;
+            
+            // تغيير ألوان الإضاءة الجانبية ببطء
+            const hue = (time * 0.1) % (Math.PI * 2);
+            leftAccent.intensity = 0.3 + Math.sin(time * 0.5) * 0.1;
+            rightAccent.intensity = 0.3 + Math.cos(time * 0.5) * 0.1;
+            
+            // تحديث عناصر التحكم
+            controls.update();
+            
+            //渲染
+            renderer.render(scene, camera);
+            labelRenderer.render(scene, camera);
         }
-    };
-    
-    document.addEventListener('click', (e) => {
-        if (!elements.infoFab.contains(e.target) && !elements.infoDropdown.contains(e.target)) {
-            elements.infoDropdown.classList.remove('active');
+        
+        animate();
+        
+        // ==================== معالجة تغيير حجم النافذة ====================
+        window.addEventListener('resize', onWindowResize, false);
+        
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            labelRenderer.setSize(window.innerWidth, window.innerHeight);
         }
-        if (!elements.friendsFab.contains(e.target) && !elements.friendsDropdown.contains(e.target)) {
-            elements.friendsDropdown.classList.remove('active');
-        }
-    });
-    
-    // Auth State
-    onAuthStateChanged(auth, async (user) => {
-        if (user && !currentUser) {
-            currentUser = {
-                uid: user.uid,
-                email: user.email,
-                displayName: user.displayName,
-                photoURL: user.photoURL
-            };
-            await ensureUser();
-            elements.loginScreen.style.display = 'none';
-            elements.mainScreen.style.display = 'block';
-            loadRequests();
-            loadFriends();
-        }
-    });
-    
-    // Keep Alive
-    setInterval(async () => {
-        try {
-            await fetch(`${API_URL}/api/health`);
-        } catch(e) {}
-    }, 600000);
-</script>
+        
+        // تأثير دخول سلس
+        character.scale.set(0, 0, 0);
+        setTimeout(() => {
+            let scaleAnim = 0;
+            const scaleInterval = setInterval(() => {
+                scaleAnim += 0.05;
+                character.scale.set(scaleAnim, scaleAnim, scaleAnim);
+                if (scaleAnim >= 1) clearInterval(scaleInterval);
+            }, 20);
+        }, 100);
+        
+        console.log('تم تحميل المشهد ثلاثي الأبعاد بنجاح!');
+    </script>
 </body>
 </html>
