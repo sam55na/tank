@@ -2,391 +2,448 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>القزم الهيكلي الغامض - كابوس العظام</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>القزم الودود - نسخة مطورة</title>
     <style>
-        body {
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(135deg, #87CEEB 0%, #E0F6FF 50%, #87CEEB 100%);
             overflow: hidden;
-            font-family: 'Segoe UI', 'Tahoma', 'Geneva', 'Verdana', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
-        #loading {
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .ui-overlay {
             position: absolute;
-            bottom: 20px;
-            left: 20px;
-            color: rgba(150, 0, 0, 0.7);
-            font-size: 12px;
-            z-index: 100;
-            background: rgba(0,0,0,0.5);
-            padding: 5px 12px;
-            border-radius: 20px;
-            pointer-events: none;
-            font-family: monospace;
-            letter-spacing: 1px;
-        }
-        
-        .vignette {
-            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            box-shadow: inset 0 0 80px rgba(0,0,0,0.8);
             pointer-events: none;
-            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            color: rgba(70, 130, 180, 0.9);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            animation: fadeIn 1s ease-in;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #DAA520 0%, #FF8C00 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1rem;
+            opacity: 0.8;
+            letter-spacing: 1px;
+            color: #4682B4;
+        }
+
+        .footer {
+            text-align: center;
+            color: rgba(70, 130, 180, 0.7);
+            font-size: 0.9rem;
+            animation: fadeIn 2s ease-in;
+        }
+
+        .stats {
+            position: absolute;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(218, 165, 32, 0.5);
+            border-radius: 8px;
+            padding: 1rem;
+            color: rgba(70, 130, 180, 0.8);
+            font-size: 0.85rem;
+            font-family: 'Courier New', monospace;
+            min-width: 200px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(218, 165, 32, 0.2);
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .stat-label {
+            color: rgba(218, 165, 32, 0.9);
+            font-weight: bold;
+        }
+
+        .stat-value {
+            color: rgba(70, 130, 180, 0.9);
+            font-weight: bold;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .header p {
+                font-size: 0.85rem;
+            }
+
+            .stats {
+                font-size: 0.75rem;
+                bottom: 1rem;
+                right: 1rem;
+                min-width: 150px;
+            }
+
+            .ui-overlay {
+                padding: 1rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="loading">⚡ القزم الغامض | عظام متحركة ⚡</div>
-    <div class="vignette"></div>
 
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.128.0/build/three.module.js"
-            }
+<div class="ui-overlay">
+    <div class="header">
+        <h1>🧙 القزم الودود 🧙</h1>
+        <p>شخصية ثلاثية الأبعاد مرحة</p>
+    </div>
+    <div class="footer">
+        <p>استمتع بهذا القزم الصغير الودود!</p>
+    </div>
+</div>
+
+<div class="stats">
+    <div class="stat-item">
+        <span class="stat-label">FPS:</span>
+        <span class="stat-value" id="fps">60</span>
+    </div>
+    <div class="stat-item">
+        <span class="stat-label">الكائنات:</span>
+        <span class="stat-value">18</span>
+    </div>
+    <div class="stat-item">
+        <span class="stat-label">الإضاءات:</span>
+        <span class="stat-value">3</span>
+    </div>
+    <div class="stat-item">
+        <span class="stat-label">الحالة:</span>
+        <span class="stat-value" style="color: #32CD32;">نشط ✓</span>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script>
+    // --- الإعدادات الأساسية ---
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x87CEEB);
+    scene.fog = new THREE.Fog(0x87CEEB, 15, 30);
+
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 1.5, 4);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
+    document.body.appendChild(renderer.domElement);
+
+    // --- نظام الإضاءة ---
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+    scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(5, 10, 7);
+    directionalLight.castShadow = true;
+    directionalLight.shadow.mapSize.width = 2048;
+    directionalLight.shadow.mapSize.height = 2048;
+    scene.add(directionalLight);
+
+    // ضوء دافئ من الأمام
+    const warmLight = new THREE.PointLight(0xFFD700, 0.5, 20);
+    warmLight.position.set(-3, 2, 3);
+    scene.add(warmLight);
+
+    // --- الخامات ---
+    const skinMat = new THREE.MeshStandardMaterial({
+        color: 0xF4A460,
+        roughness: 0.6,
+        metalness: 0.0
+    });
+
+    const beardMat = new THREE.MeshStandardMaterial({
+        color: 0xFFFFFF,
+        roughness: 0.8,
+        metalness: 0.0
+    });
+
+    const hatMat = new THREE.MeshStandardMaterial({
+        color: 0xDAA520,
+        roughness: 0.7,
+        metalness: 0.1
+    });
+
+    const clothesMat = new THREE.MeshStandardMaterial({
+        color: 0x8B4513,
+        roughness: 0.8,
+        metalness: 0.0
+    });
+
+    const beltMat = new THREE.MeshStandardMaterial({
+        color: 0xFFD700,
+        roughness: 0.5,
+        metalness: 0.3
+    });
+
+    // --- بناء الشخصية ---
+    const dwarf = new THREE.Group();
+
+    // 1. الرأس (كرة كبيرة)
+    const headGeo = new THREE.SphereGeometry(0.5, 32, 32);
+    const head = new THREE.Mesh(headGeo, skinMat);
+    head.position.y = 1.2;
+    head.castShadow = true;
+    head.receiveShadow = true;
+    dwarf.add(head);
+
+    // 2. اللحية البيضاء
+    const beardGeo = new THREE.SphereGeometry(0.35, 32, 32);
+    beardGeo.scale(1, 0.6, 0.8);
+    const beard = new THREE.Mesh(beardGeo, beardMat);
+    beard.position.set(0, 0.7, 0.3);
+    beard.castShadow = true;
+    beard.receiveShadow = true;
+    dwarf.add(beard);
+
+    // 3. الأنف (كرة صغيرة)
+    const noseGeo = new THREE.SphereGeometry(0.12, 16, 16);
+    const nose = new THREE.Mesh(noseGeo, skinMat);
+    nose.position.set(0, 1.25, 0.45);
+    nose.castShadow = true;
+    dwarf.add(nose);
+
+    // 4. العيون
+    const eyeGeo = new THREE.SphereGeometry(0.08, 16, 16);
+    const eyeMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
+    
+    const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
+    leftEye.position.set(-0.15, 1.35, 0.48);
+    leftEye.castShadow = true;
+    dwarf.add(leftEye);
+
+    const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
+    rightEye.position.set(0.15, 1.35, 0.48);
+    rightEye.castShadow = true;
+    dwarf.add(rightEye);
+
+    // 5. الأذنان
+    const earGeo = new THREE.SphereGeometry(0.1, 16, 16);
+    earGeo.scale(0.6, 1, 0.5);
+    
+    const leftEar = new THREE.Mesh(earGeo, skinMat);
+    leftEar.position.set(-0.55, 1.2, 0);
+    leftEar.castShadow = true;
+    dwarf.add(leftEar);
+
+    const rightEar = new THREE.Mesh(earGeo, skinMat);
+    rightEar.position.set(0.55, 1.2, 0);
+    rightEar.castShadow = true;
+    dwarf.add(rightEar);
+
+    // 6. القبعة الذهبية
+    const hatGeo = new THREE.ConeGeometry(0.55, 0.8, 32);
+    const hat = new THREE.Mesh(hatGeo, hatMat);
+    hat.position.set(0, 1.85, 0);
+    hat.rotation.z = 0.3;
+    hat.castShadow = true;
+    hat.receiveShadow = true;
+    dwarf.add(hat);
+
+    // 7. الجسم (كرة مفلطحة)
+    const bodyGeo = new THREE.SphereGeometry(0.6, 32, 32);
+    bodyGeo.scale(1, 1.2, 1);
+    const body = new THREE.Mesh(bodyGeo, clothesMat);
+    body.position.y = 0.3;
+    body.castShadow = true;
+    body.receiveShadow = true;
+    dwarf.add(body);
+
+    // 8. الحزام الأصفر
+    const beltGeo = new THREE.CylinderGeometry(0.65, 0.65, 0.15, 32);
+    const belt = new THREE.Mesh(beltGeo, beltMat);
+    belt.position.y = 0.25;
+    belt.castShadow = true;
+    belt.receiveShadow = true;
+    dwarf.add(belt);
+
+    // 9. الأطراف العلوية (الذراعان)
+    const armGeo = new THREE.SphereGeometry(0.15, 16, 16);
+    armGeo.scale(0.5, 1.2, 0.5);
+
+    const leftArm = new THREE.Mesh(armGeo, clothesMat);
+    leftArm.position.set(-0.8, 0.6, 0);
+    leftArm.castShadow = true;
+    leftArm.receiveShadow = true;
+    dwarf.add(leftArm);
+
+    const rightArm = new THREE.Mesh(armGeo, clothesMat);
+    rightArm.position.set(0.8, 0.6, 0);
+    rightArm.castShadow = true;
+    rightArm.receiveShadow = true;
+    dwarf.add(rightArm);
+
+    // 10. اليدان
+    const handGeo = new THREE.SphereGeometry(0.12, 16, 16);
+    
+    const leftHand = new THREE.Mesh(handGeo, skinMat);
+    leftHand.position.set(-0.85, -0.05, 0);
+    leftHand.castShadow = true;
+    dwarf.add(leftHand);
+
+    const rightHand = new THREE.Mesh(handGeo, skinMat);
+    rightHand.position.set(0.85, -0.05, 0);
+    rightHand.castShadow = true;
+    dwarf.add(rightHand);
+
+    // 11. الأطراف السفلية (الساقان)
+    const legGeo = new THREE.SphereGeometry(0.18, 16, 16);
+    legGeo.scale(0.6, 1.1, 0.6);
+
+    const leftLeg = new THREE.Mesh(legGeo, clothesMat);
+    leftLeg.position.set(-0.35, -0.75, 0);
+    leftLeg.castShadow = true;
+    leftLeg.receiveShadow = true;
+    dwarf.add(leftLeg);
+
+    const rightLeg = new THREE.Mesh(legGeo, clothesMat);
+    rightLeg.position.set(0.35, -0.75, 0);
+    rightLeg.castShadow = true;
+    rightLeg.receiveShadow = true;
+    dwarf.add(rightLeg);
+
+    // 12. الأحذية
+    const shoeGeo = new THREE.BoxGeometry(0.3, 0.2, 0.4);
+    const shoeMat = new THREE.MeshStandardMaterial({ color: 0x654321 });
+
+    const leftShoe = new THREE.Mesh(shoeGeo, shoeMat);
+    leftShoe.position.set(-0.35, -1.2, 0);
+    leftShoe.castShadow = true;
+    leftShoe.receiveShadow = true;
+    dwarf.add(leftShoe);
+
+    const rightShoe = new THREE.Mesh(shoeGeo, shoeMat);
+    rightShoe.position.set(0.35, -1.2, 0);
+    rightShoe.castShadow = true;
+    rightShoe.receiveShadow = true;
+    dwarf.add(rightShoe);
+
+    // 13. الأرضية
+    const groundGeo = new THREE.PlaneGeometry(10, 10);
+    const groundMat = new THREE.MeshStandardMaterial({
+        color: 0x90EE90,
+        roughness: 0.8
+    });
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -1.5;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    scene.add(dwarf);
+
+    // --- متغيرات الحركة والتأثيرات ---
+    let frameCount = 0;
+    const fpsDisplay = document.getElementById('fps');
+    let lastTime = Date.now();
+
+    // --- حلقة التحريك ---
+    function animate() {
+        requestAnimationFrame(animate);
+
+        frameCount++;
+        const currentTime = Date.now();
+        if (currentTime - lastTime >= 1000) {
+            fpsDisplay.textContent = frameCount;
+            frameCount = 0;
+            lastTime = currentTime;
         }
-    </script>
 
-    <script type="module">
-        import * as THREE from 'three';
+        const t = Date.now() * 0.001;
 
-        // --- تهيئة المشهد الغامض ---
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x020210);
-        scene.fog = new THREE.FogExp2(0x020210, 0.05);
+        // حركة دوران لطيفة
+        dwarf.rotation.y = Math.sin(t * 0.5) * 0.15;
 
-        const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 1.3, 3.8);
-        camera.lookAt(0, 0.5, 0);
+        // حركة قفز خفيفة
+        dwarf.position.y = Math.sin(t * 1.5) * 0.15;
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+        // حركة الذراعين
+        leftArm.rotation.z = Math.sin(t * 1.2) * 0.3 + 0.2;
+        rightArm.rotation.z = Math.sin(t * 1.2 + Math.PI) * 0.3 - 0.2;
+
+        // حركة الساقين
+        leftLeg.rotation.x = Math.sin(t * 1.2) * 0.2;
+        rightLeg.rotation.x = Math.sin(t * 1.2 + Math.PI) * 0.2;
+
+        // حركة طفيفة للقبعة
+        hat.rotation.z = 0.3 + Math.sin(t * 0.8) * 0.1;
+
+        renderer.render(scene, camera);
+    }
+
+    // التعامل مع تغيير حجم النافذة
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        document.body.appendChild(renderer.domElement);
+    });
 
-        // --- الإضاءة الغامضة ---
-        const ambientLight = new THREE.AmbientLight(0x111118, 0.4);
-        scene.add(ambientLight);
-        
-        const backLight = new THREE.PointLight(0xaa1122, 1.2, 6);
-        backLight.position.set(-1, 1.5, -2);
-        scene.add(backLight);
-        
-        const mainLight = new THREE.DirectionalLight(0xccaa88, 0.9);
-        mainLight.position.set(2, 3, 2);
-        mainLight.castShadow = true;
-        mainLight.receiveShadow = true;
-        mainLight.shadow.mapSize.width = 1024;
-        mainLight.shadow.mapSize.height = 1024;
-        scene.add(mainLight);
-        
-        const underGlow = new THREE.PointLight(0x2255aa, 0.6);
-        underGlow.position.set(0, -1, 0);
-        scene.add(underGlow);
-        
-        const bombGlow = new THREE.PointLight(0xff3300, 8, 3.5);
-        bombGlow.castShadow = false;
-        scene.add(bombGlow);
-        
-        // --- جسيمات غبار غامضة ---
-        const dustGeometry = new THREE.BufferGeometry();
-        const dustCount = 800;
-        const dustPositions = new Float32Array(dustCount * 3);
-        for (let i = 0; i < dustCount; i++) {
-            dustPositions[i*3] = (Math.random() - 0.5) * 8;
-            dustPositions[i*3+1] = Math.random() * 3;
-            dustPositions[i*3+2] = (Math.random() - 0.5) * 6 - 1;
-        }
-        dustGeometry.setAttribute('position', new THREE.BufferAttribute(dustPositions, 3));
-        const dustMaterial = new THREE.PointsMaterial({
-            color: 0xaa8866,
-            size: 0.02,
-            transparent: true,
-            opacity: 0.4,
-            blending: THREE.AdditiveBlending
-        });
-        const dustSystem = new THREE.Points(dustGeometry, dustMaterial);
-        scene.add(dustSystem);
-        
-        // --- خلفية سديمية ---
-        const backgroundSphere = new THREE.Mesh(
-            new THREE.SphereGeometry(12, 64, 64),
-            new THREE.MeshBasicMaterial({ color: 0x050510, transparent: true, opacity: 0.3, side: THREE.BackSide })
-        );
-        scene.add(backgroundSphere);
-        
-        // --- خامات الشخصية (محسنة مع الحفاظ على الهوية) ---
-        const darkMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.7, metalness: 0.3 });
-        const hatMat = new THREE.MeshStandardMaterial({ color: 0x440000, roughness: 0.8, metalness: 0.1 });
-        const boneMat = new THREE.MeshStandardMaterial({ color: 0xccaa88, roughness: 0.5 });
-        const fuseMat = new THREE.MeshStandardMaterial({ color: 0xeeee88, emissive: 0xff4422, emissiveIntensity: 0.6 });
-        
-        // --- بناء الشخصية (نفس الهيكل الأصلي مع تحسين الأعضاء) ---
-        const dwarf = new THREE.Group();
-        
-        // 1. الجسم الرئيسي (محسن: أكثر استدارة وتفاصيل)
-        const bodyGeo = new THREE.SphereGeometry(0.62, 48, 48);
-        const body = new THREE.Mesh(bodyGeo, darkMat);
-        body.scale.y = 1.08;
-        body.castShadow = true;
-        body.receiveShadow = true;
-        dwarf.add(body);
-        
-        // إضافة تفاصيل للجسم (أضلاع غامضة)
-        for (let i = 0; i < 5; i++) {
-            const ribGeo = new THREE.BoxGeometry(0.1, 0.05, 0.45);
-            const rib = new THREE.Mesh(ribGeo, boneMat);
-            rib.position.set(-0.38 + (i % 2 === 0 ? 0.76 : 0), 0.15 + i * 0.18, 0.58);
-            rib.castShadow = true;
-            dwarf.add(rib);
-        }
-        
-        // 2. الرقبة (محسنة: أكثر سلاسة)
-        const neckGeo = new THREE.CylinderGeometry(0.22, 0.26, 0.32, 24);
-        const neck = new THREE.Mesh(neckGeo, darkMat);
-        neck.position.y = 0.67;
-        neck.castShadow = true;
-        dwarf.add(neck);
-        
-        // 3. القبعة المخروطية المائلة (محسنة: أكثر وضوحًا)
-        const hatGeo = new THREE.ConeGeometry(0.52, 1.45, 48);
-        const hat = new THREE.Mesh(hatGeo, hatMat);
-        hat.position.y = 1.38;
-        hat.rotation.z = 0.22;
-        hat.rotation.x = 0.05;
-        hat.castShadow = true;
-        dwarf.add(hat);
-        
-        // إضافة حافة للقبعة
-        const brimGeo = new THREE.TorusGeometry(0.58, 0.08, 32, 64);
-        const brim = new THREE.Mesh(brimGeo, hatMat);
-        brim.position.y = 0.72;
-        brim.rotation.x = Math.PI / 2;
-        brim.castShadow = true;
-        dwarf.add(brim);
-        
-        // --- الأطراف العلوية المحسنة ---
+    animate();
+</script>
 
-        // الذراع اليسرى (محسنة: أبعاد أكثر طبيعية)
-        const leftArmGeo = new THREE.CylinderGeometry(0.09, 0.07, 0.68, 24);
-        const leftArm = new THREE.Mesh(leftArmGeo, darkMat);
-        leftArm.position.set(-0.72, 0.12, 0.18);
-        leftArm.rotation.z = Math.PI / 2.4;
-        leftArm.rotation.x = 0.15;
-        leftArm.castShadow = true;
-        dwarf.add(leftArm);
-        
-        // اليد اليسرى (محسنة: أصابع مفصلة)
-        const leftHandGroup = new THREE.Group();
-        const palmLeft = new THREE.Mesh(new THREE.SphereGeometry(0.16, 24, 24), darkMat);
-        leftHandGroup.add(palmLeft);
-        // إضافة أصابع
-        const fingerGeo = new THREE.CylinderGeometry(0.045, 0.04, 0.22, 8);
-        for (let i = 0; i < 4; i++) {
-            const finger = new THREE.Mesh(fingerGeo, darkMat);
-            finger.position.set(-0.07 + i * 0.05, -0.08, 0.13);
-            finger.rotation.x = -0.3;
-            leftHandGroup.add(finger);
-        }
-        const thumb = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.045, 0.18, 8), darkMat);
-        thumb.position.set(0.09, 0.02, 0.1);
-        thumb.rotation.z = 0.4;
-        leftHandGroup.add(thumb);
-        leftHandGroup.position.set(-1.02, -0.08, 0.28);
-        dwarf.add(leftHandGroup);
-        
-        // الذراع اليمنى (التي تحمل القنبلة)
-        const rightArmGeo = new THREE.CylinderGeometry(0.09, 0.07, 0.62, 24);
-        const rightArm = new THREE.Mesh(rightArmGeo, darkMat);
-        rightArm.position.set(0.68, 0.12, 0.18);
-        rightArm.rotation.z = -Math.PI / 2.8;
-        rightArm.rotation.x = -0.1;
-        rightArm.castShadow = true;
-        dwarf.add(rightArm);
-        
-        // اليد اليمنى (محسنة)
-        const rightHandGroup = new THREE.Group();
-        const palmRight = new THREE.Mesh(new THREE.SphereGeometry(0.16, 24, 24), darkMat);
-        rightHandGroup.add(palmRight);
-        for (let i = 0; i < 4; i++) {
-            const finger = new THREE.Mesh(fingerGeo, darkMat);
-            finger.position.set(-0.07 + i * 0.05, -0.08, 0.13);
-            finger.rotation.x = -0.3;
-            rightHandGroup.add(finger);
-        }
-        const thumbR = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.045, 0.18, 8), darkMat);
-        thumbR.position.set(0.09, 0.02, 0.1);
-        thumbR.rotation.z = 0.4;
-        rightHandGroup.add(thumbR);
-        rightHandGroup.position.set(0.98, -0.08, 0.28);
-        dwarf.add(rightHandGroup);
-        
-        // --- الأطراف السفلية المحسنة ---
-
-        // الساق اليسرى (محسنة)
-        const legGeo = new THREE.CylinderGeometry(0.11, 0.09, 0.48, 24);
-        const leftLeg = new THREE.Mesh(legGeo, darkMat);
-        leftLeg.position.set(-0.38, -0.62, 0.08);
-        leftLeg.castShadow = true;
-        dwarf.add(leftLeg);
-        
-        // القدم اليسرى (محسنة: أكثر تفصيلاً)
-        const leftFootGeo = new THREE.BoxGeometry(0.38, 0.14, 0.58);
-        const leftFoot = new THREE.Mesh(leftFootGeo, darkMat);
-        leftFoot.position.set(-0.38, -0.86, 0.12);
-        leftFoot.castShadow = true;
-        dwarf.add(leftFoot);
-        
-        // الساق اليمنى
-        const rightLeg = new THREE.Mesh(legGeo, darkMat);
-        rightLeg.position.set(0.38, -0.62, 0.08);
-        rightLeg.castShadow = true;
-        dwarf.add(rightLeg);
-        
-        // القدم اليمنى
-        const rightFootGeo = new THREE.BoxGeometry(0.38, 0.14, 0.58);
-        const rightFoot = new THREE.Mesh(rightFootGeo, darkMat);
-        rightFoot.position.set(0.38, -0.86, 0.12);
-        rightFoot.castShadow = true;
-        dwarf.add(rightFoot);
-        
-        // إضافة مفاصل الركبتين (تفاصيل)
-        const kneeL = new THREE.Mesh(new THREE.SphereGeometry(0.09, 16, 16), darkMat);
-        kneeL.position.set(-0.38, -0.4, 0.13);
-        dwarf.add(kneeL);
-        
-        const kneeR = new THREE.Mesh(new THREE.SphereGeometry(0.09, 16, 16), darkMat);
-        kneeR.position.set(0.38, -0.4, 0.13);
-        dwarf.add(kneeR);
-        
-        // --- القنبلة المحسنة (مع تفاصيل أكثر) ---
-        const bombGroup = new THREE.Group();
-        
-        // جسم القنبلة الرئيسي
-        const bombBody = new THREE.Mesh(
-            new THREE.SphereGeometry(0.32, 64, 64), 
-            new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.25, metalness: 0.6 })
-        );
-        bombBody.castShadow = true;
-        bombGroup.add(bombBody);
-        
-        // خطوط معدنية على القنبلة
-        const metalRing = new THREE.TorusGeometry(0.34, 0.04, 32, 64);
-        const ringMat = new THREE.MeshStandardMaterial({ color: 0xaa8866, metalness: 0.8 });
-        const ring1 = new THREE.Mesh(metalRing, ringMat);
-        ring1.rotation.x = Math.PI / 2;
-        bombGroup.add(ring1);
-        
-        const ring2 = new THREE.Mesh(metalRing, ringMat);
-        ring2.rotation.z = Math.PI / 3;
-        bombGroup.add(ring2);
-        
-        // الفتيل المنحني المحسن
-        const curvePoints = [
-            new THREE.Vector3(0, 0.28, 0),
-            new THREE.Vector3(0.12, 0.48, 0.03),
-            new THREE.Vector3(0.28, 0.54, 0.06),
-            new THREE.Vector3(0.42, 0.52, 0.05)
-        ];
-        const fuseCurve = new THREE.CatmullRomCurve3(curvePoints);
-        const fuseGeoDetailed = new THREE.TubeGeometry(fuseCurve, 16, 0.035, 10, false);
-        const fuse = new THREE.Mesh(fuseGeoDetailed, fuseMat);
-        bombGroup.add(fuse);
-        
-        // طرف ملتهب
-        const sparkMat = new THREE.MeshStandardMaterial({ color: 0xff6644, emissive: 0xff3300, emissiveIntensity: 1 });
-        const sparkTip = new THREE.Mesh(new THREE.SphereGeometry(0.08, 16, 16), sparkMat);
-        sparkTip.position.set(0.44, 0.54, 0.07);
-        bombGroup.add(sparkTip);
-        
-        bombGroup.position.set(0.98, 0.28, 0.38);
-        bombGroup.rotation.z = -0.25;
-        bombGroup.rotation.x = 0.15;
-        dwarf.add(bombGroup);
-        
-        scene.add(dwarf);
-        
-        // --- إضافة هالة غامضة حول القزم ---
-        const auraMat = new THREE.MeshPhongMaterial({ color: 0x331133, transparent: true, opacity: 0.15, side: THREE.BackSide });
-        const auraSphere = new THREE.Mesh(new THREE.SphereGeometry(1.05, 24, 24), auraMat);
-        dwarf.add(auraSphere);
-        
-        // --- جسيمات سحرية حول الشخصية ---
-        const particleCount = 400;
-        const particleGeo = new THREE.BufferGeometry();
-        const particlePositions = new Float32Array(particleCount * 3);
-        for (let i = 0; i < particleCount; i++) {
-            particlePositions[i*3] = (Math.random() - 0.5) * 2.8;
-            particlePositions[i*3+1] = Math.random() * 2.2 - 0.3;
-            particlePositions[i*3+2] = (Math.random() - 0.5) * 2.5;
-        }
-        particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
-        const particleMat = new THREE.PointsMaterial({ color: 0xff8866, size: 0.015, transparent: true, blending: THREE.AdditiveBlending });
-        const particles = new THREE.Points(particleGeo, particleMat);
-        dwarf.add(particles);
-        
-        // --- حلقة التحريك (محسنة مع حركات أكثر سلاسة) ---
-        let time = 0;
-        
-        function animate() {
-            requestAnimationFrame(animate);
-            time += 0.014;
-            
-            // تمايل الشخصية بالكامل
-            dwarf.position.y = Math.sin(time * 1.2) * 0.006;
-            dwarf.rotation.y = Math.sin(time * 0.45) * 0.09;
-            dwarf.rotation.z = Math.sin(time * 0.65) * 0.018;
-            
-            // تحريك الذراعين بحركة طبيعية
-            leftArm.rotation.z = Math.PI / 2.4 + Math.sin(time * 1.8) * 0.1;
-            rightArm.rotation.z = -Math.PI / 2.8 + Math.sin(time * 2.0) * 0.09;
-            
-            // تحريك اليدين قليلاً
-            leftHandGroup.rotation.x = Math.sin(time * 2.2) * 0.08;
-            rightHandGroup.rotation.x = Math.sin(time * 2.4) * 0.08;
-            
-            // وميض الضوء الأحمر للقنبلة
-            const intensity = 7.5 + Math.sin(time * 13) * 3.8 + Math.sin(time * 25) * 1.5;
-            bombGlow.intensity = intensity;
-            bombGlow.position.set(1.02, 0.32, 0.55);
-            
-            // نار الفتيل تنبض
-            sparkTip.scale.setScalar(0.85 + Math.sin(time * 22) * 0.25);
-            fuseMat.emissiveIntensity = 0.5 + Math.sin(time * 18) * 0.4;
-            
-            // تحريك الجسيمات
-            particles.rotation.y = time * 0.25;
-            particles.rotation.x = Math.sin(time * 0.4) * 0.1;
-            dustSystem.rotation.y = time * 0.04;
-            
-            // إضاءة متغيرة
-            underGlow.intensity = 0.55 + Math.sin(time * 1.1) * 0.25;
-            backLight.intensity = 1.15 + Math.sin(time * 0.85) * 0.35;
-            
-            // حركة الكاميرا الخفيفة
-            camera.position.x += (0 - camera.position.x) * 0.05;
-            camera.position.y += (1.3 + Math.sin(time * 0.45) * 0.02 - camera.position.y) * 0.05;
-            camera.lookAt(0, 0.65, 0);
-            
-            renderer.render(scene, camera);
-        }
-        
-        animate();
-        
-        // --- استجابة لتغيير حجم النافذة ---
-        window.addEventListener('resize', onWindowResize, false);
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-        
-        console.log("%c⚙️ القزم الغامض | الأعضاء محسنة بالكامل | العظام تتحرك في الظلام", "color: #aa5533; font-size: 14px; font-family: monospace;");
-    </script>
 </body>
 </html>
+
