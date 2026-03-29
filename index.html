@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>DWARF WARRIOR - شخصية قزم احترافية | جسم بيضوي | أطراف متدرجة | دمج الأقسام</title>
+    <title>DWARF WARRIOR - قزم رشيق | واضح المعالم | تصميم احترافي</title>
     <style>
         body {
             margin: 0;
@@ -20,65 +20,68 @@
         }
         
         .health-bar {
-            width: 280px;
-            height: 22px;
+            width: 300px;
+            height: 24px;
             background: #1a0a0a;
-            border-radius: 12px;
+            border-radius: 15px;
             border: 2px solid #ffaa55;
             overflow: hidden;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            box-shadow: 0 0 12px rgba(255,100,0,0.3);
         }
         
         .health-fill {
             width: 92%;
             height: 100%;
-            background: linear-gradient(90deg, #ff4444, #ff8844, #ffaa44);
-            border-radius: 10px;
+            background: linear-gradient(90deg, #ff4444, #ff8844, #ffcc44);
+            border-radius: 12px;
             transition: width 0.3s;
-            box-shadow: 0 0 8px #ff6600;
+            box-shadow: 0 0 10px #ff6600;
         }
         
         .stats-panel {
-            background: linear-gradient(135deg, rgba(0,0,0,0.85), rgba(30,20,10,0.9));
-            padding: 12px 20px;
-            border-radius: 12px;
-            color: #ffcc88;
+            background: linear-gradient(135deg, rgba(0,0,0,0.9), rgba(30,20,15,0.95));
+            padding: 12px 22px;
+            border-radius: 15px;
+            color: #ffdd99;
             font-family: monospace;
             font-size: 13px;
             backdrop-filter: blur(8px);
             border-left: 4px solid #ff8844;
             margin-top: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            letter-spacing: 0.5px;
         }
         
         .controls-guide {
             position: absolute;
             bottom: 20px;
             left: 20px;
-            background: rgba(0,0,0,0.75);
-            padding: 10px 18px;
-            border-radius: 12px;
-            color: #aaffdd;
+            background: rgba(0,0,0,0.8);
+            padding: 12px 20px;
+            border-radius: 15px;
+            color: #ccddff;
             font-family: monospace;
             font-size: 12px;
             z-index: 100;
             pointer-events: none;
             backdrop-filter: blur(5px);
-            border-top: 1px solid #ffaa55;
+            border-top: 1px solid #ffaa66;
+            font-weight: bold;
         }
         
         .controls-guide span {
             color: #ffaa66;
             font-weight: bold;
+            font-size: 13px;
         }
         
         #game-title {
             position: absolute;
             top: 20px;
             right: 20px;
-            background: rgba(0,0,0,0.7);
-            padding: 8px 18px;
-            border-radius: 12px;
+            background: rgba(0,0,0,0.75);
+            padding: 10px 20px;
+            border-radius: 15px;
             color: #ffaa66;
             font-family: monospace;
             font-size: 12px;
@@ -86,26 +89,39 @@
             text-align: right;
             direction: rtl;
             backdrop-filter: blur(5px);
+            border-right: 3px solid #ff8844;
         }
         
-        @keyframes attackPulse {
-            0% { transform: scale(0.5); opacity: 0.8; }
-            100% { transform: scale(1.5); opacity: 0; }
+        @keyframes slashEffect {
+            0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0.8; }
+            100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
         }
         
-        .attack-effect {
+        .attack-slash {
             position: fixed;
-            width: 120px;
-            height: 120px;
+            width: 140px;
+            height: 140px;
             border-radius: 50%;
             border: 3px solid #ff8844;
+            box-shadow: 0 0 30px #ff6600;
             pointer-events: none;
-            animation: attackPulse 0.3s ease-out forwards;
+            animation: slashEffect 0.25s ease-out forwards;
         }
         
-        @keyframes floatParticle {
-            0% { transform: translateY(0) scale(1); opacity: 0.8; }
-            100% { transform: translateY(-50px) scale(0); opacity: 0; }
+        @keyframes bombExplode {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(1.8); opacity: 0; }
+        }
+        
+        .bomb-effect {
+            position: fixed;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ff8844, #ff3300);
+            filter: blur(8px);
+            pointer-events: none;
+            animation: bombExplode 0.4s ease-out forwards;
         }
     </style>
 </head>
@@ -115,17 +131,17 @@
             <div class="health-fill" id="healthFill"></div>
         </div>
         <div class="stats-panel">
-            ⚔️ ثورين جبل النار ⚔️ | المستوى: 99 أسطوري<br>
-            💥 القوة: 2100 | 🛡️ الدفاع: 1150 | 🔥 القنبلة: مشتعلة
+            ⚔️ ثورين الحديدي ⚔️ | المستوى: 99 | رشيق ومتين<br>
+            💥 الهجوم: 2450 | 🛡️ الدفاع: 1280 | 🔥 القنبلة: ملتهبة
         </div>
     </div>
     <div class="controls-guide">
-        🎮 <span>WASD</span> للتحرك | <span>SPACE</span> هجوم | <span>E</span> رمي قنبلة | <span>SHIFT</span> ركض<br>
-        🖱️ الفأرة لتدوير الكاميرا | <span>جسم بيضوي + أطراف متدرجة + دمج كامل</span>
+        🎮 <span>W A S D</span> للتحرك | <span>␣ SPACE</span> هجوم سريع | <span>E</span> رمي قنبلة | <span>Shift</span> ركض<br>
+        🖱️ الفأرة لتدوير الكاميرا | <span>شخصية رشيقة | معالم واضحة | تفاصيل حادة</span>
     </div>
     <div id="game-title">
-        ⚔️ DWARF LEGEND ⚔️<br>
-        تصميم احترافي | دمج الأقسام بدون حواف
+        ⚔️ DWARF STRIKER ⚔️<br>
+        رشاقة | وضوح | قوة
     </div>
     
     <script type="importmap">
@@ -142,14 +158,14 @@
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
         
-        // --- إعداد المش scene ---
+        // --- المشهد السينمائي ---
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x050b1a);
-        scene.fog = new THREE.FogExp2(0x050b1a, 0.006);
+        scene.background = new THREE.Color(0x0a0a1a);
+        scene.fog = new THREE.FogExp2(0x0a0a1a, 0.005);
         
         // --- الكاميرا ---
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(4, 3.2, 6.5);
+        const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(4.2, 3.0, 6.8);
         
         // --- العارض ---
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -159,7 +175,6 @@
         renderer.setPixelRatio(window.devicePixelRatio);
         document.body.appendChild(renderer.domElement);
         
-        // CSS2D
         const labelRenderer = new CSS2DRenderer();
         labelRenderer.setSize(window.innerWidth, window.innerHeight);
         labelRenderer.domElement.style.position = 'absolute';
@@ -175,348 +190,317 @@
         controls.autoRotate = false;
         controls.enableZoom = true;
         controls.zoomSpeed = 1.0;
-        controls.rotateSpeed = 1.2;
-        controls.target.set(0, 1.3, 0);
+        controls.rotateSpeed = 1.3;
+        controls.target.set(0, 1.25, 0);
         
-        // --- الإضاءة المتقدمة ---
-        const ambientLight = new THREE.AmbientLight(0x40405a, 0.6);
+        // --- إضاءة دراماتيكية واضحة ---
+        const ambientLight = new THREE.AmbientLight(0x404060, 0.55);
         scene.add(ambientLight);
         
-        const mainLight = new THREE.DirectionalLight(0xfff5e6, 1.3);
-        mainLight.position.set(5, 8, 4);
+        const mainLight = new THREE.DirectionalLight(0xfff0e0, 1.35);
+        mainLight.position.set(4, 7, 3.5);
         mainLight.castShadow = true;
         mainLight.receiveShadow = true;
         mainLight.shadow.mapSize.width = 2048;
         mainLight.shadow.mapSize.height = 2048;
         mainLight.shadow.camera.near = 0.5;
-        mainLight.shadow.camera.far = 20;
-        mainLight.shadow.camera.left = -6;
-        mainLight.shadow.camera.right = 6;
-        mainLight.shadow.camera.top = 6;
-        mainLight.shadow.camera.bottom = -6;
+        mainLight.shadow.camera.far = 18;
+        mainLight.shadow.camera.left = -5;
+        mainLight.shadow.camera.right = 5;
+        mainLight.shadow.camera.top = 5;
+        mainLight.shadow.camera.bottom = -5;
         scene.add(mainLight);
         
-        const fillLight = new THREE.PointLight(0x6688aa, 0.55);
-        fillLight.position.set(-2, 2.5, -3);
+        const fillLight = new THREE.PointLight(0x88aadd, 0.5);
+        fillLight.position.set(-2, 2, -2.5);
         scene.add(fillLight);
         
-        const rimLight = new THREE.PointLight(0xffaa77, 0.7);
-        rimLight.position.set(1.8, 2.2, -2.5);
-        scene.add(rimLight);
+        const backRim = new THREE.PointLight(0xffaa77, 0.7);
+        backRim.position.set(0, 2, -3.2);
+        scene.add(backRim);
         
-        const warmFill = new THREE.PointLight(0xff8866, 0.6);
-        warmFill.position.set(2.2, 1.5, 2);
+        const warmFill = new THREE.PointLight(0xff8866, 0.55);
+        warmFill.position.set(2, 1.2, 2);
         scene.add(warmFill);
         
         const bombLight = new THREE.PointLight(0xff5500, 0.9);
-        bombLight.position.set(1.2, 0.7, 0.9);
+        bombLight.position.set(1.15, 0.65, 0.85);
         scene.add(bombLight);
         
-        // --- الأرضية البيئية ---
-        const groundMat = new THREE.MeshStandardMaterial({ color: 0x2a2a3a, roughness: 0.75, metalness: 0.1 });
-        const ground = new THREE.Mesh(new THREE.CircleGeometry(18, 32), groundMat);
+        // --- أرضية أنيقة ---
+        const groundMat = new THREE.MeshStandardMaterial({ color: 0x2a2a3a, roughness: 0.7, metalness: 0.1 });
+        const ground = new THREE.Mesh(new THREE.CircleGeometry(16, 32), groundMat);
         ground.rotation.x = -Math.PI / 2;
-        ground.position.y = -0.12;
+        ground.position.y = -0.1;
         ground.receiveShadow = true;
         scene.add(ground);
         
         const gridHelper = new THREE.GridHelper(28, 28, 0x88aaff, 0x446688);
-        gridHelper.position.y = -0.08;
+        gridHelper.position.y = -0.06;
         gridHelper.material.transparent = true;
-        gridHelper.material.opacity = 0.35;
+        gridHelper.material.opacity = 0.4;
         scene.add(gridHelper);
         
-        // زخارف أرضية
-        const ringDeco = new THREE.Mesh(
-            new THREE.TorusGeometry(2.5, 0.06, 48, 120),
-            new THREE.MeshStandardMaterial({ color: 0xff8866, emissive: 0x442200, emissiveIntensity: 0.2 })
+        // حلقة زخرفية
+        const arenaRing = new THREE.Mesh(
+            new THREE.TorusGeometry(2.8, 0.07, 48, 120),
+            new THREE.MeshStandardMaterial({ color: 0xff8866, emissive: 0x442200, emissiveIntensity: 0.25 })
         );
-        ringDeco.rotation.x = Math.PI / 2;
-        ringDeco.position.y = -0.1;
-        scene.add(ringDeco);
+        arenaRing.rotation.x = Math.PI / 2;
+        arenaRing.position.y = -0.08;
+        scene.add(arenaRing);
         
-        // --- إنشاء الشخصية بتقنية الدمج الكامل ---
+        // --- الشخصية الرئيسية - رشيقة وواضحة المعالم ---
         const characterGroup = new THREE.Group();
         
-        // ========== 1. الجسم: بيضوي (Ellipsoid) ==========
-        // استخدام Sphere مع scale لإنشاء شكل بيضوي مثالي
-        const bodyGeo = new THREE.SphereGeometry(0.68, 48, 48);
-        const bodyMat = new THREE.MeshStandardMaterial({ 
-            color: 0x5a6e7e, 
-            roughness: 0.28, 
-            metalness: 0.72,
-            emissive: 0x112233,
-            emissiveIntensity: 0.04
-        });
+        // ========== 1. الجسد: بيضوي ممشوق ==========
+        const bodyGeo = new THREE.SphereGeometry(0.62, 48, 48);
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x4a6a7a, roughness: 0.25, metalness: 0.68 });
         const body = new THREE.Mesh(bodyGeo, bodyMat);
-        body.scale.set(1.15, 1.32, 0.92);
+        body.scale.set(1.08, 1.28, 0.88);
         body.castShadow = true;
         body.receiveShadow = true;
         body.position.y = 0.62;
         characterGroup.add(body);
         
-        // درع صدري منحوت (دمج مع الجسم)
-        const chestGeo = new THREE.SphereGeometry(0.64, 40, 40);
-        const chestMat = new THREE.MeshStandardMaterial({ color: 0xbc9a6a, metalness: 0.88, roughness: 0.2 });
+        // درع صدري لامع - حواف حادة
+        const chestGeo = new THREE.CylinderGeometry(0.68, 0.65, 0.72, 12);
+        const chestMat = new THREE.MeshStandardMaterial({ color: 0xccaa77, metalness: 0.92, roughness: 0.18 });
         const chest = new THREE.Mesh(chestGeo, chestMat);
-        chest.scale.set(1.05, 0.95, 0.78);
-        chest.position.y = 0.68;
         chest.castShadow = true;
+        chest.position.y = 0.68;
         characterGroup.add(chest);
         
-        // حزام خصر مدمج
-        const beltGeo = new THREE.TorusGeometry(0.72, 0.08, 32, 64);
-        const beltMat = new THREE.MeshStandardMaterial({ color: 0x8b5a2b, metalness: 0.55 });
+        // حزام خصر بارز
+        const beltGeo = new THREE.TorusGeometry(0.7, 0.09, 24, 56);
+        const beltMat = new THREE.MeshStandardMaterial({ color: 0x9b6a3a, metalness: 0.65 });
         const belt = new THREE.Mesh(beltGeo, beltMat);
         belt.rotation.x = Math.PI / 2;
         belt.position.y = 0.28;
         characterGroup.add(belt);
         
-        // ========== 2. الرأس: بيضوي مع دمج مع الجسم ==========
-        const headGeo = new THREE.SphereGeometry(0.56, 56, 56);
-        const headMat = new THREE.MeshStandardMaterial({ color: 0xcd9a6b, roughness: 0.24, metalness: 0.06 });
+        // إبزيم حزام لامع
+        const buckleGeo = new THREE.BoxGeometry(0.42, 0.2, 0.1);
+        const buckleMat = new THREE.MeshStandardMaterial({ color: 0xddbb88, metalness: 0.95 });
+        const buckle = new THREE.Mesh(buckleGeo, buckleMat);
+        buckle.position.set(0, 0.28, 0.72);
+        characterGroup.add(buckle);
+        
+        // ========== 2. الرأس: واضح المعالم ==========
+        const headGeo = new THREE.SphereGeometry(0.54, 56, 56);
+        const headMat = new THREE.MeshStandardMaterial({ color: 0xd4a572, roughness: 0.22 });
         const head = new THREE.Mesh(headGeo, headMat);
-        head.position.y = 1.28;
         head.castShadow = true;
+        head.position.y = 1.28;
         characterGroup.add(head);
         
-        // خوذة مدمجة مع الرأس
-        const helmetGeo = new THREE.CylinderGeometry(0.62, 0.58, 0.58, 24);
-        const helmetMat = new THREE.MeshStandardMaterial({ color: 0x8a9aae, metalness: 0.85, roughness: 0.18 });
+        // خوذة أنيقة
+        const helmetGeo = new THREE.CylinderGeometry(0.6, 0.56, 0.55, 16);
+        const helmetMat = new THREE.MeshStandardMaterial({ color: 0x9aaece, metalness: 0.88, roughness: 0.16 });
         const helmet = new THREE.Mesh(helmetGeo, helmetMat);
-        helmet.position.y = 1.66;
         helmet.castShadow = true;
+        helmet.position.y = 1.64;
         characterGroup.add(helmet);
         
-        // قمة الخوذة
-        const crestGeo = new THREE.ConeGeometry(0.26, 0.48, 12);
-        const crestMat = new THREE.MeshStandardMaterial({ color: 0xdd8855, metalness: 0.6 });
+        // قمة الخوذة - حادة وواضحة
+        const crestGeo = new THREE.ConeGeometry(0.28, 0.52, 10);
+        const crestMat = new THREE.MeshStandardMaterial({ color: 0xeeaa77, metalness: 0.7 });
         const crest = new THREE.Mesh(crestGeo, crestMat);
         crest.position.y = 1.95;
         characterGroup.add(crest);
         
-        // دائرة متوهجة مدمجة
-        const glowRing = new THREE.Mesh(
-            new THREE.TorusGeometry(0.66, 0.05, 32, 64),
-            new THREE.MeshStandardMaterial({ color: 0xffaa66, emissive: 0xff4400, emissiveIntensity: 0.55 })
+        // دائرة متوهجة حول الخوذة
+        const haloRing = new THREE.Mesh(
+            new THREE.TorusGeometry(0.64, 0.05, 32, 64),
+            new THREE.MeshStandardMaterial({ color: 0xffaa66, emissive: 0xff5500, emissiveIntensity: 0.5 })
         );
-        glowRing.position.y = 1.85;
-        glowRing.rotation.x = Math.PI / 2;
-        characterGroup.add(glowRing);
+        haloRing.position.y = 1.82;
+        haloRing.rotation.x = Math.PI / 2;
+        characterGroup.add(haloRing);
         
-        // لحية كثيفة (مدمجة)
-        const beardGeo = new THREE.CylinderGeometry(0.58, 0.48, 0.62, 20);
-        const beardMat = new THREE.MeshStandardMaterial({ color: 0xb87c4f, roughness: 0.85 });
+        // لحية كثيفة وواضحة
+        const beardGeo = new THREE.CylinderGeometry(0.56, 0.48, 0.58, 16);
+        const beardMat = new THREE.MeshStandardMaterial({ color: 0xc28a5a, roughness: 0.82 });
         const beard = new THREE.Mesh(beardGeo, beardMat);
         beard.position.y = 1.02;
         beard.castShadow = true;
         characterGroup.add(beard);
         
-        // تفاصيل الوجه
-        const eyeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x4488aa, emissiveIntensity: 0.2 });
-        const leftEye = new THREE.Mesh(new THREE.SphereGeometry(0.11, 32, 32), eyeMat);
-        leftEye.position.set(-0.21, 1.44, 0.66);
+        // ضفائر اللحية - تفاصيل واضحة
+        const braidMat = new THREE.MeshStandardMaterial({ color: 0xb57a4a });
+        const leftBraid = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.1, 0.48, 8), braidMat);
+        leftBraid.position.set(-0.4, 1.08, 0.52);
+        leftBraid.rotation.z = 0.4;
+        characterGroup.add(leftBraid);
+        
+        const rightBraid = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.1, 0.48, 8), braidMat);
+        rightBraid.position.set(0.4, 1.08, 0.52);
+        rightBraid.rotation.z = -0.4;
+        characterGroup.add(rightBraid);
+        
+        // عيون واضحة مع توهج
+        const eyeWhiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x88aaff, emissiveIntensity: 0.25 });
+        const leftEye = new THREE.Mesh(new THREE.SphereGeometry(0.12, 32, 32), eyeWhiteMat);
+        leftEye.position.set(-0.22, 1.46, 0.66);
         characterGroup.add(leftEye);
         
-        const rightEye = new THREE.Mesh(new THREE.SphereGeometry(0.11, 32, 32), eyeMat);
-        rightEye.position.set(0.21, 1.44, 0.66);
+        const rightEye = new THREE.Mesh(new THREE.SphereGeometry(0.12, 32, 32), eyeWhiteMat);
+        rightEye.position.set(0.22, 1.46, 0.66);
         characterGroup.add(rightEye);
         
-        // الأنف (مدمج)
-        const noseGeo = new THREE.ConeGeometry(0.11, 0.22, 12);
-        const noseMat = new THREE.MeshStandardMaterial({ color: 0xbd8a5a });
+        // بؤبؤ أسود واضح
+        const pupilMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
+        const leftPupil = new THREE.Mesh(new THREE.SphereGeometry(0.07, 24, 24), pupilMat);
+        leftPupil.position.set(-0.22, 1.455, 0.78);
+        characterGroup.add(leftPupil);
+        
+        const rightPupil = new THREE.Mesh(new THREE.SphereGeometry(0.07, 24, 24), pupilMat);
+        rightPupil.position.set(0.22, 1.455, 0.78);
+        characterGroup.add(rightPupil);
+        
+        // حواجب حادة
+        const browMat = new THREE.MeshStandardMaterial({ color: 0x3a2a1a });
+        const leftBrow = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.12, 0.14), browMat);
+        leftBrow.position.set(-0.28, 1.58, 0.68);
+        leftBrow.rotation.z = -0.25;
+        characterGroup.add(leftBrow);
+        
+        const rightBrow = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.12, 0.14), browMat);
+        rightBrow.position.set(0.28, 1.58, 0.68);
+        rightBrow.rotation.z = 0.25;
+        characterGroup.add(rightBrow);
+        
+        // أنف حاد
+        const noseGeo = new THREE.ConeGeometry(0.12, 0.26, 12);
+        const noseMat = new THREE.MeshStandardMaterial({ color: 0xc28a5a });
         const nose = new THREE.Mesh(noseGeo, noseMat);
-        nose.position.set(0, 1.38, 0.74);
+        nose.position.set(0, 1.39, 0.76);
         characterGroup.add(nose);
         
-        // ========== 3. الأيدي: تضيق للأسفل تدريجياً (Tapered Cylinders) ==========
-        // دالة لإنشاء ذراع متدرج (يضيق من الأعلى للأسفل)
-        function createTaperedArm(x, zOffset, isLeft) {
-            const armGroup = new THREE.Group();
-            
-            // الجزء العلوي من الذراع (أعرض)
-            const upperArmGeo = new THREE.CylinderGeometry(0.26, 0.22, 0.48, 16);
-            const armMat = new THREE.MeshStandardMaterial({ color: 0x7a6a5a, roughness: 0.32, metalness: 0.25 });
-            const upperArm = new THREE.Mesh(upperArmGeo, armMat);
-            upperArm.position.y = 0.24;
-            upperArm.castShadow = true;
-            armGroup.add(upperArm);
-            
-            // الجزء السفلي من الذراع (أضيق)
-            const lowerArmGeo = new THREE.CylinderGeometry(0.22, 0.18, 0.52, 16);
-            const lowerArm = new THREE.Mesh(lowerArmGeo, armMat);
-            lowerArm.position.y = -0.26;
-            lowerArm.castShadow = true;
-            armGroup.add(lowerArm);
-            
-            // مفصل الكوع (دمج)
-            const elbowGeo = new THREE.SphereGeometry(0.19, 12, 12);
-            const elbowMat = new THREE.MeshStandardMaterial({ color: 0x8a7a6a });
-            const elbow = new THREE.Mesh(elbowGeo, elbowMat);
-            elbow.position.y = -0.02;
-            armGroup.add(elbow);
-            
-            armGroup.position.set(x, 0.88, zOffset);
-            armGroup.rotation.z = isLeft ? 0.35 : -0.35;
-            return armGroup;
-        }
+        // ========== 3. الأذرع: رشيقة ومتدرجة ==========
+        const armMat = new THREE.MeshStandardMaterial({ color: 0x7a6a5a, roughness: 0.3 });
         
-        const leftArmGroup = createTaperedArm(-0.82, 0, true);
-        const rightArmGroup = createTaperedArm(0.82, 0, false);
-        characterGroup.add(leftArmGroup);
-        characterGroup.add(rightArmGroup);
+        // ذراع أيسر
+        const leftArmGeo = new THREE.CylinderGeometry(0.24, 0.19, 0.92, 14);
+        const leftArm = new THREE.Mesh(leftArmGeo, armMat);
+        leftArm.position.set(-0.82, 0.92, 0);
+        leftArm.castShadow = true;
+        leftArm.rotation.z = 0.4;
+        characterGroup.add(leftArm);
         
-        // الأيدي (قفازات متدرجة أيضاً)
-        function createTaperedHand(x, zOffset, isLeft) {
-            const handGroup = new THREE.Group();
-            
-            // قاعدة اليد (عريضة)
-            const handBaseGeo = new THREE.CylinderGeometry(0.22, 0.19, 0.28, 12);
-            const handMat = new THREE.MeshStandardMaterial({ color: 0xccaa77, metalness: 0.72 });
-            const handBase = new THREE.Mesh(handBaseGeo, handMat);
-            handBase.position.y = 0;
-            handGroup.add(handBase);
-            
-            // أطراف الأصابع (تضيق تدريجي)
-            const fingerGeo = new THREE.CylinderGeometry(0.12, 0.08, 0.22, 8);
-            const fingerMat = new THREE.MeshStandardMaterial({ color: 0xbb9966 });
-            const finger = new THREE.Mesh(fingerGeo, fingerMat);
-            finger.position.y = 0.2;
-            handGroup.add(finger);
-            
-            handGroup.position.set(x, 0.58, zOffset);
-            return handGroup;
-        }
+        // ذراع أيمن
+        const rightArmGeo = new THREE.CylinderGeometry(0.24, 0.19, 0.92, 14);
+        const rightArm = new THREE.Mesh(rightArmGeo, armMat);
+        rightArm.position.set(0.82, 0.92, 0);
+        rightArm.castShadow = true;
+        rightArm.rotation.z = -0.4;
+        characterGroup.add(rightArm);
         
-        const leftHand = createTaperedHand(-1.12, 0.22, true);
-        const rightHand = createTaperedHand(1.12, 0.22, false);
-        characterGroup.add(leftHand);
-        characterGroup.add(rightHand);
+        // قفازات - واضحة المعالم
+        const gauntletMat = new THREE.MeshStandardMaterial({ color: 0xccaa77, metalness: 0.82 });
+        const leftGauntlet = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.21, 0.32, 10), gauntletMat);
+        leftGauntlet.position.set(-1.08, 0.62, 0.22);
+        characterGroup.add(leftGauntlet);
         
-        // ========== 4. القنبلة (مدمجة في اليد) ==========
-        const bombGroup = new THREE.Group();
-        const bombBody = new THREE.Mesh(new THREE.SphereGeometry(0.4, 48, 48), new THREE.MeshStandardMaterial({ color: 0x445566, metalness: 0.62, roughness: 0.28 }));
-        bombBody.scale.set(0.92, 1.14, 0.92);
-        bombGroup.add(bombBody);
+        const rightGauntlet = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.21, 0.32, 10), gauntletMat);
+        rightGauntlet.position.set(1.08, 0.62, 0.22);
+        characterGroup.add(rightGauntlet);
         
-        const fuse = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.11, 0.44, 12), new THREE.MeshStandardMaterial({ color: 0xdd9955 }));
-        fuse.position.y = 0.55;
-        bombGroup.add(fuse);
+        // ========== 4. الأرجل: رشيقة وواضحة ==========
+        const legMat = new THREE.MeshStandardMaterial({ color: 0x5a4a3a, metalness: 0.3 });
         
-        const fireSpark = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 16), new THREE.MeshStandardMaterial({ color: 0xff6600, emissive: 0xff3300, emissiveIntensity: 0.8 }));
-        fireSpark.position.y = 0.75;
-        bombGroup.add(fireSpark);
-        
-        bombGroup.position.set(1.28, 0.66, 0.58);
-        characterGroup.add(bombGroup);
-        
-        // ========== 5. القدمين: تضيق للأسفل تدريجياً ==========
-        function createTaperedLeg(x, zOffset) {
-            const legGroup = new THREE.Group();
-            
-            // أعلى الساق (أعرض)
-            const upperLegGeo = new THREE.CylinderGeometry(0.32, 0.28, 0.52, 14);
-            const legMat = new THREE.MeshStandardMaterial({ color: 0x5a4a3a, metalness: 0.32 });
-            const upperLeg = new THREE.Mesh(upperLegGeo, legMat);
-            upperLeg.position.y = 0.26;
-            upperLeg.castShadow = true;
-            legGroup.add(upperLeg);
-            
-            // أسفل الساق (أضيق)
-            const lowerLegGeo = new THREE.CylinderGeometry(0.28, 0.24, 0.48, 14);
-            const lowerLeg = new THREE.Mesh(lowerLegGeo, legMat);
-            lowerLeg.position.y = -0.22;
-            lowerLeg.castShadow = true;
-            legGroup.add(lowerLeg);
-            
-            // الكاحل المدمج
-            const ankleGeo = new THREE.SphereGeometry(0.2, 10, 10);
-            const ankleMat = new THREE.MeshStandardMaterial({ color: 0x6a5a4a });
-            const ankle = new THREE.Mesh(ankleGeo, ankleMat);
-            ankle.position.y = -0.48;
-            legGroup.add(ankle);
-            
-            legGroup.position.set(x, 0.28, zOffset);
-            return legGroup;
-        }
-        
-        function createTaperedBoot(x, zOffset) {
-            const bootGroup = new THREE.Group();
-            
-            // الحذاء الرئيسي (يتسع للأسفل)
-            const bootGeo = new THREE.CylinderGeometry(0.38, 0.46, 0.32, 12);
-            const bootMat = new THREE.MeshStandardMaterial({ color: 0x6a4a3a, metalness: 0.45 });
-            const boot = new THREE.Mesh(bootGeo, bootMat);
-            boot.position.y = -0.16;
-            boot.castShadow = true;
-            bootGroup.add(boot);
-            
-            // قاعدة الحذاء (تضيق للأسفل بشكل أكبر)
-            const soleGeo = new THREE.CylinderGeometry(0.46, 0.4, 0.12, 10);
-            const soleMat = new THREE.MeshStandardMaterial({ color: 0x4a3a2a, metalness: 0.3 });
-            const sole = new THREE.Mesh(soleGeo, soleMat);
-            sole.position.y = -0.32;
-            bootGroup.add(sole);
-            
-            bootGroup.position.set(x, -0.08, zOffset);
-            return bootGroup;
-        }
-        
-        const leftLeg = createTaperedLeg(-0.42, 0);
-        const rightLeg = createTaperedLeg(0.42, 0);
+        const leftLegGeo = new THREE.CylinderGeometry(0.3, 0.26, 0.88, 12);
+        const leftLeg = new THREE.Mesh(leftLegGeo, legMat);
+        leftLeg.position.set(-0.42, 0.32, 0);
+        leftLeg.castShadow = true;
         characterGroup.add(leftLeg);
+        
+        const rightLegGeo = new THREE.CylinderGeometry(0.3, 0.26, 0.88, 12);
+        const rightLeg = new THREE.Mesh(rightLegGeo, legMat);
+        rightLeg.position.set(0.42, 0.32, 0);
+        rightLeg.castShadow = true;
         characterGroup.add(rightLeg);
         
-        const leftBoot = createTaperedBoot(-0.42, 0.12);
-        const rightBoot = createTaperedBoot(0.42, 0.12);
+        // أحذية حادة المعالم
+        const bootMat = new THREE.MeshStandardMaterial({ color: 0x7a5a4a, metalness: 0.45 });
+        const leftBoot = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.38, 0.32, 10), bootMat);
+        leftBoot.position.set(-0.42, -0.04, 0.12);
         characterGroup.add(leftBoot);
+        
+        const rightBoot = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.38, 0.32, 10), bootMat);
+        rightBoot.position.set(0.42, -0.04, 0.12);
         characterGroup.add(rightBoot);
         
-        // ========== 6. أكتاف وأذرع علوية مدمجة ==========
+        // ========== 5. أكتاف بارزة ==========
         const pauldronMat = new THREE.MeshStandardMaterial({ color: 0xbc9a6a, metalness: 0.88 });
-        const leftPaul = new THREE.Mesh(new THREE.SphereGeometry(0.44, 14, 14), pauldronMat);
-        leftPaul.scale.set(0.82, 0.52, 1.05);
-        leftPaul.position.set(-0.92, 1.18, 0);
+        const leftPaul = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.38, 0.35, 10), pauldronMat);
+        leftPaul.position.set(-0.92, 1.15, 0);
+        leftPaul.castShadow = true;
         characterGroup.add(leftPaul);
         
-        const rightPaul = new THREE.Mesh(new THREE.SphereGeometry(0.44, 14, 14), pauldronMat);
-        rightPaul.scale.set(0.82, 0.52, 1.05);
-        rightPaul.position.set(0.92, 1.18, 0);
+        const rightPaul = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.38, 0.35, 10), pauldronMat);
+        rightPaul.position.set(0.92, 1.15, 0);
+        rightPaul.castShadow = true;
         characterGroup.add(rightPaul);
         
-        // عباءة مدمجة
-        const cloakGeo = new THREE.CylinderGeometry(0.98, 1.28, 1.32, 12);
-        const cloakMat = new THREE.MeshStandardMaterial({ color: 0x4a2a1a, roughness: 0.88, metalness: 0.02, transparent: true, opacity: 0.85 });
+        // ========== 6. القنبلة - واضحة ومتوهجة ==========
+        const bombGroup = new THREE.Group();
+        const bombBody = new THREE.Mesh(new THREE.SphereGeometry(0.42, 48, 48), new THREE.MeshStandardMaterial({ color: 0x556677, metalness: 0.68, roughness: 0.24 }));
+        bombBody.scale.set(0.92, 1.12, 0.92);
+        bombGroup.add(bombBody);
+        
+        // فتيل واضح
+        const fuseGeo = new THREE.CylinderGeometry(0.1, 0.12, 0.48, 12);
+        const fuseMat = new THREE.MeshStandardMaterial({ color: 0xdd9955 });
+        const fuse = new THREE.Mesh(fuseGeo, fuseMat);
+        fuse.position.y = 0.58;
+        bombGroup.add(fuse);
+        
+        // شعلة نار واضحة
+        const fireGeo = new THREE.SphereGeometry(0.13, 16, 16);
+        const fireMat = new THREE.MeshStandardMaterial({ color: 0xff6600, emissive: 0xff3300, emissiveIntensity: 0.85 });
+        const fireSpark = new THREE.Mesh(fireGeo, fireMat);
+        fireSpark.position.y = 0.8;
+        bombGroup.add(fireSpark);
+        
+        bombGroup.position.set(1.28, 0.64, 0.58);
+        characterGroup.add(bombGroup);
+        
+        // عباءة أنيقة
+        const cloakGeo = new THREE.CylinderGeometry(0.92, 1.18, 1.28, 12);
+        const cloakMat = new THREE.MeshStandardMaterial({ color: 0x4a2a1a, roughness: 0.85, metalness: 0.02, transparent: true, opacity: 0.82 });
         const cloak = new THREE.Mesh(cloakGeo, cloakMat);
-        cloak.position.y = 0.52;
-        cloak.scale.set(1.02, 0.82, 0.7);
+        cloak.position.y = 0.55;
+        cloak.scale.set(1.02, 0.85, 0.68);
         characterGroup.add(cloak);
         
-        // وسام صدر
-        const medal = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.24, 0.09, 6), new THREE.MeshStandardMaterial({ color: 0xffaa66, metalness: 0.85 }));
-        medal.position.set(0, 0.72, 0.85);
+        // وسام صدر لامع
+        const medalGeo = new THREE.CylinderGeometry(0.22, 0.26, 0.1, 6);
+        const medalMat = new THREE.MeshStandardMaterial({ color: 0xffaa66, metalness: 0.88 });
+        const medal = new THREE.Mesh(medalGeo, medalMat);
+        medal.position.set(0, 0.72, 0.84);
         characterGroup.add(medal);
         
-        // اسم اللاعب CSS2D
+        // اسم اللاعب
         const nameDiv = document.createElement('div');
-        nameDiv.innerHTML = '⚔️ ثورين حامل النار ⚔️<br><span style="font-size:9px;">جسم بيضوي | أطراف متدرجة | دمج كامل</span>';
+        nameDiv.innerHTML = '⚔️ ثورين الحديدي ⚔️<br><span style="font-size:9px;">قزم رشيق | واضح المعالم</span>';
         nameDiv.style.color = '#ffdd99';
-        nameDiv.style.fontSize = '13px';
+        nameDiv.style.fontSize = '14px';
         nameDiv.style.fontWeight = 'bold';
         nameDiv.style.textAlign = 'center';
-        nameDiv.style.background = 'rgba(0,0,0,0.7)';
-        nameDiv.style.padding = '4px 14px';
-        nameDiv.style.borderRadius = '25px';
+        nameDiv.style.background = 'rgba(0,0,0,0.75)';
+        nameDiv.style.padding = '5px 15px';
+        nameDiv.style.borderRadius = '30px';
         nameDiv.style.border = '1px solid #ffaa55';
         nameDiv.style.fontFamily = 'monospace';
         nameDiv.style.backdropFilter = 'blur(5px)';
         const nameLabel = new CSS2DObject(nameDiv);
-        nameLabel.position.set(0, 2.28, 0);
+        nameLabel.position.set(0, 2.25, 0);
         characterGroup.add(nameLabel);
         
         scene.add(characterGroup);
         
-        // --- نظام التحكم بالشخصية ---
+        // --- نظام التحكم ---
         const keys = { w: false, s: false, a: false, d: false, shift: false, space: false, e: false };
         let walkCycle = 0;
         let isAttacking = false;
@@ -524,14 +508,8 @@
         let throwTimer = 0;
         let isRunning = false;
         
-        const WALK_SPEED = 3.8;
-        const RUN_SPEED = 6.8;
-        
-        // مراجع للأذرع للتحريك
-        const leftArmRef = leftArmGroup;
-        const rightArmRef = rightArmGroup;
-        const leftLegRef = leftLeg;
-        const rightLegRef = rightLeg;
+        const WALK_SPEED = 4.2;
+        const RUN_SPEED = 7.2;
         
         window.addEventListener('keydown', (e) => {
             switch(e.code) {
@@ -561,35 +539,31 @@
         
         function attack() {
             isAttacking = true;
-            attackTimer = 0.32;
+            attackTimer = 0.3;
             
-            rightArmRef.rotation.x = -1.3;
-            rightArmRef.rotation.z = -0.9;
-            leftArmRef.rotation.x = 0.6;
+            rightArm.rotation.x = -1.4;
+            rightArm.rotation.z = -0.9;
+            leftArm.rotation.x = 0.7;
             
-            const effect = document.createElement('div');
-            effect.className = 'attack-effect';
-            effect.style.left = '50%';
-            effect.style.top = '50%';
-            effect.style.transform = 'translate(-50%, -50%)';
-            document.body.appendChild(effect);
-            setTimeout(() => effect.remove(), 300);
+            const slash = document.createElement('div');
+            slash.className = 'attack-slash';
+            slash.style.left = '50%';
+            slash.style.top = '50%';
+            document.body.appendChild(slash);
+            setTimeout(() => slash.remove(), 250);
         }
         
         function throwBomb() {
             throwTimer = 2.0;
-            bombLight.intensity = 1.6;
-            fireSpark.material.emissiveIntensity = 1.2;
+            bombLight.intensity = 1.7;
+            fireSpark.material.emissiveIntensity = 1.3;
             
-            const effect = document.createElement('div');
-            effect.className = 'attack-effect';
-            effect.style.borderColor = '#ff8844';
-            effect.style.width = '150px';
-            effect.style.height = '150px';
-            effect.style.left = '70%';
-            effect.style.top = '70%';
-            document.body.appendChild(effect);
-            setTimeout(() => effect.remove(), 400);
+            const explosion = document.createElement('div');
+            explosion.className = 'bomb-effect';
+            explosion.style.left = '70%';
+            explosion.style.top = '65%';
+            document.body.appendChild(explosion);
+            setTimeout(() => explosion.remove(), 400);
             
             setTimeout(() => {
                 bombLight.intensity = 0.7;
@@ -616,34 +590,34 @@
                 const angle = Math.atan2(moveX, moveZ);
                 characterGroup.rotation.y = angle;
                 
-                walkCycle += deltaTime * (isRunning ? 14 : 9);
-                const armSwing = Math.sin(walkCycle) * 0.85;
-                const legSwing = Math.sin(walkCycle) * 0.45;
+                walkCycle += deltaTime * (isRunning ? 15 : 10);
+                const armSwing = Math.sin(walkCycle) * 0.9;
+                const legSwing = Math.sin(walkCycle) * 0.5;
                 
                 if (!isAttacking) {
-                    leftArmRef.rotation.x = armSwing * 0.55;
-                    rightArmRef.rotation.x = -armSwing * 0.55;
-                    leftArmRef.rotation.z = 0.35 + armSwing * 0.2;
-                    rightArmRef.rotation.z = -0.35 + -armSwing * 0.2;
+                    leftArm.rotation.x = armSwing * 0.6;
+                    rightArm.rotation.x = -armSwing * 0.6;
+                    leftArm.rotation.z = 0.4 + armSwing * 0.25;
+                    rightArm.rotation.z = -0.4 - armSwing * 0.25;
                 }
                 
-                leftLegRef.rotation.x = legSwing;
-                rightLegRef.rotation.x = -legSwing;
+                leftLeg.rotation.x = legSwing;
+                rightLeg.rotation.x = -legSwing;
             } else {
                 if (!isAttacking) {
-                    leftArmRef.rotation.x = 0;
-                    rightArmRef.rotation.x = 0;
-                    leftArmRef.rotation.z = 0.35;
-                    rightArmRef.rotation.z = -0.35;
+                    leftArm.rotation.x = 0;
+                    rightArm.rotation.x = 0;
+                    leftArm.rotation.z = 0.4;
+                    rightArm.rotation.z = -0.4;
                 }
-                leftLegRef.rotation.x = 0;
-                rightLegRef.rotation.x = 0;
+                leftLeg.rotation.x = 0;
+                rightLeg.rotation.x = 0;
             }
             
             controls.target.copy(characterGroup.position);
-            controls.target.y += 1.25;
+            controls.target.y += 1.2;
             nameLabel.position.copy(characterGroup.position);
-            nameLabel.position.y += 2.2;
+            nameLabel.position.y += 2.18;
         }
         
         function updateTimers(deltaTime) {
@@ -651,33 +625,32 @@
                 attackTimer -= deltaTime;
                 if (attackTimer <= 0) {
                     isAttacking = false;
-                    rightArmRef.rotation.x = 0;
-                    rightArmRef.rotation.z = -0.35;
-                    leftArmRef.rotation.x = 0;
+                    rightArm.rotation.x = 0;
+                    rightArm.rotation.z = -0.4;
+                    leftArm.rotation.x = 0;
                 }
             }
             
             if (throwTimer > 0) {
                 throwTimer -= deltaTime;
-                const intensity = 0.7 + Math.sin(Date.now() * 0.025) * 0.6;
-                fireSpark.material.emissiveIntensity = intensity;
+                fireSpark.material.emissiveIntensity = 0.7 + Math.sin(Date.now() * 0.03) * 0.7;
             }
             
-            glowRing.material.emissiveIntensity = 0.5 + Math.sin(Date.now() * 0.006) * 0.35;
-            fireSpark.material.emissiveIntensity = 0.6 + Math.sin(Date.now() * 0.022) * 0.45;
+            haloRing.material.emissiveIntensity = 0.45 + Math.sin(Date.now() * 0.007) * 0.35;
+            fireSpark.material.emissiveIntensity = 0.65 + Math.sin(Date.now() * 0.025) * 0.5;
         }
         
         // --- جسيمات بيئية ---
-        const particleCount = 1200;
+        const particleCount = 1000;
         const particleGeo = new THREE.BufferGeometry();
         const positions = new Float32Array(particleCount * 3);
         for (let i = 0; i < particleCount; i++) {
-            positions[i*3] = (Math.random() - 0.5) * 45;
-            positions[i*3+1] = Math.random() * 7;
-            positions[i*3+2] = (Math.random() - 0.5) * 38;
+            positions[i*3] = (Math.random() - 0.5) * 42;
+            positions[i*3+1] = Math.random() * 6.5;
+            positions[i*3+2] = (Math.random() - 0.5) * 35;
         }
         particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        const particleMat = new THREE.PointsMaterial({ color: 0x88aaff, size: 0.045, transparent: true, opacity: 0.35 });
+        const particleMat = new THREE.PointsMaterial({ color: 0xaaccff, size: 0.04, transparent: true, opacity: 0.4 });
         const particles = new THREE.Points(particleGeo, particleMat);
         scene.add(particles);
         
@@ -693,12 +666,12 @@
             updateTimers(deltaTime);
             
             bombLight.position.copy(characterGroup.position);
-            bombLight.position.x += 1.25;
-            bombLight.position.y += 0.7;
-            bombLight.position.z += 0.85;
+            bombLight.position.x += 1.22;
+            bombLight.position.y += 0.66;
+            bombLight.position.z += 0.82;
             
-            particles.rotation.y += 0.0006;
-            ringDeco.rotation.z += 0.003;
+            particles.rotation.y += 0.0007;
+            arenaRing.rotation.z += 0.004;
             
             controls.update();
             renderer.render(scene, camera);
@@ -718,7 +691,7 @@
         
         document.getElementById('healthFill').style.width = '92%';
         
-        console.log('✅ شخصية قزم احترافية | جسم بيضوي | أطراف متدرجة تضيق للأسفل | دمج كامل للأقسام');
+        console.log('✅ شخصية قزم رشيقة | معالم واضحة | تفاصيل حادة | جاهزة للعب');
     </script>
 </body>
 </html>
