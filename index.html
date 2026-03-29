@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <title>المشروع النهائي: القزم الغامض</title>
+    <title>المشروع النهائي: القزم الهيكلي الغامض</title>
     <style>
         body { margin: 0; background-color: #000; overflow: hidden; }
         canvas { display: block; }
@@ -13,6 +13,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.158.0/three.min.js"></script>
 
 <script>
+    // --- الإعدادات الأساسية ---
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(0, 1.2, 3.5);
@@ -20,96 +21,134 @@
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.shadowMap.enabled = true;
     document.body.appendChild(renderer.domElement);
 
-    // الإضاءة (سر المظهر في الصورة)
-    const ambient = new THREE.AmbientLight(0x404040, 0.5); 
+    // --- الإضاءة الساحرة ---
+    const ambient = new THREE.AmbientLight(0x202020, 0.5); 
     scene.add(ambient);
 
-    const mainLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    const mainLight = new THREE.DirectionalLight(0xffffff, 0.7);
     mainLight.position.set(5, 10, 7);
     scene.add(mainLight);
 
-    // ضوء القنبلة (PointLight) ليعطي التوهج الأحمر على الجسم
-    const bombGlow = new THREE.PointLight(0xff0000, 15, 3);
-    bombGlow.position.set(0.7, 0.5, 0.5);
+    // ضوء القنبلة الأحمر
+    const bombGlow = new THREE.PointLight(0xff0000, 10, 2);
+    bombGlow.position.set(0.9, 0.4, 0.6);
     scene.add(bombGlow);
 
-    // مجموعة الشخصية
+    // --- الخامات ---
+    const darkMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.8 });
+    const hatMat = new THREE.MeshStandardMaterial({ color: 0x440000, roughness: 0.9 });
+    const fuseMat = new THREE.MeshBasicMaterial({ color: 0xeeeeee });
+
+    // --- بناء الشخصية المتماسكة ---
     const dwarf = new THREE.Group();
 
-    // الجسم (أسود مطفي)
+    // 1. الجسم الرئيسي
     const bodyGeo = new THREE.SphereGeometry(0.6, 32, 32);
-    const darkMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.7 });
     const body = new THREE.Mesh(bodyGeo, darkMat);
     body.scale.y = 1.1;
     dwarf.add(body);
 
-    // القبعة المخروطية (أحمر داكن ومائلة)
+    // 2. الرقبة (الوصلة بين الجسم والقبعة)
+    const neckGeo = new THREE.CylinderGeometry(0.2, 0.25, 0.3, 16);
+    const neck = new THREE.Mesh(neckGeo, darkMat);
+    neck.position.y = 0.65; // فوق الجسم مباشرة
+    dwarf.add(neck);
+
+    // 3. القبعة المخروطية المائلة
     const hatGeo = new THREE.ConeGeometry(0.5, 1.4, 32);
-    const hatMat = new THREE.MeshStandardMaterial({ color: 0x440000 });
     const hat = new THREE.Mesh(hatGeo, hatMat);
-    hat.position.y = 1.15;
+    hat.position.y = 1.35; // فوق الرقبة
     hat.rotation.z = 0.25; 
     dwarf.add(hat);
 
-    // اليدين (كرات صغيرة)
+    // --- الأطراف العلوية ---
+
+    // الذراع اليسرى
+    const leftArmGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.6, 16);
+    const leftArm = new THREE.Mesh(leftArmGeo, darkMat);
+    leftArm.position.set(-0.7, 0.1, 0.2);
+    leftArm.rotation.z = Math.PI / 2.5; // زاوية ميل الذراع
+    dwarf.add(leftArm);
+
+    // اليد اليسرى (الكرة)
     const handGeo = new THREE.SphereGeometry(0.15, 16, 16);
     const leftHand = new THREE.Mesh(handGeo, darkMat);
-    leftHand.position.set(-0.85, 0.1, 0.2);
+    leftHand.position.set(-0.95, -0.05, 0.25); // في نهاية الذراع
     dwarf.add(leftHand);
 
+    // الذراع اليمنى (التي تحمل القنبلة)
+    const rightArmGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.5, 16);
+    const rightArm = new THREE.Mesh(rightArmGeo, darkMat);
+    rightArm.position.set(0.65, 0.1, 0.2);
+    rightArm.rotation.z = -Math.PI / 3;
+    dwarf.add(rightArm);
+
+    // اليد اليمنى
     const rightHand = new THREE.Mesh(handGeo, darkMat);
-    rightHand.position.set(0.85, 0.1, 0.2);
+    rightHand.position.set(0.85, -0.05, 0.25); 
     dwarf.add(rightHand);
 
-    // القدمين (صناديق مسطحة)
-    const footGeo = new THREE.BoxGeometry(0.4, 0.15, 0.6);
-    const footMat = new THREE.MeshStandardMaterial({ color: 0x0a0a0a });
-    const leftFoot = new THREE.Mesh(footGeo, footMat);
-    leftFoot.position.set(-0.35, -0.7, 0.1);
+    // --- الأطراف السفلية ---
+
+    // الساق اليسرى
+    const legGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.4, 16);
+    const leftLeg = new THREE.Mesh(legGeo, darkMat);
+    leftLeg.position.set(-0.35, -0.65, 0.1);
+    dwarf.add(leftLeg);
+
+    // القدم اليسرى (المكعب)
+    const footGeo = new THREE.BoxGeometry(0.35, 0.15, 0.5);
+    const leftFoot = new THREE.Mesh(footGeo, darkMat);
+    leftFoot.position.set(-0.35, -0.85, 0.1); // تحت الساق
     dwarf.add(leftFoot);
 
-    const rightFoot = new THREE.Mesh(footGeo, footMat);
-    rightFoot.position.set(0.35, -0.7, 0.1);
+    // الساق اليمنى
+    const rightLeg = new THREE.Mesh(legGeo, darkMat);
+    rightLeg.position.set(0.35, -0.65, 0.1);
+    dwarf.add(rightLeg);
+
+    // القدم اليمنى
+    const rightFoot = new THREE.Mesh(footGeo, darkMat);
+    rightFoot.position.set(0.35, -0.85, 0.1);
     dwarf.add(rightFoot);
 
-    // القنبلة (الكرة + الفتيل الأبيض المنحني)
+    // --- القنبلة المحسنة ---
     const bombGroup = new THREE.Group();
     const bombBody = new THREE.Mesh(new THREE.SphereGeometry(0.3, 32, 32), new THREE.MeshStandardMaterial({color: 0x050505, roughness: 0.2}));
     
-    // إنشاء فتيل منحني باستخدام Curve
+    // الفتيل المنحني
     const curve = new THREE.QuadraticBezierCurve3(
         new THREE.Vector3(0, 0.25, 0),
         new THREE.Vector3(0.1, 0.5, 0),
         new THREE.Vector3(0.3, 0.5, 0)
     );
     const fuseGeo = new THREE.TubeGeometry(curve, 10, 0.02, 8, false);
-    const fuseMat = new THREE.MeshBasicMaterial({ color: 0xeeeeee });
     const fuse = new THREE.Mesh(fuseGeo, fuseMat);
     
     bombGroup.add(bombBody, fuse);
-    bombGroup.position.set(0.85, 0.45, 0.4);
+    bombGroup.position.set(0.9, 0.3, 0.4); // وضعها في اليد اليمنى
     dwarf.add(bombGroup);
 
     scene.add(dwarf);
 
-    // التحريك
+    // --- حلقة التحريك ---
     function animate() {
         requestAnimationFrame(animate);
         
-        // تمايل خفيف جداً لإعطاء حياة للشخصية
         const t = Date.now() * 0.001;
-        dwarf.rotation.y = Math.sin(t * 0.5) * 0.1;
-        bombGroup.position.y = 0.45 + Math.sin(t * 3) * 0.02;
         
-        // وميض الضوء الأحمر
-        bombGlow.intensity = 10 + Math.sin(t * 10) * 5;
+        // تمايل جانبي خفيف للشخصية بالكامل
+        dwarf.rotation.y = Math.sin(t * 0.5) * 0.08;
+        
+        // وميض الضوء الأحمر بشكل عشوائي قليلاً
+        bombGlow.intensity = 8 + Math.sin(t * 12) * 4 + Math.random() * 2;
 
         renderer.render(scene, camera);
     }
 
+    // التعامل مع تغيير حجم النافذة
     window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
