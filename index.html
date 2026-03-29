@@ -1,137 +1,1057 @@
-{
-    "asset" : {
-        "generator" : "Khronos glTF Blender I/O v1.7.33",
-        "version" : "2.0"
-    },
-    "scene" : 0,
-    "scenes" : [
-        {
-            "name" : "Scene",
-            "nodes" : [
-                0
-            ]
+
+
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>💣 TNT Wars 💣</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
-    ],
-    "nodes" : [
-        {
-            "mesh" : 0,
-            "name" : "Prop_Bottle_2"
+
+        :root {
+            --gold-primary: #d4af37;
+            --gold-dark: #b8860b;
+            --gold-light: #f3e6b0;
+            --dark-bg: #05070c;
+            --card-bg: rgba(10, 15, 25, 0.85);
+            --text-muted: #8a9aa8;
+            --success: #2ecc71;
+            --danger: #e74c3c;
         }
-    ],
-    "materials" : [
-        {
-            "doubleSided" : true,
-            "name" : "Atlas",
-            "pbrMetallicRoughness" : {
-                "baseColorTexture" : {
-                    "index" : 0
-                },
-                "metallicFactor" : 0
+
+        body {
+            font-family: 'Segoe UI', 'Cairo', system-ui, sans-serif;
+            overflow: hidden;
+            background: var(--dark-bg);
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+
+        .bg-animation {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            opacity: 0.3;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background: radial-gradient(circle at 30% 40%, rgba(212,175,55,0.1) 0%, transparent 50%),
+                        repeating-linear-gradient(45deg, rgba(212,175,55,0.03) 0px, rgba(212,175,55,0.03) 2px, transparent 2px, transparent 8px);
+            animation: rotateBg 60s linear infinite;
+        }
+
+        @keyframes rotateBg {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .login-screen {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at 30% 40%, #0a0f1a, #03050a);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .login-container {
+            background: rgba(8, 12, 20, 0.85);
+            backdrop-filter: blur(20px);
+            padding: min(8vw, 50px) min(6vw, 45px);
+            border-radius: min(8vw, 60px);
+            width: calc(100% - 40px);
+            max-width: 480px;
+            text-align: center;
+            border: 1px solid rgba(212, 175, 55, 0.4);
+        }
+
+        .login-container h1 {
+            background: linear-gradient(135deg, var(--gold-light), var(--gold-primary), var(--gold-dark));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-size: clamp(28px, 8vw, 48px);
+            margin-bottom: 12px;
+            font-weight: 800;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: clamp(12px, 3.5vw, 15px);
+            margin-bottom: min(8vw, 45px);
+        }
+
+        .google-btn {
+            width: 100%;
+            padding: clamp(12px, 4vw, 16px);
+            background: white;
+            border: none;
+            border-radius: 80px;
+            font-size: clamp(14px, 4vw, 16px);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-family: inherit;
+        }
+
+        .google-btn:active {
+            transform: scale(0.98);
+        }
+
+        .main-screen {
+            background: radial-gradient(ellipse at 20% 30%, #0f1725, #03050a);
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 900;
+            overflow-y: auto;
+        }
+
+        .top-bar {
+            position: sticky;
+            top: 0;
+            background: rgba(5, 8, 15, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+            padding: 15px 20px;
+            text-align: center;
+        }
+
+        .neon-title {
+            font-size: clamp(20px, 5vw, 28px);
+            font-weight: 800;
+            letter-spacing: 3px;
+            background: linear-gradient(135deg, var(--gold-light), var(--gold-primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .top-buttons {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            display: flex;
+            gap: 12px;
+            z-index: 200;
+        }
+
+        .top-fab {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+            border: 2px solid rgba(255,215,0,0.5);
+        }
+
+        .top-fab:active {
+            transform: scale(0.92);
+        }
+
+        .top-fab span {
+            font-size: 28px;
+        }
+
+        .dropdown-menu {
+            position: fixed;
+            top: 140px;
+            right: 20px;
+            width: calc(100% - 40px);
+            max-width: 360px;
+            background: rgba(10, 15, 25, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            z-index: 199;
+            transform: translateY(-20px) scale(0.95);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        .dropdown-menu.active {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .info-content {
+            padding: 24px;
+            text-align: center;
+        }
+
+        .info-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            border: 3px solid var(--gold-primary);
+            object-fit: cover;
+        }
+
+        .info-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--gold-primary);
+            margin-bottom: 8px;
+        }
+
+        .info-email {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .info-stats {
+            background: rgba(0,0,0,0.3);
+            border-radius: 16px;
+            padding: 16px;
+            margin: 16px 0;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .info-stat-item {
+            text-align: center;
+        }
+
+        .info-stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--gold-primary);
+        }
+
+        .info-stat-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .info-code {
+            background: rgba(212,175,55,0.1);
+            border-radius: 12px;
+            padding: 12px;
+            margin: 16px 0;
+        }
+
+        .info-code-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--gold-primary);
+            font-family: monospace;
+            letter-spacing: 2px;
+        }
+
+        .copy-btn {
+            background: rgba(212,175,55,0.2);
+            border: 1px solid var(--gold-primary);
+            color: var(--gold-primary);
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .friends-tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            padding: 8px;
+            gap: 4px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 8px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 12px;
+        }
+
+        .tab-btn.active {
+            color: var(--gold-primary);
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .friends-content {
+            padding: 16px;
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+
+        .friends-pane {
+            display: none;
+        }
+
+        .friends-pane.active {
+            display: block;
+        }
+
+        .search-input {
+            width: 100%;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(212,175,55,0.3);
+            padding: 12px 16px;
+            border-radius: 40px;
+            color: white;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .search-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark));
+            border: none;
+            padding: 12px;
+            border-radius: 40px;
+            color: #1e2a3a;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .friend-item {
+            background: rgba(212,175,55,0.08);
+            border-radius: 16px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .friend-name {
+            font-weight: bold;
+            color: var(--gold-primary);
+            font-size: 14px;
+        }
+
+        .friend-email {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .accept-btn, .reject-btn {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+        }
+
+        .accept-btn {
+            background: var(--success);
+            color: white;
+        }
+
+        .reject-btn {
+            background: var(--danger);
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+        }
+
+        .logout-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(231, 76, 60, 0.9);
+            border: none;
+            border-radius: 40px;
+            padding: 10px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            z-index: 100;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(212, 175, 55, 0.2);
+            border-top: 4px solid var(--gold-primary);
+            border-right: 4px solid var(--gold-primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: var(--gold-primary);
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .toast-notify {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.95);
+            color: var(--gold-primary);
+            padding: 12px 24px;
+            border-radius: 60px;
+            font-size: 13px;
+            z-index: 10002;
+            border: 1px solid var(--gold-primary);
+            animation: fadeOut 2.8s ease forwards;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 0; transform: translateX(-50%) translateY(30px); }
+            15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; visibility: hidden; }
+        }
+
+        @media (max-width: 480px) {
+            .top-buttons {
+                top: 70px;
+                right: 15px;
+                gap: 8px;
+            }
+            .top-fab {
+                width: 45px;
+                height: 45px;
+            }
+            .top-fab span {
+                font-size: 24px;
+            }
+            .dropdown-menu {
+                top: 125px;
+                right: 15px;
+                left: 15px;
+                width: auto;
             }
         }
-    ],
-    "meshes" : [
-        {
-            "name" : "Cube.024",
-            "primitives" : [
-                {
-                    "attributes" : {
-                        "POSITION" : 0,
-                        "NORMAL" : 1,
-                        "TEXCOORD_0" : 2
-                    },
-                    "indices" : 3,
-                    "material" : 0
+    </style>
+</head>
+<body>
+
+<div class="bg-animation"></div>
+
+<div class="login-screen" id="loginScreen">
+    <div class="login-container">
+        <h1>💣 TNT WARS 💣</h1>
+        <div class="subtitle">Elite Battlefield</div>
+        <button class="google-btn" id="googleLoginBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="22" height="22">
+                <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
+                <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
+                <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
+                <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
+            </svg>
+            <span>تسجيل الدخول بـ Google</span>
+        </button>
+    </div>
+</div>
+
+<div class="main-screen" id="mainScreen">
+    <div class="top-bar">
+        <div class="neon-title">💣 TNT WARS 💣</div>
+    </div>
+
+    <div class="top-buttons">
+        <div class="top-fab" id="infoFab"><span>👤</span></div>
+        <div class="top-fab" id="friendsFab"><span>👥</span></div>
+    </div>
+
+    <div class="dropdown-menu" id="infoDropdown">
+        <div class="info-content">
+            <img class="info-avatar" id="infoAvatar">
+            <div class="info-name" id="infoName">-</div>
+            <div class="info-email" id="infoEmail">-</div>
+            <div class="info-stats">
+                <div class="info-stat-item">
+                    <div class="info-stat-value" id="infoBalance">0</div>
+                    <div class="info-stat-label">💰 الرصيد</div>
+                </div>
+                <div class="info-stat-item">
+                    <div class="info-stat-value" id="infoGames">0</div>
+                    <div class="info-stat-label">🏆 مباريات</div>
+                </div>
+                <div class="info-stat-item">
+                    <div class="info-stat-value" id="infoWins">0</div>
+                    <div class="info-stat-label">⚔️ انتصارات</div>
+                </div>
+            </div>
+            <div class="info-code">
+                <div class="info-code-value" id="infoCode">---</div>
+                <button class="copy-btn" id="copyCodeBtn">📋 نسخ الكود</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="dropdown-menu" id="friendsDropdown">
+        <div class="friends-tabs">
+            <button class="tab-btn active" data-tab="add">➕ إضافة</button>
+            <button class="tab-btn" data-tab="requests">📨 طلبات</button>
+            <button class="tab-btn" data-tab="friends">🌟 أصدقائي</button>
+        </div>
+        <div class="friends-content">
+            <div class="friends-pane active" id="addPane">
+                <input type="text" id="friendCodeInput" class="search-input" placeholder="🔍 أدخل كود الصديق">
+                <button id="addFriendBtn" class="search-btn">➕ إضافة صديق</button>
+                <div id="addFriendResult"></div>
+            </div>
+            <div class="friends-pane" id="requestsPane">
+                <div id="requestsList"><div class="empty-state">📭 لا توجد طلبات</div></div>
+            </div>
+            <div class="friends-pane" id="friendsPane">
+                <div id="friendsList"><div class="empty-state">👥 لا يوجد أصدقاء</div></div>
+            </div>
+        </div>
+    </div>
+
+    <button class="logout-btn" id="logoutBtn"><span>🚪</span> <span>خروج</span></button>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">جاري التحميل</div>
+</div>
+
+<script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js';
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js';
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCvPo4HlsNhyf1WBmTzIr6CdR1c2lQ5sHU",
+        authDomain: "boomb-fa3e7.firebaseapp.com",
+        projectId: "boomb-fa3e7",
+        storageBucket: "boomb-fa3e7.firebasestorage.app",
+        messagingSenderId: "499624996530",
+        appId: "1:499624996530:web:235f71e450845c748523ab"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+    
+    const API_URL = 'https://tank-yf0p.onrender.com';
+    
+    let currentUser = null;
+    let userData = {
+        balance: 0,
+        gamesPlayed: 0,
+        wins: 0,
+        userCode: null
+    };
+    
+    // DOM Elements
+    const elements = {
+        loginScreen: document.getElementById('loginScreen'),
+        mainScreen: document.getElementById('mainScreen'),
+        loading: document.getElementById('loadingOverlay'),
+        googleBtn: document.getElementById('googleLoginBtn'),
+        logoutBtn: document.getElementById('logoutBtn'),
+        infoFab: document.getElementById('infoFab'),
+        infoDropdown: document.getElementById('infoDropdown'),
+        friendsFab: document.getElementById('friendsFab'),
+        friendsDropdown: document.getElementById('friendsDropdown'),
+        infoAvatar: document.getElementById('infoAvatar'),
+        infoName: document.getElementById('infoName'),
+        infoEmail: document.getElementById('infoEmail'),
+        infoBalance: document.getElementById('infoBalance'),
+        infoGames: document.getElementById('infoGames'),
+        infoWins: document.getElementById('infoWins'),
+        infoCode: document.getElementById('infoCode'),
+        copyCodeBtn: document.getElementById('copyCodeBtn'),
+        friendCodeInput: document.getElementById('friendCodeInput'),
+        addFriendBtn: document.getElementById('addFriendBtn'),
+        addFriendResult: document.getElementById('addFriendResult'),
+        requestsList: document.getElementById('requestsList'),
+        friendsList: document.getElementById('friendsList')
+    };
+    
+    function showToast(msg, isError = false) {
+        const toast = document.createElement('div');
+        toast.className = 'toast-notify';
+        toast.textContent = msg;
+        toast.style.background = isError ? 'rgba(231,76,60,0.95)' : 'rgba(0,0,0,0.95)';
+        toast.style.borderColor = isError ? '#e74c3c' : '#d4af37';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2800);
+    }
+    
+    function showLoading(show) {
+        elements.loading.style.display = show ? 'flex' : 'none';
+    }
+    
+    async function getToken() {
+        const user = auth.currentUser;
+        if (!user) return null;
+        return await user.getIdToken();
+    }
+    
+    async function fetchUserData() {
+        const user = auth.currentUser;
+        if (!user) return false;
+        
+        try {
+            const token = await getToken();
+            if (!token) return false;
+            
+            const response = await fetch(`${API_URL}/api/user/data?uid=${user.uid}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                userData = {
+                    balance: data.balance,
+                    gamesPlayed: data.gamesPlayed,
+                    wins: data.wins,
+                    userCode: data.userIdCode
+                };
+                updateUI();
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error('Fetch error:', error);
+            return false;
+        }
+    }
+    
+    async function createUser() {
+        const user = auth.currentUser;
+        if (!user) return false;
+        
+        try {
+            const token = await getToken();
+            if (!token) return false;
+            
+            const response = await fetch(`${API_URL}/api/user/create`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                if (data.userIdCode) {
+                    userData.userCode = data.userIdCode;
+                    showToast(`✨ كود المعركة: ${data.userIdCode}`, false);
                 }
-            ]
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error('Create error:', error);
+            return false;
         }
-    ],
-    "textures" : [
-        {
-            "sampler" : 0,
-            "source" : 0
+    }
+    
+    async function ensureUser() {
+        const exists = await fetchUserData();
+        if (!exists || !userData.userCode) {
+            await createUser();
+            await fetchUserData();
         }
-    ],
-    "images" : [
-        {
-            "bufferView" : 4,
-            "mimeType" : "image/png",
-            "name" : "Atlas_Pirate"
+    }
+    
+    async function findUserByCode(code) {
+        const user = auth.currentUser;
+        if (!user) return null;
+        
+        try {
+            const token = await getToken();
+            const response = await fetch(`${API_URL}/api/user/bycode/${code}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            return data.success ? data.user : null;
+        } catch (error) {
+            return null;
         }
-    ],
-    "accessors" : [
-        {
-            "bufferView" : 0,
-            "componentType" : 5126,
-            "count" : 400,
-            "max" : [
-                0.15393413603305817,
-                0.4634738266468048,
-                0.15393413603305817
-            ],
-            "min" : [
-                -0.15393413603305817,
-                -0.0024092383682727814,
-                -0.15393413603305817
-            ],
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 1,
-            "componentType" : 5126,
-            "count" : 400,
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 2,
-            "componentType" : 5126,
-            "count" : 400,
-            "type" : "VEC2"
-        },
-        {
-            "bufferView" : 3,
-            "componentType" : 5123,
-            "count" : 612,
-            "type" : "SCALAR"
+    }
+    
+    async function sendFriendRequest(code) {
+        const user = auth.currentUser;
+        if (!user) return false;
+        
+        try {
+            const token = await getToken();
+            const response = await fetch(`${API_URL}/api/friends/request`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    fromUid: user.uid,
+                    toUserIdCode: code
+                })
+            });
+            const data = await response.json();
+            showToast(data.message, !data.success);
+            return data.success;
+        } catch (error) {
+            showToast('خطأ في الاتصال', true);
+            return false;
         }
-    ],
-    "bufferViews" : [
-        {
-            "buffer" : 0,
-            "byteLength" : 4800,
-            "byteOffset" : 0
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 4800,
-            "byteOffset" : 4800
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 3200,
-            "byteOffset" : 9600
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 1224,
-            "byteOffset" : 12800
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 3207,
-            "byteOffset" : 14024
+    }
+    
+    async function getFriendRequests() {
+        const user = auth.currentUser;
+        if (!user) return [];
+        
+        try {
+            const token = await getToken();
+            const response = await fetch(`${API_URL}/api/friends/requests/${user.uid}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            return data.success ? data.requests : [];
+        } catch (error) {
+            return [];
         }
-    ],
-    "samplers" : [
-        {
-            "magFilter" : 9729,
-            "minFilter" : 9987
+    }
+    
+    async function getFriendsList() {
+        const user = auth.currentUser;
+        if (!user) return [];
+        
+        try {
+            const token = await getToken();
+            const response = await fetch(`${API_URL}/api/friends/list/${user.uid}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            return data.success ? data.friends : [];
+        } catch (error) {
+            return [];
         }
-    ],
-    "buffers" : [
-        {
-            "byteLength" : 17232,
-            "uri" : "data:application/octet-stream;base64,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KDQhPUWKxD7pSoA9KDQhPUWKxD7pSoA9fg5TvR/PxT4UOJk9fg5TvR/PxT4UOJk9fg5TvR/PxT4UOJk9fg5TvR/PxT4UOJk9FDiZvR/PxT5+DlM9FDiZvR/PxT5+DlM9FDiZvR/PxT5+DlM9FDiZvR/PxT5+DlM9FDiZvR/PxT5+DlO9FDiZvR/PxT5+DlO9FDiZvR/PxT5+DlO9FDiZvR/PxT5+DlO9fg5TvR/PxT4UOJm9fg5TvR/PxT4UOJm9fg5TvR/PxT4UOJm9fg5TvR/PxT4UOJm9fg5TPR/PxT4UOJm9fg5TPR/PxT4UOJm9fg5TPR/PxT4UOJm9fg5TPR/PxT4UOJm9FDiZPR/PxT5+DlO9FDiZPR/PxT5+DlO9FDiZPR/PxT5+DlO9FDiZPR/PxT5+DlO9FDiZPR/PxT5+DlM9FDiZPR/PxT5+DlM9FDiZPR/PxT5+DlM9FDiZPR/PxT5+DlM9fg5TPR/PxT4UOJk9fg5TPR/PxT4UOJk9fg5TPR/PxT4UOJk9fg5TPR/PxT4UOJk9FNtyvUig2j4yfxM9FNtyvUig2j4yfxM9FNtyvUig2j4yfxM9FNtyvUig2j4yfxM9Mn8TvUig2j4U23I9Mn8TvUig2j4U23I9Mn8TvUig2j4U23I9Mn8TvUig2j4U23I9Mn8TvUig2j4U23K9Mn8TvUig2j4U23K9Mn8TvUig2j4U23K9Mn8TvUig2j4U23K9FNtyvUig2j4yfxO9FNtyvUig2j4yfxO9FNtyvUig2j4yfxO9FNtyvUig2j4yfxO9Mn8TPUig2j4U23K9Mn8TPUig2j4U23K9Mn8TPUig2j4U23K9Mn8TPUig2j4U23K9FNtyPUig2j4yfxO9FNtyPUig2j4yfxO9FNtyPUig2j4yfxO9FNtyPUig2j4yfxO9FNtyPUig2j4yfxM9FNtyPUig2j4yfxM9FNtyPUig2j4yfxM9FNtyPUig2j4yfxM9Mn8TPUig2j4U23I9Mn8TPUig2j4U23I9Mn8TPUig2j4U23I9Mn8TPUig2j4U23I9mE+vPZrPZD53g2e9mE+vPZrPZD53g2e9mE+vPZrPZD53g2e9mE+vPZrPZD53g2e9dYNnPZrPZD6YT6+9dYNnPZrPZD6YT6+9dYNnPZrPZD6YT6+9dYNnPZrPZD6YT6+9mE+vPZrPZD51g2c9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kmISv06YFr+TYhI/SlNMvhraer8AAACA12POvQJjfb/XY849A5lrvwtMyL4AAACAk2ISv06YFr+SYhK/SlNMvhraer8AAACA12POvQJjfb/XY869k2ISv06YFr+SYhK/12POvQJjfb/XY869AAAAABraer9KU0y+AAAAAAtMyL4DmWu/AAAAABraer9KU0y+AAAAAAtMyL4DmWu/12POPQJjfb/XY869kmISP06YFr+TYhK/12POPQJjfb/XY869SlNMPhraer8AAACAkmISP06YFr+TYhK/A5lrPwtMyL4AAACA12POPQJjfb/XY849SlNMPhraer8AAACAk2ISP06YFr+SYhI/A5lrPwtMyL4AAACAAAAAABraer9KU0w+AAAAAAtMyL4DmWs/12POPQJjfb/XY849k2ISP06YFr+SYhI/gzswv1juaT6DOzA/12POvQJjfb/XY849AAAAABraer9KU0w+AAAAAJadJz4SjHw/Eox8v5adJz4AAACAgzswv1juaT6DOzA/SlNMvhraer8AAACA12POvQJjfb/XY849Eox8v5adJz4AAACAgzswv1juaT6DOzC/SlNMvhraer8AAACA12POvQJjfb/XY869gzswv1juaT6DOzC/12POvQJjfb/XY869AAAAABraer9KU0y+AAAAAJadJz4SjHy/AAAAABraer9KU0y+AAAAAJadJz4SjHy/12POPQJjfb/XY869gzswP1juaT6DOzC/12POPQJjfb/XY869SlNMPhraer8AAACAgzswP1juaT6DOzC/Eox8P5adJz4AAACA12POPQJjfb/XY849SlNMPhraer8AAACAgzswP1juaT6DOzA/Eox8P5adJz4AAACAAAAAABraer9KU0w+AAAAAJadJz4SjHw/12POPQJjfb/XY849gzswP1juaT6DOzA/AACAvwAAAAAAAAAA8gQ1v1wnnLP0BDU/lgTavMnofz8AAACAYRhavGL0fz9hGFo88gQ1v1wnnLP0BDU/YRhavGL0fz9hGFo8AAAAAAAAAIAAAIA/AAAAAMnofz+WBNo89AQ1v1wnnLPyBDW/YRhavGL0fz9hGFq8AAAAAAAAAAAAAIC/AAAAAMnofz+WBNq8AACAvwAAAAAAAAAA9AQ1v1wnnLPyBDW/lgTavMnofz8AAACAYRhavGL0fz9hGFq8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QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwGAEA9IAA8PQYAQD0gADw9AQAUPkAAkDwBABQ+QACQPAYAQD0gADw9AQAUPkAAkDwGAEA9IAA8PQEAFD5AAJA8BgBAPSAAPD0BABQ+QACQPAYAQD0gADw9AQAUPkAAkDwGAEA9IAA8PQYAQD0gADw9AQAUPkAAkDwBABQ+QACQPAYAQD0gADw9AQAUPkAAkDwBABQ+QACQPAYAQD0gADw9AQAUPkAAkDwBABQ+QACQPAYAQD0gADw9BgBAPSAAPD0BABQ+QACQPAEAFD5AAJA8BgBAPSAAPD0GAEA9IAA8PQYAQD0gADw9AQAUPkAAkDwBABQ+QACQPAYAQD0gADw9AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8BgBAPSAAPD0GAEA9IAA8PQYAQD0gADw9BgBAPSAAPD0GAEA9IAA8PQYAQD0gADw9BgBAPSAAPD0GAEA9IAA8PQYAQD0gADw9BgBAPSAAPD0GAEA9IAA8PQYAQD0gADw9BgBAPSAAPD0GAEA9IAA8PQYAQD0gADw9BgBAPSAAPD0GAEA9IAA8PQYAQD0gADw9BgBAPSAAPD0GAEA9IAA8PQYAQD0gADw9BgBAPSAAPD0GAEA9IAA8PQYAQD0gADw9AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8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GAAABrJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMTQyIDc5LjE2MDkyNCwgMjAxNy8wNy8xMy0wMTowNjozOSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iIHhtbG5zOnBob3Rvc2hvcD0iaHR0cDovL25zLmFkb2JlLmNvbS9waG90b3Nob3AvMS4wLyIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0RXZ0PSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VFdmVudCMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTggKFdpbmRvd3MpIiB4bXA6Q3JlYXRlRGF0ZT0iMjAyMy0xMC0zMVQyMToxODo0OS0wMzowMCIgeG1wOk1vZGlmeURhdGU9IjIwMjMtMTAtMzFUMjI6Mzg6MTUtMDM6MDAiIHhtcDpNZXRhZGF0YURhdGU9IjIwMjMtMTAtMzFUMjI6Mzg6MTUtMDM6MDAiIGRjOmZvcm1hdD0iaW1hZ2UvcG5nIiBwaG90b3Nob3A6Q29sb3JNb2RlPSIzIiBwaG90b3Nob3A6SUNDUHJvZmlsZT0iKiB3c1JHQiIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo4MmIyODE2OC1iY2E3LTNhNGEtOWZmYi1hMjI5ZWUxYzkzOTUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6Yjc4MTI1MWUtYWM2ZC0wYjRhLWI2ZjUtZTIzMThkMTVlNGJlIiB4bXBNTTpPcmlnaW5hbERvY3VtZW50SUQ9InhtcC5kaWQ6Yjc4MTI1MWUtYWM2ZC0wYjRhLWI2ZjUtZTIzMThkMTVlNGJlIj4gPHhtcE1NOkhpc3Rvcnk+IDxyZGY6U2VxPiA8cmRmOmxpIHN0RXZ0OmFjdGlvbj0iY3JlYXRlZCIgc3RFdnQ6aW5zdGFuY2VJRD0ieG1wLmlpZDpiNzgxMjUxZS1hYzZkLTBiNGEtYjZmNS1lMjMxOGQxNWU0YmUiIHN0RXZ0OndoZW49IjIwMjMtMTAtMzFUMjE6MTg6NDktMDM6MDAiIHN0RXZ0OnNvZnR3YXJlQWdlbnQ9IkFkb2JlIFBob3Rvc2hvcCBDQyAyMDE4IChXaW5kb3dzKSIvPiA8cmRmOmxpIHN0RXZ0OmFjdGlvbj0ic2F2ZWQiIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6NTNjZGEyNmEtMjlkMC1jMDQxLTgwODMtZjI1YmQ2ODNjZDFmIiBzdEV2dDp3aGVuPSIyMDIzLTEwLTMxVDIxOjIxOjQzLTAzOjAwIiBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZG9iZSBQaG90b3Nob3AgQ0MgMjAxOCAoV2luZG93cykiIHN0RXZ0OmNoYW5nZWQ9Ii8iLz4gPHJkZjpsaSBzdEV2dDphY3Rpb249InNhdmVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOjgyYjI4MTY4LWJjYTctM2E0YS05ZmZiLWEyMjllZTFjOTM5NSIgc3RFdnQ6d2hlbj0iMjAyMy0xMC0zMVQyMjozODoxNS0wMzowMCIgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTggKFdpbmRvd3MpIiBzdEV2dDpjaGFuZ2VkPSIvIi8+IDwvcmRmOlNlcT4gPC94bXBNTTpIaXN0b3J5PiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PgKEmm4AAAC0SURBVEiJYzw3u0yC7/z8S9Zb9+xk/PQv4OuLIya6/s7GIjz3p4uXekjrOsVkf5kR03aCuVMu4MT/hQ+ff2nICWAgGjCGO+oYyvLI2+dEJEUTr414wGJpKHnm3HvWQ1NWfNl/+7f+m1cfrVSeh6dOpZoFAjfNugPMPj/8qMpRwpA3h1rmIkBHnEXpOuP/NAOM////p76rkQATTU0ftWDUglELRi0YtWDUglELRi0YtYB+FgAAgHKSFe32IAgAAAAASUVORK5CYIIA"
+    }
+    
+    async function acceptRequest(requesterUid) {
+        const user = auth.currentUser;
+        try {
+            const token = await getToken();
+            const response = await fetch(`${API_URL}/api/friends/accept`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userUid: user.uid,
+                    requesterUid: requesterUid
+                })
+            });
+            const data = await response.json();
+            if (data.success) showToast('✅ تم قبول الصديق', false);
+            return data.success;
+        } catch (error) {
+            return false;
         }
-    ]
-}
+    }
+    
+    async function rejectRequest(requesterUid) {
+        const user = auth.currentUser;
+        try {
+            const token = await getToken();
+            const response = await fetch(`${API_URL}/api/friends/reject`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userUid: user.uid,
+                    requesterUid: requesterUid
+                })
+            });
+            const data = await response.json();
+            if (data.success) showToast('❌ تم رفض الطلب', false);
+            return data.success;
+        } catch (error) {
+            return false;
+        }
+    }
+    
+    function updateUI() {
+        if (!currentUser) return;
+        
+        const name = currentUser.displayName || currentUser.email.split('@')[0];
+        elements.infoName.textContent = name;
+        elements.infoEmail.textContent = currentUser.email;
+        elements.infoBalance.textContent = userData.balance;
+        elements.infoGames.textContent = userData.gamesPlayed;
+        elements.infoWins.textContent = userData.wins;
+        elements.infoCode.textContent = userData.userCode || '---';
+        elements.infoAvatar.src = currentUser.photoURL || 'https://via.placeholder.com/80?text=User';
+    }
+    
+    async function loadRequests() {
+        const requests = await getFriendRequests();
+        if (requests.length === 0) {
+            elements.requestsList.innerHTML = '<div class="empty-state">📭 لا توجد طلبات</div>';
+            return;
+        }
+        
+        elements.requestsList.innerHTML = requests.map(r => `
+            <div class="friend-item">
+                <div class="friend-info">
+                    <div class="friend-name">${escapeHtml(r.username)}</div>
+                    <div class="friend-email">${escapeHtml(r.email)}</div>
+                </div>
+                <div class="action-buttons">
+                    <button class="accept-btn" data-uid="${r.uid}">قبول</button>
+                    <button class="reject-btn" data-uid="${r.uid}">رفض</button>
+                </div>
+            </div>
+        `).join('');
+        
+        document.querySelectorAll('.accept-btn').forEach(btn => {
+            btn.onclick = async () => {
+                await acceptRequest(btn.dataset.uid);
+                loadRequests();
+                loadFriends();
+            };
+        });
+        
+        document.querySelectorAll('.reject-btn').forEach(btn => {
+            btn.onclick = async () => {
+                await rejectRequest(btn.dataset.uid);
+                loadRequests();
+            };
+        });
+    }
+    
+    async function loadFriends() {
+        const friends = await getFriendsList();
+        if (friends.length === 0) {
+            elements.friendsList.innerHTML = '<div class="empty-state">👥 لا يوجد أصدقاء</div>';
+            return;
+        }
+        
+        elements.friendsList.innerHTML = friends.map(f => `
+            <div class="friend-item">
+                <div class="friend-info">
+                    <div class="friend-name">${escapeHtml(f.username)}</div>
+                    <div class="friend-email">${escapeHtml(f.email)}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    async function login() {
+        showLoading(true);
+        try {
+            const result = await signInWithPopup(auth, provider);
+            currentUser = {
+                uid: result.user.uid,
+                email: result.user.email,
+                displayName: result.user.displayName,
+                photoURL: result.user.photoURL
+            };
+            
+            await ensureUser();
+            
+            elements.loginScreen.style.display = 'none';
+            elements.mainScreen.style.display = 'block';
+            loadRequests();
+            loadFriends();
+            showToast(`🌟 مرحباً ${currentUser.displayName}`, false);
+        } catch (error) {
+            showToast('فشل تسجيل الدخول', true);
+        }
+        showLoading(false);
+    }
+    
+    async function logout() {
+        showLoading(true);
+        try {
+            await signOut(auth);
+            currentUser = null;
+            elements.mainScreen.style.display = 'none';
+            elements.loginScreen.style.display = 'flex';
+            showToast('👋 تم تسجيل الخروج', false);
+        } catch (error) {
+            showToast('حدث خطأ', true);
+        }
+        showLoading(false);
+    }
+    
+    // Event Listeners
+    elements.googleBtn.onclick = login;
+    elements.logoutBtn.onclick = logout;
+    
+    elements.infoFab.onclick = (e) => {
+        e.stopPropagation();
+        elements.infoDropdown.classList.toggle('active');
+        elements.friendsDropdown.classList.remove('active');
+    };
+    
+    elements.friendsFab.onclick = (e) => {
+        e.stopPropagation();
+        elements.friendsDropdown.classList.toggle('active');
+        elements.infoDropdown.classList.remove('active');
+    };
+    
+    elements.copyCodeBtn.onclick = () => {
+        if (userData.userCode) {
+            navigator.clipboard.writeText(userData.userCode);
+            showToast('✅ تم نسخ الكود', false);
+        }
+    };
+    
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.onclick = () => {
+            const tab = btn.dataset.tab;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.querySelectorAll('.friends-pane').forEach(p => p.classList.remove('active'));
+            document.getElementById(`${tab}Pane`).classList.add('active');
+            if (tab === 'requests') loadRequests();
+            if (tab === 'friends') loadFriends();
+        };
+    });
+    
+    elements.addFriendBtn.onclick = async () => {
+        const code = elements.friendCodeInput.value.trim();
+        if (!code) {
+            showToast('⚠️ أدخل الكود', true);
+            return;
+        }
+        if (code === userData.userCode) {
+            showToast('❌ لا يمكن إضافة نفسك', true);
+            return;
+        }
+        
+        showLoading(true);
+        const user = await findUserByCode(code);
+        showLoading(false);
+        
+        if (user) {
+            elements.addFriendResult.innerHTML = `
+                <div style="background: rgba(212,175,55,0.1); border-radius: 16px; padding: 12px; text-align: center;">
+                    <div style="font-weight: bold; color: #d4af37;">${escapeHtml(user.username)}</div>
+                    <div style="font-size: 11px; color: #8a9aa8; margin: 5px 0;">${escapeHtml(user.email)}</div>
+                    <button id="confirmAdd" style="background: #d4af37; border: none; padding: 8px 20px; border-radius: 25px; margin-top: 8px; cursor: pointer;">➕ إضافة</button>
+                </div>
+            `;
+            document.getElementById('confirmAdd').onclick = async () => {
+                showLoading(true);
+                await sendFriendRequest(code);
+                showLoading(false);
+                elements.addFriendResult.innerHTML = '';
+                elements.friendCodeInput.value = '';
+            };
+        } else {
+            elements.addFriendResult.innerHTML = '<div style="text-align: center; color: #e74c3c;">❌ لم يتم العثور على المستخدم</div>';
+            setTimeout(() => elements.addFriendResult.innerHTML = '', 3000);
+        }
+    };
+    
+    document.addEventListener('click', (e) => {
+        if (!elements.infoFab.contains(e.target) && !elements.infoDropdown.contains(e.target)) {
+            elements.infoDropdown.classList.remove('active');
+        }
+        if (!elements.friendsFab.contains(e.target) && !elements.friendsDropdown.contains(e.target)) {
+            elements.friendsDropdown.classList.remove('active');
+        }
+    });
+    
+    // Auth State
+    onAuthStateChanged(auth, async (user) => {
+        if (user && !currentUser) {
+            currentUser = {
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName,
+                photoURL: user.photoURL
+            };
+            await ensureUser();
+            elements.loginScreen.style.display = 'none';
+            elements.mainScreen.style.display = 'block';
+            loadRequests();
+            loadFriends();
+        }
+    });
+    
+    // Keep Alive
+    setInterval(async () => {
+        try {
+            await fetch(`${API_URL}/api/health`);
+        } catch(e) {}
+    }, 600000);
+</script>
+</body>
+</html>
+
