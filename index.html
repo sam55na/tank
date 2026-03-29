@@ -2,175 +2,463 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <title>القزم الغامض: المظهر المدمج النهائي</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>القزم الهيكلي الغامض - كابوس العظام</title>
     <style>
-        body { margin: 0; background-color: #000; overflow: hidden; }
-        canvas { display: block; }
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', 'Tahoma', 'Geneva', 'Verdana', sans-serif;
+        }
+        
+        /* مؤشر تحميل بسيط */
+        #loading {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: rgba(150, 0, 0, 0.7);
+            font-size: 12px;
+            z-index: 100;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 12px;
+            border-radius: 20px;
+            pointer-events: none;
+            font-family: monospace;
+            letter-spacing: 1px;
+        }
+        
+        /* تأثير ضبابي للغموض */
+        .vignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            box-shadow: inset 0 0 80px rgba(0,0,0,0.8);
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.3; }
+            100% { opacity: 0.7; }
+        }
     </style>
 </head>
 <body>
+    <div id="loading">⚡ القزم الغامض | عظام متحركة ⚡</div>
+    <div class="vignette"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.158.0/three.min.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js"
+            }
+        }
+    </script>
 
-<script>
-    // --- الإعدادات الأساسية ---
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x020202); // خلفية داكنة جداً
+    <script type="module">
+        import * as THREE from 'three';
 
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 1.2, 3.2);
+        // --- تهيئة المشهد الغامض ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x020210);
+        scene.fog = new THREE.FogExp2(0x020210, 0.05); // ضباب كثيف للغموض
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    document.body.appendChild(renderer.domElement);
+        // كاميرا درامية
+        const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 1.3, 3.8);
+        camera.lookAt(0, 0.5, 0);
 
-    // --- الإضاءة (سر الاندماج البصري) ---
-    // ضوء أمامي خافت لإبراز الكتلة
-    const ambient = new THREE.AmbientLight(0x202020, 0.6); 
-    scene.add(ambient);
-
-    // ضوء علوي خلفي (Rim Light) لخلق هالة غامضة وإخفاء التفاصيل
-    const rimLight = new THREE.SpotLight(0xffffff, 1.2);
-    rimLight.position.set(0, 4, -2);
-    rimLight.angle = Math.PI / 4;
-    scene.add(rimLight);
-
-    // ضوء القنبلة الأحمر
-    const bombGlow = new THREE.PointLight(0xff0000, 12, 2.5);
-    bombGlow.position.set(0.9, 0.4, 0.6);
-    scene.add(bombGlow);
-
-    // --- الخامات والمجموعة ---
-    const dwarf = new THREE.Group();
-    const darkMat = new THREE.MeshStandardMaterial({ 
-        color: 0x111111, 
-        roughness: 0.85, 
-        metalness: 0.1 
-    });
-    const hatMat = new THREE.MeshStandardMaterial({ color: 0x330000, roughness: 0.9 });
-
-    // --- بناء الشخصية ---
-
-    // 1. الجسم الرئيسي (كتلة مركزية)
-    const bodyGeo = new THREE.SphereGeometry(0.6, 32, 32);
-    const body = new THREE.Mesh(bodyGeo, darkMat);
-    body.scale.y = 1.1; // تمديد قليل لجسم أطول
-    dwarf.add(body);
-
-    // 2. الرقبة/الرأس (مندمج مع الجسم)
-    // وضعناه في نفس موقع أعلى الجسم ليتداخلا
-    const headGeo = new THREE.CylinderGeometry(0.2, 0.35, 0.3, 16);
-    const head = new THREE.Mesh(headGeo, darkMat);
-    head.position.y = 0.55; // منخفض ليتداخل مع كرة الجسم
-    dwarf.add(head);
-
-    // 3. القبعة المخروطية المائلة
-    const hatGeo = new THREE.ConeGeometry(0.48, 1.3, 32);
-    const hat = new THREE.Mesh(hatGeo, hatMat);
-    hat.position.y = 1.3; // فوق الرأس المندمج
-    hat.rotation.z = 0.28; 
-    dwarf.add(hat);
-
-    // --- الأطراف العلوية (متصلة ومندمجة) ---
-
-    // الذراع اليسرى
-    const armGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.55, 16);
-    const leftArm = new THREE.Mesh(armGeo, darkMat);
-    leftArm.position.set(-0.65, 0.1, 0.2);
-    leftArm.rotation.z = Math.PI / 2.5;
-    dwarf.add(leftArm);
-
-    // الكف الأيسر (بيضوي ومندمج مع نهاية الذراع)
-    const palmGeo = new THREE.SphereGeometry(0.12, 16, 16);
-    const leftPalm = new THREE.Mesh(palmGeo, darkMat);
-    leftPalm.scale.set(1, 1.4, 0.8); // شكل الكف
-    leftPalm.position.set(-0.88, -0.05, 0.25); // متداخل مع نهاية الذراع
-    leftPalm.rotation.z = Math.PI / 2; // زاوية اليد
-    dwarf.add(leftPalm);
-
-    // الذراع اليمنى (التي تحمل القنبلة)
-    const rightArm = new THREE.Mesh(armGeo, darkMat);
-    rightArm.position.set(0.62, 0.1, 0.2);
-    rightArm.rotation.z = -Math.PI / 3;
-    dwarf.add(rightArm);
-
-    // الكف الأيمن
-    const rightPalm = new THREE.Mesh(palmGeo, darkMat);
-    rightPalm.scale.set(1, 1.4, 0.8);
-    rightPalm.position.set(0.85, -0.05, 0.25); 
-    rightPalm.rotation.z = -Math.PI / 2;
-    dwarf.add(rightPalm);
-
-    // --- الأطراف السفلية ---
-
-    // الساق اليسرى
-    const legGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.45, 16);
-    const leftLeg = new THREE.Mesh(legGeo, darkMat);
-    leftLeg.position.set(-0.35, -0.62, 0.1);
-    dwarf.add(leftLeg);
-
-    // القدم اليسرى (المكعب)
-    const footGeo = new THREE.BoxGeometry(0.35, 0.15, 0.5);
-    const leftFoot = new THREE.Mesh(footGeo, darkMat);
-    leftFoot.position.set(-0.35, -0.85, 0.1);
-    dwarf.add(leftFoot);
-
-    // الساق اليمنى
-    const rightLeg = new THREE.Mesh(legGeo, darkMat);
-    rightLeg.position.set(0.35, -0.62, 0.1);
-    dwarf.add(rightLeg);
-
-    // القدم اليمنى
-    const rightFoot = new THREE.Mesh(footGeo, darkMat);
-    rightFoot.position.set(0.35, -0.85, 0.1);
-    dwarf.add(rightFoot);
-
-    // --- القنبلة المحسنة ---
-    const bombGroup = new THREE.Group();
-    const bombBody = new THREE.Mesh(
-        new THREE.SphereGeometry(0.3, 32, 32), 
-        new THREE.MeshStandardMaterial({color: 0x050505, roughness: 0.1})
-    );
-    
-    // الفتيل المنحني
-    const curve = new THREE.QuadraticBezierCurve3(
-        new THREE.Vector3(0, 0.25, 0),
-        new THREE.Vector3(0.08, 0.48, 0),
-        new THREE.Vector3(0.28, 0.48, 0)
-    );
-    const fuseGeo = new THREE.TubeGeometry(curve, 10, 0.02, 8, false);
-    const fuse = new THREE.Mesh(fuseGeo, new THREE.MeshBasicMaterial({ color: 0xeeeeee }));
-    
-    bombGroup.add(bombBody, fuse);
-    bombGroup.position.set(0.9, 0.28, 0.4); // وضعها في اليد اليمنى
-    dwarf.add(bombGroup);
-
-    scene.add(dwarf);
-
-    // --- حلقة التحريك ---
-    function animate() {
-        requestAnimationFrame(animate);
-        
-        const t = Date.now() * 0.001;
-        
-        // تمايل جانبي خفيف
-        dwarf.rotation.y = Math.sin(t * 0.5) * 0.06;
-        
-        // وميض ضوء القنبلة
-        bombGlow.intensity = 8 + Math.sin(t * 12) * 3 + Math.random();
-
-        renderer.render(scene, camera);
-    }
-
-    // التعامل مع تغيير حجم النافذة
-    window.addEventListener('resize', () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
         renderer.setSize(window.innerWidth, window.innerHeight);
-    });
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.shadowMap.enabled = true; // تفعيل الظلال للغموض
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.body.appendChild(renderer.domElement);
 
-    animate();
-</script>
+        // --- إضاءة غامضة ومخيفة ---
+        
+        // إضاءة محيطة خافتة
+        const ambientLight = new THREE.AmbientLight(0x111118, 0.4);
+        scene.add(ambientLight);
+        
+        // إضاءة خلفية حمراء (مصدر شر)
+        const backLight = new THREE.PointLight(0xaa1122, 1.2, 6);
+        backLight.position.set(-1, 1.5, -2);
+        scene.add(backLight);
+        
+        // ضوء رئيسي علوي مائل
+        const mainLight = new THREE.DirectionalLight(0xccaa88, 0.9);
+        mainLight.position.set(2, 3, 2);
+        mainLight.castShadow = true;
+        mainLight.receiveShadow = true;
+        mainLight.shadow.mapSize.width = 1024;
+        mainLight.shadow.mapSize.height = 1024;
+        scene.add(mainLight);
+        
+        // ضوء أزرق غامض من الأسفل
+        const underGlow = new THREE.PointLight(0x2255aa, 0.6);
+        underGlow.position.set(0, -1, 0);
+        scene.add(underGlow);
+        
+        // ضوء القنبلة النابض (أحمر متوهج)
+        const bombGlow = new THREE.PointLight(0xff3300, 8, 3.5);
+        bombGlow.castShadow = false;
+        scene.add(bombGlow);
+        
+        // مصابيح جوية عائمة (جسيمات ضوئية)
+        const floatingLights = [];
+        
+        // --- إضافة جسيمات غبار سحرية غامضة ---
+        const dustGeometry = new THREE.BufferGeometry();
+        const dustCount = 800;
+        const dustPositions = new Float32Array(dustCount * 3);
+        for (let i = 0; i < dustCount; i++) {
+            dustPositions[i*3] = (Math.random() - 0.5) * 8;
+            dustPositions[i*3+1] = Math.random() * 3;
+            dustPositions[i*3+2] = (Math.random() - 0.5) * 6 - 1;
+        }
+        dustGeometry.setAttribute('position', new THREE.BufferAttribute(dustPositions, 3));
+        const dustMaterial = new THREE.PointsMaterial({
+            color: 0xaa8866,
+            size: 0.02,
+            transparent: true,
+            opacity: 0.4,
+            blending: THREE.AdditiveBlending
+        });
+        const dustSystem = new THREE.Points(dustGeometry, dustMaterial);
+        scene.add(dustSystem);
+        
+        // --- خلفية سديمية متحركة (كرة كبيرة) ---
+        const nebulaTexture = (() => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#110022';
+            ctx.fillRect(0, 0, 512, 512);
+            for (let i = 0; i < 400; i++) {
+                ctx.fillStyle = `rgba(${100 + Math.random() * 100}, ${30 + Math.random() * 50}, ${100 + Math.random() * 100}, ${Math.random() * 0.3})`;
+                ctx.beginPath();
+                ctx.arc(Math.random() * 512, Math.random() * 512, Math.random() * 8 + 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            return texture;
+        })();
+        
+        const backgroundSphere = new THREE.Mesh(
+            new THREE.SphereGeometry(12, 64, 64),
+            new THREE.MeshBasicMaterial({ color: 0x050510, transparent: true, opacity: 0.3, side: THREE.BackSide })
+        );
+        scene.add(backgroundSphere);
+        
+        // --- إنشاء القزم الهيكلي الغامض ---
+        const dwarf = new THREE.Group();
+        
+        // خامات مميزة
+        const darkMetalMat = new THREE.MeshStandardMaterial({ color: 0x181818, roughness: 0.4, metalness: 0.7, emissive: 0x111111 });
+        const boneMat = new THREE.MeshStandardMaterial({ color: 0xddccaa, roughness: 0.5, emissive: 0x331100 });
+        const shadowMat = new THREE.MeshStandardMaterial({ color: 0x2a1e0c, roughness: 0.8 });
+        const cloakMat = new THREE.MeshStandardMaterial({ color: 0x2c1a10, roughness: 0.9, emissive: 0x110000 });
+        const redMat = new THREE.MeshStandardMaterial({ color: 0x661122, roughness: 0.3, emissive: 0x330000 });
+        
+        // 1. الجسم الرئيسي - هيكلي الشكل
+        const torsoGeo = new THREE.CylinderGeometry(0.55, 0.65, 0.9, 24);
+        const torso = new THREE.Mesh(torsoGeo, darkMetalMat);
+        torso.castShadow = true;
+        torso.receiveShadow = true;
+        torso.position.y = -0.1;
+        dwarf.add(torso);
+        
+        // أضلاع هيكلية على الصدر (زخرفة غامضة)
+        for (let i = 0; i < 6; i++) {
+            const ribGeo = new THREE.BoxGeometry(0.08, 0.04, 0.4);
+            const rib = new THREE.Mesh(ribGeo, boneMat);
+            rib.position.set(-0.32 + (i % 2 === 0 ? 0.64 : 0), 0.1 + i * 0.12, 0.55);
+            rib.castShadow = true;
+            dwarf.add(rib);
+        }
+        
+        // 2. الرقبة (فقرة غامضة)
+        const neckGeo = new THREE.CylinderGeometry(0.23, 0.27, 0.28, 12);
+        const neck = new THREE.Mesh(neckGeo, boneMat);
+        neck.position.y = 0.48;
+        neck.castShadow = true;
+        dwarf.add(neck);
+        
+        // 3. الرأس - جمجمة غامضة
+        const headGeo = new THREE.SphereGeometry(0.42, 32, 32);
+        const head = new THREE.Mesh(headGeo, boneMat);
+        head.position.y = 0.78;
+        head.castShadow = true;
+        dwarf.add(head);
+        
+        // تجويف العينين (متوهج)
+        const eyeSocketL = new THREE.Mesh(new THREE.SphereGeometry(0.12, 24, 24), new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0x440000, emissiveIntensity: 0.8 }));
+        eyeSocketL.position.set(-0.18, 0.85, 0.43);
+        dwarf.add(eyeSocketL);
+        
+        const eyeSocketR = new THREE.Mesh(new THREE.SphereGeometry(0.12, 24, 24), new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0x440000, emissiveIntensity: 0.8 }));
+        eyeSocketR.position.set(0.18, 0.85, 0.43);
+        dwarf.add(eyeSocketR);
+        
+        // وهج العينين (نقط حمراء)
+        const leftEyeGlow = new THREE.PointLight(0xff3300, 0.7, 1.5);
+        leftEyeGlow.position.set(-0.18, 0.85, 0.55);
+        dwarf.add(leftEyeGlow);
+        
+        const rightEyeGlow = new THREE.PointLight(0xff3300, 0.7, 1.5);
+        rightEyeGlow.position.set(0.18, 0.85, 0.55);
+        dwarf.add(rightEyeGlow);
+        
+        // غطاء رأس غامض (غطاء محطم)
+        const hoodGeo = new THREE.ConeGeometry(0.58, 0.65, 16);
+        const hood = new THREE.Mesh(hoodGeo, cloakMat);
+        hood.position.y = 1.05;
+        hood.rotation.x = 0.1;
+        hood.rotation.z = -0.1;
+        hood.castShadow = true;
+        dwarf.add(hood);
+        
+        // زينة قرن صغير
+        const hornGeo = new THREE.ConeGeometry(0.1, 0.35, 8);
+        const horn = new THREE.Mesh(hornGeo, redMat);
+        horn.position.set(0.32, 1.12, 0.15);
+        horn.rotation.z = -0.3;
+        dwarf.add(horn);
+        
+        const hornL = new THREE.Mesh(hornGeo, redMat);
+        hornL.position.set(-0.32, 1.12, 0.15);
+        hornL.rotation.z = 0.3;
+        dwarf.add(hornL);
+        
+        // --- الأطراف الهيكلية ---
+        
+        // الذراع الأيسر (عظمي)
+        const leftArmGeo = new THREE.CylinderGeometry(0.1, 0.09, 0.7, 12);
+        const leftArm = new THREE.Mesh(leftArmGeo, boneMat);
+        leftArm.position.set(-0.68, 0.25, 0.1);
+        leftArm.rotation.z = 0.65;
+        leftArm.rotation.x = 0.2;
+        leftArm.castShadow = true;
+        dwarf.add(leftArm);
+        
+        // اليد اليسرى (مخلب)
+        const leftClaw = new THREE.Group();
+        const palmL = new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 8), boneMat);
+        leftClaw.add(palmL);
+        for (let i = 0; i < 3; i++) {
+            const clawGeo = new THREE.ConeGeometry(0.045, 0.2, 6);
+            const claw = new THREE.Mesh(clawGeo, boneMat);
+            claw.position.set(-0.08 + i * 0.08, -0.05, 0.12);
+            claw.rotation.x = -0.5;
+            leftClaw.add(claw);
+        }
+        leftClaw.position.set(-1.02, 0.0, 0.2);
+        dwarf.add(leftClaw);
+        
+        // الذراع الأيمن (حامل القنبلة)
+        const rightArmGeo = new THREE.CylinderGeometry(0.1, 0.09, 0.68, 12);
+        const rightArm = new THREE.Mesh(rightArmGeo, boneMat);
+        rightArm.position.set(0.67, 0.25, 0.05);
+        rightArm.rotation.z = -0.55;
+        rightArm.rotation.x = -0.15;
+        rightArm.castShadow = true;
+        dwarf.add(rightArm);
+        
+        // اليد اليمنى (مخلب مفتوح)
+        const rightClaw = new THREE.Group();
+        const palmR = new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 8), boneMat);
+        rightClaw.add(palmR);
+        for (let i = 0; i < 3; i++) {
+            const clawGeo = new THREE.ConeGeometry(0.045, 0.2, 6);
+            const claw = new THREE.Mesh(clawGeo, boneMat);
+            claw.position.set(-0.08 + i * 0.08, -0.05, 0.12);
+            claw.rotation.x = -0.4;
+            rightClaw.add(claw);
+        }
+        rightClaw.position.set(1.0, -0.03, 0.18);
+        dwarf.add(rightClaw);
+        
+        // الساقان الهيكليتان
+        const legLGeo = new THREE.CylinderGeometry(0.11, 0.09, 0.55, 12);
+        const leftLeg = new THREE.Mesh(legLGeo, boneMat);
+        leftLeg.position.set(-0.32, -0.45, 0.0);
+        leftLeg.castShadow = true;
+        dwarf.add(leftLeg);
+        
+        const footL = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.12, 0.5), shadowMat);
+        footL.position.set(-0.32, -0.73, 0.1);
+        footL.castShadow = true;
+        dwarf.add(footL);
+        
+        const rightLeg = new THREE.Mesh(legLGeo, boneMat);
+        rightLeg.position.set(0.32, -0.45, 0.0);
+        rightLeg.castShadow = true;
+        dwarf.add(rightLeg);
+        
+        const footR = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.12, 0.5), shadowMat);
+        footR.position.set(0.32, -0.73, 0.1);
+        footR.castShadow = true;
+        dwarf.add(footR);
+        
+        // --- القنبلة الغامضة المتوهجة ---
+        const bombGroup = new THREE.Group();
+        
+        // جسم القنبلة كروي مع شقوق
+        const bombBodyGeo = new THREE.SphereGeometry(0.32, 48, 48);
+        const bombMaterial = new THREE.MeshStandardMaterial({ color: 0x221111, metalness: 0.3, roughness: 0.2, emissive: 0x331100 });
+        const bombCore = new THREE.Mesh(bombBodyGeo, bombMaterial);
+        bombCore.castShadow = true;
+        bombGroup.add(bombCore);
+        
+        // خطوط معدنية على القنبلة
+        const strapGeo = new THREE.TorusGeometry(0.33, 0.035, 32, 64);
+        const strapMat = new THREE.MeshStandardMaterial({ color: 0xaa6644, metalness: 0.8 });
+        const strap1 = new THREE.Mesh(strapGeo, strapMat);
+        strap1.rotation.x = Math.PI / 2;
+        strap1.rotation.z = 0.5;
+        bombGroup.add(strap1);
+        
+        const strap2 = new THREE.Mesh(strapGeo, strapMat);
+        strap2.rotation.z = Math.PI / 3;
+        strap2.rotation.x = 0.8;
+        bombGroup.add(strap2);
+        
+        // الفتيل الملتهب (منحني)
+        const curvePoints = [
+            new THREE.Vector3(0, 0.34, 0),
+            new THREE.Vector3(0.12, 0.52, 0.05),
+            new THREE.Vector3(0.28, 0.58, 0.1),
+            new THREE.Vector3(0.42, 0.55, 0.08)
+        ];
+        const fuseCurve = new THREE.CatmullRomCurve3(curvePoints);
+        const fuseTube = new THREE.TubeGeometry(fuseCurve, 12, 0.04, 8, false);
+        const fuseMatGlow = new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4422, emissiveIntensity: 0.9 });
+        const fuseModel = new THREE.Mesh(fuseTube, fuseMatGlow);
+        bombGroup.add(fuseModel);
+        
+        // نار صغيرة على طرف الفتيل
+        const sparkMat = new THREE.MeshStandardMaterial({ color: 0xff6600, emissive: 0xff3300, emissiveIntensity: 1.2 });
+        const spark = new THREE.Mesh(new THREE.SphereGeometry(0.07, 12, 12), sparkMat);
+        spark.position.set(0.45, 0.57, 0.09);
+        bombGroup.add(spark);
+        
+        bombGroup.position.set(1.02, 0.05, 0.25);
+        bombGroup.rotation.z = -0.2;
+        bombGroup.rotation.x = 0.1;
+        dwarf.add(bombGroup);
+        
+        scene.add(dwarf);
+        
+        // --- إضافة غلاف سحابي غامض حول القزم ---
+        const mistGeo = new THREE.SphereGeometry(1.1, 16, 16);
+        const mistMat = new THREE.MeshPhongMaterial({ color: 0x331122, transparent: true, opacity: 0.12, side: THREE.BackSide });
+        const aura = new THREE.Mesh(mistGeo, mistMat);
+        dwarf.add(aura);
+        
+        // --- عناصر زخرفية: جماجم صغيرة طافية حول القزم (غموض) ---
+        const floatingSkulls = [];
+        const skullMat = new THREE.MeshStandardMaterial({ color: 0xccbb99, roughness: 0.6 });
+        for (let i = 0; i < 5; i++) {
+            const skullGroup = new THREE.Group();
+            const skullCore = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 16), skullMat);
+            skullGroup.add(skullCore);
+            const eyeSkull = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 8), new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0x550000 }));
+            eyeSkull.position.set(-0.045, 0.035, 0.11);
+            skullGroup.add(eyeSkull);
+            const eyeSkullR = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 8), new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0x550000 }));
+            eyeSkullR.position.set(0.045, 0.035, 0.11);
+            skullGroup.add(eyeSkullR);
+            skullGroup.position.set((Math.random() - 0.5) * 1.8, Math.random() * 1.2 - 0.2, (Math.random() - 0.5) * 1.5 - 0.5);
+            dwarf.add(skullGroup);
+            floatingSkulls.push({ group: skullGroup, speed: 0.5 + Math.random() * 0.5, offsetY: Math.random() * Math.PI * 2, radius: 0.8 });
+        }
+        
+        // --- تحريك الجسيمات الدائرية (سحر أسود) ---
+        const particleCount = 300;
+        const particleGeo = new THREE.BufferGeometry();
+        const particlePositions = new Float32Array(particleCount * 3);
+        for (let i = 0; i < particleCount; i++) {
+            particlePositions[i*3] = (Math.random() - 0.5) * 3.5;
+            particlePositions[i*3+1] = Math.random() * 2.2 - 0.5;
+            particlePositions[i*3+2] = (Math.random() - 0.5) * 3;
+        }
+        particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+        const particleMat = new THREE.PointsMaterial({ color: 0xff6644, size: 0.012, transparent: true, blending: THREE.AdditiveBlending });
+        const particles = new THREE.Points(particleGeo, particleMat);
+        dwarf.add(particles);
+        
+        // --- حلقة الحركة الغامضة ---
+        let time = 0;
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.012;
+            
+            // تمايل الشخصية البطيء المخيف
+            dwarf.position.y = Math.sin(time * 1.3) * 0.008;
+            dwarf.rotation.y = Math.sin(time * 0.4) * 0.1;
+            dwarf.rotation.z = Math.sin(time * 0.7) * 0.02;
+            
+            // تحريك الذراعين بحركة غريبة
+            leftArm.rotation.z = 0.65 + Math.sin(time * 1.9) * 0.12;
+            rightArm.rotation.z = -0.55 + Math.sin(time * 2.1) * 0.1;
+            
+            // القنبلة تتوهج وتنبض
+            const intensity = 7 + Math.sin(time * 14) * 3.5 + Math.sin(time * 27) * 1.2;
+            bombGlow.intensity = intensity;
+            bombGlow.position.set(1.05, 0.15, 0.4);
+            
+            // وميض العينين
+            const eyeIntensity = 0.6 + Math.sin(time * 8) * 0.3;
+            leftEyeGlow.intensity = eyeIntensity;
+            rightEyeGlow.intensity = eyeIntensity;
+            
+            // نار الفتيل تنبض
+            spark.scale.setScalar(0.9 + Math.sin(time * 25) * 0.2);
+            fuseMatGlow.emissiveIntensity = 0.7 + Math.sin(time * 18) * 0.5;
+            
+            // تحريك الجسيمات والدوران
+            particles.rotation.y = time * 0.2;
+            dustSystem.rotation.y = time * 0.03;
+            dustSystem.rotation.x = Math.sin(time * 0.1) * 0.1;
+            
+            // تحريك الجماجم الطافية
+            floatingSkulls.forEach((skull, idx) => {
+                skull.group.position.y = 0.2 + Math.sin(time * skull.speed + skull.offsetY) * 0.12;
+                skull.group.rotation.y = time * 0.8;
+                skull.group.rotation.x = Math.sin(time * 0.9 + idx) * 0.3;
+            });
+            
+            // إضاءة تحتية متغيرة
+            underGlow.intensity = 0.5 + Math.sin(time * 1.2) * 0.25;
+            backLight.intensity = 1.1 + Math.sin(time * 0.9) * 0.4;
+            
+            // تحريك الكاميرا قليلاً (تأثير مخيف)
+            camera.position.x += (0 - camera.position.x) * 0.05;
+            camera.position.y += (1.28 + Math.sin(time * 0.5) * 0.02 - camera.position.y) * 0.05;
+            camera.lookAt(0, 0.6, 0);
+            
+            renderer.render(scene, camera);
+        }
+        
+        animate();
+        
+        // --- استجابة لتغيير حجم النافذة ---
+        window.addEventListener('resize', onWindowResize, false);
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        
+        // تأثير دخان خفيف عبر console غامض (للمتعة)
+        console.log("%c⚙️ القزم الهيكلي الغامض | العظام تتحرك في الظلام...", "color: #aa4422; font-size: 14px; font-family: monospace;");
+    </script>
 </body>
 </html>
