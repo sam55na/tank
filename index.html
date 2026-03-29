@@ -1,521 +1,137 @@
-<!DOCTYPE html>
-<html lang="ar">
-<head>
-    <meta charset="UTF-8">
-    <title>القزم المحترف - شوتر أسطوري</title>
-    <style>
-        body {
-            margin: 0;
-            background: radial-gradient(circle at center, #0a0a1a, #000000);
-            overflow: hidden;
-            font-family: 'Segoe UI', 'Tahoma', 'Geneva', 'Verdana', sans-serif;
+{
+    "asset" : {
+        "generator" : "Khronos glTF Blender I/O v1.7.33",
+        "version" : "2.0"
+    },
+    "scene" : 0,
+    "scenes" : [
+        {
+            "name" : "Scene",
+            "nodes" : [
+                0
+            ]
         }
-        
-        #ui {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            z-index: 100;
-            color: #ffaa44;
-            background: rgba(0,0,0,0.7);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-family: monospace;
-            font-size: 12px;
-            backdrop-filter: blur(4px);
-            border-left: 3px solid #ffaa44;
-            pointer-events: none;
+    ],
+    "nodes" : [
+        {
+            "mesh" : 0,
+            "name" : "Prop_Bottle_2"
         }
-        
-        #ammo {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            z-index: 100;
-            color: #ffaa44;
-            background: rgba(0,0,0,0.7);
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-family: monospace;
-            font-size: 18px;
-            font-weight: bold;
-            backdrop-filter: blur(4px);
-            letter-spacing: 2px;
-            pointer-events: none;
-        }
-        
-        #crosshair {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            width: 28px;
-            height: 28px;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-            z-index: 100;
-        }
-        
-        #crosshair::before, #crosshair::after {
-            content: '';
-            position: absolute;
-            background: rgba(255, 200, 100, 0.9);
-            box-shadow: 0 0 4px #ff6600;
-        }
-        
-        #crosshair::before {
-            top: 50%;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            transform: translateY(-50%);
-        }
-        
-        #crosshair::after {
-            top: 0;
-            left: 50%;
-            width: 2px;
-            height: 100%;
-            transform: translateX(-50%);
-        }
-        
-        .vignette {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            box-shadow: inset 0 0 120px rgba(0,0,0,0.8);
-            pointer-events: none;
-            z-index: 10;
-        }
-        
-        @keyframes muzzlePulse {
-            0% { opacity: 1; transform: scale(1); }
-            100% { opacity: 0; transform: scale(1.5); }
-        }
-    </style>
-</head>
-<body>
-    <div id="ui">🔫 القزم المحترف | SHOOTER ELITE | اضغط بالماوس أو Space لإطلاق النار 🔫</div>
-    <div id="ammo">⚡ 30/30 ⚡</div>
-    <div id="crosshair"></div>
-    <div class="vignette"></div>
-
-    <script type="importmap">
-        { "imports": { "three": "https://unpkg.com/three@0.158.0/build/three.module.js" } }
-    </script>
-
-    <script type="module">
-        import * as THREE from 'three';
-
-        // --- المشهد السينمائي ---
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x050b1a);
-        scene.fog = new THREE.FogExp2(0x050b1a, 0.03);
-
-        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 1.5, 5);
-        camera.lookAt(0, 1, 0);
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        renderer.setPixelRatio(window.devicePixelRatio);
-        document.body.appendChild(renderer.domElement);
-
-        // --- إضاءة سينمائية دراماتيكية ---
-        const ambientLight = new THREE.AmbientLight(0x2a2a3a, 0.5);
-        scene.add(ambientLight);
-        
-        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444455, 0.8);
-        scene.add(hemiLight);
-
-        const dirLight = new THREE.DirectionalLight(0xffeedd, 1.5);
-        dirLight.position.set(4, 5, 3);
-        dirLight.castShadow = true;
-        dirLight.receiveShadow = true;
-        dirLight.shadow.mapSize.width = 1024;
-        dirLight.shadow.mapSize.height = 1024;
-        scene.add(dirLight);
-        
-        // إضاءة خلفية حمراء (تأثير تكتيكي)
-        const backLight = new THREE.PointLight(0xff4422, 0.8);
-        backLight.position.set(-2, 2, -3);
-        scene.add(backLight);
-        
-        // إضاءة زرقاء من الأسفل
-        const fillLight = new THREE.PointLight(0x3366cc, 0.5);
-        fillLight.position.set(0, -1, 1);
-        scene.add(fillLight);
-        
-        // وميض السلاح
-        const muzzleLight = new THREE.PointLight(0xff6600, 0, 5);
-        muzzleLight.castShadow = false;
-        scene.add(muzzleLight);
-        
-        // --- أرضية ساحة معركة ---
-        const gridHelper = new THREE.GridHelper(12, 20, 0xffaa55, 0x335588);
-        gridHelper.position.y = -1.15;
-        gridHelper.material.transparent = true;
-        gridHelper.material.opacity = 0.4;
-        scene.add(gridHelper);
-        
-        const groundPlane = new THREE.Mesh(
-            new THREE.PlaneGeometry(12, 12),
-            new THREE.MeshStandardMaterial({ color: 0x112233, roughness: 0.7, metalness: 0.2, transparent: true, opacity: 0.35 })
-        );
-        groundPlane.rotation.x = -Math.PI / 2;
-        groundPlane.position.y = -1.12;
-        groundPlane.receiveShadow = true;
-        scene.add(groundPlane);
-        
-        // --- جسيمات غبار قتالي ---
-        const dustCount = 500;
-        const dustGeo = new THREE.BufferGeometry();
-        const dustPositions = new Float32Array(dustCount * 3);
-        for (let i = 0; i < dustCount; i++) {
-            dustPositions[i*3] = (Math.random() - 0.5) * 10;
-            dustPositions[i*3+1] = Math.random() * 2.5;
-            dustPositions[i*3+2] = (Math.random() - 0.5) * 8;
-        }
-        dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPositions, 3));
-        const dustMat = new THREE.PointsMaterial({ color: 0x88aaff, size: 0.02, transparent: true, opacity: 0.3, blending: THREE.AdditiveBlending });
-        const dustSystem = new THREE.Points(dustGeo, dustMat);
-        scene.add(dustSystem);
-        
-        // --- خلفية سديمية عسكرية ---
-        const bgSphere = new THREE.Mesh(
-            new THREE.SphereGeometry(14, 64, 64),
-            new THREE.MeshBasicMaterial({ color: 0x0a1a2a, transparent: true, opacity: 0.3, side: THREE.BackSide })
-        );
-        scene.add(bgSphere);
-        
-        // --- المواد المحسنة (مشتقة من المواد الأصلية) ---
-        const matYellow = new THREE.MeshStandardMaterial({ color: 0xffcc33, roughness: 0.4, metalness: 0.3 });
-        const matSkin = new THREE.MeshStandardMaterial({ color: 0xffdbac, roughness: 0.3, metalness: 0.1 });
-        const matWhite = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.7 });
-        const matBrown = new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.6 });
-        const matDark = new THREE.MeshStandardMaterial({ color: 0x2a3a2a, roughness: 0.4, metalness: 0.5 });
-        const matMetal = new THREE.MeshStandardMaterial({ color: 0xaa8866, metalness: 0.85, roughness: 0.25 });
-        
-        // --- بناء القزم المحترف (بنفس هيكل القزم الأصلي مع تحسين الأعضاء) ---
-        const dwarf = new THREE.Group();
-        
-        // 1. الجسم الرئيسي (ممتلئ كما في الأصل)
-        const bodyGeo = new THREE.SphereGeometry(0.68, 48, 48);
-        const body = new THREE.Mesh(bodyGeo, matYellow);
-        body.scale.set(1.08, 1.02, 0.92);
-        body.position.y = 0.15;
-        body.castShadow = true;
-        body.receiveShadow = true;
-        dwarf.add(body);
-        
-        // درع صدري تكتيكي
-        const chestArmor = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.65, 0.48), new THREE.MeshStandardMaterial({ color: 0x4a6a4a, metalness: 0.7, roughness: 0.3 }));
-        chestArmor.position.set(0, 0.2, 0.62);
-        chestArmor.castShadow = true;
-        dwarf.add(chestArmor);
-        
-        // 2. الرقبة
-        const neckGeo = new THREE.CylinderGeometry(0.22, 0.26, 0.28, 24);
-        const neck = new THREE.Mesh(neckGeo, matSkin);
-        neck.position.y = 0.72;
-        neck.castShadow = true;
-        dwarf.add(neck);
-        
-        // 3. الوجه المستدير (كما في المنطلق)
-        const head = new THREE.Mesh(new THREE.SphereGeometry(0.48, 48, 48), matSkin);
-        head.position.y = 1.08;
-        head.castShadow = true;
-        dwarf.add(head);
-        
-        // الأنف الكروي (كما في الصورة)
-        const nose = new THREE.Mesh(new THREE.SphereGeometry(0.11, 32, 32), matSkin);
-        nose.position.set(0, 1.1, 0.48);
-        dwarf.add(nose);
-        
-        // اللحية البيضاء (كما في المنطلق)
-        const beard = new THREE.Mesh(new THREE.SphereGeometry(0.45, 48, 48), matWhite);
-        beard.scale.set(1.15, 1.25, 0.85);
-        beard.position.set(0, 0.72, 0.28);
-        beard.castShadow = true;
-        dwarf.add(beard);
-        
-        // خوذة عسكرية (بدلاً من القبعة التقليدية - مع الحفاظ على شكل القبعة المائل)
-        const helmetBase = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.1, 16, 100), matMetal);
-        helmetBase.rotation.x = Math.PI/2;
-        helmetBase.position.y = 1.48;
-        helmetBase.castShadow = true;
-        dwarf.add(helmetBase);
-        
-        const helmetTop = new THREE.Mesh(new THREE.ConeGeometry(0.48, 0.9, 32), matDark);
-        helmetTop.position.y = 1.82;
-        helmetTop.rotation.z = -0.15;
-        helmetTop.castShadow = true;
-        dwarf.add(helmetTop);
-        
-        // حاجب خوذة / نظارات تكتيكية
-        const visor = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.1, 0.12), new THREE.MeshStandardMaterial({ color: 0x88aaff, metalness: 0.9, emissive: 0x224466 }));
-        visor.position.set(0, 1.45, 0.52);
-        dwarf.add(visor);
-        
-        // نظارات حمراء متوهجة
-        const goggleL = new THREE.Mesh(new THREE.SphereGeometry(0.12, 24, 24), new THREE.MeshStandardMaterial({ color: 0xcc4422, emissive: 0x441100, emissiveIntensity: 0.7 }));
-        goggleL.position.set(-0.22, 1.38, 0.56);
-        dwarf.add(goggleL);
-        
-        const goggleR = new THREE.Mesh(new THREE.SphereGeometry(0.12, 24, 24), new THREE.MeshStandardMaterial({ color: 0xcc4422, emissive: 0x441100, emissiveIntensity: 0.7 }));
-        goggleR.position.set(0.22, 1.38, 0.56);
-        dwarf.add(goggleR);
-        
-        // --- الأطراف العلوية (محسنة) ---
-        
-        // الذراع الأيسر
-        const leftArmGeo = new THREE.CylinderGeometry(0.12, 0.1, 0.75, 24);
-        const leftArm = new THREE.Mesh(leftArmGeo, matYellow);
-        leftArm.position.set(-0.78, 0.3, 0.2);
-        leftArm.rotation.z = Math.PI / 2.2;
-        leftArm.rotation.x = 0.15;
-        leftArm.castShadow = true;
-        dwarf.add(leftArm);
-        
-        // اليد اليسرى (قفاز)
-        const leftHand = new THREE.Mesh(new THREE.SphereGeometry(0.16, 24, 24), matBrown);
-        leftHand.position.set(-1.1, -0.02, 0.32);
-        dwarf.add(leftHand);
-        
-        // الذراع الأيمن (حامل السلاح)
-        const rightArmGeo = new THREE.CylinderGeometry(0.13, 0.11, 0.78, 24);
-        const rightArm = new THREE.Mesh(rightArmGeo, matYellow);
-        rightArm.position.set(0.76, 0.3, 0.18);
-        rightArm.rotation.z = -0.85;
-        rightArm.rotation.x = -0.2;
-        rightArm.castShadow = true;
-        dwarf.add(rightArm);
-        
-        // اليد اليمنى (قبضة)
-        const rightHand = new THREE.Mesh(new THREE.SphereGeometry(0.17, 24, 24), matBrown);
-        rightHand.position.set(1.12, -0.03, 0.32);
-        dwarf.add(rightHand);
-        
-        // --- السلاح الرئيسي (بندقية قنص احترافية) ---
-        const weaponGroup = new THREE.Group();
-        
-        // جسم البندقية
-        const gunBody = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.2, 1.05), new THREE.MeshStandardMaterial({ color: 0x2a2a1a, metalness: 0.8, roughness: 0.3 }));
-        gunBody.castShadow = true;
-        weaponGroup.add(gunBody);
-        
-        // ماسورة
-        const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.07, 0.85, 16), new THREE.MeshStandardMaterial({ color: 0x333322, metalness: 0.9 }));
-        barrel.rotation.z = Math.PI / 2;
-        barrel.position.set(0.65, 0.04, 0);
-        barrel.castShadow = true;
-        weaponGroup.add(barrel);
-        
-        // كاتم صوت
-        const suppressor = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.32, 12), new THREE.MeshStandardMaterial({ color: 0x444433, metalness: 0.7 }));
-        suppressor.rotation.z = Math.PI / 2;
-        suppressor.position.set(1.08, 0.04, 0);
-        weaponGroup.add(suppressor);
-        
-        // منظار
-        const scopeBase = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.45, 16), new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.85 }));
-        scopeBase.position.set(-0.05, 0.2, 0);
-        weaponGroup.add(scopeBase);
-        
-        const scopeLens = new THREE.Mesh(new THREE.SphereGeometry(0.1, 24, 24), new THREE.MeshStandardMaterial({ color: 0x88aaff, metalness: 0.95, emissive: 0x2266aa, emissiveIntensity: 0.4 }));
-        scopeLens.position.set(-0.05, 0.2, 0.22);
-        weaponGroup.add(scopeLens);
-        
-        // مخزنة
-        const magazine = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.26, 0.1), new THREE.MeshStandardMaterial({ color: 0x553322 }));
-        magazine.position.set(-0.18, -0.14, 0);
-        weaponGroup.add(magazine);
-        
-        weaponGroup.position.set(0.85, 0.1, 0.45);
-        weaponGroup.rotation.z = 0.1;
-        weaponGroup.rotation.x = -0.1;
-        dwarf.add(weaponGroup);
-        
-        // --- الأطراف السفلية ---
-        const legGeo = new THREE.CylinderGeometry(0.12, 0.1, 0.58, 24);
-        
-        const leftLeg = new THREE.Mesh(legGeo, matYellow);
-        leftLeg.position.set(-0.42, -0.55, 0.08);
-        leftLeg.castShadow = true;
-        dwarf.add(leftLeg);
-        
-        const leftBoot = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.16, 0.62), matBrown);
-        leftBoot.position.set(-0.42, -0.84, 0.12);
-        leftBoot.castShadow = true;
-        dwarf.add(leftBoot);
-        
-        const rightLeg = new THREE.Mesh(legGeo, matYellow);
-        rightLeg.position.set(0.42, -0.55, 0.08);
-        rightLeg.castShadow = true;
-        dwarf.add(rightLeg);
-        
-        const rightBoot = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.16, 0.62), matBrown);
-        rightBoot.position.set(0.42, -0.84, 0.12);
-        rightBoot.castShadow = true;
-        dwarf.add(rightBoot);
-        
-        // حزام ذخيرة
-        const ammoBelt = new THREE.Mesh(new THREE.TorusGeometry(0.72, 0.05, 16, 64), new THREE.MeshStandardMaterial({ color: 0xaa8844, metalness: 0.6 }));
-        ammoBelt.rotation.x = Math.PI / 2;
-        ammoBelt.position.set(0, 0.28, 0.58);
-        dwarf.add(ammoBelt);
-        
-        scene.add(dwarf);
-        
-        // --- جسيمات طلقات متطايرة ---
-        const trailCount = 300;
-        const trailGeo = new THREE.BufferGeometry();
-        const trailPositions = new Float32Array(trailCount * 3);
-        for (let i = 0; i < trailCount; i++) {
-            trailPositions[i*3] = (Math.random() - 0.5) * 4;
-            trailPositions[i*3+1] = Math.random() * 2;
-            trailPositions[i*3+2] = (Math.random() - 0.5) * 5;
-        }
-        trailGeo.setAttribute('position', new THREE.BufferAttribute(trailPositions, 3));
-        const trailMat = new THREE.PointsMaterial({ color: 0xffaa66, size: 0.018, transparent: true, blending: THREE.AdditiveBlending });
-        const bulletTrails = new THREE.Points(trailGeo, trailMat);
-        dwarf.add(bulletTrails);
-        
-        // --- تأثير إطلاق النار ---
-        let ammoCount = 30;
-        const ammoDisplay = document.getElementById('ammo');
-        let isFiring = false;
-        let fireTimer = 0;
-        
-        function reloadAmmo() {
-            ammoCount = 30;
-            ammoDisplay.innerHTML = `⚡ ${ammoCount}/30 ⚡`;
-            ammoDisplay.style.color = "#88ff88";
-            setTimeout(() => { ammoDisplay.style.color = "#ffaa44"; }, 200);
-        }
-        
-        function shootEffect() {
-            if (ammoCount <= 0) {
-                reloadAmmo();
-                return;
+    ],
+    "materials" : [
+        {
+            "doubleSided" : true,
+            "name" : "Atlas",
+            "pbrMetallicRoughness" : {
+                "baseColorTexture" : {
+                    "index" : 0
+                },
+                "metallicFactor" : 0
             }
-            
-            ammoCount--;
-            ammoDisplay.innerHTML = `⚡ ${ammoCount}/30 ⚡`;
-            
-            isFiring = true;
-            fireTimer = 0.12;
-            muzzleLight.intensity = 2.2;
-            
-            // وميض أمام السلاح
-            const flash = new THREE.PointLight(0xff8844, 1.5, 3);
-            flash.position.set(1.45, 0.22, 0.78);
-            dwarf.add(flash);
-            setTimeout(() => dwarf.remove(flash), 70);
-            
-            // شرر
-            for (let i = 0; i < 10; i++) {
-                const spark = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.02, 6, 6),
-                    new THREE.MeshStandardMaterial({ color: 0xff6600, emissive: 0xff3300 })
-                );
-                spark.position.set(1.55 + Math.random() * 0.2, 0.15 + Math.random() * 0.25, 0.7);
-                dwarf.add(spark);
-                setTimeout(() => dwarf.remove(spark), 120);
-            }
-            
-            // اهتزاز الكاميرا
-            camera.position.x += (Math.random() - 0.5) * 0.02;
-            camera.position.y += (Math.random() - 0.5) * 0.015;
-            
-            // ارتداد السلاح
-            weaponGroup.position.z = 0.48;
-            setTimeout(() => {
-                weaponGroup.position.z = 0.45;
-            }, 60);
         }
-        
-        // إعادة تعبئة تلقائية عند النقر مع عدم وجود ذخيرة
-        window.addEventListener('click', () => {
-            shootEffect();
-        });
-        
-        window.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
-                e.preventDefault();
-                shootEffect();
-            }
-            if (e.code === 'KeyR') {
-                e.preventDefault();
-                reloadAmmo();
-            }
-        });
-        
-        // --- حلقة الحركة ---
-        let time = 0;
-        
-        function animate() {
-            requestAnimationFrame(animate);
-            time += 0.012;
-            
-            // حركات القزم المحترف (ترقب وثبات)
-            dwarf.position.y = Math.sin(time * 1.4) * 0.003;
-            dwarf.rotation.y = Math.sin(time * 0.4) * 0.04;
-            
-            // حركة الذراعين مع التنفس
-            rightArm.rotation.z = -0.85 + Math.sin(time * 2.2) * 0.02;
-            leftArm.rotation.z = Math.PI / 2.2 + Math.sin(time * 2.0) * 0.018;
-            
-            // ارتداد السلاح
-            if (isFiring) {
-                fireTimer -= 0.016;
-                if (fireTimer <= 0) {
-                    isFiring = false;
-                    muzzleLight.intensity = 0;
-                } else {
-                    weaponGroup.rotation.x = -0.1 + Math.random() * 0.05;
-                    weaponGroup.rotation.z = 0.1 + Math.random() * 0.04;
+    ],
+    "meshes" : [
+        {
+            "name" : "Cube.024",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 0,
+                        "NORMAL" : 1,
+                        "TEXCOORD_0" : 2
+                    },
+                    "indices" : 3,
+                    "material" : 0
                 }
-            } else {
-                weaponGroup.rotation.x += (-0.1 - weaponGroup.rotation.x) * 0.15;
-                weaponGroup.rotation.z += (0.1 - weaponGroup.rotation.z) * 0.15;
-            }
-            
-            // وميض النظارات
-            const eyeIntensity = 0.6 + Math.sin(time * 7) * 0.3;
-            goggleL.material.emissiveIntensity = eyeIntensity;
-            goggleR.material.emissiveIntensity = eyeIntensity;
-            
-            // تحريك الجسيمات
-            dustSystem.rotation.y = time * 0.04;
-            bulletTrails.rotation.y = time * 0.25;
-            
-            // إضاءة متغيرة
-            backLight.intensity = 0.7 + Math.sin(time * 1.5) * 0.2;
-            fillLight.intensity = 0.55 + Math.sin(time * 1.2) * 0.15;
-            
-            // حركة الكاميرا البطيئة
-            camera.position.x += (0 - camera.position.x) * 0.06;
-            camera.position.y += (1.52 + Math.sin(time * 0.5) * 0.01 - camera.position.y) * 0.05;
-            camera.lookAt(0, 0.95, 0);
-            
-            renderer.render(scene, camera);
+            ]
         }
-        
-        animate();
-        
-        // --- تغيير حجم النافذة ---
-        window.addEventListener('resize', onWindowResize);
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+    ],
+    "textures" : [
+        {
+            "sampler" : 0,
+            "source" : 0
         }
-        
-        console.log("%c🔫 القزم المحترف | شخصية الشوتر الأسطورية | اضغط بالماوس أو Space لإطلاق النار | R لإعادة التعبئة 🔫", "color: #ffaa44; font-size: 14px; font-family: monospace;");
-    </script>
-</body>
-</html>
+    ],
+    "images" : [
+        {
+            "bufferView" : 4,
+            "mimeType" : "image/png",
+            "name" : "Atlas_Pirate"
+        }
+    ],
+    "accessors" : [
+        {
+            "bufferView" : 0,
+            "componentType" : 5126,
+            "count" : 400,
+            "max" : [
+                0.15393413603305817,
+                0.4634738266468048,
+                0.15393413603305817
+            ],
+            "min" : [
+                -0.15393413603305817,
+                -0.0024092383682727814,
+                -0.15393413603305817
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 1,
+            "componentType" : 5126,
+            "count" : 400,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 2,
+            "componentType" : 5126,
+            "count" : 400,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 3,
+            "componentType" : 5123,
+            "count" : 612,
+            "type" : "SCALAR"
+        }
+    ],
+    "bufferViews" : [
+        {
+            "buffer" : 0,
+            "byteLength" : 4800,
+            "byteOffset" : 0
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 4800,
+            "byteOffset" : 4800
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 3200,
+            "byteOffset" : 9600
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 1224,
+            "byteOffset" : 12800
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 3207,
+            "byteOffset" : 14024
+        }
+    ],
+    "samplers" : [
+        {
+            "magFilter" : 9729,
+            "minFilter" : 9987
+        }
+    ],
+    "buffers" : [
+        {
+            "byteLength" : 17232,
+            "uri" : "data:application/octet-stream;base64,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KDQhPUWKxD7pSoA9KDQhPUWKxD7pSoA9fg5TvR/PxT4UOJk9fg5TvR/PxT4UOJk9fg5TvR/PxT4UOJk9fg5TvR/PxT4UOJk9FDiZvR/PxT5+DlM9FDiZvR/PxT5+DlM9FDiZvR/PxT5+DlM9FDiZvR/PxT5+DlM9FDiZvR/PxT5+DlO9FDiZvR/PxT5+DlO9FDiZvR/PxT5+DlO9FDiZvR/PxT5+DlO9fg5TvR/PxT4UOJm9fg5TvR/PxT4UOJm9fg5TvR/PxT4UOJm9fg5TvR/PxT4UOJm9fg5TPR/PxT4UOJm9fg5TPR/PxT4UOJm9fg5TPR/PxT4UOJm9fg5TPR/PxT4UOJm9FDiZPR/PxT5+DlO9FDiZPR/PxT5+DlO9FDiZPR/PxT5+DlO9FDiZPR/PxT5+DlO9FDiZPR/PxT5+DlM9FDiZPR/PxT5+DlM9FDiZPR/PxT5+DlM9FDiZPR/PxT5+DlM9fg5TPR/PxT4UOJk9fg5TPR/PxT4UOJk9fg5TPR/PxT4UOJk9fg5TPR/PxT4UOJk9FNtyvUig2j4yfxM9FNtyvUig2j4yfxM9FNtyvUig2j4yfxM9FNtyvUig2j4yfxM9Mn8TvUig2j4U23I9Mn8TvUig2j4U23I9Mn8TvUig2j4U23I9Mn8TvUig2j4U23I9Mn8TvUig2j4U23K9Mn8TvUig2j4U23K9Mn8TvUig2j4U23K9Mn8TvUig2j4U23K9FNtyvUig2j4yfxO9FNtyvUig2j4yfxO9FNtyvUig2j4yfxO9FNtyvUig2j4yfxO9Mn8TPUig2j4U23K9Mn8TPUig2j4U23K9Mn8TPUig2j4U23K9Mn8TPUig2j4U23K9FNtyPUig2j4yfxO9FNtyPUig2j4yfxO9FNtyPUig2j4yfxO9FNtyPUig2j4yfxO9FNtyPUig2j4yfxM9FNtyPUig2j4yfxM9FNtyPUig2j4yfxM9FNtyPUig2j4yfxM9Mn8TPUig2j4U23I9Mn8TPUig2j4U23I9Mn8TPUig2j4U23I9Mn8TPUig2j4U23I9mE+vPZrPZD53g2e9mE+vPZrPZD53g2e9mE+vPZrPZD53g2e9mE+vPZrPZD53g2e9dYNnPZrPZD6YT6+9dYNnPZrPZD6YT6+9dYNnPZrPZD6YT6+9dYNnPZrPZD6YT6+9mE+vPZrPZD51g2c9mE+vPZrPZD51g2c9mE+vPZrPZD51g2c9mE+vPZrPZD51g2c9d4NnPZrPZD6YT689d4NnPZrPZD6YT689d4NnPZrPZD6YT689d4NnPZrPZD6YT689mE+vvZrPZD53g2c9mE+vvZrPZD53g2c9mE+vvZrPZD53g2c9mE+vvZrPZD53g2c9dYNnvZrPZD6YT689dYNnvZrPZD6YT689dYNnvZrPZD6YT689dYNnvZrPZD6YT689mE+vvZrPZD51g2e9mE+vvZrPZD51g2e9mE+vvZrPZD51g2e9mE+vvZrPZD51g2e9d4NnvZrPZD6YT6+9d4NnvZrPZD6YT6+9d4NnvZrPZD6YT6+9d4NnvZrPZD6YT6+9eGFFvaAc0D6RYZK9eGFFvaAc0D6RYZK9eGFFvaAc0D6RYZK9eGFFvaAc0D6RYZK9kWGSvaAc0D54YUW9kWGSvaAc0D54YUW9kWGSvaAc0D54YUW9kWGSvaAc0D54YUW9eGFFPaAc0D6RYZK9eGFFPaAc0D6RYZK9eGFFPaAc0D6RYZK9eGFFPaAc0D6RYZK9kWGSPaAc0D54YUW9kWGSPaAc0D54YUW9kWGSPaAc0D54YUW9kWGSPaAc0D54YUW9kWGSPaAc0D54YUU9kWGSPaAc0D54YUU9kWGSPaAc0D54YUU9kWGSPaAc0D54YUU9eGFFPaAc0D6RYZI9eGFFPaAc0D6RYZI9eGFFPaAc0D6RYZI9eGFFPaAc0D6RYZI9kWGSvaAc0D54YUU9kWGSvaAc0D54YUU9kWGSvaAc0D54YUU9kWGSvaAc0D54YUU9eGFFvaAc0D6RYZI9eGFFvaAc0D6RYZI9eGFFvaAc0D6RYZI9eGFFvaAc0D6RYZI9FDiZvR1q2j5+DlO9FDiZvR1q2j5+DlO9FDiZvR1q2j5+DlO9FDiZvR1q2j5+DlO9fg5TvR1q2j4UOJm9fg5TvR1q2j4UOJm9fg5TvR1q2j4UOJm9fg5TvR1q2j4UOJm9fg5TPR1q2j4UOJm9fg5TPR1q2j4UOJm9fg5TPR1q2j4UOJm9fg5TPR1q2j4UOJm9FDiZPR1q2j5+DlO9FDiZPR1q2j5+DlO9FDiZPR1q2j5+DlO9FDiZPR1q2j5+DlO9FDiZPR1q2j5+DlM9FDiZPR1q2j5+DlM9FDiZPR1q2j5+DlM9FDiZPR1q2j5+DlM9fg5TPR1q2j4UOJk9fg5TPR1q2j4UOJk9fg5TPR1q2j4UOJk9fg5TPR1q2j4UOJk9fg5TvR1q2j4UOJk9fg5TvR1q2j4UOJk9fg5TvR1q2j4UOJk9fg5TvR1q2j4UOJk9FDiZvR1q2j5+DlM9FDiZvR1q2j5+DlM9FDiZvR1q2j5+DlM9FDiZvR1q2j5+DlM9NH8TvXFM7T4U23K9NH8TvXFM7T4U23K9NH8TvXFM7T4U23K9FNtyvXFM7T4yfxO9FNtyvXFM7T4yfxO9FNtyvXFM7T4yfxO9FNtyPXFM7T40fxO9FNtyPXFM7T40fxO9FNtyPXFM7T40fxO9Mn8TPXFM7T4U23K9Mn8TPXFM7T4U23K9Mn8TPXFM7T4U23K9NH8TPXFM7T4U23I9NH8TPXFM7T4U23I9NH8TPXFM7T4U23I9FNtyPXFM7T4yfxM9FNtyPXFM7T4yfxM9FNtyPXFM7T4yfxM9FNtyvXFM7T40fxM9FNtyvXFM7T40fxM9FNtyvXFM7T40fxM9Mn8TvXFM7T4U23I9Mn8TvXFM7T4U23I9Mn8TvXFM7T4U23I9Ix/3vSIi4j3ooB0+Ix/3vSIi4j3ooB0+Ix/3vSIi4j3ooB0+Ix/3vSIi4j3ooB0+usLfvbMHIj608hE+usLfvbMHIj608hE+usLfvbMHIj608hE+usLfvbMHIj608hE+tPIRvrUHIj67wt89tPIRvrUHIj67wt89tPIRvrUHIj67wt89tPIRvrUHIj67wt896aAdvici4j0jH/c96aAdvici4j0jH/c96aAdvici4j0jH/c96aAdvici4j0jH/c96aAdviIi4j0jH/e96aAdviIi4j0jH/e96aAdviIi4j0jH/e96aAdviIi4j0jH/e9tfIRvrQHIj67wt+9tfIRvrQHIj67wt+9tfIRvrQHIj67wt+9tfIRvrQHIj67wt+9usLfvbUHIj608hG+usLfvbUHIj608hG+usLfvbUHIj608hG+usLfvbUHIj608hG+Ix/3vSci4j3poB2+Ix/3vSci4j3poB2+Ix/3vSci4j3poB2+Ix/3vSci4j3poB2+6aAdPiIi4j0jH/c96aAdPiIi4j0jH/c96aAdPiIi4j0jH/c96aAdPiIi4j0jH/c9tPIRPrQHIj67wt89tPIRPrQHIj67wt89tPIRPrQHIj67wt89tPIRPrQHIj67wt89u8LfPbUHIj608hE+u8LfPbUHIj608hE+u8LfPbUHIj608hE+u8LfPbUHIj608hE+Ix/3PSci4j3poB0+Ix/3PSci4j3poB0+Ix/3PSci4j3poB0+Ix/3PSci4j3poB0+Ix/3PSIi4j3poB2+Ix/3PSIi4j3poB2+Ix/3PSIi4j3poB2+Ix/3PSIi4j3poB2+uMLfPbUHIj618hG+uMLfPbUHIj618hG+uMLfPbUHIj618hG+uMLfPbUHIj618hG+tPIRPrcHIj64wt+9tPIRPrcHIj64wt+9tPIRPrcHIj64wt+9tPIRPrcHIj64wt+96aAdPici4j0kH/e96aAdPici4j0kH/e96aAdPici4j0kH/e96aAdPici4j0kH/e9bXP5vuiIOb9dc/k+AAAAAAAAgL8AAACAopGEMxI0G79rlks/a5ZLvxM0G7+68twzbXP5vuiIOb9dc/k+AAAAAAAAgL8AAACAa5ZLvxM0G7+68twzWXP5vuiIOb9uc/m+AAAAAAAAgL8AAACAWXP5vuiIOb9uc/m+uvLcsxM0G79rlku/AAAAAAAAgL8AAACAAAAAAAAAgL8AAACAWXP5PuiIOb9uc/k+a5ZLPxM0G7+68tyzAAAAAAAAgL8AAACAopGEMxI0G79rlks/WXP5PuiIOb9uc/k+uvLcsxM0G79rlku/AAAAAAAAgL8AAACAbXP5PumIOb9bc/m+AAAAAAAAgL8AAACAbXP5PumIOb9bc/m+a5ZLPxM0G7+68tyz0rEcv44tAD/TsRw/7SQOvwyDHr/uJA4/AAAAAP1W3b6h12Y/AAAAAOiZmD5tXXQ/bV10v+iZmD4AAACAoddmv/1W3b4AAACA0rEcv44tAD/TsRw/7SQOvwyDHr/uJA4/07Ecv44tAD/SsRy/7iQOvwyDHr/tJA6/AAAAAP1W3b6h12a/AAAAAOiZmD5tXXS/bV10v+iZmD4AAACAoddmv/1W3b4AAACA07Ecv44tAD/SsRy/7iQOvwyDHr/tJA6/AAAAAP1W3b6h12a/AAAAAOiZmD5tXXS/7SQOPwyDHr/uJA6/0rEcP44tAD/TsRy/7SQOPwyDHr/uJA6/0rEcP44tAD/TsRy/oddmP/1W3b4AAACAbV10P+iZmD4AAACAAAAAAP1W3b6h12Y/AAAAAOiZmD5tXXQ/7iQOPwyDHr/tJA4/07EcP44tAD/SsRw/7iQOPwyDHr/tJA4/07EcP44tAD/SsRw/oddmP/1W3b4AAACAbV10P+iZmD4AAACA7SQOvwyDHr/uJA4/qM0Dv815Lz+qzQM/AAAAAP1W3b6h12Y/AAAAAEfbDT9EGlU/oddmv/1W3b4AAACARBpVv0fbDT8AAACA7SQOvwyDHr/uJA4/qM0Dv815Lz+qzQM/oddmv/1W3b4AAACARBpVv0fbDT8AAACA7iQOvwyDHr/tJA6/qs0Dv815Lz+ozQO/7iQOvwyDHr/tJA6/qs0Dv815Lz+ozQO/AAAAAP1W3b6h12a/AAAAAEfbDT9EGlW/AAAAAP1W3b6h12a/AAAAAEfbDT9EGlW/qM0DP815Lz+qzQO/7SQOPwyDHr/uJA6/qM0DP815Lz+qzQO/7SQOPwyDHr/uJA6/RBpVP0fbDT8AAACAoddmP/1W3b4AAACAqs0DP815Lz+ozQM/7iQOPwyDHr/tJA4/RBpVP0fbDT8AAACAoddmP/1W3b4AAACAAAAAAP1W3b6h12Y/AAAAAEfbDT9EGlU/qs0DP815Lz+ozQM/7iQOPwyDHr/tJA4/kmISv06YFr+TYhI/qM0Dv815Lz+qzQM/AAAAAAtMyL4DmWs/AAAAAEfbDT9EGlU/A5lrvwtMyL4AAACARBpVv0fbDT8AAACAkmISv06YFr+TYhI/qM0Dv815Lz+qzQM/A5lrvwtMyL4AAACARBpVv0fbDT8AAACAk2ISv06YFr+SYhK/qs0Dv815Lz+ozQO/k2ISv06YFr+SYhK/qs0Dv815Lz+ozQO/AAAAAAtMyL4DmWu/AAAAAEfbDT9EGlW/AAAAAAtMyL4DmWu/AAAAAEfbDT9EGlW/qM0DP815Lz+qzQO/kmISP06YFr+TYhK/qM0DP815Lz+qzQO/kmISP06YFr+TYhK/RBpVP0fbDT8AAACAA5lrPwtMyL4AAACAqs0DP815Lz+ozQM/k2ISP06YFr+SYhI/RBpVP0fbDT8AAACAA5lrPwtMyL4AAACAAAAAAAtMyL4DmWs/AAAAAEfbDT9EGlU/qs0DP815Lz+ozQM/k2ISP06YFr+SYhI/kmISv06YFr+TYhI/12POvQJjfb/XY849AAAAABraer9KU0w+AAAAAAtMyL4DmWs/A5lrvwtMyL4AAACAkmISv06YFr+TYhI/SlNMvhraer8AAACA12POvQJjfb/XY849A5lrvwtMyL4AAACAk2ISv06YFr+SYhK/SlNMvhraer8AAACA12POvQJjfb/XY869k2ISv06YFr+SYhK/12POvQJjfb/XY869AAAAABraer9KU0y+AAAAAAtMyL4DmWu/AAAAABraer9KU0y+AAAAAAtMyL4DmWu/12POPQJjfb/XY869kmISP06YFr+TYhK/12POPQJjfb/XY869SlNMPhraer8AAACAkmISP06YFr+TYhK/A5lrPwtMyL4AAACA12POPQJjfb/XY849SlNMPhraer8AAACAk2ISP06YFr+SYhI/A5lrPwtMyL4AAACAAAAAABraer9KU0w+AAAAAAtMyL4DmWs/12POPQJjfb/XY849k2ISP06YFr+SYhI/gzswv1juaT6DOzA/12POvQJjfb/XY849AAAAABraer9KU0w+AAAAAJadJz4SjHw/Eox8v5adJz4AAACAgzswv1juaT6DOzA/SlNMvhraer8AAACA12POvQJjfb/XY849Eox8v5adJz4AAACAgzswv1juaT6DOzC/SlNMvhraer8AAACA12POvQJjfb/XY869gzswv1juaT6DOzC/12POvQJjfb/XY869AAAAABraer9KU0y+AAAAAJadJz4SjHy/AAAAABraer9KU0y+AAAAAJadJz4SjHy/12POPQJjfb/XY869gzswP1juaT6DOzC/12POPQJjfb/XY869SlNMPhraer8AAACAgzswP1juaT6DOzC/Eox8P5adJz4AAACA12POPQJjfb/XY849SlNMPhraer8AAACAgzswP1juaT6DOzA/Eox8P5adJz4AAACAAAAAABraer9KU0w+AAAAAJadJz4SjHw/12POPQJjfb/XY849gzswP1juaT6DOzA/AACAvwAAAAAAAAAA8gQ1v1wnnLP0BDU/lgTavMnofz8AAACAYRhavGL0fz9hGFo88gQ1v1wnnLP0BDU/YRhavGL0fz9hGFo8AAAAAAAAAIAAAIA/AAAAAMnofz+WBNo89AQ1v1wnnLPyBDW/YRhavGL0fz9hGFq8AAAAAAAAAAAAAIC/AAAAAMnofz+WBNq8AACAvwAAAAAAAAAA9AQ1v1wnnLPyBDW/lgTavMnofz8AAACAYRhavGL0fz9hGFq8AAAAAAAAAAAAAIC/AAAAAMnofz+WBNq8YRhaPGL0fz9hGFq88gQ1P1wnnLP0BDW/YRhaPGL0fz9hGFq8lgTaPMnofz8AAACA8gQ1P1wnnLP0BDW/AACAPwAAAAAAAACAYRhaPGL0fz9hGFo8lgTaPMnofz8AAACA9AQ1P1wnnLPyBDU/AACAPwAAAAAAAACAAAAAAAAAAIAAAIA/AAAAAMnofz+WBNo8YRhaPGL0fz9hGFo89AQ1P1wnnLPyBDU/ywbpPvDrQz/XBum+0rEcP44tAD/TsRy/W9xAP9hYKD8PoL8zbV10P+iZmD4AAACAIF0Ls9hYKD9a3EC/AAAAAOiZmD5tXXS/ywbpPvDrQz/XBum+0rEcP44tAD/TsRy/1wbpPu/rQz/OBuk+07EcP44tAD/SsRw/W9xAP9hYKD8PoL8zbV10P+iZmD4AAACA9uJzs9VYKD9d3EA/AAAAAOiZmD5tXXQ/1wbpPu/rQz/OBuk+07EcP44tAD/SsRw/bV10v+iZmD4AAACAW9xAv9ZYKD8AAACA0rEcv44tAD/TsRw/zAbpvu/rQz/eBuk+0rEcv44tAD/TsRw/zAbpvu/rQz/eBuk+9uJzs9VYKD9d3EA/AAAAAOiZmD5tXXQ/bV10v+iZmD4AAACAW9xAv9ZYKD8AAACA07Ecv44tAD/SsRy/1QbpvvDrQz/SBum+07Ecv44tAD/SsRy/1QbpvvDrQz/SBum+IF0Ls9hYKD9a3EC/AAAAAOiZmD5tXXS/gzswv1juaT6DOzC/fzswv63uab5/OzC/AAAAANadJ74QjHy/AAAAAJadJz4SjHy/Eox8v5adJz4AAACAEIx8v9adJ74AAACAgzswv1juaT6DOzC/fzswv63uab5/OzC/AAAAANadJ74QjHy/AAAAAJadJz4SjHy/fzswP63uab5/OzC/gzswP1juaT6DOzC/fzswP63uab5/OzC/gzswP1juaT6DOzC/EIx8P9adJ74AAACAEox8P5adJz4AAACAfzswP63uab5/OzA/gzswP1juaT6DOzA/EIx8P9adJ74AAACAEox8P5adJz4AAACAAAAAANadJ74QjHw/AAAAAJadJz4SjHw/fzswP63uab5/OzA/gzswP1juaT6DOzA/Eox8v5adJz4AAACAEIx8v9adJ74AAACAgzswv1juaT6DOzA/fzswv63uab5/OzA/gzswv1juaT6DOzA/fzswv63uab5/OzA/AAAAANadJ74QjHw/AAAAAJadJz4SjHw/EIx8v9adJ74AAACAfzswv63uab5/OzC/lgTavMnofz8AAACAYRhavGL0fz9hGFq8fzswv63uab5/OzC/YRhavGL0fz9hGFq8AAAAANadJ74QjHy/AAAAAMnofz+WBNq8AAAAANadJ74QjHy/AAAAAMnofz+WBNq8YRhaPGL0fz9hGFq8fzswP63uab5/OzC/YRhaPGL0fz9hGFq8lgTaPMnofz8AAACAfzswP63uab5/OzC/EIx8P9adJ74AAACAYRhaPGL0fz9hGFo8lgTaPMnofz8AAACAfzswP63uab5/OzA/EIx8P9adJ74AAACAAAAAANadJ74QjHw/AAAAAMnofz+WBNo8YRhaPGL0fz9hGFo8fzswP63uab5/OzA/fzswv63uab5/OzA/YRhavGL0fz9hGFo8AAAAANadJ74QjHw/AAAAAMnofz+WBNo8EIx8v9adJ74AAACAfzswv63uab5/OzA/lgTavMnofz8AAACAYRhavGL0fz9hGFo89AQ1v1wnnLPyBDW/AAAAAAAAAAAAAIC/AAAAAAAAgD8AAACAAACAvwAAAAAAAAAA9AQ1v1wnnLPyBDW/AAAAAAAAgD8AAACAAAAAAAAAgD8AAACA8gQ1P1wnnLP0BDW/AACAPwAAAAAAAACAAAAAAAAAAAAAAIC/AAAAAAAAgD8AAACA8gQ1P1wnnLP0BDW/AAAAAAAAAIAAAIA/AAAAAAAAgD8AAACA9AQ1P1wnnLPyBDU/AAAAAAAAgD8AAACA9AQ1P1wnnLPyBDU/AACAPwAAAAAAAACAAACAvwAAAAAAAAAA8gQ1v1wnnLP0BDU/AAAAAAAAgD8AAACA8gQ1v1wnnLP0BDU/AAAAAAAAAIAAAIA/AAAAAAAAgD8AAACAbIUrv1iroz52hSs/bXP5vuiIOb9dc/k+KcaPs/ucbT42A3k/opGEMxI0G79rlks/bIUrv1iroz52hSs/zAbpvu/rQz/eBuk+KcaPs/ucbT42A3k/9uJzs9VYKD9d3EA/NgN5v/qcbT7i87AxW9xAv9ZYKD8AAACAbIUrv1iroz52hSs/zAbpvu/rQz/eBuk+NgN5v/qcbT7i87Axa5ZLvxM0G7+68twzbIUrv1iroz52hSs/bXP5vuiIOb9dc/k+NgN5v/qcbT7i87Axa5ZLvxM0G7+68twzcoUrv1iroz5yhSu/WXP5vuiIOb9uc/m+NgN5v/qcbT7i87AxW9xAv9ZYKD8AAACAcoUrv1iroz5yhSu/1QbpvvDrQz/SBum+coUrv1iroz5yhSu/1QbpvvDrQz/SBum+IF0Ls9hYKD9a3EC/2DBdsvacbT41A3m/coUrv1iroz5yhSu/WXP5vuiIOb9uc/m+uvLcsxM0G79rlku/2DBdsvacbT41A3m/WXP5PuiIOb9uc/k+c4UrP1mroz5vhSs/a5ZLPxM0G7+68tyzNQN5P/6cbT7e8zAz1wbpPu/rQz/OBuk+c4UrP1mroz5vhSs/W9xAP9hYKD8PoL8zNQN5P/6cbT7e8zAzKcaPs/ucbT42A3k/9uJzs9VYKD9d3EA/1wbpPu/rQz/OBuk+c4UrP1mroz5vhSs/KcaPs/ucbT42A3k/opGEMxI0G79rlks/WXP5PuiIOb9uc/k+c4UrP1mroz5vhSs/uvLcsxM0G79rlku/2DBdsvacbT41A3m/bXP5PumIOb9bc/m+cIUrP1uroz5zhSu/IF0Ls9hYKD9a3EC/2DBdsvacbT41A3m/ywbpPvDrQz/XBum+cIUrP1uroz5zhSu/ywbpPvDrQz/XBum+cIUrP1uroz5zhSu/W9xAP9hYKD8PoL8zNQN5P/6cbT7e8zAzbXP5PumIOb9bc/m+cIUrP1uroz5zhSu/a5ZLPxM0G7+68tyzNQN5P/6cbT7e8zAzAQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwGAEA9IAA8PQYAQD0gADw9AQAUPkAAkDwBABQ+QACQPAYAQD0gADw9AQAUPkAAkDwGAEA9IAA8PQEAFD5AAJA8BgBAPSAAPD0BABQ+QACQPAYAQD0gADw9AQAUPkAAkDwGAEA9IAA8PQYAQD0gADw9AQAUPkAAkDwBABQ+QACQPAYAQD0gADw9AQAUPkAAkDwBABQ+QACQPAYAQD0gADw9AQAUPkAAkDwBABQ+QACQPAYAQD0gADw9BgBAPSAAPD0BABQ+QACQPAEAFD5AAJA8BgBAPSAAPD0GAEA9IAA8PQYAQD0gADw9AQAUPkAAkDwBABQ+QACQPAYAQD0gADw9AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8BgBAPSAAPD0GAEA9IAA8PQYAQD0gADw9BgBAPSAAPD0GAEA9IAA8PQYAQD0gADw9BgBAPSAAPD0GAEA9IAA8PQYAQD0gADw9BgBAPSAAPD0GAEA9IAA8PQYAQD0gADw9BgBAPSAAPD0GAEA9IAA8PQYAQD0gADw9BgBAPSAAPD0GAEA9IAA8PQYAQD0gADw9BgBAPSAAPD0GAEA9IAA8PQYAQD0gADw9BgBAPSAAPD0GAEA9IAA8PQYAQD0gADw9AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8AQAUPkAAkDwBABQ+QACQPAEAFD5AAJA8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GAAABrJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMTQyIDc5LjE2MDkyNCwgMjAxNy8wNy8xMy0wMTowNjozOSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iIHhtbG5zOnBob3Rvc2hvcD0iaHR0cDovL25zLmFkb2JlLmNvbS9waG90b3Nob3AvMS4wLyIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0RXZ0PSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VFdmVudCMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTggKFdpbmRvd3MpIiB4bXA6Q3JlYXRlRGF0ZT0iMjAyMy0xMC0zMVQyMToxODo0OS0wMzowMCIgeG1wOk1vZGlmeURhdGU9IjIwMjMtMTAtMzFUMjI6Mzg6MTUtMDM6MDAiIHhtcDpNZXRhZGF0YURhdGU9IjIwMjMtMTAtMzFUMjI6Mzg6MTUtMDM6MDAiIGRjOmZvcm1hdD0iaW1hZ2UvcG5nIiBwaG90b3Nob3A6Q29sb3JNb2RlPSIzIiBwaG90b3Nob3A6SUNDUHJvZmlsZT0iKiB3c1JHQiIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo4MmIyODE2OC1iY2E3LTNhNGEtOWZmYi1hMjI5ZWUxYzkzOTUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6Yjc4MTI1MWUtYWM2ZC0wYjRhLWI2ZjUtZTIzMThkMTVlNGJlIiB4bXBNTTpPcmlnaW5hbERvY3VtZW50SUQ9InhtcC5kaWQ6Yjc4MTI1MWUtYWM2ZC0wYjRhLWI2ZjUtZTIzMThkMTVlNGJlIj4gPHhtcE1NOkhpc3Rvcnk+IDxyZGY6U2VxPiA8cmRmOmxpIHN0RXZ0OmFjdGlvbj0iY3JlYXRlZCIgc3RFdnQ6aW5zdGFuY2VJRD0ieG1wLmlpZDpiNzgxMjUxZS1hYzZkLTBiNGEtYjZmNS1lMjMxOGQxNWU0YmUiIHN0RXZ0OndoZW49IjIwMjMtMTAtMzFUMjE6MTg6NDktMDM6MDAiIHN0RXZ0OnNvZnR3YXJlQWdlbnQ9IkFkb2JlIFBob3Rvc2hvcCBDQyAyMDE4IChXaW5kb3dzKSIvPiA8cmRmOmxpIHN0RXZ0OmFjdGlvbj0ic2F2ZWQiIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6NTNjZGEyNmEtMjlkMC1jMDQxLTgwODMtZjI1YmQ2ODNjZDFmIiBzdEV2dDp3aGVuPSIyMDIzLTEwLTMxVDIxOjIxOjQzLTAzOjAwIiBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZG9iZSBQaG90b3Nob3AgQ0MgMjAxOCAoV2luZG93cykiIHN0RXZ0OmNoYW5nZWQ9Ii8iLz4gPHJkZjpsaSBzdEV2dDphY3Rpb249InNhdmVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOjgyYjI4MTY4LWJjYTctM2E0YS05ZmZiLWEyMjllZTFjOTM5NSIgc3RFdnQ6d2hlbj0iMjAyMy0xMC0zMVQyMjozODoxNS0wMzowMCIgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTggKFdpbmRvd3MpIiBzdEV2dDpjaGFuZ2VkPSIvIi8+IDwvcmRmOlNlcT4gPC94bXBNTTpIaXN0b3J5PiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PgKEmm4AAAC0SURBVEiJYzw3u0yC7/z8S9Zb9+xk/PQv4OuLIya6/s7GIjz3p4uXekjrOsVkf5kR03aCuVMu4MT/hQ+ff2nICWAgGjCGO+oYyvLI2+dEJEUTr414wGJpKHnm3HvWQ1NWfNl/+7f+m1cfrVSeh6dOpZoFAjfNugPMPj/8qMpRwpA3h1rmIkBHnEXpOuP/NAOM////p76rkQATTU0ftWDUglELRi0YtWDUglELRi0YtYB+FgAAgHKSFe32IAgAAAAASUVORK5CYIIA"
+        }
+    ]
+}
