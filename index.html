@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المجسم الحربي - تنسيق مستقيم بالكامل</title>
+    <title>المجسم الحربي - ترتيب محسن للأذرع والمفاصل</title>
     <style>
         body { margin: 0; overflow: hidden; font-family: monospace; }
         #info {
@@ -21,7 +21,7 @@
     </style>
 </head>
 <body>
-    <div id="info">⚔️ المجسم الحربي | جميع العناصر مستقيمة | جذع + رأس + مخروط مائل + أذرع مستقيمة + أرجل مستقيمة + قدم مستقيم</div>
+    <div id="info">⚔️ المجسم الحربي | ترتيب محسن للأذرع والمفاصل | مناطق التقاء دقيقة</div>
     <div id="controls">🖱️ اسحب للتدوير | 🔍 اسكرول للتكبير</div>
 
     <script type="importmap">
@@ -39,7 +39,7 @@
         // الكاميرا
         const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
         camera.position.set(5, 3.5, 7);
-        camera.lookAt(0, 2, 0);
+        camera.lookAt(0, 2.2, 0);
         
         // Renderer
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -50,7 +50,7 @@
         // التحكم
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
-        controls.target.set(0, 2, 0);
+        controls.target.set(0, 2.2, 0);
         
         // إضاءة
         const ambientLight = new THREE.AmbientLight(0x404060, 0.7);
@@ -65,10 +65,6 @@
         fillLight.position.set(-2, 2, 3);
         scene.add(fillLight);
         
-        const backLight = new THREE.PointLight(0xffaa88, 0.3);
-        backLight.position.set(0, 2, -4);
-        scene.add(backLight);
-        
         // مجموعة المجسم
         const model = new THREE.Group();
         scene.add(model);
@@ -78,6 +74,7 @@
         const materialGold = new THREE.MeshStandardMaterial({ color: 0xca9622, metalness: 0.7, roughness: 0.3 });
         const materialDark = new THREE.MeshStandardMaterial({ color: 0x3a4a5a, metalness: 0.5, roughness: 0.5 });
         const materialFoot = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, metalness: 0.3, roughness: 0.7 });
+        const materialJoint = new THREE.MeshStandardMaterial({ color: 0xbc9a6a, metalness: 0.65, roughness: 0.35 });
         
         // =============== 1. الجذع (كرة) ===============
         const torsoGeo = new THREE.SphereGeometry(0.85, 64, 64);
@@ -86,7 +83,7 @@
         torso.castShadow = true;
         model.add(torso);
         
-        // =============== 2. الرأس (كرة أصغر من الجذع بثلاث مرات تقريباً) ===============
+        // =============== 2. الرأس (كرة) ===============
         const headGeo = new THREE.SphereGeometry(0.45, 64, 64);
         const head = new THREE.Mesh(headGeo, materialArmor);
         head.position.set(0, 3.05, 0);
@@ -101,103 +98,146 @@
         spike.castShadow = true;
         model.add(spike);
         
-        // =============== 4. الذراع الأيمن (أسطوانتين + مفصل) - مستقيم بدون ميلان ===============
-        // الجزء العلوي - مستقيم (بدون دوران)
-        const armUpperRGeo = new THREE.CylinderGeometry(0.32, 0.3, 0.9, 24);
+        // =============== 4. الذراع الأيمن (ترتيب محسن) ===============
+        // نقطة التقاء الكتف مع الجذع
+        const shoulderRGeo = new THREE.SphereGeometry(0.28, 32, 32);
+        const shoulderR = new THREE.Mesh(shoulderRGeo, materialJoint);
+        shoulderR.position.set(1.05, 2.65, 0);
+        shoulderR.castShadow = true;
+        model.add(shoulderR);
+        
+        // الجزء العلوي من الذراع (العضد)
+        const armUpperRGeo = new THREE.CylinderGeometry(0.32, 0.3, 0.95, 24);
         const armUpperR = new THREE.Mesh(armUpperRGeo, materialDark);
-        armUpperR.position.set(1.2, 2.55, 0);
-        armUpperR.rotation.z = 0;  // بدون ميلان
+        armUpperR.position.set(1.35, 2.18, 0);
         armUpperR.castShadow = true;
         model.add(armUpperR);
         
         // مفصل الكوع (كرة)
-        const elbowRGeo = new THREE.SphereGeometry(0.22, 32, 32);
-        const elbowR = new THREE.Mesh(elbowRGeo, materialGold);
-        elbowR.position.set(1.55, 2.08, 0);
+        const elbowRGeo = new THREE.SphereGeometry(0.24, 32, 32);
+        const elbowR = new THREE.Mesh(elbowRGeo, materialJoint);
+        elbowR.position.set(1.68, 1.72, 0);
         elbowR.castShadow = true;
         model.add(elbowR);
         
-        // الجزء السفلي - مستقيم (بدون دوران)
-        const armLowerRGeo = new THREE.CylinderGeometry(0.27, 0.24, 0.85, 24);
+        // الجزء السفلي من الذراع (الساعد)
+        const armLowerRGeo = new THREE.CylinderGeometry(0.28, 0.24, 0.9, 24);
         const armLowerR = new THREE.Mesh(armLowerRGeo, materialDark);
-        armLowerR.position.set(1.85, 1.63, 0);
-        armLowerR.rotation.z = 0;  // بدون ميلان
+        armLowerR.position.set(2.0, 1.28, 0);
         armLowerR.castShadow = true;
         model.add(armLowerR);
         
-        // =============== 5. الذراع الأيسر (أسطوانتين + مفصل) - مستقيم بدون ميلان ===============
-        const armUpperLGeo = new THREE.CylinderGeometry(0.32, 0.3, 0.9, 24);
+        // مفصل الرسغ (كرة)
+        const wristRGeo = new THREE.SphereGeometry(0.2, 32, 32);
+        const wristR = new THREE.Mesh(wristRGeo, materialJoint);
+        wristR.position.set(2.3, 0.85, 0);
+        wristR.castShadow = true;
+        model.add(wristR);
+        
+        // اليد
+        const handRGeo = new THREE.BoxGeometry(0.35, 0.28, 0.45);
+        const handR = new THREE.Mesh(handRGeo, materialDark);
+        handR.position.set(2.55, 0.83, 0);
+        handR.castShadow = true;
+        model.add(handR);
+        
+        // =============== 5. الذراع الأيسر (ترتيب محسن) ===============
+        const shoulderLGeo = new THREE.SphereGeometry(0.28, 32, 32);
+        const shoulderL = new THREE.Mesh(shoulderLGeo, materialJoint);
+        shoulderL.position.set(-1.05, 2.65, 0);
+        shoulderL.castShadow = true;
+        model.add(shoulderL);
+        
+        const armUpperLGeo = new THREE.CylinderGeometry(0.32, 0.3, 0.95, 24);
         const armUpperL = new THREE.Mesh(armUpperLGeo, materialDark);
-        armUpperL.position.set(-1.2, 2.55, 0);
-        armUpperL.rotation.z = 0;  // بدون ميلان
+        armUpperL.position.set(-1.35, 2.18, 0);
         armUpperL.castShadow = true;
         model.add(armUpperL);
         
-        const elbowLGeo = new THREE.SphereGeometry(0.22, 32, 32);
-        const elbowL = new THREE.Mesh(elbowLGeo, materialGold);
-        elbowL.position.set(-1.55, 2.08, 0);
+        const elbowLGeo = new THREE.SphereGeometry(0.24, 32, 32);
+        const elbowL = new THREE.Mesh(elbowLGeo, materialJoint);
+        elbowL.position.set(-1.68, 1.72, 0);
         elbowL.castShadow = true;
         model.add(elbowL);
         
-        const armLowerLGeo = new THREE.CylinderGeometry(0.27, 0.24, 0.85, 24);
+        const armLowerLGeo = new THREE.CylinderGeometry(0.28, 0.24, 0.9, 24);
         const armLowerL = new THREE.Mesh(armLowerLGeo, materialDark);
-        armLowerL.position.set(-1.85, 1.63, 0);
-        armLowerL.rotation.z = 0;  // بدون ميلان
+        armLowerL.position.set(-2.0, 1.28, 0);
         armLowerL.castShadow = true;
         model.add(armLowerL);
         
-        // =============== 6. الساق اليمنى (أسطوانتين + مفصل) - مستقيم ===============
+        const wristLGeo = new THREE.SphereGeometry(0.2, 32, 32);
+        const wristL = new THREE.Mesh(wristLGeo, materialJoint);
+        wristL.position.set(-2.3, 0.85, 0);
+        wristL.castShadow = true;
+        model.add(wristL);
+        
+        const handLGeo = new THREE.BoxGeometry(0.35, 0.28, 0.45);
+        const handL = new THREE.Mesh(handLGeo, materialDark);
+        handL.position.set(-2.55, 0.83, 0);
+        handL.castShadow = true;
+        model.add(handL);
+        
+        // =============== 6. الساق اليمنى ===============
+        const hipRGeo = new THREE.SphereGeometry(0.26, 32, 32);
+        const hipR = new THREE.Mesh(hipRGeo, materialJoint);
+        hipR.position.set(0.68, 1.55, 0);
+        hipR.castShadow = true;
+        model.add(hipR);
+        
         const thighRGeo = new THREE.CylinderGeometry(0.38, 0.34, 1.0, 24);
         const thighR = new THREE.Mesh(thighRGeo, materialDark);
-        thighR.position.set(0.65, 1.05, 0);
+        thighR.position.set(0.68, 1.02, 0);
         thighR.castShadow = true;
         model.add(thighR);
         
         const kneeRGeo = new THREE.SphereGeometry(0.26, 32, 32);
-        const kneeR = new THREE.Mesh(kneeRGeo, materialGold);
-        kneeR.position.set(0.68, 0.52, 0.05);
+        const kneeR = new THREE.Mesh(kneeRGeo, materialJoint);
+        kneeR.position.set(0.72, 0.52, 0.05);
         kneeR.castShadow = true;
         model.add(kneeR);
         
         const calfRGeo = new THREE.CylinderGeometry(0.32, 0.28, 0.9, 24);
         const calfR = new THREE.Mesh(calfRGeo, materialDark);
-        calfR.position.set(0.68, 0.05, 0);
+        calfR.position.set(0.72, 0.05, 0);
         calfR.castShadow = true;
         model.add(calfR);
         
-        // =============== 7. الساق اليسرى (أسطوانتين + مفصل) - مستقيم ===============
+        // =============== 7. الساق اليسرى ===============
+        const hipLGeo = new THREE.SphereGeometry(0.26, 32, 32);
+        const hipL = new THREE.Mesh(hipLGeo, materialJoint);
+        hipL.position.set(-0.68, 1.55, 0);
+        hipL.castShadow = true;
+        model.add(hipL);
+        
         const thighLGeo = new THREE.CylinderGeometry(0.38, 0.34, 1.0, 24);
         const thighL = new THREE.Mesh(thighLGeo, materialDark);
-        thighL.position.set(-0.65, 1.05, 0);
+        thighL.position.set(-0.68, 1.02, 0);
         thighL.castShadow = true;
         model.add(thighL);
         
         const kneeLGeo = new THREE.SphereGeometry(0.26, 32, 32);
-        const kneeL = new THREE.Mesh(kneeLGeo, materialGold);
-        kneeL.position.set(-0.68, 0.52, 0.05);
+        const kneeL = new THREE.Mesh(kneeLGeo, materialJoint);
+        kneeL.position.set(-0.72, 0.52, 0.05);
         kneeL.castShadow = true;
         model.add(kneeL);
         
         const calfLGeo = new THREE.CylinderGeometry(0.32, 0.28, 0.9, 24);
         const calfL = new THREE.Mesh(calfLGeo, materialDark);
-        calfL.position.set(-0.68, 0.05, 0);
+        calfL.position.set(-0.72, 0.05, 0);
         calfL.castShadow = true;
         model.add(calfL);
         
-        // =============== 8. القدم (مستطيل) - مستقيم تماماً ===============
+        // =============== 8. القدم (مستطيل مستقيم) ===============
         const footGeo = new THREE.BoxGeometry(0.65, 0.2, 1.05);
         
         const footR = new THREE.Mesh(footGeo, materialFoot);
-        footR.position.set(0.78, -0.32, 0.2);
-        footR.rotation.x = 0;
-        footR.rotation.z = 0;
+        footR.position.set(0.82, -0.32, 0.2);
         footR.castShadow = true;
         model.add(footR);
         
         const footL = new THREE.Mesh(footGeo, materialFoot);
-        footL.position.set(-0.78, -0.32, 0.2);
-        footL.rotation.x = 0;
-        footL.rotation.z = 0;
+        footL.position.set(-0.82, -0.32, 0.2);
         footL.castShadow = true;
         model.add(footL);
         
@@ -216,9 +256,10 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
         
-        console.log('✅ المجسم جاهز - جميع العناصر مستقيمة');
-        console.log('💪 الذراعين: مستقيمين بدون ميلان');
-        console.log('🦶 القدم: مستطيل مستقيم بالكامل');
+        console.log('✅ المجسم جاهز - ترتيب محسن للأذرع والمفاصل');
+        console.log('💪 الأذرع: كتف + عضد + كوع + ساعد + رسغ + يد');
+        console.log('🦵 الأرجل: فخذ + ركبة + ساق');
+        console.log('🔗 مناطق الالتقاء: كرات ذهبية للمفاصل');
     </script>
 </body>
 </html>
