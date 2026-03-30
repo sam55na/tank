@@ -3,25 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>PUBG Tactical Shooter - Elite Combat</title>
+    <title>Realistic Tactical Shooter - Ultra Realism</title>
     <style>
         * { box-sizing: border-box; touch-action: none; }
-        body { margin: 0; overflow: hidden; background: #0a0e27; font-family: 'Arial', sans-serif; }
+        body { margin: 0; overflow: hidden; background: #87ceeb; font-family: 'Arial', sans-serif; }
         #ui-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
         #crosshair { position: absolute; top: 50%; left: 50%; width: 30px; height: 30px; transform: translate(-50%, -50%); pointer-events: none; }
-        #crosshair::before, #crosshair::after { content: ''; position: absolute; background: #00ff88; }
-        #crosshair::before { width: 2px; height: 12px; left: 50%; top: -15px; transform: translateX(-50%); }
-        #crosshair::after { width: 12px; height: 2px; left: -15px; top: 50%; transform: translateY(-50%); }
-        #info-panel { position: absolute; top: 20px; left: 20px; background: rgba(10, 14, 39, 0.85); color: #00ff88; padding: 12px 20px; border-radius: 6px; border: 1px solid #00ff88; font-family: 'Courier New', monospace; font-size: 0.85rem; }
-        #info-panel h1 { margin: 0; font-size: 1rem; color: #00ffff; }
+        #crosshair::before, #crosshair::after { content: ''; position: absolute; background: #ff0000; opacity: 0.8; }
+        #crosshair::before { width: 2px; height: 14px; left: 50%; top: -18px; transform: translateX(-50%); }
+        #crosshair::after { width: 14px; height: 2px; left: -18px; top: 50%; transform: translateY(-50%); }
+        #info-panel { position: absolute; top: 20px; left: 20px; background: rgba(0, 0, 0, 0.5); color: #fff; padding: 12px 20px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.3); font-family: 'Arial', sans-serif; font-size: 0.85rem; }
+        #info-panel h1 { margin: 0; font-size: 1rem; color: #fff; }
         #info-panel p { margin: 3px 0 0; font-size: 0.75rem; opacity: 0.8; }
-        #score-panel { position: absolute; top: 20px; right: 20px; background: rgba(10, 14, 39, 0.85); color: #ffff00; padding: 10px 20px; border-radius: 6px; border: 1px solid #ffff00; font-size: 1rem; font-weight: bold; font-family: 'Courier New', monospace; }
-        #joystick-container { position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px; background: rgba(0, 255, 136, 0.05); border-radius: 50%; pointer-events: auto; border: 1px solid rgba(0, 255, 136, 0.2); }
-        #joystick-knob { position: absolute; top: 50%; left: 50%; width: 50px; height: 50px; background: radial-gradient(circle, #00ff88, #00cc66); border-radius: 50%; transform: translate(-50%,-50%); box-shadow: 0 0 15px #00ff88; }
+        #score-panel { position: absolute; top: 20px; right: 20px; background: rgba(0, 0, 0, 0.5); color: #fff; padding: 10px 20px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.3); font-size: 1rem; font-weight: bold; }
+        #joystick-container { position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px; background: rgba(255, 255, 255, 0.1); border-radius: 50%; pointer-events: auto; border: 2px solid rgba(255, 255, 255, 0.3); }
+        #joystick-knob { position: absolute; top: 50%; left: 50%; width: 50px; height: 50px; background: rgba(255, 255, 255, 0.8); border-radius: 50%; transform: translate(-50%,-50%); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
         #action-buttons { position: absolute; bottom: 40px; right: 40px; display: flex; gap: 20px; pointer-events: auto; }
-        .action-btn { width: 70px; height: 70px; border-radius: 50%; border: 1px solid; color: white; font-weight: bold; font-size: 1.3rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px; transition: all 0.1s; user-select: none; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15), rgba(0,0,0,0.4)); }
-        #btn-jump { border-color: #00d4ff; box-shadow: 0 0 15px #00d4ff; }
-        #btn-throw { border-color: #ff0055; box-shadow: 0 0 15px #ff0055; }
+        .action-btn { width: 70px; height: 70px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); color: white; font-weight: bold; font-size: 1.3rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3); transition: all 0.1s; user-select: none; background: rgba(0,0,0,0.4); }
+        #btn-jump { border-color: rgba(100, 200, 255, 0.7); }
+        #btn-throw { border-color: rgba(255, 100, 100, 0.7); }
         .action-btn:active { transform: scale(0.88); }
     </style>
 </head>
@@ -29,8 +29,8 @@
     <div id="ui-container">
         <div id="crosshair"></div>
         <div id="info-panel">
-            <h1>🎮 PUBG ELITE TACTICAL</h1>
-            <p>Double Jump • Cinematic Explosions • Tracer Rounds</p>
+            <h1>🎮 REALISTIC TACTICAL COMBAT</h1>
+            <p>Double Jump • Realistic Physics • Cinematic Experience</p>
         </div>
         <div id="score-panel">TARGETS: <span id="score">0</span></div>
         <div id="joystick-container"><div id="joystick-knob"></div></div>
@@ -48,41 +48,49 @@
         import * as THREE from 'three';
 
         // ==========================================
-        // 1. إعداد المشهد
+        // 1. إعداد المشهد (Realistic Lighting)
         // ==========================================
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0a0e27);
-        scene.fog = new THREE.Fog(0x0a0e27, 120, 300);
+        scene.background = new THREE.Color(0x87ceeb);
+        scene.fog = new THREE.Fog(0x87ceeb, 200, 500);
 
-        const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
         document.body.appendChild(renderer.domElement);
 
-        // الإضاءة
-        const sunLight = new THREE.DirectionalLight(0x00ffff, 1.3);
+        // الإضاءة الواقعية
+        const sunLight = new THREE.DirectionalLight(0xffffff, 1.4);
         sunLight.position.set(100, 150, 100);
         sunLight.castShadow = true;
-        sunLight.shadow.mapSize.width = 2048;
-        sunLight.shadow.mapSize.height = 2048;
-        sunLight.shadow.camera.left = -200;
-        sunLight.shadow.camera.right = 200;
-        sunLight.shadow.camera.top = 200;
-        sunLight.shadow.camera.bottom = -200;
-        sunLight.shadow.bias = -0.0008;
+        sunLight.shadow.mapSize.width = 4096;
+        sunLight.shadow.mapSize.height = 4096;
+        sunLight.shadow.camera.left = -300;
+        sunLight.shadow.camera.right = 300;
+        sunLight.shadow.camera.top = 300;
+        sunLight.shadow.camera.bottom = -300;
+        sunLight.shadow.bias = -0.001;
+        sunLight.shadow.normalBias = 0.02;
         scene.add(sunLight);
 
-        const ambientLight = new THREE.AmbientLight(0x1a2a4a, 0.9);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
         scene.add(ambientLight);
 
-        // الأرضية
-        const groundGeo = new THREE.PlaneGeometry(600, 600);
+        // إضاءة السماء
+        const skyLight = new THREE.HemisphereLight(0x87ceeb, 0x654321, 0.6);
+        scene.add(skyLight);
+
+        // الأرضية (واقعية)
+        const groundGeo = new THREE.PlaneGeometry(800, 800);
         const groundMat = new THREE.MeshStandardMaterial({
-            color: 0x0f1a2a,
-            roughness: 0.95,
-            metalness: 0.05
+            color: 0x4a7c3c,
+            roughness: 0.9,
+            metalness: 0.0
         });
         const ground = new THREE.Mesh(groundGeo, groundMat);
         ground.rotation.x = -Math.PI / 2;
@@ -91,150 +99,135 @@
 
         // العوائق
         const obstacles = [];
-        for(let i=0; i<40; i++) {
-            const rockGeo = new THREE.DodecahedronGeometry(Math.random() * 2.5 + 1.2);
+        for(let i=0; i<35; i++) {
+            const rockGeo = new THREE.DodecahedronGeometry(Math.random() * 3 + 1.5);
             const rockMat = new THREE.MeshStandardMaterial({
-                color: 0x1a3a4a,
-                roughness: 0.8,
-                metalness: 0.2
+                color: 0x8b7355,
+                roughness: 0.85,
+                metalness: 0.05
             });
             const rock = new THREE.Mesh(rockGeo, rockMat);
-            rock.position.set(Math.random()*400-200, 0, Math.random()*400-200);
+            rock.position.set(Math.random()*500-250, 0, Math.random()*500-250);
             rock.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, 0);
             rock.castShadow = true;
             rock.receiveShadow = true;
             scene.add(rock);
-            obstacles.push({ mesh: rock, radius: Math.random() * 2.5 + 1.2 });
+            obstacles.push({ mesh: rock, radius: Math.random() * 3 + 1.5 });
         }
 
         // ==========================================
-        // 2. بناء الشخصية (PUBG Tactical Style)
+        // 2. بناء الشخصية البشرية الواقعية
         // ==========================================
-        const matBody = new THREE.MeshStandardMaterial({
-            color: 0x2a2a3a,
-            metalness: 0.3,
-            roughness: 0.7
-        });
-        const matArmor = new THREE.MeshStandardMaterial({
-            color: 0x1a1a2a,
-            metalness: 0.8,
-            roughness: 0.2,
-            emissive: 0x00ff88,
-            emissiveIntensity: 0.08
-        });
         const matSkin = new THREE.MeshStandardMaterial({
             color: 0xd4a574,
-            metalness: 0.1,
+            metalness: 0.0,
             roughness: 0.6
         });
-        const matHelmet = new THREE.MeshStandardMaterial({
-            color: 0x1a1a2a,
-            metalness: 0.95,
-            roughness: 0.1,
-            emissive: 0x00ffff,
-            emissiveIntensity: 0.15
+        const matClothes = new THREE.MeshStandardMaterial({
+            color: 0x2a2a3a,
+            metalness: 0.1,
+            roughness: 0.8
+        });
+        const matShoes = new THREE.MeshStandardMaterial({
+            color: 0x1a1a1a,
+            metalness: 0.2,
+            roughness: 0.7
         });
 
         const character = new THREE.Group();
         character.scale.set(1.0, 1.0, 1.0);
         scene.add(character);
 
-        // الجسم (Body)
+        // الجسم الرئيسي
         const torsoGroup = new THREE.Group();
         character.add(torsoGroup);
 
-        // الصدرية (Chest Plate)
-        const chest = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.65, 0.3), matArmor);
+        // الجذع (Torso)
+        const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.38, 0.7, 20), matClothes);
+        torso.position.y = 2.0;
+        torso.castShadow = true;
+        torsoGroup.add(torso);
+
+        // الحوض (Pelvis)
+        const pelvis = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.4, 0.5, 20), matClothes);
+        pelvis.position.y = 1.35;
+        pelvis.castShadow = true;
+        torsoGroup.add(pelvis);
+
+        // الصدر (Chest)
+        const chest = new THREE.Mesh(new THREE.CylinderGeometry(0.33, 0.35, 0.5, 20), matClothes);
         chest.position.y = 2.5;
         chest.castShadow = true;
         torsoGroup.add(chest);
 
-        // الظهر (Back)
-        const backpack = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.7, 0.35), matBody);
-        backpack.position.set(0, 2.45, -0.25);
-        backpack.castShadow = true;
-        torsoGroup.add(backpack);
-
-        // الجذع الأساسي
-        const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.4, 0.8, 24), matBody);
-        torso.position.y = 1.95;
-        torso.castShadow = true;
-        torsoGroup.add(torso);
-
-        // الحوض
-        const pelvis = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.42, 0.6, 24), matBody);
-        pelvis.position.y = 1.2;
-        pelvis.castShadow = true;
-        torsoGroup.add(pelvis);
-
-        // الرقبة
-        const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.2, 0.25, 16), matSkin);
-        neck.position.y = 3.15;
+        // الرقبة (Neck)
+        const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.17, 0.2, 16), matSkin);
+        neck.position.y = 3.0;
         neck.castShadow = true;
         torsoGroup.add(neck);
 
-        // الرأس
+        // الرأس (Head)
         const headGroup = new THREE.Group();
         torsoGroup.add(headGroup);
 
-        const head = new THREE.Mesh(new THREE.SphereGeometry(0.25, 24, 24), matSkin);
-        head.position.y = 3.45;
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 24, 24), matSkin);
+        head.position.y = 3.3;
         head.castShadow = true;
         headGroup.add(head);
 
-        // الخوذة (Level 3 Helmet)
-        const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.32, 24, 24), matHelmet);
-        helmet.position.y = 3.45;
-        helmet.castShadow = true;
-        headGroup.add(helmet);
+        // الأذنان
+        const ear = new THREE.Mesh(new THREE.SphereGeometry(0.08, 16, 16), matSkin);
+        ear.position.set(0.22, 3.3, 0);
+        ear.castShadow = true;
+        headGroup.add(ear);
+        const ear2 = ear.clone();
+        ear2.position.x = -0.22;
+        headGroup.add(ear2);
 
-        // الواقي الوجهي
-        const visor = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.15, 0.08), new THREE.MeshStandardMaterial({
-            color: 0x00ffff,
-            emissive: 0x00ffff,
-            emissiveIntensity: 0.6,
-            metalness: 0.95
-        }));
-        visor.position.set(0, 3.5, 0.32);
-        headGroup.add(visor);
-
-        // الأذرع (Arms)
+        // الأذرع (Arms) - أقصر من الأرجل
         function buildArm(side) {
             const armGroup = new THREE.Group();
 
-            const shoulder = new THREE.Mesh(new THREE.SphereGeometry(0.22, 20, 20), matBody);
+            // الكتف (Shoulder)
+            const shoulder = new THREE.Mesh(new THREE.SphereGeometry(0.18, 18, 18), matSkin);
             shoulder.castShadow = true;
             armGroup.add(shoulder);
 
-            const bicep = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.16, 0.75, 20), matBody);
-            bicep.position.y = -0.48;
+            // العضد (Bicep)
+            const bicep = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.13, 0.65, 18), matSkin);
+            bicep.position.y = -0.4;
             bicep.castShadow = true;
             armGroup.add(bicep);
 
+            // مجموعة الساعد (Forearm Group)
             const forearmGroup = new THREE.Group();
-            forearmGroup.position.y = -0.95;
+            forearmGroup.position.y = -0.8;
 
-            const elbow = new THREE.Mesh(new THREE.SphereGeometry(0.17, 20, 20), matBody);
+            // المرفق (Elbow)
+            const elbow = new THREE.Mesh(new THREE.SphereGeometry(0.13, 18, 18), matSkin);
             elbow.castShadow = true;
             forearmGroup.add(elbow);
 
-            const forearm = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.14, 0.8, 20), matBody);
-            forearm.position.y = -0.45;
+            // الساعد (Forearm)
+            const forearm = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.11, 0.7, 18), matSkin);
+            forearm.position.y = -0.4;
             forearm.castShadow = true;
             forearmGroup.add(forearm);
 
-            const wrist = new THREE.Mesh(new THREE.SphereGeometry(0.15, 18, 18), matSkin);
-            wrist.position.y = -0.95;
+            // المعصم (Wrist)
+            const wrist = new THREE.Mesh(new THREE.SphereGeometry(0.11, 16, 16), matSkin);
+            wrist.position.y = -0.85;
             wrist.castShadow = true;
             forearmGroup.add(wrist);
 
-            const hand = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.22, 0.18), matSkin);
-            hand.position.y = -1.05;
+            // اليد (Hand)
+            const hand = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.18, 0.15), matSkin);
+            hand.position.y = -0.95;
             hand.castShadow = true;
             forearmGroup.add(hand);
 
             armGroup.add(forearmGroup);
-            armGroup.position.set(side * 0.55, 2.6, 0);
+            armGroup.position.set(side * 0.48, 2.4, 0);
 
             return { armGroup, forearmGroup };
         }
@@ -244,39 +237,45 @@
         torsoGroup.add(rightArmData.armGroup);
         torsoGroup.add(leftArmData.armGroup);
 
-        // الأرجل (Legs)
+        // الأرجل (Legs) - أطول من الأذرع
         function buildLeg(side) {
             const legGroup = new THREE.Group();
 
-            const thigh = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.2, 0.95, 20), matBody);
-            thigh.position.y = -0.55;
+            // الفخذ (Thigh)
+            const thigh = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.23, 1.1, 20), matClothes);
+            thigh.position.y = -0.65;
             thigh.castShadow = true;
             legGroup.add(thigh);
 
+            // مجموعة الساق (Shin Group)
             const shinGroup = new THREE.Group();
-            shinGroup.position.y = -1.15;
+            shinGroup.position.y = -1.25;
 
-            const knee = new THREE.Mesh(new THREE.SphereGeometry(0.18, 20, 20), matBody);
+            // الركبة (Knee)
+            const knee = new THREE.Mesh(new THREE.SphereGeometry(0.2, 18, 18), matSkin);
             knee.castShadow = true;
             shinGroup.add(knee);
 
-            const shin = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.16, 0.95, 20), matBody);
-            shin.position.y = -0.5;
+            // الساق (Shin)
+            const shin = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.19, 1.1, 20), matClothes);
+            shin.position.y = -0.6;
             shin.castShadow = true;
             shinGroup.add(shin);
 
-            const ankle = new THREE.Mesh(new THREE.SphereGeometry(0.16, 18, 18), matSkin);
-            ankle.position.y = -1.0;
+            // الكاحل (Ankle)
+            const ankle = new THREE.Mesh(new THREE.SphereGeometry(0.17, 16, 16), matSkin);
+            ankle.position.y = -1.1;
             ankle.castShadow = true;
             shinGroup.add(ankle);
 
-            const foot = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.15, 0.35), matBody);
-            foot.position.set(0, -1.12, 0.1);
+            // القدم (Foot)
+            const foot = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.12, 0.35), matShoes);
+            foot.position.set(0, -1.2, 0.12);
             foot.castShadow = true;
             shinGroup.add(foot);
 
             legGroup.add(shinGroup);
-            legGroup.position.set(side * 0.25, 0.8, 0);
+            legGroup.position.set(side * 0.22, 0.9, 0);
 
             return { legGroup, shinGroup };
         }
@@ -287,21 +286,21 @@
         character.add(leftLegData.legGroup);
 
         // ==========================================
-        // 3. نظام الكاميرا السلس
+        // 3. نظام الكاميرا القريبة (Close TPP)
         // ==========================================
-        const cameraTarget = new THREE.Vector3();
         const cameraVelocity = new THREE.Vector3();
-        const cameraSmoothing = 0.08;
+        const cameraSmoothing = 0.1;
 
         function updateCamera() {
-            const targetOffset = new THREE.Vector3(0, 5.5, -14);
+            // كاميرا قريبة أكثر
+            const targetOffset = new THREE.Vector3(0, 4.5, -8);
             targetOffset.applyQuaternion(character.quaternion);
             const targetPos = character.position.clone().add(targetOffset);
 
             cameraVelocity.copy(targetPos).sub(camera.position).multiplyScalar(cameraSmoothing);
             camera.position.add(cameraVelocity);
 
-            const lookTarget = character.position.clone().add(new THREE.Vector3(0, 3.2, 0));
+            const lookTarget = character.position.clone().add(new THREE.Vector3(0, 2.5, 0));
             camera.lookAt(lookTarget);
         }
 
@@ -312,98 +311,71 @@
         let score = 0;
         function spawnTarget() {
             const target = new THREE.Mesh(
-                new THREE.SphereGeometry(1.2, 16, 16),
+                new THREE.SphereGeometry(1.0, 16, 16),
                 new THREE.MeshStandardMaterial({
-                    color: 0xff0055,
-                    emissive: 0xff0055,
-                    emissiveIntensity: 0.5,
-                    metalness: 0.7
+                    color: 0xff4444,
+                    emissive: 0xff0000,
+                    emissiveIntensity: 0.3,
+                    metalness: 0.5,
+                    roughness: 0.5
                 })
             );
             const angle = Math.random() * Math.PI * 2;
-            const dist = 35 + Math.random() * 70;
-            target.position.set(Math.cos(angle)*dist, 2.2, Math.sin(angle)*dist);
+            const dist = 40 + Math.random() * 80;
+            target.position.set(Math.cos(angle)*dist, 2.0, Math.sin(angle)*dist);
             target.castShadow = true;
+            target.receiveShadow = true;
             scene.add(target);
             targets.push(target);
         }
-        for(let i=0; i<20; i++) spawnTarget();
+        for(let i=0; i<18; i++) spawnTarget();
 
         // ==========================================
-        // 5. نظام القذائف (Tracer + Explosion)
+        // 5. نظام القذائف
         // ==========================================
         const projectiles = [];
         const particles = [];
-        const tracers = [];
 
-        function fireProjectile(isRight) {
+        function fireProjectile() {
             const rayDir = new THREE.Vector3(0, 0, -1);
             rayDir.applyQuaternion(camera.quaternion);
             rayDir.normalize();
 
             const proj = new THREE.Mesh(
-                new THREE.SphereGeometry(0.2, 10, 10),
+                new THREE.SphereGeometry(0.18, 12, 12),
                 new THREE.MeshStandardMaterial({
                     color: 0xff3300,
                     emissive: 0xff3300,
-                    emissiveIntensity: 1.0,
-                    metalness: 0.95
+                    emissiveIntensity: 0.8,
+                    metalness: 0.9
                 })
             );
-            proj.position.copy(camera.position).add(rayDir.clone().multiplyScalar(5));
+            proj.position.copy(camera.position).add(rayDir.clone().multiplyScalar(4));
             proj.castShadow = true;
             scene.add(proj);
 
             projectiles.push({
                 mesh: proj,
-                vel: rayDir.multiplyScalar(1.0),
-                life: 250,
-                hasExploded: false,
-                startPos: proj.position.clone()
-            });
-
-            // إضافة Tracer Trail
-            addTracerTrail(proj.position.clone(), rayDir);
-        }
-
-        function addTracerTrail(startPos, direction) {
-            const trailLength = 15;
-            const trailPoints = [];
-            for(let i=0; i<trailLength; i++) {
-                trailPoints.push(startPos.clone().add(direction.clone().multiplyScalar(i * 0.3)));
-            }
-
-            const trailGeo = new THREE.BufferGeometry().setFromPoints(trailPoints);
-            const trailMat = new THREE.LineBasicMaterial({
-                color: 0xffff00,
-                linewidth: 3,
-                transparent: true,
-                opacity: 0.8
-            });
-            const trail = new THREE.Line(trailGeo, trailMat);
-            scene.add(trail);
-
-            tracers.push({
-                mesh: trail,
-                life: 0,
-                maxLife: 15
+                vel: rayDir.multiplyScalar(0.95),
+                life: 300,
+                hasExploded: false
             });
         }
 
         function createExplosion(pos) {
-            // انفجار متعدد الطبقات
-            // الطبقة 1: لهب أحمر/أصفر
-            for(let i=0; i<60; i++) {
+            // انفجار واقعي
+            for(let i=0; i<50; i++) {
                 const p = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.08 + Math.random() * 0.12, 8, 8),
+                    new THREE.SphereGeometry(0.07 + Math.random() * 0.1, 8, 8),
                     new THREE.MeshStandardMaterial({
-                        color: [0xff0000, 0xff6600, 0xffff00][Math.floor(Math.random()*3)],
-                        emissive: [0xff0000, 0xff6600, 0xffff00][Math.floor(Math.random()*3)],
-                        emissiveIntensity: 1.0,
-                        metalness: 0.6
+                        color: [0xff4400, 0xffaa00, 0xffff00][Math.floor(Math.random()*3)],
+                        emissive: [0xff4400, 0xffaa00, 0xffff00][Math.floor(Math.random()*3)],
+                        emissiveIntensity: 0.8,
+                        metalness: 0.5
                     })
                 );
                 p.position.copy(pos);
+                p.castShadow = true;
                 scene.add(p);
 
                 const angle = Math.random() * Math.PI * 2;
@@ -412,75 +384,16 @@
                     Math.cos(angle) * Math.cos(elevation),
                     Math.sin(elevation),
                     Math.sin(angle) * Math.cos(elevation)
-                ).multiplyScalar(0.6 + Math.random() * 0.35);
+                ).multiplyScalar(0.5 + Math.random() * 0.3);
 
                 particles.push({
                     mesh: p,
                     vel: vel,
                     life: 0,
-                    maxLife: 60,
-                    friction: 0.94,
-                    type: 'fire'
+                    maxLife: 70,
+                    friction: 0.93
                 });
             }
-
-            // الطبقة 2: دخان رمادي
-            for(let i=0; i<40; i++) {
-                const p = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.15 + Math.random() * 0.2, 8, 8),
-                    new THREE.MeshStandardMaterial({
-                        color: 0x666666,
-                        emissive: 0x333333,
-                        emissiveIntensity: 0.2,
-                        metalness: 0.1,
-                        transparent: true,
-                        opacity: 0.6
-                    })
-                );
-                p.position.copy(pos);
-                scene.add(p);
-
-                const angle = Math.random() * Math.PI * 2;
-                const elevation = Math.random() * Math.PI * 0.5;
-                const vel = new THREE.Vector3(
-                    Math.cos(angle) * Math.cos(elevation),
-                    Math.sin(elevation),
-                    Math.sin(angle) * Math.cos(elevation)
-                ).multiplyScalar(0.3 + Math.random() * 0.2);
-
-                particles.push({
-                    mesh: p,
-                    vel: vel,
-                    life: 0,
-                    maxLife: 80,
-                    friction: 0.98,
-                    type: 'smoke'
-                });
-            }
-
-            // موجة صدمة
-            const shockwave = new THREE.Mesh(
-                new THREE.SphereGeometry(0.5, 20, 20),
-                new THREE.MeshStandardMaterial({
-                    color: 0xffff00,
-                    emissive: 0xff6600,
-                    emissiveIntensity: 1.0,
-                    wireframe: true,
-                    transparent: true,
-                    opacity: 0.9
-                })
-            );
-            shockwave.position.copy(pos);
-            scene.add(shockwave);
-
-            particles.push({
-                mesh: shockwave,
-                vel: new THREE.Vector3(0, 0, 0),
-                life: 0,
-                maxLife: 20,
-                isShockwave: true,
-                initialScale: 0.5
-            });
         }
 
         // ==========================================
@@ -527,16 +440,15 @@
         window.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
         // ==========================================
-        // 7. منطق اللعبة (Double Jump + Flip)
+        // 7. منطق اللعبة (Double Jump with Flip)
         // ==========================================
         let state = 'idle';
         let animTime = 0;
         let verticalVel = 0;
         let isJumping = false;
-        let jumpCount = 0; // 0: ground, 1: first jump, 2: double jump
+        let jumpCount = 0;
         let flipRotation = 0;
         let throwTimer = 0;
-        let throwSide = true;
 
         function lerp(a, b, t) { return a + (b - a) * Math.min(t, 1); }
 
@@ -563,12 +475,12 @@
             if (Math.abs(input.forward) > 0.1 || Math.abs(input.side) > 0.1) {
                 const angle = Math.atan2(input.side, input.forward);
                 character.rotation.y = angle;
-                const speed = 0.28;
+                const speed = 0.26;
                 const newPos = character.position.clone();
                 newPos.x += Math.sin(character.rotation.y) * speed;
                 newPos.z += Math.cos(character.rotation.y) * speed;
                 
-                if(!checkCollision(newPos, 1.2)) {
+                if(!checkCollision(newPos, 1.0)) {
                     character.position.copy(newPos);
                 }
                 state = 'run';
@@ -579,13 +491,12 @@
             // القفز المزدوج مع الشقلبة
             if (input.jump && jumpCount < 2) {
                 if (jumpCount === 0) {
-                    // القفزة الأولى
-                    verticalVel = 0.38;
+                    verticalVel = 0.35;
                     isJumping = true;
                     jumpCount = 1;
+                    state = 'jump';
                 } else if (jumpCount === 1) {
-                    // القفزة الثانية (Double Jump)
-                    verticalVel = 0.35;
+                    verticalVel = 0.32;
                     jumpCount = 2;
                     state = 'flip';
                 }
@@ -594,11 +505,11 @@
 
             if (isJumping || jumpCount > 0) {
                 character.position.y += verticalVel;
-                verticalVel -= 0.022;
+                verticalVel -= 0.02;
 
                 // الشقلبة الهوائية
                 if (state === 'flip') {
-                    flipRotation += 0.15; // دوران الشقلبة
+                    flipRotation += 0.12;
                     torsoGroup.rotation.x = flipRotation;
                 }
 
@@ -609,17 +520,13 @@
                     flipRotation = 0;
                     torsoGroup.rotation.x = 0;
                     state = 'idle';
-
-                    // تأثير الهبوط
-                    createLandingEffect();
                 }
             }
 
             // الرمي
             if (input.throw && throwTimer <= 0) {
-                fireProjectile(throwSide);
-                throwSide = !throwSide;
-                throwTimer = 30;
+                fireProjectile();
+                throwTimer = 25;
                 input.throw = false;
             }
             if (throwTimer > 0) throwTimer--;
@@ -634,7 +541,7 @@
                 p.life--;
 
                 targets.forEach((t, idx) => {
-                    if (p.mesh.position.distanceTo(t.position) < 1.7) {
+                    if (p.mesh.position.distanceTo(t.position) < 1.5) {
                         createExplosion(t.position);
                         scene.remove(t);
                         targets.splice(idx, 1);
@@ -657,35 +564,16 @@
                 }
             }
 
-            // Tracers
-            for(let i=tracers.length-1; i>=0; i--) {
-                const t = tracers[i];
-                t.life++;
-                if (t.life >= t.maxLife) {
-                    scene.remove(t.mesh);
-                    tracers.splice(i, 1);
-                }
-            }
-
             // الجزيئات
             for(let i=particles.length-1; i>=0; i--) {
                 const p = particles[i];
-                if(p.isShockwave) {
-                    const progress = p.life / p.maxLife;
-                    p.mesh.scale.set(1 + progress * 5, 1 + progress * 5, 1 + progress * 5);
-                    p.mesh.material.opacity = 0.9 * (1 - progress);
-                } else {
-                    p.mesh.position.add(p.vel);
-                    p.vel.multiplyScalar(p.friction);
-                    p.vel.y -= 0.008;
-                    p.life++;
-                    if (p.type === 'smoke') {
-                        p.mesh.scale.multiplyScalar(1.02);
-                    }
-                    if (p.life > p.maxLife * 0.5) {
-                        p.mesh.material.opacity = 1 - (p.life - p.maxLife * 0.5) / (p.maxLife * 0.5);
-                        p.mesh.material.transparent = true;
-                    }
+                p.mesh.position.add(p.vel);
+                p.vel.multiplyScalar(p.friction);
+                p.vel.y -= 0.008;
+                p.life++;
+                if (p.life > p.maxLife * 0.6) {
+                    p.mesh.material.opacity = 1 - (p.life - p.maxLife * 0.6) / (p.maxLife * 0.4);
+                    p.mesh.material.transparent = true;
                 }
                 if (p.life >= p.maxLife) {
                     scene.remove(p.mesh);
@@ -694,81 +582,53 @@
             }
         }
 
-        function createLandingEffect() {
-            // تأثير الهبوط
-            for(let i=0; i<20; i++) {
-                const p = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.05 + Math.random() * 0.08, 6, 6),
-                    new THREE.MeshStandardMaterial({
-                        color: 0xcccccc,
-                        emissive: 0x666666,
-                        emissiveIntensity: 0.3
-                    })
-                );
-                p.position.copy(character.position);
-                scene.add(p);
-
-                const angle = Math.random() * Math.PI * 2;
-                const vel = new THREE.Vector3(
-                    Math.cos(angle) * 0.3,
-                    0.2 + Math.random() * 0.1,
-                    Math.sin(angle) * 0.3
-                );
-
-                particles.push({
-                    mesh: p,
-                    vel: vel,
-                    life: 0,
-                    maxLife: 30,
-                    friction: 0.92
-                });
-            }
-        }
-
         function updateAnimations() {
-            const s = 0.22;
+            const s = 0.25;
             if (state === 'idle') {
-                rightArmData.armGroup.rotation.x = lerp(rightArmData.armGroup.rotation.x, Math.sin(animTime * 0.3) * 0.08, s);
-                leftArmData.armGroup.rotation.x = lerp(leftArmData.armGroup.rotation.x, -Math.sin(animTime * 0.3) * 0.08, s);
-                rightArmData.forearmGroup.rotation.x = lerp(rightArmData.forearmGroup.rotation.x, -0.2, s);
-                leftArmData.forearmGroup.rotation.x = lerp(leftArmData.forearmGroup.rotation.x, -0.2, s);
+                rightArmData.armGroup.rotation.x = lerp(rightArmData.armGroup.rotation.x, Math.sin(animTime * 0.25) * 0.08, s);
+                leftArmData.armGroup.rotation.x = lerp(leftArmData.armGroup.rotation.x, -Math.sin(animTime * 0.25) * 0.08, s);
+                rightArmData.forearmGroup.rotation.x = lerp(rightArmData.forearmGroup.rotation.x, -0.15, s);
+                leftArmData.forearmGroup.rotation.x = lerp(leftArmData.forearmGroup.rotation.x, -0.15, s);
                 rightLegData.legGroup.rotation.x = lerp(rightLegData.legGroup.rotation.x, 0, s);
                 leftLegData.legGroup.rotation.x = lerp(leftLegData.legGroup.rotation.x, 0, s);
                 rightLegData.shinGroup.rotation.x = lerp(rightLegData.shinGroup.rotation.x, 0, s);
                 leftLegData.shinGroup.rotation.x = lerp(leftLegData.shinGroup.rotation.x, 0, s);
             } else if (state === 'run') {
-                const t = animTime * 6.5;
-                rightLegData.legGroup.rotation.x = lerp(rightLegData.legGroup.rotation.x, Math.sin(t) * 0.85, s);
-                leftLegData.legGroup.rotation.x = lerp(leftLegData.legGroup.rotation.x, -Math.sin(t) * 0.85, s);
-                rightLegData.shinGroup.rotation.x = lerp(rightLegData.shinGroup.rotation.x, Math.max(0, -Math.sin(t)) * 0.95, s);
-                leftLegData.shinGroup.rotation.x = lerp(leftLegData.shinGroup.rotation.x, Math.max(0, Math.sin(t)) * 0.95, s);
+                const t = animTime * 6.2;
+                rightLegData.legGroup.rotation.x = lerp(rightLegData.legGroup.rotation.x, Math.sin(t) * 0.8, s);
+                leftLegData.legGroup.rotation.x = lerp(leftLegData.legGroup.rotation.x, -Math.sin(t) * 0.8, s);
+                rightLegData.shinGroup.rotation.x = lerp(rightLegData.shinGroup.rotation.x, Math.max(0, -Math.sin(t)) * 0.9, s);
+                leftLegData.shinGroup.rotation.x = lerp(leftLegData.shinGroup.rotation.x, Math.max(0, Math.sin(t)) * 0.9, s);
                 
-                rightArmData.armGroup.rotation.x = lerp(rightArmData.armGroup.rotation.x, Math.sin(t) * 0.75, s);
-                leftArmData.armGroup.rotation.x = lerp(leftArmData.armGroup.rotation.x, -Math.sin(t) * 0.75, s);
-                rightArmData.forearmGroup.rotation.x = lerp(rightArmData.forearmGroup.rotation.x, -1.15, s);
-                leftArmData.forearmGroup.rotation.x = lerp(leftArmData.forearmGroup.rotation.x, -1.15, s);
-            } else if (state === 'jump' || state === 'flip') {
-                rightArmData.armGroup.rotation.x = lerp(rightArmData.armGroup.rotation.x, 0.8, s);
-                leftArmData.armGroup.rotation.x = lerp(leftArmData.armGroup.rotation.x, 0.8, s);
-                rightArmData.forearmGroup.rotation.x = lerp(rightArmData.forearmGroup.rotation.x, -1.3, s);
-                leftArmData.forearmGroup.rotation.x = lerp(leftArmData.forearmGroup.rotation.x, -1.3, s);
+                rightArmData.armGroup.rotation.x = lerp(rightArmData.armGroup.rotation.x, Math.sin(t) * 0.7, s);
+                leftArmData.armGroup.rotation.x = lerp(leftArmData.armGroup.rotation.x, -Math.sin(t) * 0.7, s);
+                rightArmData.forearmGroup.rotation.x = lerp(rightArmData.forearmGroup.rotation.x, -1.1, s);
+                leftArmData.forearmGroup.rotation.x = lerp(leftArmData.forearmGroup.rotation.x, -1.1, s);
+            } else if (state === 'jump') {
+                rightArmData.armGroup.rotation.x = lerp(rightArmData.armGroup.rotation.x, 0.7, s);
+                leftArmData.armGroup.rotation.x = lerp(leftArmData.armGroup.rotation.x, 0.7, s);
+                rightArmData.forearmGroup.rotation.x = lerp(rightArmData.forearmGroup.rotation.x, -1.25, s);
+                leftArmData.forearmGroup.rotation.x = lerp(leftArmData.forearmGroup.rotation.x, -1.25, s);
                 rightLegData.legGroup.rotation.x = lerp(rightLegData.legGroup.rotation.x, -0.5, s);
                 leftLegData.legGroup.rotation.x = lerp(leftLegData.legGroup.rotation.x, -0.5, s);
-                rightLegData.shinGroup.rotation.x = lerp(rightLegData.shinGroup.rotation.x, 0.8, s);
-                leftLegData.shinGroup.rotation.x = lerp(leftLegData.shinGroup.rotation.x, 0.8, s);
+                rightLegData.shinGroup.rotation.x = lerp(rightLegData.shinGroup.rotation.x, 0.75, s);
+                leftLegData.shinGroup.rotation.x = lerp(leftLegData.shinGroup.rotation.x, 0.75, s);
+            } else if (state === 'flip') {
+                rightArmData.armGroup.rotation.x = lerp(rightArmData.armGroup.rotation.x, 0.5, s);
+                leftArmData.armGroup.rotation.x = lerp(leftArmData.armGroup.rotation.x, 0.5, s);
+                rightArmData.forearmGroup.rotation.x = lerp(rightArmData.forearmGroup.rotation.x, -1.2, s);
+                leftArmData.forearmGroup.rotation.x = lerp(leftArmData.forearmGroup.rotation.x, -1.2, s);
+                rightLegData.legGroup.rotation.x = lerp(rightLegData.legGroup.rotation.x, -0.4, s);
+                leftLegData.legGroup.rotation.x = lerp(leftLegData.legGroup.rotation.x, -0.4, s);
+                rightLegData.shinGroup.rotation.x = lerp(rightLegData.shinGroup.rotation.x, 0.7, s);
+                leftLegData.shinGroup.rotation.x = lerp(leftLegData.shinGroup.rotation.x, 0.7, s);
             }
 
-            if(throwTimer > 16) {
-                const throwProgress = (30 - throwTimer) / 14;
-                if(throwSide) {
-                    rightArmData.armGroup.rotation.x = lerp(rightArmData.armGroup.rotation.x, -1.25 + throwProgress * 0.5, s);
-                    rightArmData.armGroup.rotation.z = lerp(rightArmData.armGroup.rotation.z, -0.35, s);
-                    rightArmData.forearmGroup.rotation.x = lerp(rightArmData.forearmGroup.rotation.x, -1.75, s);
-                } else {
-                    leftArmData.armGroup.rotation.x = lerp(leftArmData.armGroup.rotation.x, -1.25 + throwProgress * 0.5, s);
-                    leftArmData.armGroup.rotation.z = lerp(leftArmData.armGroup.rotation.z, 0.35, s);
-                    leftArmData.forearmGroup.rotation.x = lerp(leftArmData.forearmGroup.rotation.x, -1.75, s);
-                }
+            if(throwTimer > 14) {
+                const throwProgress = (25 - throwTimer) / 11;
+                rightArmData.armGroup.rotation.x = lerp(rightArmData.armGroup.rotation.x, -1.2 + throwProgress * 0.4, s);
+                rightArmData.armGroup.rotation.z = lerp(rightArmData.armGroup.rotation.z, -0.3, s);
+                rightArmData.forearmGroup.rotation.x = lerp(rightArmData.forearmGroup.rotation.x, -1.7, s);
             }
         }
 
