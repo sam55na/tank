@@ -3,44 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Elite Tactical Shooter - Pro Model</title>
+    <title>Elite Soldier - Tactical Front</title>
     <style>
         * { box-sizing: border-box; touch-action: none; }
         body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         #ui-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
-        #crosshair { position: absolute; top: 50%; left: 50%; width: 24px; height: 24px; transform: translate(-50%, -50%); pointer-events: none; }
-        #crosshair::before, #crosshair::after { content: ''; position: absolute; background: #00ff00; opacity: 0.7; }
+        #crosshair { position: absolute; top: 50%; left: 50%; width: 30px; height: 30px; transform: translate(-50%, -50%); pointer-events: none; }
+        #crosshair::before, #crosshair::after { content: ''; position: absolute; background: #00ff00; opacity: 0.9; }
         #crosshair::before { width: 2px; height: 100%; left: 50%; transform: translateX(-50%); }
         #crosshair::after { height: 2px; width: 100%; top: 50%; transform: translateY(-50%); }
-        #info-panel { position: absolute; top: 20px; left: 20px; background: rgba(0, 0, 0, 0.7); color: #fff; padding: 15px 25px; border-radius: 8px; border-left: 4px solid #00ff00; }
-        #info-panel h1 { margin: 0; font-size: 1.2rem; letter-spacing: 1px; }
+        #info-panel { position: absolute; top: 20px; left: 20px; background: rgba(0, 0, 0, 0.85); color: #fff; padding: 15px 25px; border-radius: 4px; border-left: 5px solid #00ff00; font-family: 'Courier New'; box-shadow: 0 0 20px rgba(0,255,0,0.2); }
+        #info-panel h1 { margin: 0; font-size: 1.2rem; letter-spacing: 2px; color: #00ff00; text-transform: uppercase; }
         #info-panel p { margin: 5px 0 0; font-size: 0.8rem; color: #aaa; }
-        #score-panel { position: absolute; top: 20px; right: 20px; background: rgba(0, 0, 0, 0.7); color: #00ff00; padding: 10px 25px; border-radius: 8px; font-size: 1.2rem; font-weight: bold; border: 1px solid rgba(0, 255, 0, 0.3); }
-        #joystick-container { position: absolute; bottom: 50px; left: 50px; width: 130px; height: 130px; background: rgba(255, 255, 255, 0.05); border-radius: 50%; pointer-events: auto; border: 2px solid rgba(255, 255, 255, 0.2); }
-        #joystick-knob { position: absolute; top: 50%; left: 50%; width: 55px; height: 55px; background: rgba(255, 255, 255, 0.9); border-radius: 50%; transform: translate(-50%,-50%); box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        #action-buttons { position: absolute; bottom: 50px; right: 50px; display: flex; gap: 25px; pointer-events: auto; }
-        .action-btn { width: 80px; height: 80px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.4); color: white; font-weight: bold; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5); transition: all 0.1s; user-select: none; background: rgba(0,0,0,0.6); }
+        #score-panel { position: absolute; top: 20px; right: 20px; background: rgba(0, 0, 0, 0.85); color: #00ff00; padding: 12px 30px; border-radius: 4px; font-size: 1.3rem; font-weight: bold; border: 1px solid rgba(0, 255, 0, 0.5); font-family: 'Courier New'; }
+        #joystick-container { position: absolute; bottom: 60px; left: 60px; width: 140px; height: 140px; background: rgba(255, 255, 255, 0.03); border-radius: 50%; pointer-events: auto; border: 2px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(5px); }
+        #joystick-knob { position: absolute; top: 50%; left: 50%; width: 60px; height: 60px; background: rgba(255, 255, 255, 0.85); border-radius: 50%; transform: translate(-50%,-50%); box-shadow: 0 5px 20px rgba(0,0,0,0.6); }
+        #action-buttons { position: absolute; bottom: 60px; right: 60px; display: flex; gap: 30px; pointer-events: auto; }
+        .action-btn { width: 90px; height: 90px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.3); color: white; font-weight: bold; font-size: 1.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 20px rgba(0,0,0,0.6); transition: all 0.15s; user-select: none; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); }
         #btn-jump { border-color: #00aaff; }
         #btn-throw { border-color: #ff4400; }
-        .action-btn:active { transform: scale(0.9); background: rgba(255,255,255,0.2); }
-        #loading-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; color: #fff; }
-        .loader { border: 4px solid #333; border-top: 4px solid #00ff00; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        .action-btn:active { transform: scale(0.85); background: rgba(255,255,255,0.25); }
+        #loading-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #050505; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; color: #00ff00; font-family: 'Courier New'; }
+        .loader { border: 5px solid #1a1a1a; border-top: 5px solid #00ff00; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin-bottom: 25px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
     <div id="loading-screen">
         <div class="loader"></div>
-        <p>جاري تحميل الشخصية الاحترافية والعالم...</p>
+        <p>DEPLOYING ELITE SOLDIER...</p>
     </div>
 
     <div id="ui-container">
         <div id="crosshair"></div>
         <div id="info-panel">
-            <h1>ELITE VANGUARD</h1>
-            <p>Pro GLB Model • Double Jump Flip • Laser Precision</p>
+            <h1>> TACTICAL VANGUARD</h1>
+            <p>Close Shoulder Cam • Pro Soldier Model • Double Flip</p>
         </div>
-        <div id="score-panel">SCORE: <span id="score">0</span></div>
+        <div id="score-panel">ELIMINATED: <span id="score">0</span></div>
         <div id="joystick-container"><div id="joystick-knob"></div></div>
         <div id="action-buttons">
             <button class="action-btn" id="btn-jump">⬆️</button>
@@ -57,13 +57,13 @@
         import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
         // ==========================================
-        // 1. إعداد المشهد
+        // 1. إعداد المشهد والإضاءة
         // ==========================================
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x050505);
-        scene.fog = new THREE.Fog(0x050505, 150, 400);
+        scene.background = new THREE.Color(0x080808);
+        scene.fog = new THREE.Fog(0x080808, 100, 350);
 
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
@@ -72,54 +72,55 @@
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         document.body.appendChild(renderer.domElement);
 
-        // الإضاءة
-        const sunLight = new THREE.DirectionalLight(0xffffff, 1.5);
-        sunLight.position.set(50, 100, 50);
+        const sunLight = new THREE.DirectionalLight(0xffffff, 1.8);
+        sunLight.position.set(40, 100, 40);
         sunLight.castShadow = true;
         sunLight.shadow.mapSize.set(2048, 2048);
-        sunLight.shadow.camera.left = -100;
-        sunLight.shadow.camera.right = 100;
-        sunLight.shadow.camera.top = 100;
-        sunLight.shadow.camera.bottom = -100;
+        sunLight.shadow.camera.left = -120;
+        sunLight.shadow.camera.right = 120;
+        sunLight.shadow.camera.top = 120;
+        sunLight.shadow.camera.bottom = -120;
+        sunLight.shadow.bias = -0.0005;
         scene.add(sunLight);
 
-        const ambientLight = new THREE.AmbientLight(0x404040, 1.0);
+        const ambientLight = new THREE.AmbientLight(0x606060, 1.4);
         scene.add(ambientLight);
 
-        const pointLight = new THREE.PointLight(0x00ff00, 1, 50);
-        pointLight.position.set(0, 10, 0);
-        scene.add(pointLight);
-
-        // الأرضية
-        const grid = new THREE.GridHelper(1000, 100, 0x00ff00, 0x222222);
+        // الأرضية الحربية
+        const grid = new THREE.GridHelper(1000, 100, 0x00ff00, 0x111111);
         scene.add(grid);
 
         const groundGeo = new THREE.PlaneGeometry(1000, 1000);
-        const groundMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.8 });
+        const groundMat = new THREE.MeshStandardMaterial({ color: 0x0c0c0c, roughness: 0.95, metalness: 0.1 });
         const ground = new THREE.Mesh(groundGeo, groundMat);
         ground.rotation.x = -Math.PI / 2;
         ground.receiveShadow = true;
         scene.add(ground);
 
         // ==========================================
-        // 2. تحميل الشخصية الاحترافية (Xbot)
+        // 2. تحميل الجندي الحربي (Soldier)
         // ==========================================
         let character, mixer, animations = {};
-        let currentAction, activeState = 'idle';
+        let currentAction, throwCooldown = 0;
         const loader = new GLTFLoader();
 
-        // رابط نموذج Xbot الشهير من مستودع Three.js
-        const modelUrl = 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/gltf/Xbot.glb';
+        // استخدام نموذج الجندي الرسمي من Three.js
+        const modelUrl = 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/gltf/Soldier.glb';
 
         loader.load(modelUrl, (gltf) => {
             character = gltf.scene;
-            character.scale.set(1.8, 1.8, 1.8);
+            character.scale.set(2.2, 2.2, 2.2); // تكبير الجندي ليكون أكثر هيبة
+            character.userData.velocity = new THREE.Vector3();
+            character.userData.isJumping = false;
+            character.userData.jumpCount = 0;
+
             character.traverse(child => {
                 if (child.isMesh) {
                     child.castShadow = true;
                     child.receiveShadow = true;
                 }
             });
+
             scene.add(character);
 
             mixer = new THREE.AnimationMixer(character);
@@ -127,7 +128,6 @@
                 animations[clip.name.toLowerCase()] = mixer.clipAction(clip);
             });
 
-            // تعيين الأنيميشن الافتراضي
             if (animations['idle']) {
                 currentAction = animations['idle'];
                 currentAction.play();
@@ -135,28 +135,30 @@
 
             document.getElementById('loading-screen').style.display = 'none';
         }, undefined, (error) => {
-            console.error('Error loading model:', error);
-            // Fallback if model fails
-            createFallbackCharacter();
+            console.error('Error loading soldier model:', error);
+            createFallbackSoldier();
             document.getElementById('loading-screen').style.display = 'none';
         });
 
-        function createFallbackCharacter() {
+        function createFallbackSoldier() {
             character = new THREE.Group();
-            const body = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.8, 0.4), new THREE.MeshStandardMaterial({ color: 0x00ff00 }));
-            body.position.y = 0.9;
+            const body = new THREE.Mesh(new THREE.BoxGeometry(0.7, 2.0, 0.5), new THREE.MeshStandardMaterial({ color: 0x2e4d23 }));
+            body.position.y = 1.0;
+            body.castShadow = true;
             character.add(body);
+            character.userData.velocity = new THREE.Vector3();
+            character.userData.isJumping = false;
+            character.userData.jumpCount = 0;
             scene.add(character);
         }
 
         // ==========================================
-        // 3. نظام الكاميرا والتحكم
+        // 3. نظام التحكم والكاميرا القريبة
         // ==========================================
         const input = { forward: 0, side: 0, jump: false, throw: false };
         const joystick = { active: false, startX: 0, startY: 0 };
         const knob = document.getElementById('joystick-knob');
 
-        // إعداد الجويستك
         document.getElementById('joystick-container').addEventListener('touchstart', (e) => {
             joystick.active = true;
             joystick.startX = e.touches[0].clientX;
@@ -189,51 +191,64 @@
         document.getElementById('btn-jump').addEventListener('touchstart', (e) => { e.preventDefault(); input.jump = true; });
         document.getElementById('btn-throw').addEventListener('touchstart', (e) => { e.preventDefault(); input.throw = true; });
 
-        // الكيبورد
         const keys = {};
         window.addEventListener('keydown', (e) => { keys[e.code] = true; });
         window.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
         // ==========================================
-        // 4. منطق اللعبة والفيزياء
+        // 4. نظام القذائف والانفجارات
         // ==========================================
-        let verticalVel = 0, isJumping = false, jumpCount = 0;
-        let score = 0;
         const projectiles = [], particles = [], targets = [];
+        let score = 0;
 
         function spawnTarget() {
             const target = new THREE.Mesh(
-                new THREE.SphereGeometry(1.2, 16, 16),
-                new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 0.5 })
+                new THREE.SphereGeometry(1.5, 16, 16),
+                new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 0.8 })
             );
             const angle = Math.random() * Math.PI * 2;
-            const dist = 40 + Math.random() * 60;
-            target.position.set(Math.cos(angle)*dist, 2, Math.sin(angle)*dist);
+            const dist = 50 + Math.random() * 80;
+            target.position.set(Math.cos(angle)*dist, 2.5, Math.sin(angle)*dist);
             scene.add(target);
             targets.push(target);
         }
-        for(let i=0; i<15; i++) spawnTarget();
+        for(let i=0; i<12; i++) spawnTarget();
 
         function fireProjectile() {
             const dir = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).normalize();
+            let firePos = character.position.clone().add(new THREE.Vector3(0.4, 1.6, 0.2).applyQuaternion(character.quaternion));
+            
             const proj = new THREE.Mesh(
-                new THREE.SphereGeometry(0.2, 8, 8),
-                new THREE.MeshStandardMaterial({ color: 0x00ff00, emissive: 0x00ff00, emissiveIntensity: 1 })
+                new THREE.SphereGeometry(0.3, 12, 12),
+                new THREE.MeshStandardMaterial({ color: 0x00ff00, emissive: 0x00ff00, emissiveIntensity: 1.5 })
             );
-            proj.position.copy(character.position).add(new THREE.Vector3(0, 1.5, 0));
+            proj.position.copy(firePos);
             scene.add(proj);
-            projectiles.push({ mesh: proj, vel: dir.multiplyScalar(1.2), life: 200 });
+
+            projectiles.push({ mesh: proj, vel: dir.multiplyScalar(1.5), life: 200 });
+            createMuzzleFlash(firePos);
+        }
+
+        function createMuzzleFlash(pos) {
+            for(let i=0; i<10; i++) {
+                const p = new THREE.Mesh(new THREE.SphereGeometry(0.1, 4, 4), new THREE.MeshStandardMaterial({ color: 0xffff00, emissive: 0xffff00 }));
+                p.position.copy(pos);
+                scene.add(p);
+                particles.push({ mesh: p, vel: new THREE.Vector3(Math.random()-0.5, Math.random()-0.5, Math.random()-0.5).multiplyScalar(0.5), life: 0, maxLife: 10 });
+            }
         }
 
         function createExplosion(pos) {
-            for(let i=0; i<30; i++) {
-                const p = new THREE.Mesh(new THREE.SphereGeometry(0.1, 4, 4), new THREE.MeshStandardMaterial({ color: 0x00ff00 }));
+            for(let i=0; i<40; i++) {
+                const p = new THREE.Mesh(new THREE.SphereGeometry(0.15, 6, 6), new THREE.MeshStandardMaterial({ color: 0xff4400, emissive: 0xff2200 }));
                 p.position.copy(pos);
                 scene.add(p);
                 particles.push({
                     mesh: p,
-                    vel: new THREE.Vector3(Math.random()-0.5, Math.random()-0.5, Math.random()-0.5).multiplyScalar(0.5),
-                    life: 40
+                    vel: new THREE.Vector3(Math.random()-0.5, Math.random()-0.5, Math.random()-0.5).multiplyScalar(0.8),
+                    life: 0,
+                    maxLife: 50,
+                    friction: 0.94
                 });
             }
         }
@@ -246,78 +261,79 @@
             currentAction.reset().setEffectiveTimeScale(1).setEffectiveWeight(1).fadeIn(duration).play();
         }
 
+        // ==========================================
+        // 5. حلقة التحديث الرئيسية
+        // ==========================================
         function update(delta) {
             if (!character) return;
 
-            // تحديث المدخلات من الكيبورد
             if (keys['KeyW']) input.forward = 1; else if (keys['KeyS']) input.forward = -1; else if (!joystick.active) input.forward = 0;
             if (keys['KeyA']) input.side = 1; else if (keys['KeyD']) input.side = -1; else if (!joystick.active) input.side = 0;
             if (keys['Space']) { input.jump = true; keys['Space'] = false; }
             if (keys['KeyF']) { input.throw = true; keys['KeyF'] = false; }
 
-            // الحركة
             const moveDir = new THREE.Vector3(input.side, 0, input.forward);
             if (moveDir.length() > 0.1) {
                 const angle = Math.atan2(input.side, input.forward);
                 character.rotation.y = angle;
-                character.position.x += Math.sin(angle) * 0.25;
-                character.position.z += Math.cos(angle) * 0.25;
-                fadeToAction('run', 0.2);
+                character.position.x += Math.sin(angle) * 0.3;
+                character.position.z += Math.cos(angle) * 0.3;
+                fadeToAction('run', 0.15);
             } else {
-                fadeToAction('idle', 0.2);
+                fadeToAction('idle', 0.15);
             }
 
-            // القفز المزدوج والشقلبة
-            if (input.jump && jumpCount < 2) {
-                verticalVel = 0.35;
-                isJumping = true;
-                jumpCount++;
+            if (input.jump && character.userData.jumpCount < 2) {
+                character.userData.velocity.y = 0.4;
+                character.userData.isJumping = true;
+                character.userData.jumpCount++;
                 input.jump = false;
-                if (jumpCount === 2) {
-                    // تأثير الشقلبة (دوران يدوي للنموذج)
+                if (character.userData.jumpCount === 2) {
                     character.userData.isFlipping = true;
                     character.userData.flipAngle = 0;
                 }
             }
 
-            if (isJumping) {
-                character.position.y += verticalVel;
-                verticalVel -= 0.018;
+            if (character.userData.isJumping) {
+                character.position.y += character.userData.velocity.y;
+                character.userData.velocity.y -= 0.02;
+                
                 if (character.userData.isFlipping) {
-                    character.userData.flipAngle += 0.2;
+                    character.userData.flipAngle += 0.25;
                     character.children[0].rotation.x = character.userData.flipAngle;
                     if (character.userData.flipAngle >= Math.PI * 2) {
                         character.userData.isFlipping = false;
                         character.children[0].rotation.x = 0;
                     }
                 }
+
                 if (character.position.y <= 0) {
                     character.position.y = 0;
-                    isJumping = false;
-                    jumpCount = 0;
+                    character.userData.isJumping = false;
+                    character.userData.jumpCount = 0;
                     character.userData.isFlipping = false;
                     character.children[0].rotation.x = 0;
                 }
             }
 
-            // الرمي
-            if (input.throw) {
+            if (input.throw && throwCooldown <= 0) {
                 fireProjectile();
+                throwCooldown = 25;
                 input.throw = false;
             }
+            if (throwCooldown > 0) throwCooldown--;
 
-            // الكاميرا
-            const camOffset = new THREE.Vector3(0, 4, -10).applyQuaternion(character.quaternion);
-            camera.position.lerp(character.position.clone().add(camOffset), 0.1);
-            camera.lookAt(character.position.clone().add(new THREE.Vector3(0, 2, 0)));
+            // الكاميرا القريبة (Close Shoulder Camera)
+            const camOffset = new THREE.Vector3(1.5, 3.5, -6).applyQuaternion(character.quaternion);
+            camera.position.lerp(character.position.clone().add(camOffset), 0.15);
+            camera.lookAt(character.position.clone().add(new THREE.Vector3(0, 2, 2).applyQuaternion(character.quaternion)));
 
-            // القذائف والأهداف
             for(let i=projectiles.length-1; i>=0; i--) {
                 const p = projectiles[i];
                 p.mesh.position.add(p.vel);
                 p.life--;
                 targets.forEach((t, idx) => {
-                    if (p.mesh.position.distanceTo(t.position) < 1.5) {
+                    if (p.mesh.position.distanceTo(t.position) < 2.0) {
                         createExplosion(t.position);
                         scene.remove(t);
                         targets.splice(idx, 1);
@@ -330,12 +346,12 @@
                 if (p.life <= 0) { scene.remove(p.mesh); projectiles.splice(i, 1); }
             }
 
-            // الجزيئات
             for(let i=particles.length-1; i>=0; i--) {
                 const p = particles[i];
                 p.mesh.position.add(p.vel);
-                p.life--;
-                if (p.life <= 0) { scene.remove(p.mesh); particles.splice(i, 1); }
+                if (p.friction) p.vel.multiplyScalar(p.friction);
+                p.life++;
+                if (p.life >= p.maxLife) { scene.remove(p.mesh); particles.splice(i, 1); }
             }
 
             if (mixer) mixer.update(delta);
