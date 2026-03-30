@@ -1,500 +1,179 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voxel Warrior - شخصية حربية واقعية منحوتة</title>
-    <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        #info {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: white;
-            background: rgba(0,0,0,0.75);
-            padding: 12px 20px;
-            border-radius: 8px;
-            z-index: 100;
-            font-size: 14px;
-            pointer-events: none;
-            backdrop-filter: blur(5px);
-            border-left: 3px solid #ff6600;
-            font-weight: bold;
-        }
-        #controls {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            color: white;
-            background: rgba(0,0,0,0.6);
-            padding: 8px 15px;
-            border-radius: 8px;
-            z-index: 100;
-            font-size: 12px;
-            pointer-events: none;
-            font-family: monospace;
-        }
-        #stats {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            color: #0f0;
-            background: rgba(0,0,0,0.6);
-            padding: 5px 12px;
-            border-radius: 5px;
-            font-family: monospace;
-            font-size: 11px;
-            pointer-events: none;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voxel Soldier AR</title>
+<style>
+body { margin:0; overflow:hidden; background:#101010; }
+canvas { display:block; }
+#info {
+  position:absolute;
+  top:10px; left:10px;
+  color:white; font-family:sans-serif;
+  background:rgba(0,0,0,0.5); padding:8px 12px; border-radius:6px;
+}
+</style>
 </head>
 <body>
-    <div id="info">
-        🎯 WARRIOR SCULPTED | 💣 TACTICAL BOMB | ⚡ REALISTIC PROPORTIONS
-    </div>
-    <div id="controls">
-        🖱️ MOUSE DRAG TO ROTATE | 🔍 SCROLL TO ZOOM
-    </div>
-    <div id="stats">
-        ⚙️ LOADING...
-    </div>
+<div id="info">💣 Voxel Soldier | عسكري يحمل قنبلة</div>
+<script type="module">
+import * as THREE from 'https://unpkg.com/three@0.128.0/build/three.module.js';
+import { OrbitControls } from 'https://unpkg.com/three@0.128.0/examples/jsm/controls/OrbitControls.js';
 
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.128.0/build/three.module.js"
-            }
-        }
-    </script>
+// ======================= SCENE =======================
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x101010);
 
-    <script type="module">
-        import * as THREE from 'three';
-        import { OrbitControls } from 'https://unpkg.com/three@0.128.0/examples/jsm/controls/OrbitControls.js';
+// ======================= CAMERA =======================
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+camera.position.set(6,5,10);
+camera.lookAt(0,2,0);
 
-        // =============== إعداد المشهد ===============
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0a0a1a);
-        
-        const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(5.5, 4.2, 7.8);
-        camera.lookAt(0, 2.8, 0);
-        
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        document.body.appendChild(renderer.domElement);
-        
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-        controls.autoRotate = false;
-        controls.enableZoom = true;
-        controls.target.set(0, 2.8, 0);
-        controls.zoomSpeed = 1.2;
-        
-        // =============== إضاءة احترافية للنحت ===============
-        const ambientLight = new THREE.AmbientLight(0x404060, 0.65);
-        scene.add(ambientLight);
-        
-        // إضاءة رئيسية من الأمام الجانب
-        const keyLight = new THREE.DirectionalLight(0xfff0e0, 1.2);
-        keyLight.position.set(4, 6, 5);
-        keyLight.castShadow = true;
-        keyLight.receiveShadow = false;
-        keyLight.shadow.mapSize.width = 1024;
-        keyLight.shadow.mapSize.height = 1024;
-        scene.add(keyLight);
-        
-        // إضاءة خلفية لإبراز الحواف
-        const rimLight = new THREE.DirectionalLight(0xffaa77, 0.6);
-        rimLight.position.set(-2, 3, -5);
-        scene.add(rimLight);
-        
-        // إضاءة جانبية لتوضيح المنحنيات
-        const fillLight = new THREE.PointLight(0x88aaff, 0.45);
-        fillLight.position.set(-3, 3, 2);
-        scene.add(fillLight);
-        
-        // إضاءة من الأسفل
-        const bottomLight = new THREE.PointLight(0xaa88ff, 0.3);
-        bottomLight.position.set(0, -1, 0);
-        scene.add(bottomLight);
-        
-        // إضاءة للقنبلة
-        const bombLight = new THREE.PointLight(0xff5533, 0.5);
-        bombLight.position.set(2.2, 2.5, 1.2);
-        scene.add(bombLight);
-        
-        // =============== أرضية بسيطة ===============
-        const gridHelper = new THREE.GridHelper(9, 20, 0x88aaff, 0x446688);
-        gridHelper.position.y = -1.3;
-        gridHelper.material.transparent = true;
-        gridHelper.material.opacity = 0.4;
-        scene.add(gridHelper);
-        
-        // =============== نظام الفوكسل المنحوت ===============
-        const characterGroup = new THREE.Group();
-        scene.add(characterGroup);
-        
-        const voxelSize = 0.092;
-        let voxelCount = 0;
-        
-        function addVoxel(x, y, z, color, metalness = 0.65, roughness = 0.3) {
-            const geometry = new THREE.BoxGeometry(voxelSize, voxelSize, voxelSize);
-            const material = new THREE.MeshStandardMaterial({
-                color: color,
-                metalness: metalness,
-                roughness: roughness,
-                flatShading: false
-            });
-            const cube = new THREE.Mesh(geometry, material);
-            cube.position.set(x * voxelSize, y * voxelSize, z * voxelSize);
-            cube.castShadow = true;
-            cube.receiveShadow = true;
-            characterGroup.add(cube);
-            voxelCount++;
-            return cube;
-        }
-        
-        // =============== لوحة الألوان الواقعية ===============
-        const colors = {
-            // ألوان الجلد والملابس
-            skin: 0xd4b48c,
-            skinDark: 0xc49a6c,
-            // ألوان الدرع
-            armorPrimary: 0x4a5568,
-            armorSecondary: 0x5a687c,
-            armorLight: 0x7c8aa0,
-            armorDark: 0x2d3748,
-            steel: 0x9aaec0,
-            titanium: 0xb8c4d0,
-            // ألوان القماش
-            fabric: 0x5c6b3a,
-            fabricDark: 0x3a4724,
-            leather: 0x8b5a2b,
-            // تفاصيل
-            gold: 0xd4af37,
-            copper: 0xcd7a4a,
-            red: 0xcc5533,
-            darkRed: 0xaa3322,
-            black: 0x1e1e2a,
-            silver: 0xc0c8d8,
-            // خوذة وقنابل
-            visor: 0x2c6e9e,
-            visorDark: 0x1e4a6e,
-            bombBody: 0x5a7a4a,
-            bombStripe: 0xe5b83c
-        };
-        
-        // =============== الجذع بشكل كروي منحوت ===============
-        // صدر منحوت بشكل كروي (من y=6 إلى y=14)
-        for (let y = 6; y <= 14; y++) {
-            // حساب نصف القطر بناءً على الارتفاع (شكل كروي)
-            const centerY = 10;
-            const radiusBase = 4.2;
-            let radiusXZ = radiusBase * (1 - Math.pow((y - centerY) / 8, 2) * 0.7);
-            radiusXZ = Math.max(2.5, Math.min(4.5, radiusXZ));
-            
-            for (let x = -Math.floor(radiusXZ); x <= Math.floor(radiusXZ); x++) {
-                for (let z = -Math.floor(radiusXZ); z <= Math.floor(radiusXZ); z++) {
-                    const distance = Math.sqrt(x*x + z*z);
-                    if (distance <= radiusXZ + 0.3) {
-                        let color = colors.armorPrimary;
-                        let metalness = 0.6;
-                        
-                        // منطقة الصدر البارزة (عضلات الصدر)
-                        if (y >= 9 && y <= 12 && Math.abs(x) <= 2.5 && z >= 1.5 && z <= 2.8) {
-                            color = colors.armorLight;
-                            metalness = 0.7;
-                        }
-                        // منتصف الصدر (درع إضافي)
-                        if (y >= 10 && y <= 12 && Math.abs(x) <= 1.5 && z >= 2.2) {
-                            color = colors.steel;
-                            metalness = 0.8;
-                        }
-                        // الجوانب (عضلات الظهر)
-                        if (Math.abs(x) >= radiusXZ - 1 && z <= 0) {
-                            color = colors.armorDark;
-                        }
-                        // منطقة البطن
-                        if (y <= 8 && Math.abs(x) <= 2) {
-                            color = colors.fabric;
-                            metalness = 0.2;
-                        }
-                        addVoxel(x, y, z, color, metalness);
-                    }
-                }
-            }
-        }
-        
-        // =============== الرأس بشكل كروي منحوت ===============
-        for (let y = 15; y <= 21; y++) {
-            const centerY = 18;
-            const radius = 2.8;
-            const yOffset = Math.abs(y - centerY) / 3.5;
-            const radiusAtY = radius * (1 - yOffset * 0.6);
-            
-            for (let x = -Math.floor(radiusAtY); x <= Math.floor(radiusAtY); x++) {
-                for (let z = -Math.floor(radiusAtY); z <= Math.floor(radiusAtY); z++) {
-                    const distance = Math.sqrt(x*x + z*z);
-                    if (distance <= radiusAtY + 0.2) {
-                        let color = colors.armorSecondary;
-                        
-                        // وجه (منطقة الخوذة الأمامية)
-                        if (z >= radiusAtY - 0.8 && y >= 16 && y <= 20) {
-                            if (y >= 17 && y <= 19 && Math.abs(x) <= 1.8) {
-                                color = colors.visor; // حاجب العين
-                            } else {
-                                color = colors.armorDark;
-                            }
-                        }
-                        // قمة الخوذة
-                        if (y === 21 && Math.abs(x) <= 1) {
-                            color = colors.gold;
-                        }
-                        // جهاز اتصال جانبي
-                        if (x >= radiusAtY - 0.5 && y === 18) {
-                            color = colors.red;
-                        }
-                        // كاميرا حرارية
-                        if (x <= -radiusAtY + 0.5 && y === 18) {
-                            color = colors.silver;
-                        }
-                        addVoxel(x, y, z, color, 0.7);
-                    }
-                }
-            }
-        }
-        
-        // =============== الكتفين بشكل كروي منحوت ===============
-        // كتف أيمن (كروي)
-        for (let y = 13; y <= 16; y++) {
-            const radius = 2.2;
-            for (let dx = 0; dx <= 2.5; dx++) {
-                for (let dz = -1.5; dz <= 1.5; dz++) {
-                    const dist = Math.sqrt(dx*dx + dz*dz);
-                    if (dist <= radius - (y - 13) * 0.3) {
-                        addVoxel(5 + dx, y, dz, colors.armorLight, 0.75);
-                    }
-                }
-            }
-        }
-        
-        // كتف أيسر
-        for (let y = 13; y <= 15.5; y++) {
-            for (let dx = 0; dx <= 2; dx++) {
-                for (let dz = -1.5; dz <= 1.5; dz++) {
-                    addVoxel(-5 - dx, y, dz, colors.armorLight, 0.7);
-                }
-            }
-        }
-        
-        // =============== الذراعين بشكل اسطواني منحوت ===============
-        // الذراع الأيمن
-        for (let y = 11; y <= 18; y++) {
-            const radius = (y <= 14) ? 1.6 : 1.3;
-            for (let x = 5.5; x <= 8; x++) {
-                for (let z = -1.2; z <= 1.2; z++) {
-                    const dist = Math.sqrt((x-6.5)*(x-6.5) + z*z);
-                    if (dist <= radius) {
-                        let color = (y >= 15) ? colors.armorLight : colors.armorPrimary;
-                        addVoxel(x, y, z, color);
-                    }
-                }
-            }
-        }
-        
-        // الذراع الأيسر
-        for (let y = 11; y <= 17; y++) {
-            const radius = (y <= 14) ? 1.5 : 1.2;
-            for (let x = -8; x <= -5.5; x++) {
-                for (let z = -1.2; z <= 1.2; z++) {
-                    const dist = Math.sqrt((x+6.5)*(x+6.5) + z*z);
-                    if (dist <= radius) {
-                        addVoxel(x, y, z, colors.armorPrimary);
-                    }
-                }
-            }
-        }
-        
-        // =============== اليدين ===============
-        for (let y = 18; y <= 19; y++) {
-            for (let x = 8; x <= 9.5; x++) {
-                for (let z = -1; z <= 1; z++) {
-                    addVoxel(x, y, z, colors.armorLight);
-                }
-            }
-        }
-        for (let y = 17; y <= 18; y++) {
-            for (let x = -9.5; x <= -8; x++) {
-                for (let z = -1; z <= 1; z++) {
-                    addVoxel(x, y, z, colors.armorLight);
-                }
-            }
-        }
-        
-        // =============== الأرجل بشكل اسطواني منحوت ===============
-        // الرجل اليمنى
-        for (let y = 0; y <= 6; y++) {
-            const radius = (y <= 3) ? 1.4 : 1.2;
-            for (let x = 2.5; x <= 4.5; x++) {
-                for (let z = -1.2; z <= 1.2; z++) {
-                    const dist = Math.sqrt((x-3.5)*(x-3.5) + z*z);
-                    if (dist <= radius) {
-                        let color = (y <= 2) ? colors.black : colors.armorDark;
-                        addVoxel(x, y, z, color);
-                    }
-                }
-            }
-        }
-        
-        // الرجل اليسرى
-        for (let y = 0; y <= 6; y++) {
-            const radius = (y <= 3) ? 1.4 : 1.2;
-            for (let x = -4.5; x <= -2.5; x++) {
-                for (let z = -1.2; z <= 1.2; z++) {
-                    const dist = Math.sqrt((x+3.5)*(x+3.5) + z*z);
-                    if (dist <= radius) {
-                        let color = (y <= 2) ? colors.black : colors.armorDark;
-                        addVoxel(x, y, z, color);
-                    }
-                }
-            }
-        }
-        
-        // الأحذية
-        for (let x = 2.5; x <= 5; x++) {
-            for (let z = -2; z <= -1; z++) {
-                addVoxel(x, 0, z, colors.black);
-                addVoxel(x, 1, z, colors.black);
-                addVoxel(-x+0.5, 0, z, colors.black);
-                addVoxel(-x+0.5, 1, z, colors.black);
-            }
-        }
-        
-        // =============== القنبلة المنحوتة ===============
-        // جسم القنبلة بشكل اسطواني
-        for (let y = 0; y <= 5; y++) {
-            const radius = 1.5;
-            for (let x = 9.5; x <= 12.5; x++) {
-                for (let z = -1.2; z <= 1.2; z++) {
-                    const dist = Math.sqrt((x-11)*(x-11) + z*z);
-                    if (dist <= radius) {
-                        let color = colors.bombBody;
-                        if (y === 2 && Math.abs(z) > 0.8) color = colors.bombStripe;
-                        addVoxel(x, 14 + y, z, color);
-                    }
-                }
-            }
-        }
-        
-        // رأس القنبلة المخروطي
-        for (let i = 1; i <= 3; i++) {
-            const radius = 1.2 - i * 0.3;
-            for (let x = 12.5; x <= 14; x++) {
-                for (let z = -radius; z <= radius; z++) {
-                    if (Math.abs(z) <= radius) {
-                        addVoxel(x, 18 + i, z, colors.copper, 0.8);
-                    }
-                }
-            }
-        }
-        addVoxel(14, 21, 0, colors.darkRed, 0.9);
-        
-        // زعانف القنبلة
-        addVoxel(10, 17, -2, colors.silver);
-        addVoxel(10, 17, 2, colors.silver);
-        addVoxel(12, 17, -2, colors.silver);
-        addVoxel(12, 17, 2, colors.silver);
-        
-        // أحزمة حمل القنبلة
-        for (let x = 8; x <= 10; x++) {
-            addVoxel(x, 16, -2.2, colors.leather);
-            addVoxel(x, 17, -2.2, colors.leather);
-        }
-        
-        // =============== تفاصيل نحتية واقعية ===============
-        // عضلات الصدر البارزة
-        for (let x = -2; x <= 2; x += 0.8) {
-            for (let z = 2.5; z <= 3.2; z += 0.6) {
-                addVoxel(x, 11, z, colors.armorLight, 0.75);
-            }
-        }
-        
-        // حزام الخصر
-        for (let x = -3.5; x <= 3.5; x += 0.7) {
-            addVoxel(x, 7, 2.2, colors.leather);
-            addVoxel(x, 7, -2.2, colors.leather);
-        }
-        
-        // خراطيش ذخيرة
-        for (let x = -2; x <= 2; x += 1.5) {
-            addVoxel(x, 11.5, 3, colors.gold, 0.85);
-            addVoxel(x, 12.5, 3, colors.gold, 0.85);
-        }
-        
-        // قنابل يدوية على الحزام
-        for (let i = 0; i < 3; i++) {
-            addVoxel(-1.5 + i, 5.5, -2.5, colors.bombBody);
-            addVoxel(-1.5 + i, 6.5, -2.5, colors.bombBody);
-        }
-        
-        // جهاز اتصال على الظهر
-        for (let x = -1; x <= 1; x++) {
-            for (let y = 10; y <= 12; y++) {
-                addVoxel(x, y, -3, colors.black);
-            }
-        }
-        addVoxel(0, 11.5, -3.8, colors.red);
-        
-        // أنابيب هيدروليكية على الذراع
-        for (let y = 14; y <= 17; y++) {
-            addVoxel(7.5, y, -2, colors.silver, 0.8);
-        }
-        
-        // شارة عسكرية على الكتف الأيسر
-        addVoxel(-5.5, 14.5, -1.5, colors.red);
-        addVoxel(-5.5, 14.5, -0.5, colors.red);
-        addVoxel(-5.5, 13.5, -1, colors.gold);
-        
-        // مسامير زخرفية على الكتف
-        addVoxel(7, 15, 1.2, colors.gold, 0.9);
-        addVoxel(7, 15, -1.2, colors.gold, 0.9);
-        
-        // واقي الركبة
-        addVoxel(3, 3.5, -2, colors.titanium, 0.7);
-        addVoxel(-3, 3.5, -2, colors.titanium, 0.7);
-        
-        // =============== حلقة التحريك ===============
-        let time = 0;
-        
-        function animate() {
-            requestAnimationFrame(animate);
-            time += 0.016;
-            
-            // نبض خفيف لضوء القنبلة
-            bombLight.intensity = 0.45 + Math.sin(time * 8) * 0.15;
-            
-            controls.update();
-            renderer.render(scene, camera);
-        }
-        
-        animate();
-        
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+// ======================= RENDERER =====================
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+document.body.appendChild(renderer.domElement);
+
+// ======================= CONTROLS =====================
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+
+// ======================= LIGHTING =====================
+const ambientLight = new THREE.AmbientLight(0x404040, 0.7);
+scene.add(ambientLight);
+
+const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+dirLight.position.set(10,10,10);
+dirLight.castShadow = true;
+scene.add(dirLight);
+
+// ======================= VOXEL BUILDER =====================
+class VoxelBuilder {
+    constructor(scene, size=0.15){
+        this.scene = scene;
+        this.size = size;
+        this.group = new THREE.Group();
+        this.scene.add(this.group);
+    }
+
+    add(x,y,z,color,emissive=null){
+        const geometry = new THREE.BoxGeometry(this.size,this.size,this.size);
+        const material = new THREE.MeshStandardMaterial({
+            color: color,
+            emissive: emissive || 0x000000,
+            metalness: 0.6,
+            roughness: 0.3
         });
-        
-        document.getElementById('stats').innerHTML = `✅ ${voxelCount} VOXELS | SCULPTED FORM`;
-        console.log(`✅ شخصية منحوتة بتقنية الفوكسل | عدد المكعبات: ${voxelCount}`);
-        console.log(`🎨 شكل كروي للجذع والرأس | نحت واقعي للعضلات`);
-    </script>
+        const cube = new THREE.Mesh(geometry,material);
+        cube.position.set(x*this.size, y*this.size, z*this.size);
+        cube.castShadow = true;
+        cube.receiveShadow = true;
+        this.group.add(cube);
+    }
+}
+
+const V = new VoxelBuilder(scene,0.12);
+
+// ======================= COLORS =====================
+const C = {
+    armor: 0x3a4a3c,
+    armorLight: 0x5c6f58,
+    armorDark: 0x22282a,
+    bomb: 0xcc4422,
+    skin: 0xf0c19f,
+    visor: 0x2266aa,
+    metallic: 0xaaaaaa
+};
+
+// ======================= CHARACTER MODEL =====================
+// TORSO
+for(let x=-2;x<=2;x++){
+  for(let y=0;y<=3;y++){
+    for(let z=-1;z<=1;z++){
+      V.add(x,y,z,C.armor);
+    }
+  }
+}
+
+// HEAD
+for(let x=-1;x<=1;x++){
+  for(let y=4;y<=5;y++){
+    for(let z=-1;z<=1;z++){
+      V.add(x,y,z,C.armorDark);
+    }
+  }
+}
+// VISOR
+for(let x=-1;x<=1;x++){
+  V.add(x,5,1,C.visor);
+}
+
+// ARMS
+// Right Arm (holding bomb)
+for(let x=3;x<=4;x++){
+  for(let y=1;y<=3;y++){
+    for(let z=-1;z<=1;z++){
+      V.add(x,y,z,C.armor);
+    }
+  }
+}
+// Left Arm
+for(let x=-4;x<=-3;x++){
+  for(let y=1;y<=3;y++){
+    for(let z=-1;z<=1;z++){
+      V.add(x,y,z,C.armor);
+    }
+  }
+}
+
+// LEGS
+for(let x=-1;x<=1;x++){
+  for(let y=-3;y<=-1;y++){
+    for(let z=-1;z<=1;z++){
+      V.add(x,y,z,C.armorLight);
+    }
+  }
+}
+
+// BOMB IN RIGHT HAND
+for(let x=3;x<=4;x++){
+  for(let y=3;y<=4;y++){
+    for(let z=-1;z<=1;z++){
+      V.add(x,y,z,C.bomb);
+    }
+  }
+}
+
+// ======================= GROUND =====================
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(20,20),
+  new THREE.ShadowMaterial({opacity:0.3})
+);
+ground.rotation.x = -Math.PI/2;
+ground.position.y=-3;
+ground.receiveShadow=true;
+scene.add(ground);
+
+// ======================= ANIMATION =====================
+function animate(){
+  requestAnimationFrame(animate);
+  V.group.rotation.y += 0.005;
+  controls.update();
+  renderer.render(scene,camera);
+}
+animate();
+
+// ======================= RESIZE =====================
+window.addEventListener('resize',()=>{
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+console.log("✅ Voxel Soldier Loaded");
+</script>
 </body>
 </html>
