@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VOXEL WARRIOR 3D - High Performance</title>
+<title>VOXEL WARRIOR 3D</title>
 <style>
   body { margin:0; overflow:hidden; background:#050b1a; }
 </style>
 </head>
 <body>
 
-<script type="module">
-import * as THREE from 'https://unpkg.com/three@0.128.0/build/three.module.js';
-import { OrbitControls } from 'https://unpkg.com/three@0.128.0/examples/jsm/controls/OrbitControls.js';
+<script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
-// --------------------- SCENE & CAMERA ---------------------
+<script>
+// ---------------- SCENE & CAMERA ----------------
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x050b1a);
 
@@ -27,13 +27,13 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
-// --------------------- CONTROLS ---------------------
-const controls = new OrbitControls(camera, renderer.domElement);
+// ---------------- CONTROLS ----------------
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 controls.target.set(0,5,0);
 
-// --------------------- LIGHTS ---------------------
+// ---------------- LIGHTS ----------------
 const ambientLight = new THREE.AmbientLight(0x404060, 0.6);
 scene.add(ambientLight);
 
@@ -42,11 +42,7 @@ dirLight.position.set(10,20,10);
 dirLight.castShadow = true;
 scene.add(dirLight);
 
-const pointLight = new THREE.PointLight(0x4488ff, 0.5);
-pointLight.position.set(-5,5,5);
-scene.add(pointLight);
-
-// --------------------- GROUND ---------------------
+// ---------------- GROUND ----------------
 const ground = new THREE.Mesh(
   new THREE.PlaneGeometry(40,40),
   new THREE.ShadowMaterial({opacity:0.4})
@@ -56,116 +52,85 @@ ground.position.y = -1;
 ground.receiveShadow = true;
 scene.add(ground);
 
-// --------------------- VOXEL CONFIG ---------------------
+// ---------------- VOXEL CONFIG ----------------
 const voxelSize = 0.08;
-const maxVoxels = 1200000; // مليون و200 ألف مكعب تقريباً
+const maxVoxels = 500000; // 500 ألف مكعب لتجنب انهيار GitHub Pages
 const geometry = new THREE.BoxGeometry(voxelSize, voxelSize, voxelSize);
 
-// Colors Palette
 const C = {
-    armorDark: 0x2d3238,
-    armorMedium: 0x4a515c,
-    armorLight: 0x6e7683,
-    steel: 0x8c929c,
-    visorBlue: 0x2266aa,
-    dangerRed: 0xcc4422,
-    bombBody: 0x4a6a3a,
-    bombStripe: 0xe8b84a,
-    warhead: 0xbd7a4a,
-    black: 0x1a1e24,
-    leather: 0x8b6946
+  armorDark: 0x2d3238,
+  armorMedium: 0x4a515c,
+  visorBlue: 0x2266aa,
+  bombBody: 0x4a6a3a,
+  bombStripe: 0xe8b84a
 };
 
-// --------------------- CREATE INSTANCED MESH ---------------------
 const material = new THREE.MeshStandardMaterial({color:C.armorDark, metalness:0.7, roughness:0.3});
 const instancedMesh = new THREE.InstancedMesh(geometry, material, maxVoxels);
 scene.add(instancedMesh);
 
 let index = 0;
-
-// --------------------- HELPER FUNCTION ---------------------
 function addVoxel(x,y,z,color){
-    if(index >= maxVoxels) return;
-    const m = new THREE.Matrix4().makeTranslation(x*voxelSize, y*voxelSize, z*voxelSize);
-    instancedMesh.setMatrixAt(index, m);
-    instancedMesh.setColorAt(index, new THREE.Color(color));
-    index++;
+  if(index >= maxVoxels) return;
+  const m = new THREE.Matrix4().makeTranslation(x*voxelSize, y*voxelSize, z*voxelSize);
+  instancedMesh.setMatrixAt(index, m);
+  instancedMesh.setColorAt(index, new THREE.Color(color));
+  index++;
 }
 
-// --------------------- BUILD CHARACTER ---------------------
-
+// ---------------- BUILD CHARACTER ----------------
 // Torso
 for(let x=-6;x<=6;x++){
-    for(let y=0;y<=14;y++){
-        for(let z=-3;z<=3;z++){
-            let color = (y>10) ? C.armorMedium : C.armorDark;
-            addVoxel(x,y,z,color);
-        }
+  for(let y=0;y<=14;y++){
+    for(let z=-3;z<=3;z++){
+      let color = (y>10) ? C.armorMedium : C.armorDark;
+      addVoxel(x,y,z,color);
     }
+  }
 }
 
 // Head
 for(let x=-3;x<=3;x++){
-    for(let y=15;y<=20;y++){
-        for(let z=-2;z<=2;z++){
-            let color = (y>=17 && z===2) ? C.visorBlue : C.armorMedium;
-            addVoxel(x,y,z,color);
-        }
+  for(let y=15;y<=20;y++){
+    for(let z=-2;z<=2;z++){
+      let color = (y>=17 && z===2) ? C.visorBlue : C.armorMedium;
+      addVoxel(x,y,z,color);
     }
+  }
 }
 
-// Arms
-for(let y=3;y<=12;y++){
-    for(let x=7;x<=10;x++){
-        for(let z=-2;z<=2;z++) addVoxel(x,y,z,C.armorDark);
-    }
-    for(let x=-10;x<=-7;x++){
-        for(let z=-2;z<=2;z++) addVoxel(x,y,z,C.armorDark);
-    }
-}
-
-// Legs
-for(let y=0;y<=5;y++){
-    for(let x=2;x<=5;x++){
-        for(let z=-2;z<=2;z++) addVoxel(x,y,z,C.armorDark);
-    }
-    for(let x=-5;x<=-2;x++){
-        for(let z=-2;z<=2;z++) addVoxel(x,y,z,C.armorDark);
-    }
-}
-
-// Bomb (Right Arm)
+// Bomb
 const bx = 11, by = 10, bz = 0;
 for(let x=0;x<=4;x++){
-    for(let y=0;y<=6;y++){
-        for(let z=-2;z<=2;z++){
-            let color = (y>=1 && y<=5 && Math.abs(z)===2) ? C.bombStripe : C.bombBody;
-            addVoxel(bx+x, by+y, bz+z,color);
-        }
+  for(let y=0;y<=6;y++){
+    for(let z=-2;z<=2;z++){
+      let color = (y>=1 && y<=5 && Math.abs(z)===2) ? C.bombStripe : C.bombBody;
+      addVoxel(bx+x, by+y, bz+z,color);
     }
+  }
 }
 
-// --------------------- UPDATE INSTANCE MATRIX ---------------------
+// ---------------- UPDATE ----------------
 instancedMesh.instanceMatrix.needsUpdate = true;
 if(instancedMesh.instanceColor) instancedMesh.instanceColor.needsUpdate = true;
 
-// --------------------- ANIMATION ---------------------
+// ---------------- ANIMATION ----------------
 function animate(){
-    requestAnimationFrame(animate);
-    instancedMesh.rotation.y += 0.001; // Rotate slowly
-    controls.update();
-    renderer.render(scene,camera);
+  requestAnimationFrame(animate);
+  instancedMesh.rotation.y += 0.002;
+  controls.update();
+  renderer.render(scene,camera);
 }
 animate();
 
-// --------------------- HANDLE RESIZE ---------------------
-window.addEventListener('resize',()=>{
-    camera.aspect = window.innerWidth/window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+// ---------------- RESIZE ----------------
+window.addEventListener('resize', ()=>{
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-console.log(`✅ VOXEL WARRIOR READY | Total Voxels: ${index}`);
+console.log(`✅ VOXEL WARRIOR READY | Voxels: ${index}`);
 </script>
 </body>
 </html>
