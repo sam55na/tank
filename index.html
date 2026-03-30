@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المجسم الحربي - تنسيق مستقيم</title>
+    <title>المجسم الحربي - تنسيق مستقيم بالكامل</title>
     <style>
         body { margin: 0; overflow: hidden; font-family: monospace; }
         #info {
@@ -21,7 +21,7 @@
     </style>
 </head>
 <body>
-    <div id="info">⚔️ المجسم الحربي | تنسيق مستقيم | جذع + رأس + مخروط مائل + أذرع + أرجل + قدم</div>
+    <div id="info">⚔️ المجسم الحربي | جميع العناصر مستقيمة | جذع + رأس + مخروط مائل + أذرع مستقيمة + أرجل مستقيمة + قدم مستقيم</div>
     <div id="controls">🖱️ اسحب للتدوير | 🔍 اسكرول للتكبير</div>
 
     <script type="importmap">
@@ -52,7 +52,7 @@
         controls.enableDamping = true;
         controls.target.set(0, 2, 0);
         
-        // إضاءة بسيطة
+        // إضاءة
         const ambientLight = new THREE.AmbientLight(0x404060, 0.7);
         scene.add(ambientLight);
         
@@ -86,31 +86,27 @@
         torso.castShadow = true;
         model.add(torso);
         
-        // =============== 2. الرأس (كرة أصغر بثلاث مرات من الجذع) ===============
-        // الجذع نصف قطره 0.85، الرأس أصغر بحوالي 3 مرات = 0.85/3 ≈ 0.283
-        // باستخدام 0.45 لجعلها متناسبة بشكل أفضل
+        // =============== 2. الرأس (كرة أصغر من الجذع بثلاث مرات تقريباً) ===============
         const headGeo = new THREE.SphereGeometry(0.45, 64, 64);
         const head = new THREE.Mesh(headGeo, materialArmor);
-        // مدمجة مع الجذع بجزء بسيط
         head.position.set(0, 3.05, 0);
         head.castShadow = true;
         model.add(head);
         
-        // =============== 3. المخروط (كبير ومائل قليلاً ومدمج مع الرأس) ===============
+        // =============== 3. المخروط (مائل قليلاً ومدمج مع الرأس) ===============
         const spikeGeo = new THREE.ConeGeometry(0.28, 0.85, 32);
         const spike = new THREE.Mesh(spikeGeo, materialGold);
-        // مدمج مع الرأس ومائل قليلاً للأمام
         spike.position.set(0, 3.52, 0.1);
-        spike.rotation.x = 0.12;  // ميلان بسيط للأمام
+        spike.rotation.x = 0.12;
         spike.castShadow = true;
         model.add(spike);
         
-        // =============== 4. الذراع الأيمن (أسطوانتين + مفصل) - مستقيم ===============
-        // الجزء العلوي
+        // =============== 4. الذراع الأيمن (أسطوانتين + مفصل) - مستقيم بدون ميلان ===============
+        // الجزء العلوي - مستقيم (بدون دوران)
         const armUpperRGeo = new THREE.CylinderGeometry(0.32, 0.3, 0.9, 24);
         const armUpperR = new THREE.Mesh(armUpperRGeo, materialDark);
         armUpperR.position.set(1.2, 2.55, 0);
-        armUpperR.rotation.z = 0.15;
+        armUpperR.rotation.z = 0;  // بدون ميلان
         armUpperR.castShadow = true;
         model.add(armUpperR);
         
@@ -121,19 +117,19 @@
         elbowR.castShadow = true;
         model.add(elbowR);
         
-        // الجزء السفلي
+        // الجزء السفلي - مستقيم (بدون دوران)
         const armLowerRGeo = new THREE.CylinderGeometry(0.27, 0.24, 0.85, 24);
         const armLowerR = new THREE.Mesh(armLowerRGeo, materialDark);
-        armLowerR.position.set(1.85, 1.65, 0);
-        armLowerR.rotation.z = 0.12;
+        armLowerR.position.set(1.85, 1.63, 0);
+        armLowerR.rotation.z = 0;  // بدون ميلان
         armLowerR.castShadow = true;
         model.add(armLowerR);
         
-        // =============== 5. الذراع الأيسر (أسطوانتين + مفصل) - مستقيم ===============
+        // =============== 5. الذراع الأيسر (أسطوانتين + مفصل) - مستقيم بدون ميلان ===============
         const armUpperLGeo = new THREE.CylinderGeometry(0.32, 0.3, 0.9, 24);
         const armUpperL = new THREE.Mesh(armUpperLGeo, materialDark);
         armUpperL.position.set(-1.2, 2.55, 0);
-        armUpperL.rotation.z = -0.15;
+        armUpperL.rotation.z = 0;  // بدون ميلان
         armUpperL.castShadow = true;
         model.add(armUpperL);
         
@@ -145,27 +141,24 @@
         
         const armLowerLGeo = new THREE.CylinderGeometry(0.27, 0.24, 0.85, 24);
         const armLowerL = new THREE.Mesh(armLowerLGeo, materialDark);
-        armLowerL.position.set(-1.85, 1.65, 0);
-        armLowerL.rotation.z = -0.12;
+        armLowerL.position.set(-1.85, 1.63, 0);
+        armLowerL.rotation.z = 0;  // بدون ميلان
         armLowerL.castShadow = true;
         model.add(armLowerL);
         
         // =============== 6. الساق اليمنى (أسطوانتين + مفصل) - مستقيم ===============
-        // الفخذ
         const thighRGeo = new THREE.CylinderGeometry(0.38, 0.34, 1.0, 24);
         const thighR = new THREE.Mesh(thighRGeo, materialDark);
         thighR.position.set(0.65, 1.05, 0);
         thighR.castShadow = true;
         model.add(thighR);
         
-        // مفصل الركبة
         const kneeRGeo = new THREE.SphereGeometry(0.26, 32, 32);
         const kneeR = new THREE.Mesh(kneeRGeo, materialGold);
         kneeR.position.set(0.68, 0.52, 0.05);
         kneeR.castShadow = true;
         model.add(kneeR);
         
-        // الساق
         const calfRGeo = new THREE.CylinderGeometry(0.32, 0.28, 0.9, 24);
         const calfR = new THREE.Mesh(calfRGeo, materialDark);
         calfR.position.set(0.68, 0.05, 0);
@@ -191,16 +184,20 @@
         calfL.castShadow = true;
         model.add(calfL);
         
-        // =============== 8. القدم (مستطيل) - مستقيم ===============
+        // =============== 8. القدم (مستطيل) - مستقيم تماماً ===============
         const footGeo = new THREE.BoxGeometry(0.65, 0.2, 1.05);
         
         const footR = new THREE.Mesh(footGeo, materialFoot);
         footR.position.set(0.78, -0.32, 0.2);
+        footR.rotation.x = 0;
+        footR.rotation.z = 0;
         footR.castShadow = true;
         model.add(footR);
         
         const footL = new THREE.Mesh(footGeo, materialFoot);
         footL.position.set(-0.78, -0.32, 0.2);
+        footL.rotation.x = 0;
+        footL.rotation.z = 0;
         footL.castShadow = true;
         model.add(footL);
         
@@ -219,8 +216,9 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
         
-        console.log('✅ المجسم جاهز - تنسيق مستقيم');
-        console.log('📐 جميع العناصر متناسقة ومستقيمة');
+        console.log('✅ المجسم جاهز - جميع العناصر مستقيمة');
+        console.log('💪 الذراعين: مستقيمين بدون ميلان');
+        console.log('🦶 القدم: مستطيل مستقيم بالكامل');
     </script>
 </body>
 </html>
