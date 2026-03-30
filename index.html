@@ -2,124 +2,251 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <title>المحارب المدرع - وضوح فائق</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warrior - شخصية حربية رشيقة</title>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; }
-        #status { position: absolute; top: 20px; width: 100%; text-align: center; color: #fff; pointer-events: none; }
+        body { margin: 0; overflow: hidden; background: #0a0a12; }
+        #ui {
+            position: absolute; top: 20px; left: 20px;
+            color: #ff8844; font-family: monospace;
+            background: rgba(0,0,0,0.5);
+            padding: 8px 16px;
+            border-radius: 8px;
+            pointer-events: none;
+            z-index: 100;
+            font-size: 12px;
+        }
+        #controls {
+            position: absolute; bottom: 20px; left: 20px;
+            color: #888; font-family: monospace;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 12px;
+            border-radius: 5px;
+            font-size: 11px;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
-    <div id="status">جاري تشغيل الوحدة القتالية...</div>
+    <div id="ui">
+        ⚔️ WARRIOR | شخصية حربية رشيقة
+    </div>
+    <div id="controls">
+        🖱️ اسحب للتدوير | 🔍 اسكرول للتكبير
+    </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script type="importmap">
+        { "imports": { "three": "https://unpkg.com/three@0.128.0/build/three.module.js" } }
+    </script>
 
-    <script>
-        // 1. إعداد المشهد والكاميرا
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'https://unpkg.com/three@0.128.0/examples/jsm/controls/OrbitControls.js';
+
+        // المشهد
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x050505);
-
+        scene.background = new THREE.Color(0x111122);
+        
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 3, 8);
+        camera.position.set(4, 3.5, 6);
+        camera.lookAt(0, 2.2, 0);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
         document.body.appendChild(renderer.domElement);
 
-        document.getElementById('status').innerText = "تم الاتصال: المحارب نشط";
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.target.set(0, 2.2, 0);
 
-        // 2. إضاءة قوية جداً (ثلاثية الاتجاهات)
-        const light1 = new THREE.DirectionalLight(0xffffff, 1.5);
-        light1.position.set(5, 5, 5);
-        scene.add(light1);
+        // إضاءة بسيطة
+        const ambient = new THREE.AmbientLight(0x404060, 0.6);
+        scene.add(ambient);
+        
+        const mainLight = new THREE.DirectionalLight(0xffffff, 1);
+        mainLight.position.set(3, 5, 4);
+        mainLight.castShadow = true;
+        scene.add(mainLight);
+        
+        const fillLight = new THREE.PointLight(0x88aaff, 0.4);
+        fillLight.position.set(-2, 2, 3);
+        scene.add(fillLight);
+        
+        const backLight = new THREE.PointLight(0xffaa77, 0.35);
+        backLight.position.set(0, 2.5, -3);
+        scene.add(backLight);
 
-        const light2 = new THREE.DirectionalLight(0xff0000, 1); // ضوء أحمر جانبي للتباين
-        light2.position.set(-5, 2, 2);
-        scene.add(light2);
+        // مجموعة الشخصية
+        const warrior = new THREE.Group();
+        scene.add(warrior);
 
-        scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+        // المواد
+        const matBody = new THREE.MeshStandardMaterial({ color: 0xcc6644, metalness: 0.7, roughness: 0.3 });
+        const matArmor = new THREE.MeshStandardMaterial({ color: 0xdd7744, metalness: 0.75, roughness: 0.28 });
+        const matDark = new THREE.MeshStandardMaterial({ color: 0xaa5533, metalness: 0.65, roughness: 0.35 });
+        const matJoint = new THREE.MeshStandardMaterial({ color: 0xee8855, metalness: 0.7, roughness: 0.3 });
 
-        // 3. بناء الشخصية (تصميم مدمج ومترابط)
-        const robot = new THREE.Group();
-        scene.add(robot);
+        // =============== الجذع ===============
+        const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.42, 1.2, 12), matBody);
+        torso.position.y = 2.15;
+        torso.castShadow = true;
+        warrior.add(torso);
+        
+        // صدر
+        const chest = new THREE.Mesh(new THREE.CylinderGeometry(0.52, 0.48, 0.5, 10), matArmor);
+        chest.position.set(0, 2.45, 0.32);
+        chest.castShadow = true;
+        warrior.add(chest);
+        
+        // حزام
+        const belt = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.06, 8, 24), matArmor);
+        belt.rotation.x = Math.PI / 2;
+        belt.position.y = 1.65;
+        belt.castShadow = true;
+        warrior.add(belt);
 
-        // خامات بألوان متعاكسة جداً
-        const matWhite = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.5, roughness: 0.2 }); // درع أبيض
-        const matDark = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.9 }); // مفاصل سوداء
-        const matRed = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // عيون حمراء
+        // =============== الرأس ===============
+        const head = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.44, 0.52, 10), matBody);
+        head.position.y = 3.02;
+        head.castShadow = true;
+        warrior.add(head);
+        
+        // قمة الخوذة
+        const crest = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.38, 6), matArmor);
+        crest.position.set(0, 3.4, 0);
+        crest.castShadow = true;
+        warrior.add(crest);
+        
+        // حاجب العين
+        const visor = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.16, 0.06), matArmor);
+        visor.position.set(0, 3.05, 0.36);
+        visor.castShadow = true;
+        warrior.add(visor);
+        
+        // العين
+        const eye = new THREE.Mesh(new THREE.SphereGeometry(0.09, 16, 16), matArmor);
+        eye.position.set(0, 3.08, 0.4);
+        warrior.add(eye);
 
-        // --- الجذع (كتلة واحدة ضخمة) ---
-        const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.8, 1, 4, 16), matWhite);
-        torso.position.y = 2;
-        robot.add(torso);
+        // =============== الأكتاف ===============
+        const shoulderR = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.4, 6), matArmor);
+        shoulderR.position.set(0.68, 2.72, 0);
+        shoulderR.rotation.z = -0.15;
+        shoulderR.castShadow = true;
+        warrior.add(shoulderR);
+        
+        const shoulderL = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.4, 6), matArmor);
+        shoulderL.position.set(-0.68, 2.72, 0);
+        shoulderL.rotation.z = 0.15;
+        shoulderL.castShadow = true;
+        warrior.add(shoulderL);
 
-        // --- الرأس (مدمج في الجسد) ---
-        const head = new THREE.Mesh(new THREE.SphereGeometry(0.4, 32, 32), matWhite);
-        head.position.y = 3;
-        robot.add(head);
+        // =============== الذراع الأيمن ===============
+        const armUpperR = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.18, 0.92, 10), matDark);
+        armUpperR.position.set(0.78, 2.48, 0);
+        armUpperR.castShadow = true;
+        warrior.add(armUpperR);
+        
+        const elbowR = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 12), matJoint);
+        elbowR.position.set(1.02, 2.02, 0.05);
+        warrior.add(elbowR);
+        
+        const armLowerR = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.14, 0.85, 10), matDark);
+        armLowerR.position.set(1.28, 1.6, 0.1);
+        armLowerR.rotation.x = -0.35;
+        armLowerR.castShadow = true;
+        warrior.add(armLowerR);
+        
+        const handR = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.18, 0.3), matArmor);
+        handR.position.set(1.55, 1.22, 0.15);
+        handR.castShadow = true;
+        warrior.add(handR);
 
-        const eye = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.1, 0.2), matRed);
-        eye.position.set(0, 3.1, 0.35);
-        robot.add(eye);
+        // =============== الذراع الأيسر ===============
+        const armUpperL = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.18, 0.92, 10), matDark);
+        armUpperL.position.set(-0.78, 2.48, 0);
+        armUpperL.castShadow = true;
+        warrior.add(armUpperL);
+        
+        const elbowL = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 12), matJoint);
+        elbowL.position.set(-1.02, 2.02, 0.05);
+        warrior.add(elbowL);
+        
+        const armLowerL = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.14, 0.85, 10), matDark);
+        armLowerL.position.set(-1.28, 1.6, 0.1);
+        armLowerL.rotation.x = -0.35;
+        armLowerL.castShadow = true;
+        warrior.add(armLowerL);
+        
+        const handL = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.18, 0.3), matArmor);
+        handL.position.set(-1.55, 1.22, 0.15);
+        handL.castShadow = true;
+        warrior.add(handL);
 
-        // --- الأذرع (متداخلة تماماً مع الأكتاف) ---
-        function addArm(side) {
-            const armGroup = new THREE.Group();
-            
-            // كتف كروي أسود مدمج في الجذع
-            const shoulder = new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 16), matDark);
-            armGroup.add(shoulder);
+        // =============== الساق اليمنى ===============
+        const thighR = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.21, 0.95, 10), matDark);
+        thighR.position.set(0.48, 1.05, 0);
+        thighR.castShadow = true;
+        warrior.add(thighR);
+        
+        const kneeR = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 12), matJoint);
+        kneeR.position.set(0.52, 0.58, 0.08);
+        warrior.add(kneeR);
+        
+        const calfR = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.17, 0.88, 10), matDark);
+        calfR.position.set(0.54, 0.12, 0);
+        calfR.castShadow = true;
+        warrior.add(calfR);
+        
+        const footR = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.16, 0.65), matDark);
+        footR.position.set(0.58, -0.28, 0.2);
+        footR.castShadow = true;
+        warrior.add(footR);
 
-            // ذراع أبيض سميك
-            const forearm = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.2, 1.2), matWhite);
-            forearm.position.y = -0.6;
-            armGroup.add(forearm);
+        // =============== الساق اليسرى ===============
+        const thighL = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.21, 0.95, 10), matDark);
+        thighL.position.set(-0.48, 1.05, 0);
+        thighL.castShadow = true;
+        warrior.add(thighL);
+        
+        const kneeL = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 12), matJoint);
+        kneeL.position.set(-0.52, 0.58, 0.08);
+        warrior.add(kneeL);
+        
+        const calfL = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.17, 0.88, 10), matDark);
+        calfL.position.set(-0.54, 0.12, 0);
+        calfL.castShadow = true;
+        warrior.add(calfL);
+        
+        const footL = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.16, 0.65), matDark);
+        footL.position.set(-0.58, -0.28, 0.2);
+        footL.castShadow = true;
+        warrior.add(footL);
 
-            armGroup.position.set(side * 0.85, 2.4, 0);
-            armGroup.rotation.z = side * 0.2;
-            robot.add(armGroup);
-        }
-        addArm(1);
-        addArm(-1);
+        // =============== أرضية بسيطة ===============
+        const grid = new THREE.GridHelper(8, 16, 0x88aaff, 0x335588);
+        grid.position.y = -1.2;
+        grid.material.transparent = true;
+        grid.material.opacity = 0.3;
+        scene.add(grid);
 
-        // --- الأرجل (قواعد عريضة متماسكة) ---
-        function addLeg(side) {
-            const leg = new THREE.Group();
-            
-            const thigh = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.25, 1.5), matWhite);
-            thigh.position.y = -0.7;
-            leg.add(thigh);
-
-            const foot = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.3, 0.9), matDark);
-            foot.position.set(0, -1.5, 0.2);
-            leg.add(foot);
-
-            leg.position.set(side * 0.45, 1.3, 0);
-            robot.add(leg);
-        }
-        addLeg(1);
-        addLeg(-1);
-
-        // 4. حلقة التحريك
+        // =============== تحريك ===============
         function animate() {
             requestAnimationFrame(animate);
-            
-            // دوران مستمر للتأكد من رؤية الأبعاد
-            robot.rotation.y += 0.01;
-            
-            // حركة "نبض" خفيفة للعيون
-            const scale = 1 + Math.sin(Date.now() * 0.005) * 0.1;
-            eye.scale.set(scale, 1, 1);
-
+            controls.update();
             renderer.render(scene, camera);
         }
+        
         animate();
 
-        // استجابة الشاشة
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
+        
+        console.log('✅ شخصية حربية رشيقة - بدون زوائد');
     </script>
 </body>
 </html>
