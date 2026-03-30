@@ -2,329 +2,412 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Warrior - شخصية حربية بالأشكال الهندسية الأساسية</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>المجسم الحربي - شخصية ثلاثية الأبعاد بالأشكال الهندسية</title>
     <style>
-        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Cairo', 'Segoe UI', sans-serif;
+        }
+        
         #info {
-            position: absolute; top: 20px; left: 20px;
-            color: white; background: rgba(0,0,0,0.8);
-            padding: 12px 20px; border-radius: 8px;
-            z-index: 100; font-size: 14px;
-            pointer-events: none; border-left: 4px solid #ff5500;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.85);
+            color: #ffaa66;
+            padding: 12px 24px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            font-size: 14px;
+            font-weight: bold;
+            pointer-events: none;
+            border-left: 4px solid #ff5500;
+            font-family: monospace;
+            direction: ltr;
         }
+        
         #controls {
-            position: absolute; bottom: 20px; left: 20px;
-            color: white; background: rgba(0,0,0,0.7);
-            padding: 8px 15px; border-radius: 8px;
-            z-index: 100; font-size: 12px;
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            color: #ccc;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-family: monospace;
+            z-index: 100;
             pointer-events: none;
         }
+        
         #stats {
-            position: absolute; bottom: 20px; right: 20px;
-            color: #ffaa66; background: rgba(0,0,0,0.7);
-            padding: 5px 12px; border-radius: 5px;
-            font-family: monospace; font-size: 11px;
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            color: #88ff88;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-family: monospace;
+            z-index: 100;
             pointer-events: none;
+        }
+        
+        @media (max-width: 768px) {
+            #info { font-size: 10px; padding: 8px 16px; top: 10px; left: 10px; }
+            #controls { font-size: 9px; }
+            #stats { font-size: 9px; }
         }
     </style>
 </head>
 <body>
-    <div id="info">⚔️ WARRIOR | SPHERE + CYLINDER + CONE | HEAVY ARMOR</div>
-    <div id="controls">🖱️ اسحب للتدوير | 🔍 اسكرول للتكبير</div>
-    <div id="stats">⚙️ جاري التحميل...</div>
+    <div id="info">
+        ⚔️ WARRIOR SCULPTURE | SPHERE + CYLINDER + CONE + BOX ⚔️
+    </div>
+    <div id="controls">
+        🖱️ اسحب بالماوس للتدوير | 🔍 اسكرول للتكبير | 🖱️ زر يمين للتحريك
+    </div>
+    <div id="stats">
+        ⚙️ جاري التحميل...
+    </div>
 
     <script type="importmap">
-        { "imports": { "three": "https://unpkg.com/three@0.128.0/build/three.module.js" } }
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js"
+            }
+        }
     </script>
 
     <script type="module">
         import * as THREE from 'three';
         import { OrbitControls } from 'https://unpkg.com/three@0.128.0/examples/jsm/controls/OrbitControls.js';
 
-        // المشهد
+        // ==================== إعداد المشهد ====================
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0a0a1a);
-        scene.fog = new THREE.FogExp2(0x0a0a1a, 0.008);
+        scene.background = new THREE.Color(0x0a0a2a);
+        scene.fog = new THREE.FogExp2(0x0a0a2a, 0.006);
         
         // الكاميرا
-        const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(5, 3.5, 7);
-        camera.lookAt(0, 2, 0);
+        const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(5.5, 3.8, 7.2);
+        camera.lookAt(0, 2.2, 0);
         
-        // Renderer
+        // الـ Renderer
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.setPixelRatio(window.devicePixelRatio);
         document.body.appendChild(renderer.domElement);
         
-        // Controls
+        // التحكم بالكاميرا
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
+        controls.autoRotate = false;
+        controls.enableZoom = true;
+        controls.enablePan = true;
         controls.target.set(0, 2.2, 0);
         controls.zoomSpeed = 1.2;
+        controls.rotateSpeed = 1.0;
         
-        // =============== إضاءة ===============
+        // ==================== الإضاءة ====================
+        // إضاءة محيطة
         const ambientLight = new THREE.AmbientLight(0x404060, 0.6);
         scene.add(ambientLight);
         
+        // الإضاءة الرئيسية (اتجاهية)
         const mainLight = new THREE.DirectionalLight(0xfff5e6, 1.3);
-        mainLight.position.set(4, 6, 4);
+        mainLight.position.set(5, 8, 4);
         mainLight.castShadow = true;
         mainLight.receiveShadow = false;
         mainLight.shadow.mapSize.width = 1024;
         mainLight.shadow.mapSize.height = 1024;
+        mainLight.shadow.camera.near = 0.5;
+        mainLight.shadow.camera.far = 15;
+        mainLight.shadow.camera.left = -5;
+        mainLight.shadow.camera.right = 5;
+        mainLight.shadow.camera.top = 5;
+        mainLight.shadow.camera.bottom = -5;
         scene.add(mainLight);
         
-        const fillLight = new THREE.PointLight(0x88aaff, 0.45);
-        fillLight.position.set(-2, 3, 3);
+        // إضاءة تعبوية (جانبية)
+        const fillLight = new THREE.PointLight(0x88aaff, 0.5);
+        fillLight.position.set(-3, 3, 3);
         scene.add(fillLight);
         
-        const backLight = new THREE.PointLight(0xffaa77, 0.5);
-        backLight.position.set(1, 3, -5);
-        scene.add(backLight);
-        
-        const rimLight = new THREE.PointLight(0xff8866, 0.4);
-        rimLight.position.set(-1, 2.5, -4);
+        // إضاءة خلفية (Rim Light)
+        const rimLight = new THREE.PointLight(0xffaa77, 0.55);
+        rimLight.position.set(1, 3.5, -5);
         scene.add(rimLight);
         
-        // أرضية
-        const gridHelper = new THREE.GridHelper(9, 20, 0x88aaff, 0x446688);
-        gridHelper.position.y = -1.4;
+        // إضاءة من الأسفل
+        const bottomLight = new THREE.PointLight(0x8866cc, 0.35);
+        bottomLight.position.set(0, -1, 0);
+        scene.add(bottomLight);
+        
+        // إضاءة للقنبلة
+        const bombLight = new THREE.PointLight(0xff5533, 0.6);
+        bombLight.position.set(2.4, 2.3, 1.2);
+        scene.add(bombLight);
+        
+        // ==================== الأرضية ====================
+        const gridHelper = new THREE.GridHelper(10, 20, 0x88aaff, 0x446688);
+        gridHelper.position.y = -1.35;
         gridHelper.material.transparent = true;
-        gridHelper.material.opacity = 0.35;
+        gridHelper.material.opacity = 0.4;
         scene.add(gridHelper);
         
-        // مجموعة الشخصية
-        const character = new THREE.Group();
-        scene.add(character);
+        // أرضية شفافة للظلال
+        const groundPlane = new THREE.Mesh(
+            new THREE.PlaneGeometry(9, 9),
+            new THREE.ShadowMaterial({ opacity: 0.4, color: 0x000000, transparent: true, side: THREE.DoubleSide })
+        );
+        groundPlane.rotation.x = -Math.PI / 2;
+        groundPlane.position.y = -1.32;
+        groundPlane.receiveShadow = true;
+        scene.add(groundPlane);
+        
+        // ==================== مجموعة المجسم ====================
+        const sculpture = new THREE.Group();
+        scene.add(sculpture);
         
         let partsCount = 0;
         
-        function addMesh(geometry, material, x, y, z, rx = 0, ry = 0, rz = 0) {
+        // دالة مساعدة لإضافة قطعة
+        function addPart(geometry, material, x, y, z, rx = 0, ry = 0, rz = 0, scaleX = 1, scaleY = 1, scaleZ = 1) {
             const mesh = new THREE.Mesh(geometry, material);
             mesh.position.set(x, y, z);
             mesh.rotation.set(rx, ry, rz);
+            mesh.scale.set(scaleX, scaleY, scaleZ);
             mesh.castShadow = true;
             mesh.receiveShadow = true;
-            character.add(mesh);
+            sculpture.add(mesh);
             partsCount++;
             return mesh;
         }
         
-        // الألوان
-        const colors = {
-            armor: 0x4a5568,
-            armorLight: 0x6b7a92,
-            armorDark: 0x2d3748,
-            steel: 0x8e9eb5,
-            gold: 0xd4af37,
-            red: 0xdd5533,
-            visor: 0x2a7fae,
-            black: 0x222233,
-            silver: 0xb8c4d8,
-            leather: 0x8b5a2b,
-            bomb: 0x5a7a4a
+        // ==================== المواد ====================
+        const materials = {
+            armor: new THREE.MeshStandardMaterial({ color: 0x4a5568, metalness: 0.7, roughness: 0.3 }),
+            armorLight: new THREE.MeshStandardMaterial({ color: 0x6b7a92, metalness: 0.72, roughness: 0.28 }),
+            armorDark: new THREE.MeshStandardMaterial({ color: 0x2d3748, metalness: 0.65, roughness: 0.32 }),
+            steel: new THREE.MeshStandardMaterial({ color: 0x8e9eb5, metalness: 0.78, roughness: 0.25 }),
+            gold: new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.85, roughness: 0.22 }),
+            red: new THREE.MeshStandardMaterial({ color: 0xdd5533, metalness: 0.55, roughness: 0.35 }),
+            darkRed: new THREE.MeshStandardMaterial({ color: 0xaa3322, metalness: 0.6, roughness: 0.3 }),
+            visor: new THREE.MeshStandardMaterial({ color: 0x2a7fae, metalness: 0.85, roughness: 0.2, emissive: 0x2a7fae, emissiveIntensity: 0.25 }),
+            black: new THREE.MeshStandardMaterial({ color: 0x222233, metalness: 0.4, roughness: 0.55 }),
+            silver: new THREE.MeshStandardMaterial({ color: 0xb8c4d8, metalness: 0.8, roughness: 0.25 }),
+            leather: new THREE.MeshStandardMaterial({ color: 0x8b5a2b, metalness: 0.35, roughness: 0.55 }),
+            bomb: new THREE.MeshStandardMaterial({ color: 0x5a7a4a, metalness: 0.5, roughness: 0.4 }),
+            bombStripe: new THREE.MeshStandardMaterial({ color: 0xe8b84a, metalness: 0.45, roughness: 0.35 }),
+            goldLight: new THREE.MeshStandardMaterial({ color: 0xdcb85c, metalness: 0.82, roughness: 0.23 })
         };
         
-        // المواد
-        const materialArmor = new THREE.MeshStandardMaterial({ color: colors.armor, metalness: 0.7, roughness: 0.3 });
-        const materialArmorLight = new THREE.MeshStandardMaterial({ color: colors.armorLight, metalness: 0.72, roughness: 0.28 });
-        const materialSteel = new THREE.MeshStandardMaterial({ color: colors.steel, metalness: 0.78, roughness: 0.25 });
-        const materialGold = new THREE.MeshStandardMaterial({ color: colors.gold, metalness: 0.85, roughness: 0.22 });
-        const materialRed = new THREE.MeshStandardMaterial({ color: colors.red, metalness: 0.55, roughness: 0.35 });
-        const materialBlack = new THREE.MeshStandardMaterial({ color: colors.black, metalness: 0.4, roughness: 0.55 });
-        const materialLeather = new THREE.MeshStandardMaterial({ color: colors.leather, metalness: 0.35, roughness: 0.55 });
+        // ==================== 1. الجذع (كرة) ====================
+        const torsoGeo = new THREE.SphereGeometry(0.85, 64, 64);
+        addPart(torsoGeo, materials.armor, 0, 2.1, 0);
         
-        // =============== 1. الجذع (كرة/دائرة) ===============
-        const torsoGeo = new THREE.SphereGeometry(0.85, 48, 48);
-        const torso = addMesh(torsoGeo, materialArmor, 0, 2.1, 0);
-        
-        // درع صدري إضافي
-        const chestGeo = new THREE.SphereGeometry(0.72, 48, 48);
-        const chest = addMesh(chestGeo, materialArmorLight, 0, 2.15, 0.55);
+        // درع صدري
+        const chestGeo = new THREE.SphereGeometry(0.72, 64, 64);
+        addPart(chestGeo, materials.armorLight, 0, 2.15, 0.55);
         
         // عضلات الصدر
-        const pectoralLGeo = new THREE.SphereGeometry(0.48, 32, 32);
-        const pectoralL = addMesh(pectoralLGeo, materialSteel, -0.55, 2.05, 0.85);
-        const pectoralRGeo = new THREE.SphereGeometry(0.48, 32, 32);
-        const pectoralR = addMesh(pectoralRGeo, materialSteel, 0.55, 2.05, 0.85);
+        const pectoralGeo = new THREE.SphereGeometry(0.48, 48, 48);
+        addPart(pectoralGeo, materials.steel, -0.55, 2.05, 0.85);
+        addPart(pectoralGeo, materials.steel, 0.55, 2.05, 0.85);
         
-        // =============== 2. الرأس (كرة أصغر بثلاث مرات من الجذع) ===============
-        // الجذع radius = 0.85، الرأس أصغر بثلاث مرات = 0.85 / 3 ≈ 0.283
-        const headGeo = new THREE.SphereGeometry(0.48, 48, 48);
-        const head = addMesh(headGeo, materialArmorLight, 0, 3.05, 0.05);
+        // ==================== 2. الرأس (كرة أصغر بثلاث مرات) ====================
+        // الجذع r=0.85، الرأس أصغر بحوالي 3 مرات = 0.48
+        const headGeo = new THREE.SphereGeometry(0.48, 64, 64);
+        addPart(headGeo, materials.armorLight, 0, 3.05, 0.05);
         
         // حاجب العين (Visor)
-        const visorGeo = new THREE.SphereGeometry(0.32, 32, 32);
-        const visor = addMesh(visorGeo, new THREE.MeshStandardMaterial({ color: colors.visor, metalness: 0.85, roughness: 0.2, emissive: colors.visor, emissiveIntensity: 0.25 }), 0, 2.95, 0.72);
+        const visorGeo = new THREE.SphereGeometry(0.32, 48, 48);
+        addPart(visorGeo, materials.visor, 0, 2.95, 0.72);
         
-        // =============== 3. فوق الرأس: مخروط مائل قليلاً ===============
-        const spikeGeo = new THREE.ConeGeometry(0.18, 0.55, 16);
-        const spike = addMesh(spikeGeo, materialGold, 0, 3.58, 0.05, 0.15, 0, 0);
+        // ==================== 3. فوق الرأس: مخروط مائل ====================
+        const spikeGeo = new THREE.ConeGeometry(0.18, 0.55, 24);
+        addPart(spikeGeo, materials.gold, 0, 3.58, 0.05, 0.15, 0, 0);
         
-        // زخرفة جانبية للخوذة
-        const crestGeo = new THREE.CylinderGeometry(0.08, 0.12, 0.35, 8);
-        const crest = addMesh(crestGeo, materialGold, 0.32, 3.45, 0.45, 0.2, 0.5, 0.3);
-        const crestL = addMesh(crestGeo, materialGold, -0.32, 3.45, 0.45, 0.2, -0.5, 0.3);
+        // زخارف جانبية للخوذة
+        const crestGeo = new THREE.CylinderGeometry(0.08, 0.12, 0.35, 12);
+        addPart(crestGeo, materials.gold, 0.32, 3.45, 0.45, 0.2, 0.5, 0.3);
+        addPart(crestGeo, materials.gold, -0.32, 3.45, 0.45, 0.2, -0.5, 0.3);
         
         // جهاز اتصال جانبي
-        const commGeo = new THREE.SphereGeometry(0.12, 16, 16);
-        const comm = addMesh(commGeo, materialRed, 0.68, 3.0, 0.25);
-        const commL = addMesh(commGeo, new THREE.MeshStandardMaterial({ color: colors.silver, metalness: 0.8, roughness: 0.25 }), -0.65, 3.02, 0.22);
+        const commGeo = new THREE.SphereGeometry(0.12, 24, 24);
+        addPart(commGeo, materials.red, 0.68, 3.0, 0.25);
+        addPart(commGeo, materials.silver, -0.65, 3.02, 0.22);
         
-        // =============== 4. الذراع الأيمن (أسطوانتين مع مفصل) ===============
-        // الجزء العلوي من الذراع (Bicep)
-        const armUpperGeo = new THREE.CylinderGeometry(0.38, 0.35, 0.95, 16);
-        const armUpper = addMesh(armUpperGeo, materialArmor, 1.25, 2.45, 0.05, 0.2, 0.1, 0.3);
+        // ==================== 4. الذراع الأيمن (أسطوانتين + مفصل) ====================
+        // العضد (Bicep)
+        const armUpperGeo = new THREE.CylinderGeometry(0.38, 0.35, 0.95, 24);
+        addPart(armUpperGeo, materials.armor, 1.25, 2.45, 0.05, 0.2, 0.1, 0.3);
         
-        // مفصل الكوع (كرة)
-        const elbowGeo = new THREE.SphereGeometry(0.28, 24, 24);
-        const elbow = addMesh(elbowGeo, materialSteel, 1.55, 1.95, 0.02);
+        // مفصل الكوع
+        const elbowGeo = new THREE.SphereGeometry(0.28, 32, 32);
+        addPart(elbowGeo, materials.steel, 1.55, 1.95, 0.02);
         
-        // الجزء السفلي من الذراع (Forearm)
-        const armLowerGeo = new THREE.CylinderGeometry(0.32, 0.28, 0.9, 16);
-        const armLower = addMesh(armLowerGeo, materialArmorLight, 1.85, 1.45, -0.02, 0.15, -0.05, 0.2);
+        // الساعد (Forearm)
+        const armLowerGeo = new THREE.CylinderGeometry(0.32, 0.28, 0.9, 24);
+        addPart(armLowerGeo, materials.armorLight, 1.85, 1.45, -0.02, 0.15, -0.05, 0.2);
         
         // اليد
-        const handGeo = new THREE.SphereGeometry(0.24, 16, 16);
-        const hand = addMesh(handGeo, materialSteel, 2.15, 1.02, -0.08);
+        const handGeo = new THREE.SphereGeometry(0.24, 32, 32);
+        addPart(handGeo, materials.steel, 2.15, 1.02, -0.08);
         
-        // =============== 5. الذراع الأيسر (أسطوانتين مع مفصل) ===============
-        const armUpperLGeo = new THREE.CylinderGeometry(0.36, 0.33, 0.92, 16);
-        const armUpperL = addMesh(armUpperLGeo, materialArmor, -1.23, 2.47, 0.03, 0.18, -0.08, -0.25);
+        // ==================== 5. الذراع الأيسر (أسطوانتين + مفصل) ====================
+        const armUpperLGeo = new THREE.CylinderGeometry(0.36, 0.33, 0.92, 24);
+        addPart(armUpperLGeo, materials.armor, -1.23, 2.47, 0.03, 0.18, -0.08, -0.25);
         
-        const elbowLGeo = new THREE.SphereGeometry(0.26, 24, 24);
-        const elbowL = addMesh(elbowLGeo, materialSteel, -1.52, 1.98, 0);
+        const elbowLGeo = new THREE.SphereGeometry(0.26, 32, 32);
+        addPart(elbowLGeo, materials.steel, -1.52, 1.98, 0);
         
-        const armLowerLGeo = new THREE.CylinderGeometry(0.3, 0.26, 0.88, 16);
-        const armLowerL = addMesh(armLowerLGeo, materialArmorLight, -1.82, 1.5, -0.03, 0.12, 0.05, -0.18);
+        const armLowerLGeo = new THREE.CylinderGeometry(0.3, 0.26, 0.88, 24);
+        addPart(armLowerLGeo, materials.armorLight, -1.82, 1.5, -0.03, 0.12, 0.05, -0.18);
         
-        const handLGeo = new THREE.SphereGeometry(0.22, 16, 16);
-        const handL = addMesh(handLGeo, materialSteel, -2.1, 1.08, -0.06);
+        const handLGeo = new THREE.SphereGeometry(0.22, 32, 32);
+        addPart(handLGeo, materials.steel, -2.1, 1.08, -0.06);
         
-        // =============== 6. الساق اليمنى (أسطوانتين مع مفصل) ===============
-        // الفخذ
-        const thighGeo = new THREE.CylinderGeometry(0.45, 0.4, 1.05, 16);
-        const thigh = addMesh(thighGeo, materialArmorDark, 0.65, 1.05, 0, 0.05, 0, 0.05);
+        // ==================== 6. الساق اليمنى (أسطوانتين + مفصل) ====================
+        const thighGeo = new THREE.CylinderGeometry(0.45, 0.4, 1.05, 24);
+        addPart(thighGeo, materials.armorDark, 0.65, 1.05, 0, 0.05, 0, 0.05);
         
-        // مفصل الركبة
-        const kneeGeo = new THREE.SphereGeometry(0.32, 24, 24);
-        const knee = addMesh(kneeGeo, materialSteel, 0.75, 0.5, 0.15);
+        const kneeGeo = new THREE.SphereGeometry(0.32, 32, 32);
+        addPart(kneeGeo, materials.steel, 0.75, 0.5, 0.15);
         
-        // الساق
-        const calfGeo = new THREE.CylinderGeometry(0.38, 0.32, 0.95, 16);
-        const calf = addMesh(calfGeo, materialArmorDark, 0.78, 0.02, -0.02, 0.02, 0, 0.03);
+        const calfGeo = new THREE.CylinderGeometry(0.38, 0.32, 0.95, 24);
+        addPart(calfGeo, materials.armorDark, 0.78, 0.02, -0.02, 0.02, 0, 0.03);
         
-        // =============== 7. الساق اليسرى (أسطوانتين مع مفصل) ===============
-        const thighLGeo = new THREE.CylinderGeometry(0.45, 0.4, 1.05, 16);
-        const thighL = addMesh(thighLGeo, materialArmorDark, -0.65, 1.05, 0, 0.05, 0, -0.05);
+        // ==================== 7. الساق اليسرى (أسطوانتين + مفصل) ====================
+        const thighLGeo = new THREE.CylinderGeometry(0.45, 0.4, 1.05, 24);
+        addPart(thighLGeo, materials.armorDark, -0.65, 1.05, 0, 0.05, 0, -0.05);
         
-        const kneeLGeo = new THREE.SphereGeometry(0.32, 24, 24);
-        const kneeL = addMesh(kneeLGeo, materialSteel, -0.75, 0.5, 0.15);
+        const kneeLGeo = new THREE.SphereGeometry(0.32, 32, 32);
+        addPart(kneeLGeo, materials.steel, -0.75, 0.5, 0.15);
         
-        const calfLGeo = new THREE.CylinderGeometry(0.38, 0.32, 0.95, 16);
-        const calfL = addMesh(calfLGeo, materialArmorDark, -0.78, 0.02, -0.02, 0.02, 0, -0.03);
+        const calfLGeo = new THREE.CylinderGeometry(0.38, 0.32, 0.95, 24);
+        addPart(calfLGeo, materials.armorDark, -0.78, 0.02, -0.02, 0.02, 0, -0.03);
         
-        // =============== 8. القدم (مستطيل) ===============
+        // ==================== 8. القدم (مستطيل) ====================
         const footGeo = new THREE.BoxGeometry(0.65, 0.22, 1.15);
-        const foot = addMesh(footGeo, materialBlack, 0.88, -0.38, 0.25);
-        const footL = addMesh(footGeo, materialBlack, -0.88, -0.38, 0.25);
+        addPart(footGeo, materials.black, 0.88, -0.38, 0.25);
+        addPart(footGeo, materials.black, -0.88, -0.38, 0.25);
         
         // واقي القدم الأمامي
         const toeGeo = new THREE.BoxGeometry(0.55, 0.18, 0.4);
-        const toe = addMesh(toeGeo, materialSteel, 0.9, -0.28, 0.78);
-        const toeL = addMesh(toeGeo, materialSteel, -0.9, -0.28, 0.78);
+        addPart(toeGeo, materials.steel, 0.9, -0.28, 0.78);
+        addPart(toeGeo, materials.steel, -0.9, -0.28, 0.78);
         
-        // =============== 9. القنبلة (أسطوانة + مخروط) ===============
-        const bombBodyGeo = new THREE.CylinderGeometry(0.48, 0.48, 1.35, 24);
-        const bombBody = addMesh(bombBodyGeo, new THREE.MeshStandardMaterial({ color: colors.bomb, metalness: 0.5, roughness: 0.4 }), 2.35, 2.05, 0.45, 0, 0.3, 0.2);
+        // ==================== 9. القنبلة ====================
+        // جسم القنبلة (أسطوانة)
+        const bombBodyGeo = new THREE.CylinderGeometry(0.48, 0.48, 1.35, 32);
+        addPart(bombBodyGeo, materials.bomb, 2.35, 2.05, 0.45, 0, 0.3, 0.2);
         
-        // خطوط تحذير
-        const stripeGeo = new THREE.TorusGeometry(0.52, 0.08, 16, 48);
-        const stripe = addMesh(stripeGeo, new THREE.MeshStandardMaterial({ color: 0xe8b84a, metalness: 0.45, roughness: 0.35 }), 2.35, 2.15, 0.45, Math.PI / 2, 0.3, 0);
+        // خطوط تحذير (حلقات)
+        const stripeGeo = new THREE.TorusGeometry(0.52, 0.08, 24, 64);
+        addPart(stripeGeo, materials.bombStripe, 2.35, 2.15, 0.45, Math.PI / 2, 0.3, 0);
+        addPart(stripeGeo, materials.bombStripe, 2.35, 1.95, 0.45, Math.PI / 2, 0.3, 0);
         
-        const stripe2Geo = new THREE.TorusGeometry(0.52, 0.08, 16, 48);
-        const stripe2 = addMesh(stripe2Geo, new THREE.MeshStandardMaterial({ color: 0xe8b84a, metalness: 0.45, roughness: 0.35 }), 2.35, 1.95, 0.45, Math.PI / 2, 0.3, 0);
+        // رأس القنبلة (مخروط)
+        const warheadGeo = new THREE.ConeGeometry(0.48, 0.65, 32);
+        addPart(warheadGeo, materials.goldLight, 2.98, 2.38, 0.52, 0, 0.2, 0);
         
-        // رأس القنبلة المخروطي
-        const warheadGeo = new THREE.ConeGeometry(0.48, 0.65, 24);
-        const warhead = addMesh(warheadGeo, new THREE.MeshStandardMaterial({ color: colors.gold, metalness: 0.8, roughness: 0.23 }), 2.98, 2.38, 0.52, 0, 0.2, 0);
-        
-        // طرف القنبلة
-        const tipGeo = new THREE.ConeGeometry(0.22, 0.45, 16);
-        const tip = addMesh(tipGeo, new THREE.MeshStandardMaterial({ color: colors.red, metalness: 0.82, roughness: 0.21, emissive: colors.red, emissiveIntensity: 0.3 }), 3.28, 2.65, 0.58, 0, 0.1, 0);
+        // طرف القنبلة (مخروط صغير متوهج)
+        const tipGeo = new THREE.ConeGeometry(0.22, 0.45, 24);
+        const tipMaterial = new THREE.MeshStandardMaterial({ color: 0xdd5533, metalness: 0.82, roughness: 0.21, emissive: 0xdd5533, emissiveIntensity: 0.4 });
+        addPart(tipGeo, tipMaterial, 3.28, 2.65, 0.58, 0, 0.1, 0);
         
         // زعانف الذيل
         const finGeo = new THREE.BoxGeometry(0.2, 0.45, 0.08);
-        const fin1 = addMesh(finGeo, materialSteel, 2.02, 2.28, 0.98, 0.2, 0, 0);
-        const fin2 = addMesh(finGeo, materialSteel, 2.02, 2.28, -0.08, 0.2, 0, 0);
-        const fin3 = addMesh(finGeo, materialSteel, 2.68, 2.28, 0.98, 0.2, 0, 0);
-        const fin4 = addMesh(finGeo, materialSteel, 2.68, 2.28, -0.08, 0.2, 0, 0);
+        addPart(finGeo, materials.silver, 2.02, 2.28, 0.98, 0.2, 0, 0);
+        addPart(finGeo, materials.silver, 2.02, 2.28, -0.08, 0.2, 0, 0);
+        addPart(finGeo, materials.silver, 2.68, 2.28, 0.98, 0.2, 0, 0);
+        addPart(finGeo, materials.silver, 2.68, 2.28, -0.08, 0.2, 0, 0);
         
         // أحزمة حمل القنبلة
         const strapGeo = new THREE.BoxGeometry(0.25, 0.12, 1.1);
-        const strap = addMesh(strapGeo, materialLeather, 1.95, 2.05, 0.45);
-        const strap2Geo = new THREE.BoxGeometry(0.25, 0.12, 1.1);
-        const strap2 = addMesh(strap2Geo, materialLeather, 2.75, 2.05, 0.45);
+        addPart(strapGeo, materials.leather, 1.95, 2.05, 0.45);
+        addPart(strapGeo, materials.leather, 2.75, 2.05, 0.45);
         
-        // =============== 10. تفاصيل إضافية ===============
+        // ==================== 10. تفاصيل إضافية ====================
         // حزام الخصر
-        const beltGeo = new THREE.TorusGeometry(0.72, 0.1, 16, 48);
-        const belt = addMesh(beltGeo, materialLeather, 0, 1.65, 0.1, Math.PI / 2, 0, 0);
+        const beltGeo = new THREE.TorusGeometry(0.72, 0.1, 24, 64);
+        addPart(beltGeo, materials.leather, 0, 1.65, 0.1, Math.PI / 2, 0, 0);
         
-        // خراطيش ذخيرة على الصدر
+        // خراطيش ذخيرة
         const ammoGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.35, 8);
-        for (let i = -1; i <= 1; i++) {
-            const ammo = addMesh(ammoGeo, materialGold, i * 0.45, 2.45, 1.12, 0, 0, 0);
-        }
+        addPart(ammoGeo, materials.gold, -0.45, 2.45, 1.12);
+        addPart(ammoGeo, materials.gold, 0, 2.48, 1.15);
+        addPart(ammoGeo, materials.gold, 0.45, 2.45, 1.12);
         
-        // قنابل يدوية على الحزام
+        // قنابل يدوية
         const grenadeGeo = new THREE.CylinderGeometry(0.16, 0.14, 0.4, 12);
-        const grenade1 = addMesh(grenadeGeo, colors.bomb, 0.65, 1.52, 0.95, 0.2, 0, 0);
-        const grenade2 = addMesh(grenadeGeo, colors.bomb, 0.25, 1.52, 0.98, 0.15, 0, 0);
-        const grenade3 = addMesh(grenadeGeo, colors.bomb, -0.25, 1.52, 0.98, 0.15, 0, 0);
-        const grenade4 = addMesh(grenadeGeo, colors.bomb, -0.65, 1.52, 0.95, 0.2, 0, 0);
+        addPart(grenadeGeo, materials.bomb, 0.65, 1.52, 0.95, 0.2, 0, 0);
+        addPart(grenadeGeo, materials.bomb, 0.25, 1.52, 0.98, 0.15, 0, 0);
+        addPart(grenadeGeo, materials.bomb, -0.25, 1.52, 0.98, 0.15, 0, 0);
+        addPart(grenadeGeo, materials.bomb, -0.65, 1.52, 0.95, 0.2, 0, 0);
         
         // جهاز اتصال على الظهر
         const backPackGeo = new THREE.BoxGeometry(0.65, 0.85, 0.45);
-        const backPack = addMesh(backPackGeo, materialBlack, 0, 2.15, -0.92);
+        addPart(backPackGeo, materials.black, 0, 2.15, -0.92);
         const antennaGeo = new THREE.CylinderGeometry(0.05, 0.07, 0.45, 6);
-        const antenna = addMesh(antennaGeo, materialRed, 0.2, 2.65, -0.95);
+        addPart(antennaGeo, materials.red, 0.2, 2.65, -0.95);
         
         // واقي الكتف الأيمن
-        const pauldronGeo = new THREE.SphereGeometry(0.48, 24, 24);
-        const pauldron = addMesh(pauldronGeo, materialArmorLight, 1.32, 2.78, 0.25);
+        const pauldronGeo = new THREE.SphereGeometry(0.48, 32, 32);
+        addPart(pauldronGeo, materials.armorLight, 1.32, 2.78, 0.25);
         
-        // شارة عسكرية على الكتف الأيسر
+        // شارة عسكرية
         const insigniaGeo = new THREE.BoxGeometry(0.28, 0.28, 0.08);
-        const insignia = addMesh(insigniaGeo, materialRed, -1.28, 2.65, 0.68);
+        addPart(insigniaGeo, materials.red, -1.28, 2.65, 0.68);
         
-        // =============== تحريك ===============
+        // ==================== تأثيرات متحركة ====================
         let time = 0;
         
         function animate() {
             requestAnimationFrame(animate);
             time += 0.016;
             
+            // نبض ضوء القنبلة
+            const pulse = 0.5 + Math.sin(time * 9) * 0.2;
+            bombLight.intensity = pulse;
+            
+            // تحديث التحكم
             controls.update();
+            
+            // عرض المشهد
             renderer.render(scene, camera);
         }
         
         animate();
         
-        window.addEventListener('resize', () => {
+        // ==================== معالجة تغيير حجم النافذة ====================
+        window.addEventListener('resize', onWindowResize, false);
+        function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+        }
         
-        document.getElementById('stats').innerHTML = `✅ ${partsCount} PARTS | SPHERE + CYLINDER + CONE + BOX`;
-        console.log(`✅ شخصية مبنية من الأشكال الهندسية الأساسية`);
-        console.log(`📐 الجذع: كرة (r=0.85) | الرأس: كرة (r=0.48) | المخروط: مائل`);
-        console.log(`💪 الأذرع: أسطوانتين + مفصل | 🦵 الأرجل: أسطوانتين + مفصل | 🦶 القدم: مستطيل`);
+        // ==================== إحصائيات ====================
+        document.getElementById('stats').innerHTML = `✅ ${partsCount} قطعة | المجسم جاهز`;
+        console.log(`✅ تم إنشاء المجسم بنجاح!`);
+        console.log(`📊 عدد القطع: ${partsCount}`);
+        console.log(`🔷 الجذع: كرة (r=0.85)`);
+        console.log(`🔶 الرأس: كرة أصغر (r=0.48) - مدمجة مع الجذع`);
+        console.log(`📐 فوق الرأس: مخروط مائل بزاوية 15°`);
+        console.log(`💪 الأذرع: أسطوانتين + مفصل كروي لكل ذراع`);
+        console.log(`🦵 الأرجل: أسطوانتين + مفصل كروي لكل ساق`);
+        console.log(`🦶 الأقدام: مستطيلات مع واقي أمامي`);
+        console.log(`💣 القنبلة: أسطوانة + مخروط + حلقات + زعانف`);
     </script>
 </body>
 </html>
