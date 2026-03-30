@@ -218,7 +218,7 @@
 
         // --- الرأس والخوذة ---
         const headGroup = new THREE.Group();
-        headGroup.position.y = 0; // سيُضبط نسبياً للجذع
+        headGroup.position.y = 0;
         torsoGroup.add(headGroup);
 
         const neckJoint = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.38, 0.22, 16), matSoftJoint);
@@ -243,10 +243,8 @@
         // 5. الأذرع — مجموعات مستقلة للتحريك
         // ==========================================
         function buildArm(side) {
-            // المجموعة الرئيسية للذراع (تدور من الكتف)
             const armGroup = new THREE.Group();
 
-            // مفصل الكتف
             const shoulder = new THREE.Mesh(new THREE.SphereGeometry(0.44, 32, 32), matSoftJoint);
             shoulder.castShadow = true;
             armGroup.add(shoulder);
@@ -290,7 +288,6 @@
 
             armGroup.add(forearmGroup);
 
-            // موضع الذراع بالنسبة للجذع
             armGroup.position.set(side * 1.15, 2.7, 0);
 
             return { armGroup, forearmGroup };
@@ -349,7 +346,6 @@
             thighRing.rotation.x = Math.PI / 2;
             legGroup.add(thighRing);
 
-            // مجموعة أسفل الساق (تدور من الركبة)
             const shinGroup = new THREE.Group();
             shinGroup.position.y = -1.22;
 
@@ -415,9 +411,10 @@
         scene.add(groundReflector);
 
         // ==========================================
-        // 8. القذائف
+        // 8. نظام القذائف والانفجارات
         // ==========================================
         const projectiles = [];
+        const particles = [];
 
         function spawnProjectile(startWorldPos, direction) {
             const geo = new THREE.SphereGeometry(0.12, 16, 16);
@@ -435,6 +432,49 @@
             projectiles.push({ mesh, velocity: direction.clone().multiplyScalar(0.22), life: 0 });
         }
 
+        // نظام الجزيئات للانفجار
+        function createExplosion(position) {
+            const particleCount = 25;
+            for (let i = 0; i < particleCount; i++) {
+                const angle = (Math.random() * Math.PI * 2);
+                const elevation = (Math.random() * Math.PI * 0.5);
+                const speed = 0.08 + Math.random() * 0.12;
+
+                const vx = Math.cos(angle) * Math.cos(elevation) * speed;
+                const vy = Math.sin(elevation) * speed + 0.04;
+                const vz = Math.sin(angle) * Math.cos(elevation) * speed;
+
+                const size = 0.08 + Math.random() * 0.12;
+                const geo = new THREE.SphereGeometry(size, 8, 8);
+                const colors = [0xff3300, 0xff6600, 0xffaa00, 0xffdd00];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const mat = new THREE.MeshStandardMaterial({
+                    color: color,
+                    emissive: color,
+                    emissiveIntensity: 0.8,
+                    metalness: 0.4,
+                    roughness: 0.3
+                });
+                const mesh = new THREE.Mesh(geo, mat);
+                mesh.position.copy(position);
+                mesh.castShadow = true;
+                scene.add(mesh);
+
+                particles.push({
+                    mesh,
+                    velocity: new THREE.Vector3(vx, vy, vz),
+                    life: 0,
+                    maxLife: 50 + Math.random() * 30
+                });
+            }
+
+            // وميض ضوء الانفجار
+            const flashLight = new THREE.PointLight(0xff6600, 2.0);
+            flashLight.position.copy(position);
+            scene.add(flashLight);
+            setTimeout(() => scene.remove(flashLight), 100);
+        }
+
         function updateProjectiles() {
             for (let i = projectiles.length - 1; i >= 0; i--) {
                 const p = projectiles[i];
@@ -444,9 +484,36 @@
                 // تأثير دوران القذيفة
                 p.mesh.rotation.x += 0.18;
                 p.mesh.rotation.z += 0.12;
-                if (p.life > 90 || p.mesh.position.y < -2) {
+
+                // اصطدام بالأرض
+                if (p.mesh.position.y < -1.1) {
+                    createExplosion(p.mesh.position.clone());
                     scene.remove(p.mesh);
                     projectiles.splice(i, 1);
+                } else if (p.life > 120) {
+                    scene.remove(p.mesh);
+                    projectiles.splice(i, 1);
+                }
+            }
+        }
+
+        function updateParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.velocity.y -= 0.004; // جاذبية
+                p.mesh.position.add(p.velocity);
+                p.life++;
+
+                // تلاشي الجزيئات
+                const fadeStart = p.maxLife * 0.7;
+                if (p.life > fadeStart) {
+                    const fadeProgress = (p.life - fadeStart) / (p.maxLife - fadeStart);
+                    p.mesh.material.opacity = 1 - fadeProgress;
+                }
+
+                if (p.life >= p.maxLife) {
+                    scene.remove(p.mesh);
+                    particles.splice(i, 1);
                 }
             }
         }
@@ -454,24 +521,20 @@
         // ==========================================
         // 9. نظام الحركات
         // ==========================================
-        // الحالات: 'idle' | 'run' | 'jump' | 'throw'
         let currentState = 'idle';
         let animTime = 0;
 
-        // متغيرات حالة القفز
-        let jumpPhase = 0;       // 0=لا شيء، 1=إقلاع، 2=طيران، 3=هبوط
+        let jumpPhase = 0;
         let jumpT = 0;
-        const JUMP_DURATION = 55; // إطارات
+        const JUMP_DURATION = 55;
 
-        // متغيرات حالة الرمي
-        let throwPhase = 0;      // 0=لا شيء، 1=رفع يمين، 2=رمي يمين، 3=رفع يسار، 4=رمي يسار، 5=عودة
+        let throwPhase = 0;
         let throwT = 0;
         const THROW_WIND_UP  = 22;
         const THROW_RELEASE  = 8;
         const THROW_RETURN   = 20;
         let throwProjectileFired = false;
 
-        // وضع الراحة (idle) — قيم الدوران الافتراضية
         const IDLE = {
             torsoRotX: 0,
             rightArmRotX: 0,  rightArmRotZ: -0.12,
@@ -485,15 +548,12 @@
             charY: 0
         };
 
-        // دالة مساعدة: تحريك سلس (lerp)
         function lerp(a, b, t) { return a + (b - a) * t; }
 
-        // دالة تطبيق الدوران بسلاسة
         function applySmooth(target, key, value, speed) {
             target[key] = lerp(target[key], value, speed);
         }
 
-        // حالة الدوران الحالية
         const rot = {
             torsoRotX: 0,
             rightArmRotX: 0,  rightArmRotZ: -0.12,
@@ -507,9 +567,6 @@
             charY: 0
         };
 
-        // ==========================================
-        // 10. تطبيق الدوران على المجموعات
-        // ==========================================
         function applyRotations() {
             torsoGroup.rotation.x      = rot.torsoRotX;
             rightArm.rotation.x        = rot.rightArmRotX;
@@ -524,10 +581,6 @@
             leftShin.rotation.x        = rot.leftShinRotX;
             character.position.y       = rot.charY;
         }
-
-        // ==========================================
-        // 11. منطق كل حركة
-        // ==========================================
 
         // --- وقوف (idle) ---
         function updateIdle(dt) {
@@ -547,30 +600,32 @@
             applySmooth(rot, 'charY',           breath * 0.6, s);
         }
 
-        // --- ركض ---
+        // --- ركض (مع ثني اليدين للأمام) ---
         function updateRun(dt) {
             const speed = 2.8;
             const t = animTime * speed;
-            const legSwing   = 0.72;  // زاوية تأرجح الفخذ
-            const shinBend   = 0.85;  // ثني الركبة
+            const legSwing   = 0.72;
+            const shinBend   = 0.85;
             const armSwing   = 0.65;  // تأرجح الذراع
             const foreSwing  = 0.5;   // ثني المرفق
-            const torsoBob   = 0.06;  // تمايل الجذع
+            const torsoBob   = 0.06;
             const s = 0.18;
 
             // تأرجح الأرجل (متعاكس)
             const rLeg = Math.sin(t) * legSwing;
             const lLeg = Math.sin(t + Math.PI) * legSwing;
 
-            // ثني الركبة: عندما الساق تتجه للخلف تنثني الركبة
+            // ثني الركبة
             const rShin = Math.max(0, -Math.sin(t)) * shinBend;
             const lShin = Math.max(0, -Math.sin(t + Math.PI)) * shinBend;
 
             // تأرجح الأذرع (عكس الأرجل)
             const rArm = -Math.sin(t) * armSwing;
             const lArm = -Math.sin(t + Math.PI) * armSwing;
-            const rFore = Math.max(0, Math.sin(t)) * foreSwing + 0.3;
-            const lFore = Math.max(0, Math.sin(t + Math.PI)) * foreSwing + 0.3;
+
+            // ثني الساعد للأمام (الجزء المحسّن) — الساعد تنثني دائماً للأمام
+            const rFore = 0.8 + Math.max(0, Math.sin(t)) * 0.35;
+            const lFore = 0.8 + Math.max(0, Math.sin(t + Math.PI)) * 0.35;
 
             applySmooth(rot, 'torsoRotX',        Math.sin(t * 2) * torsoBob + 0.08, s);
             applySmooth(rot, 'rightLegRotX',     rLeg, s);
@@ -593,9 +648,8 @@
         function updateJump() {
             const s = 0.15;
             if (jumpPhase === 1) {
-                // مرحلة الإقلاع: ثني الركبتين ثم الدفع
                 const progress = jumpT / (JUMP_DURATION * 0.25);
-                const crouch = Math.sin(progress * Math.PI) * 0.45; // ثني للأسفل ثم دفع
+                const crouch = Math.sin(progress * Math.PI) * 0.45;
                 applySmooth(rot, 'rightLegRotX',  -crouch * 0.5, s);
                 applySmooth(rot, 'leftLegRotX',   -crouch * 0.5, s);
                 applySmooth(rot, 'rightShinRotX',  crouch * 1.1, s);
@@ -607,7 +661,6 @@
                 applySmooth(rot, 'torsoRotX',     -0.05, s);
                 if (jumpT >= JUMP_DURATION * 0.25) { jumpPhase = 2; }
             } else if (jumpPhase === 2) {
-                // مرحلة الطيران: الجسم مستقيم، الأرجل مرفوعة قليلاً
                 const progress = (jumpT - JUMP_DURATION * 0.25) / (JUMP_DURATION * 0.5);
                 const heightCurve = Math.sin(progress * Math.PI);
                 const liftY = heightCurve * 1.6;
@@ -623,7 +676,6 @@
                 applySmooth(rot, 'torsoRotX',      0.0, s);
                 if (jumpT >= JUMP_DURATION * 0.75) { jumpPhase = 3; }
             } else if (jumpPhase === 3) {
-                // مرحلة الهبوط: ثني الركبتين عند الاستقبال
                 const progress = (jumpT - JUMP_DURATION * 0.75) / (JUMP_DURATION * 0.25);
                 const landY = Math.max(0, (1 - progress) * 0.4);
                 applySmooth(rot, 'charY',          landY, 0.18);
@@ -645,18 +697,16 @@
             jumpT++;
         }
 
-        // --- رمي ---
+        // --- رمي (مع قذائف دقيقة) ---
         function updateThrow() {
             const s = 0.2;
             if (throwPhase === 1) {
-                // رفع اليد اليمنى للخلف (شحن)
                 applySmooth(rot, 'rightArmRotX',  -1.4, s);
                 applySmooth(rot, 'rightArmRotZ',  -0.4, s);
                 applySmooth(rot, 'rightForearmRotX', -0.5, s);
                 applySmooth(rot, 'torsoRotX',     -0.12, s);
                 applySmooth(rot, 'leftArmRotX',    0.2, s);
                 applySmooth(rot, 'leftArmRotZ',    0.35, s);
-                // الأرجل ثابتة
                 applySmooth(rot, 'rightLegRotX',   0, s);
                 applySmooth(rot, 'leftLegRotX',    0, s);
                 applySmooth(rot, 'rightShinRotX',  0, s);
@@ -667,19 +717,17 @@
                     throwProjectileFired = false;
                 }
             } else if (throwPhase === 2) {
-                // رمي اليد اليمنى للأمام بقوة
-                const progress = throwT / THROW_RELEASE;
                 applySmooth(rot, 'rightArmRotX',   1.1, 0.45);
                 applySmooth(rot, 'rightArmRotZ',  -0.1, 0.45);
                 applySmooth(rot, 'rightForearmRotX', 0.3, 0.45);
                 applySmooth(rot, 'torsoRotX',      0.18, 0.3);
                 if (!throwProjectileFired && throwT >= 3) {
-                    // إطلاق القذيفة من موضع اليد اليمنى
+                    // حساب موضع اليد اليمنى بدقة
                     const handWorldPos = new THREE.Vector3();
-                    // تقدير موضع اليد في الفضاء العالمي
                     handWorldPos.set(1.15, 2.7 - 1.02 - 1.06, 0);
                     handWorldPos.applyMatrix4(character.matrixWorld);
-                    const dir = new THREE.Vector3(0.3, 0.4, 1).normalize();
+                    // اتجاه الرمي: للأمام والأعلى
+                    const dir = new THREE.Vector3(0.15, 0.35, 0.95).normalize();
                     spawnProjectile(handWorldPos, dir);
                     throwProjectileFired = true;
                 }
@@ -688,7 +736,6 @@
                     throwT = 0;
                 }
             } else if (throwPhase === 3) {
-                // عودة اليد اليمنى + رفع اليد اليسرى
                 applySmooth(rot, 'rightArmRotX',   0.1, s);
                 applySmooth(rot, 'rightArmRotZ',  -0.12, s);
                 applySmooth(rot, 'rightForearmRotX', 0, s);
@@ -702,7 +749,6 @@
                     throwProjectileFired = false;
                 }
             } else if (throwPhase === 4) {
-                // رمي اليد اليسرى للأمام
                 applySmooth(rot, 'leftArmRotX',    1.1, 0.45);
                 applySmooth(rot, 'leftArmRotZ',    0.1, 0.45);
                 applySmooth(rot, 'leftForearmRotX', 0.3, 0.45);
@@ -711,7 +757,7 @@
                     const handWorldPos = new THREE.Vector3();
                     handWorldPos.set(-1.15, 2.7 - 1.02 - 1.06, 0);
                     handWorldPos.applyMatrix4(character.matrixWorld);
-                    const dir = new THREE.Vector3(-0.3, 0.4, 1).normalize();
+                    const dir = new THREE.Vector3(-0.15, 0.35, 0.95).normalize();
                     spawnProjectile(handWorldPos, dir);
                     throwProjectileFired = true;
                 }
@@ -720,7 +766,6 @@
                     throwT = 0;
                 }
             } else if (throwPhase === 5) {
-                // عودة كلتا اليدين لوضعهما الطبيعي
                 applySmooth(rot, 'rightArmRotX',   0, s);
                 applySmooth(rot, 'rightArmRotZ',  -0.12, s);
                 applySmooth(rot, 'leftArmRotX',    0, s);
@@ -738,7 +783,7 @@
         }
 
         // ==========================================
-        // 12. واجهة المستخدم
+        // 10. واجهة المستخدم
         // ==========================================
         function setActiveButton(id) {
             document.querySelectorAll('.ctrl-btn').forEach(b => b.classList.remove('active'));
@@ -790,7 +835,7 @@
         });
 
         // ==========================================
-        // 13. حلقة التحريك الرئيسية
+        // 11. حلقة التحريك الرئيسية
         // ==========================================
         setActiveButton('btn-idle');
 
@@ -798,12 +843,10 @@
             requestAnimationFrame(animate);
             animTime += 0.016;
 
-            // دوران المعاينة البطيء (فقط في وضع الوقوف)
             if (currentState === 'idle') {
                 character.rotation.y += 0.0028;
             }
 
-            // تحديث الحركة الحالية
             switch (currentState) {
                 case 'idle':  updateIdle();  break;
                 case 'run':   updateRun();   break;
@@ -811,13 +854,11 @@
                 case 'throw': updateThrow(); break;
             }
 
-            // تطبيق الدوران على المجموعات
             applyRotations();
 
-            // تحديث القذائف
             updateProjectiles();
+            updateParticles();
 
-            // نبض خفيف على حلقات الكتف
             const pulse = Math.sin(animTime * 1.8) * 0.008;
             rightShoulderCap.scale.setScalar(1 + pulse * 0.2);
             leftShoulderCap.scale.setScalar(1 + pulse * 0.2);
@@ -834,7 +875,7 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        console.log('✅ المحارب المدرع — حركات فيزيائية: وقوف / ركض / قفز / رمي');
+        console.log('✅ المحارب المدرع — حركات محسّنة: ركض بثني اليدين + رمي بقذائف دقيقة + انفجارات جزيئية');
     </script>
 </body>
 </html>
