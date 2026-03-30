@@ -3,130 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المحارب الآلي - الإصدار المطور</title>
+    <title>المحارب المدرع - تباين عالٍ</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #0a0a12; }
-        #ui {
-            position: absolute; top: 20px; left: 20px;
-            color: #00f2ff; font-family: 'Courier New', monospace;
-            pointer-events: none; text-shadow: 0 0 5px #00f2ff;
+        body { margin: 0; overflow: hidden; background-color: #000000; }
+        #indicator {
+            position: absolute; top: 10px; left: 10px;
+            color: #fff; font-family: monospace; background: rgba(255,0,0,0.5);
+            padding: 5px 10px; border-radius: 4px; pointer-events: none;
         }
     </style>
 </head>
 <body>
-    <div id="ui">
-        <h2>CYBER-SENTINEL v2.0</h2>
-        <p>الحالة: نشط | النظام: مستقر</p>
-    </div>
+    <div id="indicator">النظام: تباين عالي (High Contrast Mode)</div>
 
     <script type="module">
-        import * as THREE from 'https://cdn.skypack.dev/three@0.128.0';
-        import { OrbitControls } from 'https://cdn.skypack.dev/three@0.128.0/examples/jsm/controls/OrbitControls.js';
+        import * as THREE from 'https://cdn.skypack.dev/three@0.132.2';
+        import { OrbitControls } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/controls/OrbitControls.js';
 
-        // 1. إعداد المشهد
+        // 1. إعداد المشهد بخلفية رمادية فاتحة لتمييز الألوان الداكنة
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x05050a);
+        scene.background = new Color(0x111111);
         
-        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(5, 4, 8);
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 3, 8);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = true;
         document.body.appendChild(renderer.domElement);
 
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.target.set(0, 2, 0);
 
-        // 2. الإضاءة (إضاءة سينمائية)
-        const light1 = new THREE.DirectionalLight(0xffffff, 1);
-        light1.position.set(5, 10, 5);
-        light1.castShadow = true;
-        scene.add(light1);
+        // 2. إضاءة قوية جداً (ثلاثية النقاط)
+        const lightFront = new THREE.DirectionalLight(0xffffff, 1.5);
+        lightFront.position.set(0, 5, 5);
+        scene.add(lightFront);
 
-        const ambient = new THREE.AmbientLight(0x4040ff, 0.3);
-        scene.add(ambient);
+        const lightBack = new THREE.DirectionalLight(0xff0000, 1); // ضوء خلفي أحمر للتباين
+        lightBack.position.set(0, 5, -5);
+        scene.add(lightBack);
 
-        // 3. المواد (Materials)
-        const matArmor = new THREE.MeshStandardMaterial({ color: 0x223344, metalness: 0.8, roughness: 0.2 });
-        const matGold = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.9, roughness: 0.1 });
-        const matGlow = new THREE.MeshBasicMaterial({ color: 0x00f2ff });
+        scene.add(new THREE.AmbientLight(0xffffff, 0.4));
 
-        // 4. بناء الشخصية (Group)
-        const robot = new THREE.Group();
-        scene.add(robot);
+        // 3. المواد بألوان متعاكسة (الأبيض والأسود والفسفوري)
+        const matMain = new THREE.MeshStandardMaterial({ color: 0xEEEEEE, metalness: 0.2, roughness: 0.1 }); // درع أبيض
+        const matJoint = new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.9 }); // مفاصل سوداء
+        const matGlow = new THREE.MeshBasicMaterial({ color: 0x33FF00 }); // عيون خضراء فسفورية
 
-        // الجسد
-        const body = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.3, 1.2, 8), matArmor);
-        body.position.y = 2.2;
-        robot.add(body);
+        const character = new THREE.Group();
+        scene.add(character);
 
-        // الرأس مع "عين" مضيئة
-        const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.4, 0.5), matArmor);
+        // --- الجذع (ضخم ومدمج) ---
+        const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.75, 1, 4, 12), matMain);
+        torso.position.y = 2;
+        character.add(torso);
+
+        // الصدر (قطعة سوداء مدمجة للتباين)
+        const chest = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.4, 0.4), matJoint);
+        chest.position.set(0, 2.2, 0.5);
+        character.add(chest);
+
+        // --- الرأس ---
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 16), matMain);
         head.position.y = 3.1;
-        robot.add(head);
-        
-        const eye = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.1, 0.1), matGlow);
-        eye.position.set(0, 3.15, 0.25);
-        robot.add(eye);
+        character.add(head);
 
-        // الأذرع (وضعية قتالية)
-        function addArm(side) {
-            const armGroup = new THREE.Group();
+        const visor = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.1, 0.2), matGlow);
+        visor.position.set(0, 3.2, 0.35);
+        character.add(visor);
+
+        // --- الأذرع (تداخل عميق) ---
+        function createArm(side) {
+            const arm = new THREE.Group();
             
-            // كتف
-            const shoulder = new THREE.Mesh(new THREE.SphereGeometry(0.3, 16, 16), matGold);
-            armGroup.add(shoulder);
+            const shoulder = new THREE.Mesh(new THREE.SphereGeometry(0.4, 12, 12), matJoint);
+            arm.add(shoulder);
 
-            // عضد
-            const upper = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.8), matArmor);
-            upper.position.y = -0.4;
-            armGroup.add(upper);
+            const forearm = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.2, 1.2), matMain);
+            forearm.position.y = -0.7;
+            forearm.rotation.z = side * 0.2;
+            arm.add(forearm);
 
-            // ساعد
-            const lower = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.12, 0.8), matArmor);
-            lower.position.set(0, -1, 0.2);
-            lower.rotation.x = -0.8; // ثني الكوع
-            armGroup.add(lower);
+            const hand = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.35, 0.35), matJoint);
+            hand.position.y = -1.4;
+            arm.add(hand);
 
-            armGroup.position.set(side * 0.8, 2.7, 0);
-            robot.add(armGroup);
+            arm.position.set(side * 0.8, 2.5, 0); // تداخل مع الجذع
+            return arm;
         }
-        addArm(1);  // اليمين
-        addArm(-1); // اليسار
+        character.add(createArm(1));
+        character.add(createArm(-1));
 
-        // الأرجل
-        function addLeg(side) {
-            const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.15, 1.5), matArmor);
-            leg.position.set(side * 0.4, 0.75, 0);
-            robot.add(leg);
-            
-            const foot = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.2, 0.6), matArmor);
-            foot.position.set(side * 0.4, 0.1, 0.2);
-            robot.add(foot);
+        // --- الأرجل (قواعد صلبة) ---
+        function createLeg(side) {
+            const leg = new THREE.Group();
+            const thigh = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 1.2), matMain);
+            thigh.position.y = -0.6;
+            leg.add(thigh);
+
+            const foot = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.3, 1), matJoint);
+            foot.position.set(0, -1.3, 0.2);
+            leg.add(foot);
+
+            leg.position.set(side * 0.45, 1.3, 0);
+            return leg;
         }
-        addLeg(1);
-        addLeg(-1);
+        character.add(createLeg(1));
+        character.add(createLeg(-1));
 
-        // أرضية بسيطة
-        const grid = new THREE.GridHelper(10, 20, 0x00f2ff, 0x222244);
-        scene.add(grid);
-
-        // 5. حلقة التحريك
+        // 4. حلقة التحريك والتحديث
         function animate() {
             requestAnimationFrame(animate);
-            robot.rotation.y += 0.005; // دوران بطيء للشخصية
+            character.rotation.y += 0.01; // دوران مستمر لرؤية الأبعاد
             controls.update();
             renderer.render(scene, camera);
         }
-        animate();
 
-        // استجابة الشاشة
+        // معالجة Resize للتأكد من عدم اختفاء المشهد عند تكبير النافذة
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
+
+        animate();
     </script>
 </body>
 </html>
