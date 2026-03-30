@@ -6,19 +6,66 @@
     <title>المحارب المدرع - فيزياء احترافية</title>
     <style>
         * { box-sizing: border-box; }
-        body { margin: 0; overflow: hidden; background: #fff; font-family: sans-serif; }
-        #info-panel { position: absolute; top: 20px; left: 20px; background: rgba(255, 255, 255, 0.9); padding: 15px; border-radius: 10px; border-left: 5px solid #d35400; z-index: 100; direction: rtl; }
-        #controls-panel { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 100; }
-        .ctrl-btn { background: #1e2a3a; color: #fff; border: none; border-radius: 8px; padding: 12px 20px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .ctrl-btn:hover { background: #d35400; }
-        .ctrl-btn.active { background: #d35400; box-shadow: 0 0 15px rgba(211, 84, 0, 0.5); }
-        #state-label { position: absolute; top: 20px; right: 20px; background: #1e2a3a; color: #f39c12; padding: 10px 20px; border-radius: 8px; font-weight: bold; z-index: 100; }
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: #fff;
+        }
+        #info-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.92);
+            padding: 12px 20px;
+            border-radius: 12px;
+            border-left: 5px solid #d35400;
+            z-index: 100;
+            direction: rtl;
+        }
+        #controls-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 100;
+        }
+        .ctrl-btn {
+            background: #1e2a3a;
+            color: #fff;
+            border: 2px solid transparent;
+            border-radius: 14px;
+            padding: 10px 22px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .ctrl-btn.active {
+            background: #d35400;
+            border-color: #f39c12;
+            box-shadow: 0 0 15px rgba(211, 84, 0, 0.4);
+        }
+        #state-label {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #1e2a3a;
+            color: #f39c12;
+            padding: 8px 18px;
+            border-radius: 10px;
+            font-weight: 700;
+            direction: rtl;
+            z-index: 100;
+        }
     </style>
 </head>
 <body>
     <div id="info-panel">
-        <h3 style="margin:0">⚔️ HEAVY VANGUARD</h3>
-        <p style="margin:5px 0 0; font-size:12px;">محاكاة فيزيائية متطورة • حركية الأطراف المتعددة</p>
+        <h1 style="margin:0; font-size:1.2rem; color:#c4450c;">⚔️ HEAVY VANGUARD</h1>
+        <p style="margin:5px 0 0; font-size:0.8rem;">محاكاة فيزيائية: رمي دقيق • ركض ثقيل • هبوط ناعم</p>
     </div>
     <div id="state-label">🧍 وقوف</div>
     <div id="controls-panel">
@@ -36,163 +83,193 @@
         import * as THREE from 'three';
         import { OrbitControls } from 'https://unpkg.com/three@0.128.0/examples/jsm/controls/OrbitControls.js';
 
-        // الإعدادات الأساسية
+        // 1. المشهد والإضاءة (نفس الإعدادات الأصلية)
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xf0f2f5);
+        scene.background = new THREE.Color(0xffffff);
         const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(8, 5, 12);
+        camera.position.set(7, 4, 10);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
         document.body.appendChild(renderer.domElement);
         const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
+        controls.target.set(0, 2, 0);
 
-        // الإضاءة
-        const sun = new THREE.DirectionalLight(0xffffff, 1.2);
-        sun.position.set(5, 10, 7);
-        sun.castShadow = true;
-        scene.add(sun);
-        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        const mainLight = new THREE.DirectionalLight(0xffffff, 1.0);
+        mainLight.position.set(5, 10, 7);
+        mainLight.castShadow = true;
+        scene.add(mainLight, new THREE.AmbientLight(0xffffff, 0.6));
 
-        // المواد
-        const matArmor = new THREE.MeshStandardMaterial({ color: 0x2c3e50, metalness: 0.8, roughness: 0.2 });
-        const matJoint = new THREE.MeshStandardMaterial({ color: 0xd35400, metalness: 0.5 });
-        const matGlow  = new THREE.MeshStandardMaterial({ color: 0x00d4ff, emissive: 0x00d4ff, emissiveIntensity: 2 });
+        // 2. المواد (نفس الألوان الأصلية)
+        const matArmor = new THREE.MeshStandardMaterial({ color: 0x2c3e50, metalness: 0.85, roughness: 0.2 });
+        const matJoint = new THREE.MeshStandardMaterial({ color: 0xe67e22, metalness: 0.6 });
+        const matSoftJoint = new THREE.MeshStandardMaterial({ color: 0xbc6c25, metalness: 0.5 });
+        const matProjectile = new THREE.MeshStandardMaterial({ color: 0xff3300, emissive: 0xff1100, emissiveIntensity: 0.8 });
 
-        // بناء الشخصية (هيكل ميكانيكي)
+        // 3. بناء الشخصية (الحفاظ على الهيكل الأصلي بالكامل)
         const character = new THREE.Group();
         scene.add(character);
 
-        const torso = new THREE.Group();
-        character.add(torso);
-        const body = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.5, 1.2, 16), matArmor);
-        body.position.y = 2.0; body.castShadow = true;
-        torso.add(body);
+        const torsoGroup = new THREE.Group();
+        character.add(torsoGroup);
 
-        const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), matArmor);
-        head.position.y = 2.8; head.castShadow = true;
-        torso.add(head);
+        // الجذع والدروع
+        const upperT = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.5, 1.0, 24), matArmor);
+        upperT.position.y = 2.4; upperT.castShadow = true;
+        torsoGroup.add(upperT);
+        
+        const lowerT = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.6, 0.8, 24), matArmor);
+        lowerT.position.y = 1.6; lowerT.castShadow = true;
+        torsoGroup.add(lowerT);
 
-        // وظيفة بناء الأطراف
-        function createLimb(x, y, isArm) {
-            const group = new THREE.Group();
-            group.position.set(x, y, 0);
-            const upper = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.15, 0.8), matArmor);
-            upper.position.y = -0.4;
-            group.add(upper);
+        // الرأس
+        const headGroup = new THREE.Group();
+        torsoGroup.add(headGroup);
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.55, 0.55), matArmor);
+        head.position.y = 3.25; head.castShadow = true;
+        headGroup.add(head);
 
-            const lowerGroup = new THREE.Group();
-            lowerGroup.position.y = -0.8;
-            const joint = new THREE.Mesh(new THREE.SphereGeometry(0.18), matJoint);
-            lowerGroup.add(joint);
-            const lower = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.12, 0.8), matArmor);
-            lower.position.y = -0.4;
-            lowerGroup.add(lower);
-            
-            group.add(lowerGroup);
-            return { main: group, lower: lowerGroup };
+        // الأذرع
+        function buildArm(side) {
+            const arm = new THREE.Group();
+            const bicep = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.2, 0.85), matArmor);
+            bicep.position.y = -0.55; arm.add(bicep);
+            const fore = new THREE.Group();
+            fore.position.y = -1.02;
+            const forearm = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.22, 0.9), matArmor);
+            forearm.position.y = -0.48; fore.add(forearm);
+            const hand = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.28, 0.32), matJoint);
+            hand.position.y = -1.06; fore.add(hand);
+            arm.add(fore);
+            arm.position.set(side * 1.15, 2.7, 0);
+            return { arm, fore };
+        }
+        const rArmData = buildArm(1); const lArmData = buildArm(-1);
+        torsoGroup.add(rArmData.arm, lArmData.arm);
+
+        // الأرجل
+        function buildLeg(side) {
+            const leg = new THREE.Group();
+            const thigh = new THREE.Mesh(new THREE.CylinderGeometry(0.37, 0.28, 1.1), matArmor);
+            thigh.position.y = -0.65; leg.add(thigh);
+            const shinG = new THREE.Group();
+            shinG.position.y = -1.22;
+            const shin = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.22, 1.1), matArmor);
+            shin.position.y = -0.56; shinG.add(shin);
+            const foot = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.26, 0.95), matArmor);
+            foot.position.set(0, -1.22, 0.22); shinG.add(foot);
+            leg.add(shinG);
+            leg.position.set(side * 0.55, 1.3, 0);
+            return { leg, shinG };
+        }
+        const rLegData = buildLeg(1); const lLegData = buildLeg(-1);
+        character.add(rLegData.leg, lLegData.leg);
+
+        // 4. نظام القذائف
+        const projectiles = [];
+        function fire(pos, dir) {
+            const p = new THREE.Mesh(new THREE.SphereGeometry(0.12), matProjectile);
+            p.position.copy(pos);
+            scene.add(p);
+            projectiles.push({ mesh: p, vel: dir.multiplyScalar(0.25), life: 0 });
         }
 
-        const rArm = createLimb(0.9, 2.5, true);
-        const lArm = createLimb(-0.9, 2.5, true);
-        const rLeg = createLimb(0.4, 1.4, false);
-        const lLeg = createLimb(-0.4, 1.4, false);
-
-        torso.add(rArm.main, lArm.main);
-        character.add(rLeg.main, lLeg.main);
-
-        // الأرضية
-        const grid = new THREE.GridHelper(20, 20);
-        grid.position.y = -0.1;
-        scene.add(grid);
-
-        // نظام التحريك الفيزيائي
+        // 5. محرك الحركات الفيزيائي
         let state = 'idle';
         let time = 0;
+        const rot = { tX:0, rAX:0, lAX:0, rFX:0, lFX:0, rLX:0, lLX:0, rSX:0, lSX:0, y:0 };
         const lerp = (a, b, t) => a + (b - a) * t;
+
+        function updateAnim() {
+            time += 0.016;
+            const s = 0.15; // سرعة الانتقال السلس
+
+            if (state === 'idle') {
+                rot.y = Math.sin(time * 2) * 0.01; // تنفس
+                rot.tX = lerp(rot.tX, 0, s);
+                rot.rAX = lerp(rot.rAX, 0.1, s);
+                rot.lAX = lerp(rot.lAX, 0.1, s);
+                rot.rLX = lerp(rot.rLX, 0, s);
+                rot.lLX = lerp(rot.lLX, 0, s);
+                rot.rSX = lerp(rot.rSX, 0, s);
+                rot.lSX = lerp(rot.lSX, 0, s);
+                character.rotation.y += 0.003;
+            } 
+            else if (state === 'run') {
+                const cycle = time * 12;
+                rot.y = Math.abs(Math.sin(cycle * 0.5)) * 0.15; // قفزة الركض
+                rot.tX = 0.15 + Math.sin(cycle * 0.5) * 0.05; // ميلان للأمام
+                
+                rot.rLX = Math.sin(cycle * 0.5) * 0.7;
+                rot.lLX = Math.sin(cycle * 0.5 + Math.PI) * 0.7;
+                
+                // الركبة تنثني فقط عند العودة للخلف (فيزياء حقيقية)
+                rot.rSX = Math.max(0, -Math.sin(cycle * 0.5 - 0.5)) * 0.8;
+                rot.lSX = Math.max(0, -Math.sin(cycle * 0.5 + Math.PI - 0.5)) * 0.8;
+                
+                rot.rAX = -Math.sin(cycle * 0.5) * 0.6;
+                rot.lAX = Math.sin(cycle * 0.5) * 0.6;
+                rot.rFX = 0.6; rot.lFX = 0.6;
+            }
+            else if (state === 'throw') {
+                const t = (time * 5) % 10;
+                if (t < 4) { // شحن الرمية
+                    rot.rAX = lerp(rot.rAX, -2.2, 0.2);
+                    rot.rFX = lerp(rot.rFX, -0.8, 0.2);
+                    rot.tX = -0.2;
+                } else if (t < 6) { // الإطلاق
+                    rot.rAX = lerp(rot.rAX, 1.2, 0.5);
+                    rot.rFX = lerp(rot.rFX, 0.5, 0.5);
+                    rot.tX = 0.3;
+                    if (t > 4.2 && t < 4.5) { // توقيت خروج القذيفة
+                        const wp = new THREE.Vector3();
+                        rArmData.fore.getWorldPosition(wp);
+                        fire(wp, new THREE.Vector3(0, 0.4, 1).normalize());
+                    }
+                } else { state = 'idle'; }
+            }
+            else if (state === 'jump') {
+                const jt = (time * 3) % Math.PI;
+                rot.y = Math.sin(jt) * 2;
+                rot.rSX = 0.8; rot.lSX = 0.8; // وضعية الانكماش
+                if (jt > 2.8) state = 'idle';
+            }
+
+            // تطبيق القيم على الموديل
+            torsoGroup.rotation.x = rot.tX;
+            rArmData.arm.rotation.x = rot.rAX;
+            lArmData.arm.rotation.x = rot.lAX;
+            rArmData.fore.rotation.x = rot.rFX;
+            lArmData.fore.rotation.x = rot.lFX;
+            rLegData.leg.rotation.x = rot.rLX;
+            lLegData.leg.rotation.x = rot.lLX;
+            rLegData.shinG.rotation.x = rot.rSX;
+            lLegData.shinG.rotation.x = rot.lSX;
+            character.position.y = rot.y;
+        }
 
         function animate() {
             requestAnimationFrame(animate);
-            time += 0.02;
-            const speed = 0.15; // سرعة الانتقال بين الحالات
-
-            if (state === 'idle') {
-                const breathing = Math.sin(time * 1.5) * 0.05;
-                torso.position.y = lerp(torso.position.y, breathing, speed);
-                rArm.main.rotation.x = lerp(rArm.main.rotation.x, 0.2, speed);
-                lArm.main.rotation.x = lerp(lArm.main.rotation.x, 0.2, speed);
-                rLeg.main.rotation.x = lerp(rLeg.main.rotation.x, 0, speed);
-                lLeg.main.rotation.x = lerp(lLeg.main.rotation.x, 0, speed);
-                rLeg.lower.rotation.x = lerp(rLeg.lower.rotation.x, 0, speed);
-                lLeg.lower.rotation.x = lerp(lLeg.lower.rotation.x, 0, speed);
-                character.rotation.y += 0.005;
-            } 
-            
-            else if (state === 'run') {
-                const runSpeed = 8;
-                const cycle = time * runSpeed;
-                
-                // حركة الجذع (ميلان للأمام مع ارتداد)
-                torso.rotation.x = 0.2 + Math.sin(cycle * 2) * 0.05;
-                torso.position.y = Math.abs(Math.sin(cycle)) * 0.2;
-                
-                // الأرجل (حركة دائرية فيزيائية)
-                rLeg.main.rotation.x = Math.sin(cycle) * 0.8;
-                lLeg.main.rotation.x = Math.sin(cycle + Math.PI) * 0.8;
-                
-                // ثني الركبة الطبيعي (فقط عند العودة للخلف)
-                rLeg.lower.rotation.x = Math.max(0, Math.sin(cycle - 1.5)) * 1.2;
-                lLeg.lower.rotation.x = Math.max(0, Math.sin(cycle + Math.PI - 1.5)) * 1.2;
-                
-                // الأذرع (تأرجح عكسي مع ثني المرفق)
-                rArm.main.rotation.x = Math.sin(cycle + Math.PI) * 0.6;
-                lArm.main.rotation.x = Math.sin(cycle) * 0.6;
-                rArm.lower.rotation.x = -0.8;
-                lArm.lower.rotation.x = -0.8;
-            }
-
-            else if (state === 'jump') {
-                const jumpTime = (time * 5) % Math.PI;
-                const h = Math.sin(jumpTime) * 2;
-                character.position.y = h;
-                
-                // وضعية الانكماش في الهواء
-                const tuck = h > 0.5 ? 0.8 : 0;
-                rLeg.main.rotation.x = lerp(rLeg.main.rotation.x, -tuck, 0.2);
-                lLeg.main.rotation.x = lerp(lLeg.main.rotation.x, -tuck, 0.2);
-                rLeg.lower.rotation.x = lerp(rLeg.lower.rotation.x, tuck * 1.5, 0.2);
-                
-                if (h < 0.1 && time > 0.5) state = 'idle';
-            }
-
-            else if (state === 'throw') {
-                const throwCycle = (time * 4) % 10;
-                if (throwCycle < 3) { // الاستعداد (Wind-up)
-                    rArm.main.rotation.x = lerp(rArm.main.rotation.x, -2, 0.1);
-                    torso.rotation.y = lerp(torso.rotation.y, 0.5, 0.1);
-                } else if (throwCycle < 5) { // الإطلاق (Release)
-                    rArm.main.rotation.x = lerp(rArm.main.rotation.x, 1.5, 0.4);
-                    torso.rotation.y = lerp(torso.rotation.y, -0.3, 0.4);
-                } else {
-                    state = 'idle';
-                }
-            }
-
+            updateAnim();
+            projectiles.forEach((p, i) => {
+                p.vel.y -= 0.008; // جاذبية
+                p.mesh.position.add(p.vel);
+                if (p.mesh.position.y < -1) { scene.remove(p.mesh); projectiles.splice(i, 1); }
+            });
             controls.update();
             renderer.render(scene, camera);
         }
 
-        // التحكم
-        const setBtn = (id) => {
-            document.querySelectorAll('.ctrl-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-        };
-
-        document.getElementById('btn-idle').onclick = () => { state = 'idle'; setBtn('btn-idle'); document.getElementById('state-label').innerText = '🧍 وقوف'; };
-        document.getElementById('btn-run').onclick = () => { state = 'run'; setBtn('btn-run'); document.getElementById('state-label').innerText = '🏃 ركض'; };
-        document.getElementById('btn-jump').onclick = () => { state = 'jump'; time = 0; setBtn('btn-jump'); document.getElementById('state-label').innerText = '⬆️ قفز'; };
-        document.getElementById('btn-throw').onclick = () => { state = 'throw'; time = 0; setBtn('btn-throw'); document.getElementById('state-label').innerText = '🎯 رمي'; };
+        // إعداد الأزرار
+        const btns = { idle: 'btn-idle', run: 'btn-run', jump: 'btn-jump', throw: 'btn-throw' };
+        Object.keys(btns).forEach(k => {
+            document.getElementById(btns[k]).onclick = () => {
+                state = k; time = 0;
+                document.querySelectorAll('.ctrl-btn').forEach(b => b.classList.remove('active'));
+                document.getElementById(btns[k]).classList.add('active');
+                document.getElementById('state-label').innerText = document.getElementById(btns[k]).innerText;
+            };
+        });
 
         animate();
         window.onresize = () => {
