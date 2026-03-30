@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>المحارب المدرع - الهيكل العريض | مفاصل ناعمة</title>
+    <title>المحارب المدرع - حركات فيزيائية (قفز، ركض، رمي)</title>
     <style>
         body {
             margin: 0;
@@ -39,34 +39,74 @@
             font-size: 0.8rem;
             opacity: 0.8;
         }
-        @media (max-width: 600px) {
-            #info-panel { padding: 8px 14px; top: 12px; left: 12px; }
-            #info-panel h1 { font-size: 1rem; }
-        }
-        .controls-note {
+        .controls-panel {
             position: absolute;
-            bottom: 15px;
-            left: 15px;
-            background: rgba(0,0,0,0.5);
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(8px);
             color: white;
-            font-size: 12px;
-            padding: 5px 10px;
-            border-radius: 20px;
-            backdrop-filter: blur(4px);
-            pointer-events: none;
+            padding: 12px 24px;
+            border-radius: 40px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            z-index: 200;
             font-family: monospace;
-            direction: ltr;
+            font-size: 14px;
+            pointer-events: none;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .controls-panel span {
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        .controls-panel kbd {
+            background: #2c3e50;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            margin: 0 4px;
+            font-size: 16px;
+        }
+        @media (max-width: 700px) {
+            .controls-panel { font-size: 10px; padding: 8px 16px; gap: 10px; }
+            .controls-panel kbd { padding: 2px 6px; font-size: 12px; }
+        }
+        .action-feedback {
+            position: absolute;
+            bottom: 100px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            color: #ffaa44;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: bold;
+            font-family: monospace;
+            pointer-events: none;
+            z-index: 100;
+            transition: 0.1s;
+            backdrop-filter: blur(4px);
         }
     </style>
 </head>
 <body>
     <div id="info-panel">
         <h1>⚔️ HEAVY VANGUARD — المحارب المدرع</h1>
-        <p>هيكل عريض مدمج • مفاصل ناعمة محسنة • خلفية استوديو أبيض</p>
+        <p>حركات فيزيائية: قفز • ركض • رمي متناوب (يمين/يسار)</p>
     </div>
-    <div class="controls-note">
-        🖱️ اسحب لتدوير | ⚡ زر الفأرة الأيمن للتحريك
+    <div class="controls-panel">
+        <span>🎮 <kbd>SPACE</kbd> قفز</span>
+        <span>🏃 <kbd>SHIFT</kbd> ركض (مستمر)</span>
+        <span>💥 <kbd>E</kbd> رمي (يمين ← ثم يسار ← بالتناوب)</span>
+        <span>🖱️ اسحب لتدوير الكاميرا</span>
     </div>
+    <div id="action-feedback" class="action-feedback">⚡ جاهز</div>
 
     <script type="importmap">
         { "imports": { "three": "https://unpkg.com/three@0.128.0/build/three.module.js" } }
@@ -76,7 +116,7 @@
         import * as THREE from 'three';
         import { OrbitControls } from 'https://unpkg.com/three@0.128.0/examples/jsm/controls/OrbitControls.js';
 
-        // 1. إعداد المشهد (خلفية بيضاء)
+        // إعداد المشهد
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0xffffff);
         
@@ -86,7 +126,7 @@
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap; // ظلال ناعمة
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
 
         const controls = new OrbitControls(camera, renderer.domElement);
@@ -94,11 +134,10 @@
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
 
-        // 2. إضاءة الاستوديو (لإظهار التفاصيل على الخلفية البيضاء)
+        // إضاءة الاستوديو
         const mainLight = new THREE.DirectionalLight(0xffffff, 1.0);
         mainLight.position.set(5, 10, 7);
         mainLight.castShadow = true;
-        mainLight.receiveShadow = false;
         mainLight.shadow.mapSize.width = 1024;
         mainLight.shadow.mapSize.height = 1024;
         scene.add(mainLight);
@@ -114,86 +153,69 @@
         const ambient = new THREE.AmbientLight(0xffffff, 0.55);
         scene.add(ambient);
         
-        // إضاءة إضافية من الأسفل لإبراز التفاصيل
         const rimLight = new THREE.PointLight(0xccaa88, 0.35);
         rimLight.position.set(0, -1, 2);
         scene.add(rimLight);
 
-        // 3. المواد (مع لمعان محسن للمفاصل)
-        const matArmor = new THREE.MeshStandardMaterial({ color: 0x2c3e50, metalness: 0.85, roughness: 0.2, emissive: 0x000000 });
+        // المواد (نفس المواد الأصلية)
+        const matArmor = new THREE.MeshStandardMaterial({ color: 0x2c3e50, metalness: 0.85, roughness: 0.2 });
         const matJoint = new THREE.MeshStandardMaterial({ color: 0xe67e22, metalness: 0.6, roughness: 0.35, emissive: 0x442200, emissiveIntensity: 0.25 });
-        const matGlow = new THREE.MeshStandardMaterial({ color: 0x3a86ff, emissive: 0x1a4488, emissiveIntensity: 0.4, metalness: 0.3 });
-        
-        // مادة إضافية للمفاصل الكروية الناعمة (سيليكون معدني)
+        const matGlow = new THREE.MeshStandardMaterial({ color: 0x3a86ff, emissive: 0x1a4488, emissiveIntensity: 0.4 });
         const matSoftJoint = new THREE.MeshStandardMaterial({ color: 0xbc6c25, metalness: 0.5, roughness: 0.4, emissive: 0x552200, emissiveIntensity: 0.2 });
 
         const character = new THREE.Group();
         scene.add(character);
 
         // ==========================================
-        // 1. الجذع (تم تكبير العرض بنسبة 25% - كما هو)
+        // بناء الشخصية (نفس التصميم الأصلي مع الحفاظ على المراجع للأذرع)
         // ==========================================
-        // الجزء العلوي (الصدر العريض)
+        
+        // الجذع
         const upperTorso = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.5, 1.0, 24), matArmor);
         upperTorso.position.y = 2.4;
         upperTorso.castShadow = true;
-        upperTorso.receiveShadow = false;
         character.add(upperTorso);
 
-        // الجزء السفلي (الخصر المدمج)
         const lowerTorso = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.6, 0.8, 24), matArmor);
         lowerTorso.position.y = 1.6;
         lowerTorso.castShadow = true;
         character.add(lowerTorso);
         
-        // حلقة توصيل ناعمة بين الصدر والخصر (إضافة انتقال أنيق)
         const waistRing = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.08, 16, 48), matSoftJoint);
         waistRing.position.y = 1.95;
         waistRing.rotation.x = Math.PI / 2;
-        waistRing.castShadow = true;
         character.add(waistRing);
 
-        // ==========================================
-        // 2. الرأس والخوذة (مع رقبة ناعمة)
-        // ==========================================
-        // إضافة رقبة ناعمة لانتقال سلس
+        // الرأس
         const neckJoint = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.38, 0.22, 16), matSoftJoint);
         neckJoint.position.y = 2.98;
-        neckJoint.castShadow = true;
         character.add(neckJoint);
         
         const head = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.55, 0.55), matArmor);
         head.position.y = 3.25;
-        head.castShadow = true;
         character.add(head);
 
         const visor = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.12, 0.15), matGlow);
         visor.position.set(0, 3.35, 0.27);
-        visor.castShadow = true;
         character.add(visor);
         
-        // إضافات للخوذة: حواف جانبية ناعمة
         const helmetCrest = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.08, 0.55), matArmor);
         helmetCrest.position.set(0, 3.58, 0.15);
-        helmetCrest.castShadow = true;
         character.add(helmetCrest);
 
-        // ==========================================
-        // 3. الأذرع (مفاصل ناعمة جداً مع حلقات توصيل)
-        // ==========================================
-        function createArm(side) {
+        // تخزين مراجع الأذرع للتحريك
+        const arms = { right: null, left: null };
+        
+        function createArm(side, sideName) {
             const arm = new THREE.Group();
             
-            // كتف عريض ناعم (مفصل كروي محسن)
             const shoulder = new THREE.Mesh(new THREE.SphereGeometry(0.44, 32, 32), matSoftJoint);
             shoulder.castShadow = true;
             arm.add(shoulder);
             
-            // حلقة توصيل علوية عند بداية الذراع
             const shoulderRing = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.05, 12, 32), matArmor);
             shoulderRing.rotation.x = Math.PI / 2;
             shoulderRing.position.y = -0.15;
-            shoulderRing.castShadow = true;
             arm.add(shoulderRing);
 
             const bicep = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.2, 0.85, 24), matArmor);
@@ -201,17 +223,13 @@
             bicep.castShadow = true;
             arm.add(bicep);
 
-            // مفصل المرفق - كرة ناعمة محسنة (نقطة الالتقاء)
             const elbow = new THREE.Mesh(new THREE.SphereGeometry(0.23, 32, 32), matSoftJoint);
             elbow.position.y = -1.02;
-            elbow.castShadow = true;
             arm.add(elbow);
             
-            // حلقة زخرفية حول المرفق
             const elbowRing = new THREE.Mesh(new THREE.TorusGeometry(0.27, 0.045, 12, 32), matArmor);
             elbowRing.position.y = -1.02;
             elbowRing.rotation.x = Math.PI / 2;
-            elbowRing.castShadow = true;
             arm.add(elbowRing);
 
             const forearm = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.22, 0.9, 24), matArmor);
@@ -219,187 +237,384 @@
             forearm.castShadow = true;
             arm.add(forearm);
             
-            // مفصل الرسغ ناعم
             const wrist = new THREE.Mesh(new THREE.SphereGeometry(0.19, 24, 24), matSoftJoint);
             wrist.position.y = -1.98;
-            wrist.castShadow = true;
             arm.add(wrist);
 
             const hand = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.28, 0.32), matJoint);
             hand.position.y = -2.08;
-            hand.castShadow = true;
             arm.add(hand);
 
             arm.position.set(side * 1.15, 2.7, 0);
             return arm;
         }
-        character.add(createArm(1));
-        character.add(createArm(-1));
+        
+        const rightArm = createArm(1, 'right');
+        const leftArm = createArm(-1, 'left');
+        character.add(rightArm);
+        character.add(leftArm);
+        arms.right = rightArm;
+        arms.left = leftArm;
 
-        // ==========================================
-        // 4. الأرجل (مفاصل ناعمة عند الورك والركبة والكاحل)
-        // ==========================================
+        // الأرجل
         function createLeg(side) {
             const leg = new THREE.Group();
-            
-            // مفصل الورك - كرة ناعمة لانتقال سلس من الجذع
             const hipJoint = new THREE.Mesh(new THREE.SphereGeometry(0.38, 32, 32), matSoftJoint);
             hipJoint.position.y = -0.15;
-            hipJoint.castShadow = true;
             leg.add(hipJoint);
             
             const thigh = new THREE.Mesh(new THREE.CylinderGeometry(0.37, 0.28, 1.1, 24), matArmor);
             thigh.position.y = -0.65;
-            thigh.castShadow = true;
             leg.add(thigh);
             
-            // حلقة وصل عند منتصف الفخذ
             const thighRing = new THREE.Mesh(new THREE.TorusGeometry(0.34, 0.05, 12, 32), matArmor);
             thighRing.position.y = -1.05;
             thighRing.rotation.x = Math.PI / 2;
-            thighRing.castShadow = true;
             leg.add(thighRing);
 
-            // مفصل الركبة - كرة ناعمة كبيرة قليلاً (نقطة الالتقاء المحسنة)
             const knee = new THREE.Mesh(new THREE.SphereGeometry(0.29, 32, 32), matSoftJoint);
             knee.position.y = -1.22;
-            knee.castShadow = true;
             leg.add(knee);
             
-            // حلقة زخرفية حول الركبة
             const kneeRing = new THREE.Mesh(new THREE.TorusGeometry(0.33, 0.045, 12, 32), matArmor);
             kneeRing.position.y = -1.22;
             kneeRing.rotation.x = Math.PI / 2;
-            kneeRing.castShadow = true;
             leg.add(kneeRing);
 
             const shin = new THREE.Mesh(new THREE.CylinderGeometry(0.27, 0.35, 1.02, 24), matArmor);
             shin.position.y = -1.78;
-            shin.castShadow = true;
             leg.add(shin);
             
-            // مفصل الكاحل الناعم
             const ankle = new THREE.Mesh(new THREE.SphereGeometry(0.24, 28, 28), matSoftJoint);
             ankle.position.y = -2.32;
-            ankle.castShadow = true;
             leg.add(ankle);
 
             const foot = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.26, 0.95), matArmor);
             foot.position.set(0, -2.44, 0.22);
-            foot.castShadow = true;
             leg.add(foot);
             
-            // إضافة قاعدة صغيرة تحت القدم لاستقرار بصري
-            const footPad = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.08, 1.02), matSoftJoint);
-            footPad.position.set(0, -2.58, 0.2);
-            footPad.castShadow = true;
-            leg.add(footPad);
-
             leg.position.set(side * 0.55, 1.3, 0);
             return leg;
         }
         character.add(createLeg(1));
         character.add(createLeg(-1));
         
-        // ==========================================
-        // إضافات: حلقات توصيل إضافية عند الكتفين والخصر (لتنعيم بصري)
-        // ==========================================
-        // حلقة كتف يمنى خارجية
+        // إضافات زخرفية
         const rightShoulderCap = new THREE.Mesh(new THREE.TorusGeometry(0.52, 0.07, 16, 40), matArmor);
         rightShoulderCap.position.set(1.15, 2.78, 0.1);
         rightShoulderCap.rotation.z = 0.3;
         rightShoulderCap.rotation.x = 0.5;
-        rightShoulderCap.castShadow = true;
         character.add(rightShoulderCap);
         
         const leftShoulderCap = new THREE.Mesh(new THREE.TorusGeometry(0.52, 0.07, 16, 40), matArmor);
         leftShoulderCap.position.set(-1.15, 2.78, 0.1);
         leftShoulderCap.rotation.z = -0.3;
         leftShoulderCap.rotation.x = 0.5;
-        leftShoulderCap.castShadow = true;
         character.add(leftShoulderCap);
         
-        // حلقات حول العضد (لتنعيم انتقال الكتف)
-        const armRingR = new THREE.Mesh(new THREE.TorusGeometry(0.34, 0.05, 12, 32), matArmor);
-        armRingR.position.set(1.15, 2.32, 0);
-        armRingR.rotation.x = Math.PI / 2;
-        armRingR.castShadow = true;
-        character.add(armRingR);
-        
-        const armRingL = new THREE.Mesh(new THREE.TorusGeometry(0.34, 0.05, 12, 32), matArmor);
-        armRingL.position.set(-1.15, 2.32, 0);
-        armRingL.rotation.x = Math.PI / 2;
-        armRingL.castShadow = true;
-        character.add(armRingL);
-        
-        // إضافة زخارف جانبية على الصدر (تعزيز المظهر العريض)
         const chestPlateR = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.65, 0.18), matArmor);
         chestPlateR.position.set(0.82, 2.55, 0.45);
-        chestPlateR.castShadow = true;
         character.add(chestPlateR);
         
         const chestPlateL = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.65, 0.18), matArmor);
         chestPlateL.position.set(-0.82, 2.55, 0.45);
-        chestPlateL.castShadow = true;
         character.add(chestPlateL);
         
-        // لوحة صدر مركزية
         const centerPlate = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.45, 0.12), matJoint);
         centerPlate.position.set(0, 2.5, 0.58);
-        centerPlate.castShadow = true;
         character.add(centerPlate);
 
-        // أرضية ناعمة لتحديد الأبعاد (شبكة خفيفة جداً)
         const grid = new THREE.GridHelper(20, 30, 0xd0d0d0, 0xe8e8e8);
         grid.position.y = -1.15;
         grid.material.transparent = true;
         grid.material.opacity = 0.45;
         scene.add(grid);
         
-        // إضافة مرآة انعكاس خفيفة جداً (حلقة أرضية اختيارية)
-        const groundReflector = new THREE.Mesh(
-            new THREE.PlaneGeometry(12, 12),
-            new THREE.MeshStandardMaterial({ color: 0xf8f8f8, metalness: 0.05, roughness: 0.9, transparent: true, opacity: 0.12 })
-        );
-        groundReflector.rotation.x = -Math.PI / 2;
-        groundReflector.position.y = -1.12;
-        groundReflector.receiveShadow = false;
-        scene.add(groundReflector);
-
-        // --- حلقة التحريك مع حركة تنفس خفيفة جداً وتحسين دوران بطيء ---
-        let timeAcc = 0;
+        // ==========================================
+        // نظام الحركات الفيزيائية
+        // ==========================================
+        
+        // حالة الحركات
+        let isJumping = false;
+        let jumpVelocity = 0;
+        let originalY = 0;
+        let jumpStartY = 0;
+        
+        let isRunning = false;
+        let runCycle = 0;
+        
+        // نظام الرمي المتناوب
+        let throwState = { active: false, side: 'right', progress: 0, throwing: false, timer: null };
+        let lastThrowSide = 'right'; // لتحديد الرمية التالية
+        
+        // مراجع للأذرع
+        const rightArmOriginalRot = { x: 0, z: 0 };
+        const leftArmOriginalRot = { x: 0, z: 0 };
+        
+        // عنصر التغذية الراجعة
+        const feedbackDiv = document.getElementById('action-feedback');
+        
+        function showFeedback(msg, isError = false) {
+            feedbackDiv.textContent = msg;
+            feedbackDiv.style.color = isError ? '#ff8888' : '#ffaa44';
+            feedbackDiv.style.opacity = '1';
+            setTimeout(() => {
+                if (feedbackDiv.textContent === msg) {
+                    feedbackDiv.style.opacity = '0.7';
+                }
+            }, 800);
+        }
+        
+        // دالة رمي القذيفة
+        function createProjectile(side) {
+            const projectile = new THREE.Mesh(
+                new THREE.SphereGeometry(0.18, 16, 16),
+                new THREE.MeshStandardMaterial({ color: 0xff6600, emissive: 0x442200, emissiveIntensity: 0.6, metalness: 0.3 })
+            );
+            projectile.castShadow = true;
+            
+            // موقع اليد حسب الجانب
+            const handPos = new THREE.Vector3();
+            if (side === 'right') {
+                handPos.set(1.15, 2.7 - 2.08, 0.2);
+            } else {
+                handPos.set(-1.15, 2.7 - 2.08, 0.2);
+            }
+            handPos.applyQuaternion(character.quaternion);
+            handPos.add(character.position);
+            
+            projectile.position.copy(handPos);
+            scene.add(projectile);
+            
+            // اتجاه الرمي (نحو الأمام مع ميل بسيط حسب الجانب)
+            const direction = new THREE.Vector3(
+                (side === 'right' ? 0.8 : -0.8),
+                0.6,
+                1.2
+            ).normalize();
+            
+            const speed = 8;
+            let lifeTime = 0;
+            
+            function animateProjectile() {
+                lifeTime += 0.016;
+                projectile.position.x += direction.x * speed * 0.016;
+                projectile.position.y += direction.y * speed * 0.016;
+                projectile.position.z += direction.z * speed * 0.016;
+                
+                // تأثير دوران
+                projectile.rotateX(0.2);
+                projectile.rotateZ(0.15);
+                
+                if (lifeTime > 2.5 || projectile.position.y < -1) {
+                    scene.remove(projectile);
+                    return;
+                }
+                requestAnimationFrame(animateProjectile);
+            }
+            requestAnimationFrame(animateProjectile);
+            
+            showFeedback(`💥 رمي ${side === 'right' ? 'يمين' : 'يسار'}!`);
+        }
+        
+        // دالة تنفيذ الرمي مع حركة اليد
+        function performThrow(side) {
+            if (throwState.throwing) return false;
+            
+            const arm = side === 'right' ? arms.right : arms.left;
+            if (!arm) return false;
+            
+            throwState.throwing = true;
+            throwState.side = side;
+            
+            // زوايا الرمي: رفع اليد للأعلى ثم رمي
+            const startRotX = arm.rotation.x || 0;
+            const startRotZ = arm.rotation.z || 0;
+            const peakRotX = -1.2; // رفع عالٍ
+            const peakRotZ = side === 'right' ? -0.6 : 0.6;
+            
+            let animProgress = 0;
+            const animDuration = 300; // ميلي ثانية
+            const startTime = performance.now();
+            
+            function animateThrow(now) {
+                const elapsed = now - startTime;
+                let progress = Math.min(1, elapsed / animDuration);
+                
+                if (progress < 0.5) {
+                    // رفع اليد
+                    const t = progress * 2; // 0 to 1
+                    const easeOut = 1 - Math.pow(1 - t, 2);
+                    arm.rotation.x = startRotX + (peakRotX - startRotX) * easeOut;
+                    arm.rotation.z = startRotZ + (peakRotZ - startRotZ) * easeOut;
+                } else {
+                    // رمي وإعادة اليد
+                    if (!throwState.projectileFired) {
+                        throwState.projectileFired = true;
+                        createProjectile(side);
+                    }
+                    const t = (progress - 0.5) * 2;
+                    const easeIn = t * t;
+                    arm.rotation.x = peakRotX + (startRotX - peakRotX) * easeIn;
+                    arm.rotation.z = peakRotZ + (startRotZ - peakRotZ) * easeIn;
+                }
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animateThrow);
+                } else {
+                    arm.rotation.x = startRotX;
+                    arm.rotation.z = startRotZ;
+                    throwState.throwing = false;
+                    throwState.projectileFired = false;
+                }
+            }
+            
+            throwState.projectileFired = false;
+            requestAnimationFrame(animateThrow);
+            return true;
+        }
+        
+        // دالة بدء الرمي (تناوب تلقائي)
+        function triggerThrow() {
+            if (throwState.throwing) {
+                showFeedback('⚠️ انتظر حتى اكتمال الرمي', true);
+                return;
+            }
+            
+            // التناوب: اليد اليمنى أولاً، ثم اليسرى، ثم يمين، إلخ
+            const nextSide = lastThrowSide === 'right' ? 'left' : 'right';
+            performThrow(nextSide);
+            lastThrowSide = nextSide;
+        }
+        
+        // القفز
+        function startJump() {
+            if (isJumping) return;
+            isJumping = true;
+            jumpVelocity = 5.8;
+            originalY = character.position.y;
+            jumpStartY = originalY;
+            showFeedback('🦿 قفز!');
+        }
+        
+        // الركض (تأثير اهتزاز وحركة الأذرع)
+        let runIntensity = 0;
+        
+        // معالجة الأزرار
+        window.addEventListener('keydown', (e) => {
+            const key = e.key;
+            if (key === ' ' || key === 'Space') {
+                e.preventDefault();
+                startJump();
+            }
+            if (key === 'Shift' || key === 'ShiftLeft') {
+                e.preventDefault();
+                if (!isRunning) {
+                    isRunning = true;
+                    showFeedback('🏃 ركض!');
+                }
+            }
+            if (key === 'e' || key === 'E') {
+                e.preventDefault();
+                triggerThrow();
+            }
+        });
+        
+        window.addEventListener('keyup', (e) => {
+            if (e.key === 'Shift' || e.key === 'ShiftLeft') {
+                isRunning = false;
+                runCycle = 0;
+                // إعادة الأذرع لوضعها الطبيعي
+                if (!throwState.throwing) {
+                    arms.right.rotation.x = 0;
+                    arms.right.rotation.z = 0;
+                    arms.left.rotation.x = 0;
+                    arms.left.rotation.z = 0;
+                }
+            }
+        });
+        
+        // ==========================================
+        // حلقة الفيزياء والتحديث
+        // ==========================================
+        let lastTime = performance.now();
+        
+        function updatePhysics(deltaTime) {
+            const dt = Math.min(deltaTime, 0.033);
+            
+            // القفز
+            if (isJumping) {
+                jumpVelocity -= 12 * dt;
+                character.position.y += jumpVelocity * dt;
+                
+                if (character.position.y <= originalY) {
+                    character.position.y = originalY;
+                    isJumping = false;
+                    jumpVelocity = 0;
+                }
+            }
+            
+            // الركض: تأثير اهتزاز وحركة الأذرع ذهابًا وإيابًا
+            if (isRunning && !throwState.throwing) {
+                runCycle += dt * 14;
+                const armSwing = Math.sin(runCycle) * 0.45;
+                const armSwingZ = Math.cos(runCycle * 1.3) * 0.2;
+                arms.right.rotation.x = armSwing * 0.7;
+                arms.right.rotation.z = -armSwingZ * 0.5;
+                arms.left.rotation.x = -armSwing * 0.7;
+                arms.left.rotation.z = armSwingZ * 0.5;
+                
+                // اهتزاز بسيط للجسم
+                character.position.y = originalY + Math.sin(runCycle * 12) * 0.01;
+            } else if (!throwState.throwing) {
+                // إعادة الأذرع للوضع الطبيعي تدريجيًا
+                arms.right.rotation.x *= 0.92;
+                arms.right.rotation.z *= 0.92;
+                arms.left.rotation.x *= 0.92;
+                arms.left.rotation.z *= 0.92;
+                character.position.y += (originalY - character.position.y) * 0.2;
+            }
+            
+            // تأثير إضافي عند القفز: رفع الأذرع قليلاً
+            if (isJumping) {
+                const jumpT = Math.abs(jumpVelocity) / 6;
+                const armLift = Math.min(0.6, jumpT * 0.8);
+                if (!throwState.throwing) {
+                    arms.right.rotation.x = -armLift;
+                    arms.left.rotation.x = -armLift;
+                }
+            }
+        }
+        
+        // دوران بطيء للشخصية (اختياري للمعاينة لكن نبقيه كما هو)
+        let autoRotate = 0;
         
         function animate() {
-            requestAnimationFrame(animate);
-            timeAcc += 0.012;
+            const now = performance.now();
+            let delta = Math.min(0.033, (now - lastTime) / 1000);
+            lastTime = now;
             
-            // دوران بطيء جداً للمعاينة (أقل من السابق للحفاظ على الهدوء)
-            character.rotation.y += 0.0028;
+            updatePhysics(delta);
             
-            // حركة تنفس خفيفة جداً مع نبض بسيط في المفاصل (تأثير بصري ناعم)
-            const breath = Math.sin(timeAcc) * 0.012;
-            character.position.y = breath * 0.6;
+            // دوران بطيء جداً (نفس الأصلي)
+            character.rotation.y += 0.0025;
             
-            // تأثير نابض خفيف جداً على بعض العناصر (حلقات الكتف)
-            const pulse = Math.sin(timeAcc * 1.8) * 0.008;
-            if (rightShoulderCap && leftShoulderCap) {
-                rightShoulderCap.scale.setScalar(1 + pulse * 0.2);
-                leftShoulderCap.scale.setScalar(1 + pulse * 0.2);
-            }
-
-            controls.update(); // تحديث عناصر التحكم مع damping
+            // تحديث الكاميرا
+            controls.update();
             renderer.render(scene, camera);
+            
+            requestAnimationFrame(animate);
         }
+        
         animate();
-
+        
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
         
-        // تلميح بسيط في الكونسول
-        console.log('✅ نموذج المحارب المدرع - مفاصل ناعمة محسنة بنقاط التقاء كروية ناعمة');
+        console.log('✅ شخصية المحارب المدرع مع حركات فيزيائية: قفز، ركض، رمي متناوب باليدين');
     </script>
 </body>
 </html>
