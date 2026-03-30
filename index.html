@@ -17,7 +17,7 @@
   scene.background = new THREE.Color(0xa0a0a0);
 
   const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
-  camera.position.set(10, 10, 20);
+  camera.position.set(5, 5, 10);
 
   const renderer = new THREE.WebGLRenderer({antialias: true});
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -39,7 +39,7 @@
     return new THREE.MeshStandardMaterial({ color: color });
   }
 
-  const voxelSize = 0.2; // حجم كل مكعب صغير
+  const voxelSize = 0.2; // حجم المكعب الصغير
 
   // دالة لإنشاء مكعب صغير (Voxel)
   function createVoxel(x, y, z, color) {
@@ -53,63 +53,71 @@
   // إنشاء شخصية الشوتر
   const shooter = new THREE.Group();
 
-  // الرأس
-  for(let x=-1; x<=1; x+=0.2){
-    for(let y=0; y<=1; y+=0.2){
-      for(let z=-1; z<=1; z+=0.2){
-        shooter.add(createVoxel(x, y+3, z, 0xffcc99)); // لون البشرة
+  // الرأس (3x3x3 مكعبات صغيرة)
+  for(let x=-0.3; x<=0.3; x+=0.2){
+    for(let y=0; y<=0.4; y+=0.2){
+      for(let z=-0.3; z<=0.3; z+=0.2){
+        shooter.add(createVoxel(x, y+2.6, z, 0xffcc99)); // لون البشرة
       }
     }
   }
 
-  // الجسم
-  for(let x=-1.2; x<=1.2; x+=0.2){
-    for(let y=0; y<=2; y+=0.2){
-      for(let z=-0.6; z<=0.6; z+=0.2){
-        shooter.add(createVoxel(x, y+1, z, 0x5555ff)); // زي أزرق
+  // الجسم (3x5 مكعبات)
+  for(let x=-0.4; x<=0.4; x+=0.2){
+    for(let y=0; y<=0.8; y+=0.2){
+      for(let z=-0.2; z<=0.2; z+=0.2){
+        shooter.add(createVoxel(x, y+1.5, z, 0x5555ff)); // زي أزرق
       }
     }
   }
 
-  // الذراعين
-  for(let x=-1.6; x<=1.6; x+=3.2){ // يمين ويسار
-    for(let y=0; y<=1.5; y+=0.2){
-      for(let z=-0.4; z<=0.4; z+=0.2){
-        shooter.add(createVoxel(x, y+1.5, z, 0xffcc99)); // لون البشرة
-        shooter.add(createVoxel(x, y+1.5, z, 0x5555ff)); // إضافة زي أزرق فوق الجلد
+  // الذراع اليمنى (2x4 مكعبات)
+  for(let x=0.5; x<=0.5; x+=0.2){
+    for(let y=0; y<=0.6; y+=0.2){
+      for(let z=-0.15; z<=0.15; z+=0.2){
+        shooter.add(createVoxel(x, y+1.6, z, 0xffcc99)); // لون الجلد
       }
     }
   }
 
-  // الأرجل
-  for(let x=-0.8; x<=0.8; x+=1.6){ // قدمين
-    for(let y=-2; y<=0; y+=0.2){
-      for(let z=-0.4; z<=0.4; z+=0.2){
-        shooter.add(createVoxel(x, y, z, 0x333333)); // سروال/حذاء أسود
+  // الذراع اليسرى (2x4 مكعبات)
+  for(let x=-0.5; x<=-0.5; x+=0.2){
+    for(let y=0; y<=0.6; y+=0.2){
+      for(let z=-0.15; z<=0.15; z+=0.2){
+        shooter.add(createVoxel(x, y+1.6, z, 0xffcc99)); // لون الجلد
       }
     }
   }
 
-  // القنبلة في اليد اليمنى
+  // الأرجل (2x5 مكعبات لكل رجل)
+  for(let x=-0.2; x<=0.2; x+=0.4){ // قدمين
+    for(let y=-0.8; y<=0; y+=0.2){
+      for(let z=-0.15; z<=0.15; z+=0.2){
+        shooter.add(createVoxel(x, y+0.7, z, 0x333333)); // سروال/حذاء أسود
+      }
+    }
+  }
+
+  // القنبلة في اليد اليمنى (2x2x2 مكعبات صغيرة)
   const bombGroup = new THREE.Group();
-  for(let x=-0.4; x<=0.4; x+=0.1){
-    for(let y=-0.4; y<=0.4; y+=0.1){
-      for(let z=-0.4; z<=0.4; z+=0.1){
+  for(let x=-0.1; x<=0.1; x+=0.1){
+    for(let y=-0.1; y<=0.1; y+=0.1){
+      for(let z=-0.1; z<=0.1; z+=0.1){
         bombGroup.add(createVoxel(x, y, z, 0x222222)); // قنبلة سوداء
       }
     }
   }
-  bombGroup.position.set(1.6, 2, 0); // اليد اليمنى
+  bombGroup.position.set(0.7, 2, 0); // اليد اليمنى
   shooter.add(bombGroup);
 
   scene.add(shooter);
 
   // الأرضية
-  const groundGeo = new THREE.PlaneGeometry(50,50);
+  const groundGeo = new THREE.PlaneGeometry(10,10);
   const groundMat = new THREE.MeshStandardMaterial({color:0x888888});
   const ground = new THREE.Mesh(groundGeo, groundMat);
   ground.rotation.x = -Math.PI/2;
-  ground.position.y = -2;
+  ground.position.y = 0;
   scene.add(ground);
 
   // إعادة تحجيم تلقائي
