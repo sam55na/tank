@@ -5,57 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voxel Warrior - شخصية حربية ثلاثية الأبعاد</title>
     <style>
-        body { margin: 0; overflow: hidden; }
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
         #info {
             position: absolute;
             top: 20px;
             left: 20px;
             color: white;
-            background: rgba(0,0,0,0.8);
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-family: monospace;
+            background: rgba(0,0,0,0.7);
+            padding: 10px 15px;
+            border-radius: 5px;
             z-index: 100;
-            pointer-events: none;
             font-size: 14px;
-            border-left: 4px solid #ff5500;
+            pointer-events: none;
         }
         #controls {
             position: absolute;
             bottom: 20px;
             left: 20px;
             color: white;
-            background: rgba(0,0,0,0.6);
-            padding: 8px 15px;
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 12px;
-            z-index: 100;
-            pointer-events: none;
-        }
-        .status {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            color: #0f0;
-            background: rgba(0,0,0,0.6);
-            padding: 5px 10px;
+            background: rgba(0,0,0,0.7);
+            padding: 8px 12px;
             border-radius: 5px;
-            font-family: monospace;
-            font-size: 11px;
             z-index: 100;
+            font-size: 12px;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
     <div id="info">
-        🔫 WARRIOR VOXEL | 💣 HEAVY BOMB | 🛡️ FULL ARMOR
+        🔫 شخصية حربية VOXEL | 💣 قنبلة تكتيكية
     </div>
     <div id="controls">
         🖱️ اسحب بالماوس للتدوير | 🔍 اسكرول للتكبير
-    </div>
-    <div class="status" id="status">
-        ⚙️ جاري التحميل...
     </div>
 
     <script type="importmap">
@@ -68,16 +54,16 @@
 
     <script type="module">
         import * as THREE from 'three';
+        import { OrbitControls } from 'https://unpkg.com/three@0.128.0/examples/jsm/controls/OrbitControls.js';
 
-        // إعداد المشهد
+        // =============== إعداد المشهد ===============
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0a0a2a);
-        scene.fog = new THREE.Fog(0x0a0a2a, 15, 30);
+        scene.background = new THREE.Color(0x1a1a2e);
         
-        // الكاميرا - موضوعة بشكل صحيح لرؤية الشخصية
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(6, 4, 8);
-        camera.lookAt(0, 2, 0);
+        // الكاميرا - مضبوطة لرؤية الشخصية كاملة
+        const camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(5, 4, 7);
+        camera.lookAt(0, 2.5, 0);
         
         // Renderer
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -85,196 +71,207 @@
         renderer.shadowMap.enabled = true;
         document.body.appendChild(renderer.domElement);
         
-        // إضافة OrbitControls
-        let controls;
-        import('https://unpkg.com/three@0.128.0/examples/jsm/controls/OrbitControls.js').then(module => {
-            controls = new module.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.05;
-            controls.autoRotate = false;
-            controls.enableZoom = true;
-            controls.target.set(0, 2, 0);
-            document.getElementById('status').innerHTML = '✅ جاهز | اسحب للتدوير';
-        });
+        // التحكم بالكاميرا
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.autoRotate = false;
+        controls.enableZoom = true;
+        controls.target.set(0, 2.5, 0);
+        controls.zoomSpeed = 1;
         
-        // الإضاءة
-        const ambientLight = new THREE.AmbientLight(0x404060, 0.6);
+        // =============== إضاءة بسيطة ونظيفة ===============
+        // إضاءة محيطة
+        const ambientLight = new THREE.AmbientLight(0x404060, 0.7);
         scene.add(ambientLight);
         
-        const mainLight = new THREE.DirectionalLight(0xfff5e6, 1.2);
-        mainLight.position.set(5, 8, 4);
+        // إضاءة رئيسية من الأمام
+        const mainLight = new THREE.DirectionalLight(0xffffff, 1);
+        mainLight.position.set(3, 5, 4);
         mainLight.castShadow = true;
-        mainLight.receiveShadow = true;
+        mainLight.receiveShadow = false;
         scene.add(mainLight);
         
-        const fillLight = new THREE.PointLight(0x4488ff, 0.4);
-        fillLight.position.set(-2, 3, 3);
-        scene.add(fillLight);
-        
-        const backLight = new THREE.PointLight(0xff8866, 0.5);
-        backLight.position.set(0, 3, -4);
+        // إضاءة خلفية لتوضيح التفاصيل
+        const backLight = new THREE.DirectionalLight(0x88aaff, 0.5);
+        backLight.position.set(-2, 3, -4);
         scene.add(backLight);
         
-        const bombLight = new THREE.PointLight(0xff4422, 0.6);
-        bombLight.position.set(2.5, 2.2, 1.2);
-        scene.add(bombLight);
+        // إضاءة من الأسفل
+        const fillLight = new THREE.PointLight(0x88aaff, 0.3);
+        fillLight.position.set(0, -1, 0);
+        scene.add(fillLight);
         
-        // أرضية
-        const gridHelper = new THREE.GridHelper(12, 20, 0x88aaff, 0x446688);
+        // =============== أرضية بسيطة ===============
+        const gridHelper = new THREE.GridHelper(8, 20, 0x888888, 0x444444);
         gridHelper.position.y = -1.2;
         scene.add(gridHelper);
         
-        const groundPlane = new THREE.Mesh(
-            new THREE.PlaneGeometry(10, 10),
-            new THREE.ShadowMaterial({ opacity: 0.4, color: 0x000000, transparent: true })
-        );
-        groundPlane.rotation.x = -Math.PI / 2;
-        groundPlane.position.y = -1.15;
-        groundPlane.receiveShadow = true;
-        scene.add(groundPlane);
-        
-        // نجوم
-        const starsGeometry = new THREE.BufferGeometry();
-        const starsCount = 800;
-        const starsPositions = new Float32Array(starsCount * 3);
-        for (let i = 0; i < starsCount; i++) {
-            starsPositions[i*3] = (Math.random() - 0.5) * 200;
-            starsPositions[i*3+1] = (Math.random() - 0.5) * 80;
-            starsPositions[i*3+2] = (Math.random() - 0.5) * 80 - 40;
-        }
-        starsGeometry.setAttribute('position', new THREE.BufferAttribute(starsPositions, 3));
-        const stars = new THREE.Points(starsGeometry, new THREE.PointsMaterial({ color: 0xffffff, size: 0.08 }));
-        scene.add(stars);
-        
-        // ==================== بناء الشخصية ====================
+        // =============== دالة إضافة المكعبات ===============
         const characterGroup = new THREE.Group();
         scene.add(characterGroup);
         
-        const voxelSize = 0.12;
+        const voxelSize = 0.11;
+        let voxelCount = 0;
         
-        function addVoxel(x, y, z, color, emissive = null) {
+        function addVoxel(x, y, z, color) {
             const geometry = new THREE.BoxGeometry(voxelSize, voxelSize, voxelSize);
             const material = new THREE.MeshStandardMaterial({
                 color: color,
-                emissive: emissive || 0x000000,
-                emissiveIntensity: emissive ? 0.4 : 0,
-                metalness: 0.7,
+                metalness: 0.6,
                 roughness: 0.3
             });
             const cube = new THREE.Mesh(geometry, material);
             cube.position.set(x * voxelSize, y * voxelSize, z * voxelSize);
             cube.castShadow = true;
-            cube.receiveShadow = true;
+            cube.receiveShadow = false;
             characterGroup.add(cube);
+            voxelCount++;
             return cube;
         }
         
-        // الألوان
-        const COLORS = {
-            armor: 0x4a5568,
-            darkArmor: 0x2d3748,
-            lightArmor: 0x718096,
-            red: 0xe53e3e,
-            orange: 0xed8936,
-            yellow: 0xf6e05e,
-            green: 0x48bb78,
-            darkGreen: 0x2f855a,
-            black: 0x1a202c,
-            silver: 0xcbd5e0,
-            gold: 0xd69e2e,
-            blue: 0x4299e1,
-            visor: 0x2c7a7a,
-            bomb: 0x5a67d8,
-            brown: 0x9b6b43
+        // =============== الألوان ===============
+        const colors = {
+            // درجات الرمادي للدرع
+            darkArmor: 0x3a3f4a,
+            mediumArmor: 0x5a616e,
+            lightArmor: 0x7a8392,
+            steel: 0x8e9aaf,
+            // تفاصيل
+            red: 0xcc5533,
+            darkRed: 0xaa4433,
+            gold: 0xd4af37,
+            silver: 0xc0c0c0,
+            black: 0x2a2a2a,
+            // القنبلة
+            bombGreen: 0x4a6a3a,
+            bombYellow: 0xe5b83c,
+            // خوذة
+            visor: 0x2c6e9e,
+            // أحزمة
+            brown: 0x8b5a2b
         };
         
-        // === الجسم الرئيسي (الجذع) ===
+        // =============== بناء الشخصية ===============
+        
+        // ---- الجذع (Torso) ----
         for (let x = -4; x <= 4; x++) {
             for (let y = 6; y <= 14; y++) {
                 for (let z = -2; z <= 2; z++) {
-                    let color = COLORS.armor;
-                    if (y >= 8 && y <= 12 && Math.abs(x) <= 3 && z === 2) color = COLORS.lightArmor;
-                    if (y === 10 && Math.abs(x) <= 1 && z === 2) color = COLORS.gold;
-                    if (x === -3 && z === 2 && y >= 8 && y <= 12) color = COLORS.darkGreen;
-                    if (x === 3 && z === 2 && y >= 8 && y <= 12) color = COLORS.darkGreen;
+                    let color = colors.mediumArmor;
+                    // الدرع الصدري
+                    if (y >= 8 && y <= 13 && Math.abs(x) <= 3 && z === 2) {
+                        color = colors.lightArmor;
+                    }
+                    // اللوحة المركزية
+                    if (y >= 9 && y <= 12 && Math.abs(x) <= 1.5 && z === 2) {
+                        color = colors.steel;
+                    }
+                    // أزرار
+                    if ((y === 10 || y === 11) && Math.abs(x) <= 1 && z === 2.5) {
+                        color = colors.gold;
+                    }
+                    // جيوب جانبية
+                    if (x === -3 && z === 2 && y >= 8 && y <= 12) {
+                        color = colors.brown;
+                    }
+                    if (x === 3 && z === 2 && y >= 8 && y <= 12) {
+                        color = colors.brown;
+                    }
                     addVoxel(x, y, z, color);
                 }
             }
         }
         
-        // === الرأس والخوذة ===
+        // ---- الرأس والخوذة (Head & Helmet) ----
         for (let x = -3; x <= 3; x++) {
             for (let y = 15; y <= 20; y++) {
                 for (let z = -2; z <= 2; z++) {
-                    let color = COLORS.darkArmor;
-                    if (y >= 16 && y <= 19 && z === 2 && Math.abs(x) <= 2) color = COLORS.visor;
-                    if (y === 20 && Math.abs(x) <= 1 && z === 0) color = COLORS.gold;
-                    if (x === 3 && y === 17 && z === 1) color = COLORS.red;
-                    if (x === -3 && y === 18 && z === 1) color = COLORS.blue;
+                    let color = colors.darkArmor;
+                    // حاجب العين (Visor)
+                    if (y >= 16 && y <= 19 && z === 2 && Math.abs(x) <= 2) {
+                        color = colors.visor;
+                    }
+                    // قمة الخوذة
+                    if (y === 20 && Math.abs(x) <= 1 && z === 0) {
+                        color = colors.gold;
+                    }
+                    // جهاز اتصال جانبي
+                    if (x === 3 && y === 17 && z === 1) {
+                        color = colors.red;
+                    }
+                    if (x === 3 && y === 18 && z === 1) {
+                        color = colors.red;
+                    }
+                    // كاميرا حرارية
+                    if (x === -3 && y === 18 && z === 1) {
+                        color = colors.silver;
+                    }
                     addVoxel(x, y, z, color);
                 }
             }
         }
         
-        // === الكتف الأيمن (درع كبير) ===
+        // ---- الكتف الأيمن (Shoulder Pad) ----
         for (let dx = 0; dx <= 3; dx++) {
             for (let dy = 0; dy <= 3; dy++) {
                 for (let dz = -1; dz <= 1; dz++) {
-                    addVoxel(5 + dx, 13 + dy, dz, COLORS.lightArmor);
+                    let color = colors.lightArmor;
+                    if (dx === 2 && dy === 1) color = colors.gold;
+                    addVoxel(5 + dx, 13 + dy, dz, color);
                 }
             }
         }
-        // مسامير على الكتف
-        addVoxel(7, 15, 1, COLORS.gold);
-        addVoxel(7, 15, -1, COLORS.gold);
         
-        // === الكتف الأيسر ===
+        // ---- الكتف الأيسر ----
         for (let dx = 0; dx <= 2; dx++) {
             for (let dy = 0; dy <= 2; dy++) {
                 for (let dz = -1; dz <= 1; dz++) {
-                    addVoxel(-5 - dx, 13 + dy, dz, COLORS.lightArmor);
+                    addVoxel(-5 - dx, 13 + dy, dz, colors.lightArmor);
                 }
             }
         }
         
-        // === الذراع الأيمن (حامل القنبلة) ===
-        for (let y = 11; y <= 15; y++) {
+        // ---- الذراع الأيمن (حامل القنبلة) ----
+        for (let y = 11; y <= 14; y++) {
             for (let x = 5; x <= 7; x++) {
                 for (let z = -1; z <= 1; z++) {
-                    addVoxel(x, y, z, COLORS.armor);
+                    addVoxel(x, y, z, colors.mediumArmor);
                 }
             }
         }
-        for (let y = 16; y <= 19; y++) {
+        // الساعد واليد
+        for (let y = 15; y <= 18; y++) {
             for (let x = 7; x <= 9; x++) {
                 for (let z = -1; z <= 1; z++) {
-                    addVoxel(x, y, z, COLORS.lightArmor);
+                    let color = y > 16 ? colors.lightArmor : colors.mediumArmor;
+                    addVoxel(x, y, z, color);
                 }
             }
         }
         
-        // === الذراع الأيسر ===
-        for (let y = 11; y <= 15; y++) {
+        // ---- الذراع الأيسر ----
+        for (let y = 11; y <= 14; y++) {
             for (let x = -7; x <= -5; x++) {
                 for (let z = -1; z <= 1; z++) {
-                    addVoxel(x, y, z, COLORS.armor);
+                    addVoxel(x, y, z, colors.mediumArmor);
                 }
             }
         }
-        for (let y = 16; y <= 18; y++) {
+        for (let y = 15; y <= 17; y++) {
             for (let x = -9; x <= -7; x++) {
                 for (let z = -1; z <= 1; z++) {
-                    addVoxel(x, y, z, COLORS.lightArmor);
+                    addVoxel(x, y, z, colors.lightArmor);
                 }
             }
         }
         
-        // === الأرجل ===
+        // ---- الأرجل (Legs) ----
         // الرجل اليمنى
         for (let y = 0; y <= 5; y++) {
             for (let x = 2; x <= 4; x++) {
                 for (let z = -1; z <= 1; z++) {
-                    let color = y < 3 ? COLORS.black : COLORS.armor;
+                    let color = y < 2 ? colors.black : colors.darkArmor;
                     addVoxel(x, y, z, color);
                 }
             }
@@ -283,7 +280,7 @@
         for (let y = 0; y <= 5; y++) {
             for (let x = -4; x <= -2; x++) {
                 for (let z = -1; z <= 1; z++) {
-                    let color = y < 3 ? COLORS.black : COLORS.armor;
+                    let color = y < 2 ? colors.black : colors.darkArmor;
                     addVoxel(x, y, z, color);
                 }
             }
@@ -291,114 +288,98 @@
         
         // الأحذية
         for (let x = 2; x <= 5; x++) {
-            addVoxel(x, 0, -2, COLORS.black);
-            addVoxel(x, 1, -2, COLORS.black);
-            addVoxel(-x+1, 0, -2, COLORS.black);
-            addVoxel(-x+1, 1, -2, COLORS.black);
+            addVoxel(x, 0, -2, colors.black);
+            addVoxel(x, 1, -2, colors.black);
+            addVoxel(-x+1, 0, -2, colors.black);
+            addVoxel(-x+1, 1, -2, colors.black);
         }
         
         // واقي الركبة
-        addVoxel(3, 3, -2, COLORS.silver);
-        addVoxel(-3, 3, -2, COLORS.silver);
+        addVoxel(3, 3, -2, colors.silver);
+        addVoxel(-3, 3, -2, colors.silver);
         
-        // === القنبلة ===
+        // ---- القنبلة (Bomb) ----
         // جسم القنبلة
         for (let y = 0; y <= 4; y++) {
             for (let x = 0; x <= 3; x++) {
                 for (let z = -1; z <= 1; z++) {
-                    let color = COLORS.bomb;
-                    if (y === 2 && Math.abs(z) === 1) color = COLORS.yellow;
+                    let color = colors.bombGreen;
+                    if (y === 2 && (z === -1 || z === 1)) color = colors.bombYellow;
                     addVoxel(10 + x, 14 + y, z, color);
                 }
             }
         }
         
-        // رأس القنبلة المخروطي
-        addVoxel(13, 17, 0, COLORS.orange);
-        addVoxel(14, 18, 0, COLORS.red);
-        addVoxel(15, 19, 0, COLORS.red, COLORS.red);
+        // رأس القنبلة (مخروطي الشكل)
+        addVoxel(13, 17, 0, colors.gold);
+        addVoxel(14, 18, 0, colors.red);
+        addVoxel(15, 19, 0, colors.darkRed);
         
         // زعانف الذيل
-        addVoxel(10, 16, -2, COLORS.silver);
-        addVoxel(10, 16, 2, COLORS.silver);
-        addVoxel(12, 16, -2, COLORS.silver);
-        addVoxel(12, 16, 2, COLORS.silver);
+        addVoxel(10, 16, -2, colors.silver);
+        addVoxel(10, 16, 2, colors.silver);
+        addVoxel(12, 16, -2, colors.silver);
+        addVoxel(12, 16, 2, colors.silver);
         
         // أحزمة حمل القنبلة
         for (let x = 8; x <= 10; x++) {
-            addVoxel(x, 15, -2, COLORS.brown);
-            addVoxel(x, 16, -2, COLORS.brown);
+            addVoxel(x, 15, -2, colors.brown);
+            addVoxel(x, 16, -2, colors.brown);
         }
         
-        // === تفاصيل إضافية ===
-        // خراطيش على الصدر
+        // ---- تفاصيل إضافية ----
+        // خراطيش ذخيرة على الصدر
         for (let x = -2; x <= 2; x += 2) {
-            addVoxel(x, 12, 3, COLORS.gold);
-            addVoxel(x, 13, 3, COLORS.gold);
+            addVoxel(x, 12, 3, colors.gold);
+            addVoxel(x, 13, 3, colors.gold);
         }
         
         // قنابل يدوية على الحزام
         for (let i = 0; i < 3; i++) {
-            addVoxel(-1 + i, 5, -2, COLORS.darkGreen);
-            addVoxel(-1 + i, 6, -2, COLORS.darkGreen);
+            addVoxel(-1 + i, 5, -2, colors.bombGreen);
+            addVoxel(-1 + i, 6, -2, colors.bombGreen);
         }
         
         // جهاز اتصال على الظهر
         for (let x = -1; x <= 1; x++) {
             for (let y = 10; y <= 12; y++) {
-                addVoxel(x, y, -3, COLORS.black);
+                addVoxel(x, y, -3, colors.black);
             }
         }
-        addVoxel(0, 11, -4, COLORS.red, COLORS.red);
+        addVoxel(0, 11, -4, colors.red);
         
-        // أنابيب هيدروليكية
-        for (let y = 14; y <= 18; y++) {
-            addVoxel(8, y, -2, COLORS.silver);
+        // أنبوب هيدروليكي
+        for (let y = 14; y <= 17; y++) {
+            addVoxel(8, y, -2, colors.silver);
         }
         
-        // فتحات تهوية على الكتف
-        addVoxel(7, 14, -2, COLORS.orange, COLORS.orange);
-        addVoxel(-6, 14, -2, COLORS.orange, COLORS.orange);
+        // شارة عسكرية على الكتف
+        addVoxel(-5, 14, -2, colors.red);
+        addVoxel(-5, 14, -1, colors.red);
         
-        // شارة عسكرية
-        addVoxel(-5, 14, -2, COLORS.red);
-        addVoxel(-5, 14, -1, COLORS.red);
+        // مسامير على الكتف
+        addVoxel(7, 15, 1, colors.gold);
+        addVoxel(7, 15, -1, colors.gold);
         
-        // آثار معركة
-        addVoxel(2, 9, 3, 0x442200);
-        addVoxel(-1, 7, 3, 0x331100);
-        addVoxel(4, 17, 1, 0x331100);
-        
-        // === تأثيرات متحركة ===
-        let time = 0;
-        
+        // =============== حلقة التحريك ===============
         function animate() {
             requestAnimationFrame(animate);
-            time += 0.016;
-            
-            // نبض ضوء القنبلة
-            const pulse = 0.5 + Math.sin(time * 10) * 0.25;
-            bombLight.intensity = pulse;
-            
-            // دوران النجوم
-            stars.rotation.y += 0.0005;
-            stars.rotation.x += 0.0002;
-            
-            if (controls) controls.update();
-            
+            controls.update();
             renderer.render(scene, camera);
         }
         
         animate();
         
-        window.addEventListener('resize', () => {
+        // =============== معالجة تغيير حجم النافذة ===============
+        window.addEventListener('resize', onWindowResize, false);
+        function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+        }
         
-        console.log('✅ شخصية الحرب جاهزة!');
-        document.getElementById('status').innerHTML = '✅ تم التحميل | ' + characterGroup.children.length + ' فوكسل';
+        console.log(`✅ تم بناء الشخصية! عدد المكعبات: ${voxelCount}`);
+        console.log('📏 نطاق الشخصية: X من -4 إلى 9 | Y من 0 إلى 20 | Z من -3 إلى 3');
     </script>
 </body>
 </html>
