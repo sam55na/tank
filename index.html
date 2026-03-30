@@ -3,26 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المجسم الحربي - ذراعين محسنة</title>
+    <title>المحارب الحديدي - Mecha Edition</title>
     <style>
-        body { margin: 0; overflow: hidden; font-family: monospace; }
-        #info {
+        body { margin: 0; overflow: hidden; background: #050505; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        #overlay {
             position: absolute; top: 20px; left: 20px;
-            background: rgba(0,0,0,0.7); color: #ffaa66;
-            padding: 10px 20px; border-radius: 8px;
-            z-index: 100; font-size: 14px; pointer-events: none;
+            color: #00d4ff; text-shadow: 0 0 10px #00d4ff;
+            pointer-events: none;
         }
-        #controls {
-            position: absolute; bottom: 20px; left: 20px;
-            background: rgba(0,0,0,0.6); color: #ccc;
-            padding: 8px 15px; border-radius: 8px;
-            font-size: 12px; pointer-events: none;
-        }
+        .label { font-size: 18px; font-weight: bold; letter-spacing: 2px; }
     </style>
 </head>
 <body>
-    <div id="info">⚔️ المجسم الحربي | ذراعين محسنة | مفاصل دقيقة</div>
-    <div id="controls">🖱️ اسحب للتدوير | 🔍 اسكرول للتكبير</div>
+    <div id="overlay">
+        <div class="label">UNIT-01: THE GUARDIAN</div>
+        <div style="font-size: 12px; color: #888;">نظام المحاكاة النشط | 2026</div>
+    </div>
 
     <script type="importmap">
         { "imports": { "three": "https://unpkg.com/three@0.128.0/build/three.module.js" } }
@@ -33,201 +29,167 @@
         import { OrbitControls } from 'https://unpkg.com/three@0.128.0/examples/jsm/controls/OrbitControls.js';
 
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x1a1a2e);
-        
-        const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(5, 3.5, 7);
-        camera.lookAt(0, 2.2, 0);
-        
+        scene.background = new THREE.Color(0x05050a);
+        scene.fog = new THREE.Fog(0x05050a, 5, 15);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(6, 4, 8);
+
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
+        renderer.toneMapping = THREE.ReinhardToneMapping;
         document.body.appendChild(renderer.domElement);
-        
+
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
-        controls.target.set(0, 2.2, 0);
-        
-        // إضاءة
-        const ambientLight = new THREE.AmbientLight(0x404060, 0.7);
-        scene.add(ambientLight);
-        
-        const mainLight = new THREE.DirectionalLight(0xffffff, 1.2);
-        mainLight.position.set(3, 5, 4);
-        mainLight.castShadow = true;
-        scene.add(mainLight);
-        
-        const fillLight = new THREE.PointLight(0x88aaff, 0.4);
-        fillLight.position.set(-2, 2, 3);
-        scene.add(fillLight);
-        
-        const backLight = new THREE.PointLight(0xffaa88, 0.3);
-        backLight.position.set(0, 2, -4);
-        scene.add(backLight);
-        
-        const model = new THREE.Group();
-        scene.add(model);
-        
-        // المواد
-        const materialArmor = new THREE.MeshStandardMaterial({ color: 0x4a6a8a, metalness: 0.6, roughness: 0.4 });
-        const materialGold = new THREE.MeshStandardMaterial({ color: 0xca9622, metalness: 0.7, roughness: 0.3 });
-        const materialDark = new THREE.MeshStandardMaterial({ color: 0x3a4a5a, metalness: 0.5, roughness: 0.5 });
-        const materialJoint = new THREE.MeshStandardMaterial({ color: 0xbc9a6a, metalness: 0.65, roughness: 0.35 });
-        const materialFoot = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, metalness: 0.3, roughness: 0.7 });
-        
-        // =============== الجذع ===============
-        const torsoGeo = new THREE.SphereGeometry(0.85, 64, 64);
-        const torso = new THREE.Mesh(torsoGeo, materialArmor);
-        torso.position.set(0, 2.1, 0);
+        controls.target.set(0, 1.5, 0);
+
+        // --- الإضاءة ---
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+        scene.add(hemiLight);
+
+        const light1 = new THREE.DirectionalLight(0x00d4ff, 1);
+        light1.position.set(5, 5, 5);
+        light1.castShadow = true;
+        scene.add(light1);
+
+        const light2 = new THREE.PointLight(0xff0055, 0.5);
+        light2.position.set(-5, 2, -2);
+        scene.add(light2);
+
+        // --- المواد ---
+        const matArmor = new THREE.MeshStandardMaterial({ color: 0x2c3e50, metalness: 0.8, roughness: 0.2 });
+        const matGold = new THREE.MeshStandardMaterial({ color: 0xf1c40f, metalness: 0.9, roughness: 0.1 });
+        const matInner = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.8 });
+        const matGlow = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+
+        const robot = new THREE.Group();
+        scene.add(robot);
+
+        // --- الجسد (Torso) ---
+        const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.6, 1, 4, 16), matArmor);
+        torso.position.y = 2;
         torso.castShadow = true;
-        model.add(torso);
-        
-        // =============== الرأس ===============
-        const headGeo = new THREE.SphereGeometry(0.45, 64, 64);
-        const head = new THREE.Mesh(headGeo, materialArmor);
-        head.position.set(0, 3.05, 0);
-        head.castShadow = true;
-        model.add(head);
-        
-        // =============== المخروط ===============
-        const spikeGeo = new THREE.ConeGeometry(0.28, 0.85, 32);
-        const spike = new THREE.Mesh(spikeGeo, materialGold);
-        spike.position.set(0, 3.52, 0.1);
-        spike.rotation.x = 0.12;
-        spike.castShadow = true;
-        model.add(spike);
-        
-        // =============== الذراع الأيمن (محسنة) ===============
-        // نقطة الكتف
-        const shoulderR = new THREE.Mesh(new THREE.SphereGeometry(0.28, 32, 32), materialJoint);
-        shoulderR.position.set(1.08, 2.62, 0);
-        shoulderR.castShadow = true;
-        model.add(shoulderR);
-        
-        // العضد (الجزء العلوي)
-        const armUpperR = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.3, 0.92, 24), materialDark);
-        armUpperR.position.set(1.38, 2.18, 0);
-        armUpperR.castShadow = true;
-        model.add(armUpperR);
-        
-        // مفصل الكوع
-        const elbowR = new THREE.Mesh(new THREE.SphereGeometry(0.24, 32, 32), materialJoint);
-        elbowR.position.set(1.68, 1.74, 0);
-        elbowR.castShadow = true;
-        model.add(elbowR);
-        
-        // الساعد (الجزء السفلي)
-        const armLowerR = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.25, 0.88, 24), materialDark);
-        armLowerR.position.set(1.98, 1.32, 0);
-        armLowerR.castShadow = true;
-        model.add(armLowerR);
-        
-        // مفصل الرسغ
-        const wristR = new THREE.Mesh(new THREE.SphereGeometry(0.2, 32, 32), materialJoint);
-        wristR.position.set(2.28, 0.9, 0);
-        wristR.castShadow = true;
-        model.add(wristR);
-        
-        // اليد
-        const handR = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.28, 0.48), materialDark);
-        handR.position.set(2.55, 0.88, 0);
-        handR.castShadow = true;
-        model.add(handR);
-        
-        // =============== الذراع الأيسر (محسنة) ===============
-        const shoulderL = new THREE.Mesh(new THREE.SphereGeometry(0.28, 32, 32), materialJoint);
-        shoulderL.position.set(-1.08, 2.62, 0);
-        shoulderL.castShadow = true;
-        model.add(shoulderL);
-        
-        const armUpperL = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.3, 0.92, 24), materialDark);
-        armUpperL.position.set(-1.38, 2.18, 0);
-        armUpperL.castShadow = true;
-        model.add(armUpperL);
-        
-        const elbowL = new THREE.Mesh(new THREE.SphereGeometry(0.24, 32, 32), materialJoint);
-        elbowL.position.set(-1.68, 1.74, 0);
-        elbowL.castShadow = true;
-        model.add(elbowL);
-        
-        const armLowerL = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.25, 0.88, 24), materialDark);
-        armLowerL.position.set(-1.98, 1.32, 0);
-        armLowerL.castShadow = true;
-        model.add(armLowerL);
-        
-        const wristL = new THREE.Mesh(new THREE.SphereGeometry(0.2, 32, 32), materialJoint);
-        wristL.position.set(-2.28, 0.9, 0);
-        wristL.castShadow = true;
-        model.add(wristL);
-        
-        const handL = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.28, 0.48), materialDark);
-        handL.position.set(-2.55, 0.88, 0);
-        handL.castShadow = true;
-        model.add(handL);
-        
-        // =============== الساق اليمنى ===============
-        const thighR = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.34, 1.0, 24), materialDark);
-        thighR.position.set(0.68, 1.05, 0);
-        thighR.castShadow = true;
-        model.add(thighR);
-        
-        const kneeR = new THREE.Mesh(new THREE.SphereGeometry(0.26, 32, 32), materialJoint);
-        kneeR.position.set(0.72, 0.52, 0.05);
-        kneeR.castShadow = true;
-        model.add(kneeR);
-        
-        const calfR = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.28, 0.9, 24), materialDark);
-        calfR.position.set(0.72, 0.05, 0);
-        calfR.castShadow = true;
-        model.add(calfR);
-        
-        // =============== الساق اليسرى ===============
-        const thighL = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.34, 1.0, 24), materialDark);
-        thighL.position.set(-0.68, 1.05, 0);
-        thighL.castShadow = true;
-        model.add(thighL);
-        
-        const kneeL = new THREE.Mesh(new THREE.SphereGeometry(0.26, 32, 32), materialJoint);
-        kneeL.position.set(-0.72, 0.52, 0.05);
-        kneeL.castShadow = true;
-        model.add(kneeL);
-        
-        const calfL = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.28, 0.9, 24), materialDark);
-        calfL.position.set(-0.72, 0.05, 0);
-        calfL.castShadow = true;
-        model.add(calfL);
-        
-        // =============== القدم ===============
-        const footGeo = new THREE.BoxGeometry(0.68, 0.2, 1.05);
-        
-        const footR = new THREE.Mesh(footGeo, materialFoot);
-        footR.position.set(0.82, -0.32, 0.2);
-        footR.castShadow = true;
-        model.add(footR);
-        
-        const footL = new THREE.Mesh(footGeo, materialFoot);
-        footL.position.set(-0.82, -0.32, 0.2);
-        footL.castShadow = true;
-        model.add(footL);
-        
-        // =============== تحريك ===============
+        robot.add(torso);
+
+        // حزام ذهبي
+        const belt = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.05, 16, 32), matGold);
+        belt.position.y = 1.6;
+        belt.rotation.x = Math.PI/2;
+        robot.add(belt);
+
+        // --- الرأس ---
+        const headGroup = new THREE.Group();
+        headGroup.position.y = 2.9;
+        robot.add(headGroup);
+
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.5, 0.6), matArmor);
+        headGroup.add(head);
+
+        const eye = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.1, 0.1), matGlow);
+        eye.position.set(0, 0.1, 0.3);
+        headGroup.add(eye);
+
+        const hornR = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.5, 8), matGold);
+        hornR.position.set(0.2, 0.4, 0);
+        hornR.rotation.z = -0.3;
+        headGroup.add(hornR);
+
+        const hornL = hornR.clone();
+        hornL.position.x = -0.2;
+        hornL.rotation.z = 0.3;
+        headGroup.add(hornL);
+
+        // --- الأذرع ---
+        function createArm(side) {
+            const arm = new THREE.Group();
+            const shoulder = new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 16), matArmor);
+            arm.add(shoulder);
+
+            const bicep = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.8), matInner);
+            bicep.position.y = -0.5;
+            arm.add(bicep);
+
+            const elbow = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 16), matGold);
+            elbow.position.y = -0.9;
+            arm.add(elbow);
+
+            const forearm = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.25, 0.8), matArmor);
+            forearm.position.y = -1.3;
+            arm.add(forearm);
+
+            const hand = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.3), matGold);
+            hand.position.y = -1.8;
+            arm.add(hand);
+
+            arm.position.set(side * 0.9, 2.5, 0);
+            arm.rotation.z = side * 0.2; // زاوية هجومية
+            arm.rotation.x = -0.3;
+            return arm;
+        }
+
+        robot.add(createArm(1)); // Right
+        robot.add(createArm(-1)); // Left
+
+        // --- الأرجل ---
+        function createLeg(side) {
+            const leg = new THREE.Group();
+            const thigh = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.2, 1), matArmor);
+            thigh.position.y = -0.5;
+            leg.add(thigh);
+
+            const knee = new THREE.Mesh(new THREE.SphereGeometry(0.22, 16, 16), matGold);
+            knee.position.y = -1;
+            leg.add(knee);
+
+            const shin = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.3, 1), matArmor);
+            shin.position.y = -1.5;
+            leg.add(shin);
+
+            const foot = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.2, 0.8), matInner);
+            foot.position.set(0, -2, 0.1);
+            leg.add(foot);
+
+            leg.position.set(side * 0.45, 1.5, 0);
+            return leg;
+        }
+
+        robot.add(createLeg(1));
+        robot.add(createLeg(-1));
+
+        // --- الأرضية ---
+        const grid = new THREE.GridHelper(20, 40, 0x00d4ff, 0x222222);
+        scene.add(grid);
+
+        const floorGeo = new THREE.PlaneGeometry(20, 20);
+        const floorMat = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 0.1, metalness: 0.5 });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        floor.position.y = -0.5;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        // --- التحريك ---
         function animate() {
             requestAnimationFrame(animate);
+            const time = Date.now() * 0.002;
+            
+            // حركة تنفس خفيفة
+            robot.position.y = Math.sin(time) * 0.05;
+            headGroup.rotation.y = Math.sin(time * 0.5) * 0.1;
+            
             controls.update();
             renderer.render(scene, camera);
         }
-        
+
         animate();
-        
+
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
-        
-        console.log('✅ المجسم جاهز - ذراعين محسنة');
-        console.log('💪 هيكل الذراع: كتف → عضد → كوع → ساعد → رسغ → يد');
-        console.log('📏 المسافات متساوية بين المفاصل');
     </script>
 </body>
 </html>
