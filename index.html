@@ -2,111 +2,186 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>المحارب المدرع - حركات فيزيائية (قفز، ركض، رمي)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>المحارب المدرع - تحكم جويستك للهاتف</title>
     <style>
+        * {
+            user-select: none;
+            touch-action: none;
+        }
         body {
             margin: 0;
             overflow: hidden;
-            font-family: 'Segoe UI', 'Tahoma', 'Geneva', 'Verdana', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #ffffff;
+            touch-action: none;
         }
         #info-panel {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(4px);
-            color: #1e2a3a;
-            padding: 12px 20px;
-            border-radius: 12px;
-            border-left: 5px solid #d35400;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-            pointer-events: none;
+            top: 15px;
+            left: 15px;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border-left: 4px solid #ff6600;
             z-index: 100;
-            font-weight: 500;
+            font-size: 12px;
+            pointer-events: none;
             direction: rtl;
-            font-size: 14px;
         }
         #info-panel h1 {
             margin: 0;
-            font-size: 1.3rem;
-            letter-spacing: 1px;
-            color: #c4450c;
-            font-weight: 700;
+            font-size: 1rem;
         }
         #info-panel p {
-            margin: 5px 0 0;
-            font-size: 0.8rem;
+            margin: 2px 0 0;
+            font-size: 0.7rem;
             opacity: 0.8;
         }
-        .controls-panel {
-            position: absolute;
+        
+        /* حاوية التحكم الرئيسية */
+        .controls-container {
+            position: fixed;
             bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: 15px;
+            z-index: 200;
+            pointer-events: none;
+        }
+        
+        /* الجويستيك */
+        .joystick-area {
+            pointer-events: auto;
+            width: 140px;
+            height: 140px;
+            background: rgba(30,30,40,0.65);
+            backdrop-filter: blur(12px);
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.3);
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+        }
+        .joystick-base {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 0 3px rgba(0,0,0,0.2);
+            transition: transform 0.05s;
+            cursor: pointer;
+        }
+        
+        /* مجموعة الأزرار */
+        .buttons-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            pointer-events: auto;
+        }
+        .action-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255,255,255,0.5);
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.05s linear;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            touch-action: manipulation;
+        }
+        .action-btn:active {
+            transform: scale(0.92);
+            background: rgba(255,100,0,0.9);
+        }
+        .run-btn {
+            background: rgba(50,50,80,0.85);
+            font-size: 24px;
+        }
+        .throw-btn {
+            background: rgba(200,80,0,0.85);
+            border-color: #ffaa44;
+        }
+        
+        /* شريط الحالة */
+        .status-bar {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+            padding: 6px 14px;
+            border-radius: 30px;
+            color: #ffaa44;
+            font-size: 12px;
+            font-weight: bold;
+            font-family: monospace;
+            z-index: 100;
+            pointer-events: none;
+            direction: ltr;
+        }
+        
+        @media (max-width: 700px) {
+            .joystick-area { width: 120px; height: 120px; }
+            .action-btn { width: 60px; height: 60px; font-size: 24px; }
+            .controls-container { padding: 10px; bottom: 10px; }
+        }
+        
+        @media (max-width: 500px) {
+            .joystick-area { width: 100px; height: 100px; }
+            .action-btn { width: 55px; height: 55px; font-size: 22px; }
+        }
+        
+        .instruction-tip {
+            position: fixed;
+            bottom: 100px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0,0,0,0.75);
-            backdrop-filter: blur(8px);
+            background: rgba(0,0,0,0.5);
             color: white;
-            padding: 12px 24px;
-            border-radius: 40px;
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-            z-index: 200;
-            font-family: monospace;
-            font-size: 14px;
-            pointer-events: none;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        .controls-panel span {
-            background: rgba(255,255,255,0.2);
+            font-size: 11px;
             padding: 4px 12px;
             border-radius: 20px;
-            font-weight: bold;
-        }
-        .controls-panel kbd {
-            background: #2c3e50;
-            padding: 4px 10px;
-            border-radius: 8px;
-            font-weight: bold;
-            margin: 0 4px;
-            font-size: 16px;
-        }
-        @media (max-width: 700px) {
-            .controls-panel { font-size: 10px; padding: 8px 16px; gap: 10px; }
-            .controls-panel kbd { padding: 2px 6px; font-size: 12px; }
-        }
-        .action-feedback {
-            position: absolute;
-            bottom: 100px;
-            right: 20px;
-            background: rgba(0,0,0,0.7);
-            color: #ffaa44;
-            padding: 8px 16px;
-            border-radius: 30px;
-            font-size: 14px;
-            font-weight: bold;
-            font-family: monospace;
+            white-space: nowrap;
             pointer-events: none;
-            z-index: 100;
-            transition: 0.1s;
-            backdrop-filter: blur(4px);
+            z-index: 90;
         }
     </style>
 </head>
 <body>
     <div id="info-panel">
-        <h1>⚔️ HEAVY VANGUARD — المحارب المدرع</h1>
-        <p>حركات فيزيائية: قفز • ركض • رمي متناوب (يمين/يسار)</p>
+        <h1>⚔️ HEAVY VANGUARD | تحكم جويستيك</h1>
+        <p>اسحب الجويستيك للحركة | أزرار: قفز • ركض (ضغط مطول) • رمي متناوب</p>
     </div>
-    <div class="controls-panel">
-        <span>🎮 <kbd>SPACE</kbd> قفز</span>
-        <span>🏃 <kbd>SHIFT</kbd> ركض (مستمر)</span>
-        <span>💥 <kbd>E</kbd> رمي (يمين ← ثم يسار ← بالتناوب)</span>
-        <span>🖱️ اسحب لتدوير الكاميرا</span>
+    <div class="status-bar" id="status-display">⚡ جاهز</div>
+    <div class="instruction-tip">🎮 اسحب الجويستيك لتحريك البطل</div>
+    
+    <div class="controls-container">
+        <div class="joystick-area" id="joystickArea">
+            <div class="joystick-base" id="joystickBase"></div>
+        </div>
+        <div class="buttons-group">
+            <div class="action-btn" id="jumpBtn" style="background:#2c3e50;">🦵</div>
+            <div class="action-btn run-btn" id="runBtn">🏃</div>
+            <div class="action-btn throw-btn" id="throwBtn">💥</div>
+        </div>
     </div>
-    <div id="action-feedback" class="action-feedback">⚡ جاهز</div>
 
     <script type="importmap">
         { "imports": { "three": "https://unpkg.com/three@0.128.0/build/three.module.js" } }
@@ -116,437 +191,351 @@
         import * as THREE from 'three';
         import { OrbitControls } from 'https://unpkg.com/three@0.128.0/examples/jsm/controls/OrbitControls.js';
 
-        // إعداد المشهد
+        // ========== إعداد المشهد ==========
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0xffffff);
         
-        const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(7, 4, 10);
-
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(6, 4.5, 9);
+        
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
-
+        
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.target.set(0, 2, 0);
         controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-
-        // إضاءة الاستوديو
+        controls.enableZoom = true;
+        controls.zoomSpeed = 0.8;
+        
+        // إضاءة
         const mainLight = new THREE.DirectionalLight(0xffffff, 1.0);
         mainLight.position.set(5, 10, 7);
         mainLight.castShadow = true;
-        mainLight.shadow.mapSize.width = 1024;
-        mainLight.shadow.mapSize.height = 1024;
         scene.add(mainLight);
-
         const fillLight = new THREE.PointLight(0x88aaff, 0.55);
         fillLight.position.set(-4, 3, 6);
         scene.add(fillLight);
-
-        const backLight = new THREE.PointLight(0xffaa66, 0.4);
-        backLight.position.set(2, 3, -5);
-        scene.add(backLight);
-
-        const ambient = new THREE.AmbientLight(0xffffff, 0.55);
+        const ambient = new THREE.AmbientLight(0xffffff, 0.6);
         scene.add(ambient);
         
-        const rimLight = new THREE.PointLight(0xccaa88, 0.35);
-        rimLight.position.set(0, -1, 2);
-        scene.add(rimLight);
-
-        // المواد (نفس المواد الأصلية)
+        // المواد
         const matArmor = new THREE.MeshStandardMaterial({ color: 0x2c3e50, metalness: 0.85, roughness: 0.2 });
-        const matJoint = new THREE.MeshStandardMaterial({ color: 0xe67e22, metalness: 0.6, roughness: 0.35, emissive: 0x442200, emissiveIntensity: 0.25 });
+        const matJoint = new THREE.MeshStandardMaterial({ color: 0xe67e22, metalness: 0.6, roughness: 0.35, emissive: 0x442200, emissiveIntensity: 0.2 });
         const matGlow = new THREE.MeshStandardMaterial({ color: 0x3a86ff, emissive: 0x1a4488, emissiveIntensity: 0.4 });
-        const matSoftJoint = new THREE.MeshStandardMaterial({ color: 0xbc6c25, metalness: 0.5, roughness: 0.4, emissive: 0x552200, emissiveIntensity: 0.2 });
-
+        const matSoftJoint = new THREE.MeshStandardMaterial({ color: 0xbc6c25, metalness: 0.5, roughness: 0.4 });
+        
         const character = new THREE.Group();
         scene.add(character);
-
-        // ==========================================
-        // بناء الشخصية (نفس التصميم الأصلي مع الحفاظ على المراجع للأذرع)
-        // ==========================================
         
-        // الجذع
+        // ========== بناء الشخصية (نفس التصميم الأصلي) ==========
         const upperTorso = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.5, 1.0, 24), matArmor);
         upperTorso.position.y = 2.4;
         upperTorso.castShadow = true;
         character.add(upperTorso);
-
+        
         const lowerTorso = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.6, 0.8, 24), matArmor);
         lowerTorso.position.y = 1.6;
-        lowerTorso.castShadow = true;
         character.add(lowerTorso);
         
         const waistRing = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.08, 16, 48), matSoftJoint);
         waistRing.position.y = 1.95;
         waistRing.rotation.x = Math.PI / 2;
         character.add(waistRing);
-
-        // الرأس
+        
         const neckJoint = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.38, 0.22, 16), matSoftJoint);
         neckJoint.position.y = 2.98;
         character.add(neckJoint);
-        
         const head = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.55, 0.55), matArmor);
         head.position.y = 3.25;
         character.add(head);
-
         const visor = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.12, 0.15), matGlow);
         visor.position.set(0, 3.35, 0.27);
         character.add(visor);
         
-        const helmetCrest = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.08, 0.55), matArmor);
-        helmetCrest.position.set(0, 3.58, 0.15);
-        character.add(helmetCrest);
-
-        // تخزين مراجع الأذرع للتحريك
         const arms = { right: null, left: null };
-        
-        function createArm(side, sideName) {
+        function createArm(side) {
             const arm = new THREE.Group();
-            
             const shoulder = new THREE.Mesh(new THREE.SphereGeometry(0.44, 32, 32), matSoftJoint);
-            shoulder.castShadow = true;
             arm.add(shoulder);
-            
-            const shoulderRing = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.05, 12, 32), matArmor);
-            shoulderRing.rotation.x = Math.PI / 2;
-            shoulderRing.position.y = -0.15;
-            arm.add(shoulderRing);
-
             const bicep = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.2, 0.85, 24), matArmor);
             bicep.position.y = -0.55;
-            bicep.castShadow = true;
             arm.add(bicep);
-
             const elbow = new THREE.Mesh(new THREE.SphereGeometry(0.23, 32, 32), matSoftJoint);
             elbow.position.y = -1.02;
             arm.add(elbow);
-            
-            const elbowRing = new THREE.Mesh(new THREE.TorusGeometry(0.27, 0.045, 12, 32), matArmor);
-            elbowRing.position.y = -1.02;
-            elbowRing.rotation.x = Math.PI / 2;
-            arm.add(elbowRing);
-
             const forearm = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.22, 0.9, 24), matArmor);
             forearm.position.y = -1.5;
-            forearm.castShadow = true;
             arm.add(forearm);
-            
-            const wrist = new THREE.Mesh(new THREE.SphereGeometry(0.19, 24, 24), matSoftJoint);
-            wrist.position.y = -1.98;
-            arm.add(wrist);
-
             const hand = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.28, 0.32), matJoint);
             hand.position.y = -2.08;
             arm.add(hand);
-
             arm.position.set(side * 1.15, 2.7, 0);
             return arm;
         }
+        arms.right = createArm(1);
+        arms.left = createArm(-1);
+        character.add(arms.right);
+        character.add(arms.left);
         
-        const rightArm = createArm(1, 'right');
-        const leftArm = createArm(-1, 'left');
-        character.add(rightArm);
-        character.add(leftArm);
-        arms.right = rightArm;
-        arms.left = leftArm;
-
-        // الأرجل
         function createLeg(side) {
             const leg = new THREE.Group();
-            const hipJoint = new THREE.Mesh(new THREE.SphereGeometry(0.38, 32, 32), matSoftJoint);
-            hipJoint.position.y = -0.15;
-            leg.add(hipJoint);
-            
             const thigh = new THREE.Mesh(new THREE.CylinderGeometry(0.37, 0.28, 1.1, 24), matArmor);
             thigh.position.y = -0.65;
             leg.add(thigh);
-            
-            const thighRing = new THREE.Mesh(new THREE.TorusGeometry(0.34, 0.05, 12, 32), matArmor);
-            thighRing.position.y = -1.05;
-            thighRing.rotation.x = Math.PI / 2;
-            leg.add(thighRing);
-
             const knee = new THREE.Mesh(new THREE.SphereGeometry(0.29, 32, 32), matSoftJoint);
             knee.position.y = -1.22;
             leg.add(knee);
-            
-            const kneeRing = new THREE.Mesh(new THREE.TorusGeometry(0.33, 0.045, 12, 32), matArmor);
-            kneeRing.position.y = -1.22;
-            kneeRing.rotation.x = Math.PI / 2;
-            leg.add(kneeRing);
-
             const shin = new THREE.Mesh(new THREE.CylinderGeometry(0.27, 0.35, 1.02, 24), matArmor);
             shin.position.y = -1.78;
             leg.add(shin);
-            
-            const ankle = new THREE.Mesh(new THREE.SphereGeometry(0.24, 28, 28), matSoftJoint);
-            ankle.position.y = -2.32;
-            leg.add(ankle);
-
             const foot = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.26, 0.95), matArmor);
             foot.position.set(0, -2.44, 0.22);
             leg.add(foot);
-            
             leg.position.set(side * 0.55, 1.3, 0);
             return leg;
         }
         character.add(createLeg(1));
         character.add(createLeg(-1));
         
-        // إضافات زخرفية
         const rightShoulderCap = new THREE.Mesh(new THREE.TorusGeometry(0.52, 0.07, 16, 40), matArmor);
         rightShoulderCap.position.set(1.15, 2.78, 0.1);
-        rightShoulderCap.rotation.z = 0.3;
-        rightShoulderCap.rotation.x = 0.5;
         character.add(rightShoulderCap);
-        
         const leftShoulderCap = new THREE.Mesh(new THREE.TorusGeometry(0.52, 0.07, 16, 40), matArmor);
         leftShoulderCap.position.set(-1.15, 2.78, 0.1);
-        leftShoulderCap.rotation.z = -0.3;
-        leftShoulderCap.rotation.x = 0.5;
         character.add(leftShoulderCap);
         
-        const chestPlateR = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.65, 0.18), matArmor);
-        chestPlateR.position.set(0.82, 2.55, 0.45);
-        character.add(chestPlateR);
-        
-        const chestPlateL = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.65, 0.18), matArmor);
-        chestPlateL.position.set(-0.82, 2.55, 0.45);
-        character.add(chestPlateL);
-        
-        const centerPlate = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.45, 0.12), matJoint);
-        centerPlate.position.set(0, 2.5, 0.58);
-        character.add(centerPlate);
-
-        const grid = new THREE.GridHelper(20, 30, 0xd0d0d0, 0xe8e8e8);
+        const grid = new THREE.GridHelper(18, 30, 0xcccccc, 0xe0e0e0);
         grid.position.y = -1.15;
-        grid.material.transparent = true;
-        grid.material.opacity = 0.45;
         scene.add(grid);
         
-        // ==========================================
-        // نظام الحركات الفيزيائية
-        // ==========================================
-        
-        // حالة الحركات
+        // ========== نظام الحركات ==========
         let isJumping = false;
         let jumpVelocity = 0;
         let originalY = 0;
-        let jumpStartY = 0;
         
         let isRunning = false;
         let runCycle = 0;
+        let runHoldTimeout = null;
         
-        // نظام الرمي المتناوب
-        let throwState = { active: false, side: 'right', progress: 0, throwing: false, timer: null };
-        let lastThrowSide = 'right'; // لتحديد الرمية التالية
+        let throwState = { throwing: false, side: 'right', projectileFired: false };
+        let lastThrowSide = 'right';
         
-        // مراجع للأذرع
-        const rightArmOriginalRot = { x: 0, z: 0 };
-        const leftArmOriginalRot = { x: 0, z: 0 };
+        // حركة الشخصية باستخدام الجويستيك
+        let moveDirection = { x: 0, z: 0 };
+        let moveSpeed = 2.5;
+        let characterVelocity = { x: 0, z: 0 };
         
-        // عنصر التغذية الراجعة
-        const feedbackDiv = document.getElementById('action-feedback');
-        
-        function showFeedback(msg, isError = false) {
-            feedbackDiv.textContent = msg;
-            feedbackDiv.style.color = isError ? '#ff8888' : '#ffaa44';
-            feedbackDiv.style.opacity = '1';
+        function showStatus(msg, isError = false) {
+            const statusDiv = document.getElementById('status-display');
+            statusDiv.textContent = msg;
+            statusDiv.style.color = isError ? '#ff8888' : '#ffaa44';
             setTimeout(() => {
-                if (feedbackDiv.textContent === msg) {
-                    feedbackDiv.style.opacity = '0.7';
-                }
-            }, 800);
+                if (document.getElementById('status-display').textContent === msg)
+                    statusDiv.style.opacity = '0.9';
+            }, 600);
         }
         
-        // دالة رمي القذيفة
         function createProjectile(side) {
             const projectile = new THREE.Mesh(
                 new THREE.SphereGeometry(0.18, 16, 16),
-                new THREE.MeshStandardMaterial({ color: 0xff6600, emissive: 0x442200, emissiveIntensity: 0.6, metalness: 0.3 })
+                new THREE.MeshStandardMaterial({ color: 0xff6600, emissive: 0x552200, emissiveIntensity: 0.5 })
             );
-            projectile.castShadow = true;
-            
-            // موقع اليد حسب الجانب
-            const handPos = new THREE.Vector3();
-            if (side === 'right') {
-                handPos.set(1.15, 2.7 - 2.08, 0.2);
-            } else {
-                handPos.set(-1.15, 2.7 - 2.08, 0.2);
-            }
-            handPos.applyQuaternion(character.quaternion);
-            handPos.add(character.position);
-            
-            projectile.position.copy(handPos);
+            const handOffset = side === 'right' ? new THREE.Vector3(1.15, 0.62, 0.3) : new THREE.Vector3(-1.15, 0.62, 0.3);
+            const worldPos = handOffset.clone().applyQuaternion(character.quaternion).add(character.position);
+            projectile.position.copy(worldPos);
             scene.add(projectile);
             
-            // اتجاه الرمي (نحو الأمام مع ميل بسيط حسب الجانب)
             const direction = new THREE.Vector3(
-                (side === 'right' ? 0.8 : -0.8),
-                0.6,
-                1.2
+                (side === 'right' ? 0.7 : -0.7),
+                0.5,
+                1.3
             ).normalize();
-            
-            const speed = 8;
-            let lifeTime = 0;
-            
-            function animateProjectile() {
-                lifeTime += 0.016;
-                projectile.position.x += direction.x * speed * 0.016;
-                projectile.position.y += direction.y * speed * 0.016;
-                projectile.position.z += direction.z * speed * 0.016;
-                
-                // تأثير دوران
-                projectile.rotateX(0.2);
-                projectile.rotateZ(0.15);
-                
-                if (lifeTime > 2.5 || projectile.position.y < -1) {
-                    scene.remove(projectile);
-                    return;
-                }
-                requestAnimationFrame(animateProjectile);
+            let life = 0;
+            function animateProj() {
+                life += 0.016;
+                projectile.position.x += direction.x * 7 * 0.016;
+                projectile.position.y += direction.y * 7 * 0.016;
+                projectile.position.z += direction.z * 7 * 0.016;
+                if (life > 2.2 || projectile.position.y < -1) scene.remove(projectile);
+                else requestAnimationFrame(animateProj);
             }
-            requestAnimationFrame(animateProjectile);
-            
-            showFeedback(`💥 رمي ${side === 'right' ? 'يمين' : 'يسار'}!`);
+            requestAnimationFrame(animateProj);
+            showStatus(`💥 رمي ${side === 'right' ? 'يمين' : 'يسار'}!`);
         }
         
-        // دالة تنفيذ الرمي مع حركة اليد
         function performThrow(side) {
             if (throwState.throwing) return false;
-            
             const arm = side === 'right' ? arms.right : arms.left;
-            if (!arm) return false;
-            
             throwState.throwing = true;
             throwState.side = side;
-            
-            // زوايا الرمي: رفع اليد للأعلى ثم رمي
-            const startRotX = arm.rotation.x || 0;
-            const startRotZ = arm.rotation.z || 0;
-            const peakRotX = -1.2; // رفع عالٍ
-            const peakRotZ = side === 'right' ? -0.6 : 0.6;
-            
-            let animProgress = 0;
-            const animDuration = 300; // ميلي ثانية
+            const startRotX = arm.rotation.x;
+            const startRotZ = arm.rotation.z;
+            const peakRotX = -1.3;
+            const peakRotZ = side === 'right' ? -0.7 : 0.7;
             const startTime = performance.now();
             
             function animateThrow(now) {
                 const elapsed = now - startTime;
-                let progress = Math.min(1, elapsed / animDuration);
-                
+                let progress = Math.min(1, elapsed / 280);
                 if (progress < 0.5) {
-                    // رفع اليد
-                    const t = progress * 2; // 0 to 1
-                    const easeOut = 1 - Math.pow(1 - t, 2);
-                    arm.rotation.x = startRotX + (peakRotX - startRotX) * easeOut;
-                    arm.rotation.z = startRotZ + (peakRotZ - startRotZ) * easeOut;
+                    const t = progress * 2;
+                    arm.rotation.x = startRotX + (peakRotX - startRotX) * t;
+                    arm.rotation.z = startRotZ + (peakRotZ - startRotZ) * t;
                 } else {
-                    // رمي وإعادة اليد
                     if (!throwState.projectileFired) {
                         throwState.projectileFired = true;
                         createProjectile(side);
                     }
                     const t = (progress - 0.5) * 2;
-                    const easeIn = t * t;
-                    arm.rotation.x = peakRotX + (startRotX - peakRotX) * easeIn;
-                    arm.rotation.z = peakRotZ + (startRotZ - peakRotZ) * easeIn;
+                    arm.rotation.x = peakRotX + (startRotX - peakRotX) * t;
+                    arm.rotation.z = peakRotZ + (startRotZ - peakRotZ) * t;
                 }
-                
-                if (progress < 1) {
-                    requestAnimationFrame(animateThrow);
-                } else {
+                if (progress < 1) requestAnimationFrame(animateThrow);
+                else {
                     arm.rotation.x = startRotX;
                     arm.rotation.z = startRotZ;
                     throwState.throwing = false;
                     throwState.projectileFired = false;
                 }
             }
-            
             throwState.projectileFired = false;
             requestAnimationFrame(animateThrow);
             return true;
         }
         
-        // دالة بدء الرمي (تناوب تلقائي)
         function triggerThrow() {
-            if (throwState.throwing) {
-                showFeedback('⚠️ انتظر حتى اكتمال الرمي', true);
-                return;
-            }
-            
-            // التناوب: اليد اليمنى أولاً، ثم اليسرى، ثم يمين، إلخ
+            if (throwState.throwing) { showStatus('⏳ انتظر الرمية', true); return; }
             const nextSide = lastThrowSide === 'right' ? 'left' : 'right';
             performThrow(nextSide);
             lastThrowSide = nextSide;
         }
         
-        // القفز
         function startJump() {
             if (isJumping) return;
             isJumping = true;
-            jumpVelocity = 5.8;
+            jumpVelocity = 5.5;
             originalY = character.position.y;
-            jumpStartY = originalY;
-            showFeedback('🦿 قفز!');
+            showStatus('🦿 قفز!');
         }
         
-        // الركض (تأثير اهتزاز وحركة الأذرع)
-        let runIntensity = 0;
+        function startRunning() {
+            if (!isRunning) {
+                isRunning = true;
+                showStatus('🏃 ركض!');
+            }
+        }
+        function stopRunning() {
+            isRunning = false;
+            runCycle = 0;
+            if (!throwState.throwing) {
+                arms.right.rotation.x *= 0.9;
+                arms.left.rotation.x *= 0.9;
+            }
+        }
         
-        // معالجة الأزرار
-        window.addEventListener('keydown', (e) => {
-            const key = e.key;
-            if (key === ' ' || key === 'Space') {
-                e.preventDefault();
-                startJump();
+        // جويستيك باللمس
+        const joystickArea = document.getElementById('joystickArea');
+        const joystickBase = document.getElementById('joystickBase');
+        let activeTouch = false;
+        let centerX = 0, centerY = 0;
+        
+        function updateJoystickPosition(clientX, clientY) {
+            const rect = joystickArea.getBoundingClientRect();
+            const areaCenterX = rect.left + rect.width/2;
+            const areaCenterY = rect.top + rect.height/2;
+            let dx = clientX - areaCenterX;
+            let dy = clientY - areaCenterY;
+            const maxDist = rect.width/2 - 15;
+            const distance = Math.hypot(dx, dy);
+            let limitedX = dx, limitedY = dy;
+            if (distance > maxDist) {
+                limitedX = dx * (maxDist / distance);
+                limitedY = dy * (maxDist / distance);
             }
-            if (key === 'Shift' || key === 'ShiftLeft') {
-                e.preventDefault();
-                if (!isRunning) {
-                    isRunning = true;
-                    showFeedback('🏃 ركض!');
-                }
-            }
-            if (key === 'e' || key === 'E') {
-                e.preventDefault();
-                triggerThrow();
+            joystickBase.style.transform = `translate(calc(-50% + ${limitedX}px), calc(-50% + ${limitedY}px))`;
+            moveDirection.x = limitedX / maxDist;
+            moveDirection.z = limitedY / maxDist;
+        }
+        
+        function resetJoystick() {
+            joystickBase.style.transform = 'translate(-50%, -50%)';
+            moveDirection.x = 0;
+            moveDirection.z = 0;
+        }
+        
+        joystickArea.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            activeTouch = true;
+            const touch = e.touches[0];
+            updateJoystickPosition(touch.clientX, touch.clientY);
+        });
+        joystickArea.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (activeTouch) {
+                const touch = e.touches[0];
+                updateJoystickPosition(touch.clientX, touch.clientY);
             }
         });
-        
-        window.addEventListener('keyup', (e) => {
-            if (e.key === 'Shift' || e.key === 'ShiftLeft') {
-                isRunning = false;
-                runCycle = 0;
-                // إعادة الأذرع لوضعها الطبيعي
-                if (!throwState.throwing) {
-                    arms.right.rotation.x = 0;
-                    arms.right.rotation.z = 0;
-                    arms.left.rotation.x = 0;
-                    arms.left.rotation.z = 0;
-                }
-            }
+        joystickArea.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            activeTouch = false;
+            resetJoystick();
         });
         
-        // ==========================================
-        // حلقة الفيزياء والتحديث
-        // ==========================================
+        // أزرار اللمس
+        const jumpBtn = document.getElementById('jumpBtn');
+        const runBtn = document.getElementById('runBtn');
+        const throwBtn = document.getElementById('throwBtn');
+        
+        jumpBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startJump(); });
+        jumpBtn.addEventListener('mousedown', (e) => { e.preventDefault(); startJump(); });
+        
+        let runActive = false;
+        runBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startRunning(); runActive = true; });
+        runBtn.addEventListener('touchend', (e) => { e.preventDefault(); if(runActive) stopRunning(); runActive=false; });
+        runBtn.addEventListener('mousedown', (e) => { startRunning(); runActive=true; });
+        runBtn.addEventListener('mouseup', (e) => { if(runActive) stopRunning(); runActive=false; });
+        
+        throwBtn.addEventListener('touchstart', (e) => { e.preventDefault(); triggerThrow(); });
+        throwBtn.addEventListener('mousedown', (e) => { e.preventDefault(); triggerThrow(); });
+        
+        // منع السحب على الصفحة
+        document.body.addEventListener('touchmove', (e) => {
+            if (e.target === joystickArea || joystickArea.contains(e.target)) return;
+            e.preventDefault();
+        }, { passive: false });
+        
+        // ========== تحديث الفيزياء والحركة ==========
         let lastTime = performance.now();
         
-        function updatePhysics(deltaTime) {
-            const dt = Math.min(deltaTime, 0.033);
+        function updatePhysics(delta) {
+            const dt = Math.min(delta, 0.033);
+            
+            // حركة الشخصية بالجويستيك
+            if (moveDirection.x !== 0 || moveDirection.z !== 0) {
+                let speed = isRunning ? 4.2 : 2.6;
+                characterVelocity.x = moveDirection.x * speed;
+                characterVelocity.z = moveDirection.z * speed;
+                character.position.x += characterVelocity.x * dt;
+                character.position.z += characterVelocity.z * dt;
+                // دوران الشخصية باتجاه الحركة
+                if (Math.abs(moveDirection.x) > 0.1 || Math.abs(moveDirection.z) > 0.1) {
+                    let angle = Math.atan2(moveDirection.x, moveDirection.z);
+                    character.rotation.y = angle;
+                }
+            } else {
+                characterVelocity.x *= 0.92;
+                characterVelocity.z *= 0.92;
+                character.position.x += characterVelocity.x * dt;
+                character.position.z += characterVelocity.z * dt;
+            }
             
             // القفز
             if (isJumping) {
                 jumpVelocity -= 12 * dt;
                 character.position.y += jumpVelocity * dt;
-                
                 if (character.position.y <= originalY) {
                     character.position.y = originalY;
                     isJumping = false;
@@ -554,58 +543,43 @@
                 }
             }
             
-            // الركض: تأثير اهتزاز وحركة الأذرع ذهابًا وإيابًا
-            if (isRunning && !throwState.throwing) {
+            // الركض (حركة الأذرع)
+            if (isRunning && !throwState.throwing && (Math.abs(moveDirection.x) > 0.1 || Math.abs(moveDirection.z) > 0.1)) {
                 runCycle += dt * 14;
-                const armSwing = Math.sin(runCycle) * 0.45;
-                const armSwingZ = Math.cos(runCycle * 1.3) * 0.2;
-                arms.right.rotation.x = armSwing * 0.7;
-                arms.right.rotation.z = -armSwingZ * 0.5;
-                arms.left.rotation.x = -armSwing * 0.7;
-                arms.left.rotation.z = armSwingZ * 0.5;
-                
-                // اهتزاز بسيط للجسم
-                character.position.y = originalY + Math.sin(runCycle * 12) * 0.01;
+                const swing = Math.sin(runCycle) * 0.55;
+                arms.right.rotation.x = swing * 0.8;
+                arms.left.rotation.x = -swing * 0.8;
+                arms.right.rotation.z = Math.sin(runCycle * 1.5) * 0.25;
+                arms.left.rotation.z = -Math.sin(runCycle * 1.5) * 0.25;
+                // اهتزاز
+                character.position.y = originalY + Math.sin(runCycle * 14) * 0.012;
             } else if (!throwState.throwing) {
-                // إعادة الأذرع للوضع الطبيعي تدريجيًا
-                arms.right.rotation.x *= 0.92;
-                arms.right.rotation.z *= 0.92;
-                arms.left.rotation.x *= 0.92;
-                arms.left.rotation.z *= 0.92;
-                character.position.y += (originalY - character.position.y) * 0.2;
+                arms.right.rotation.x *= 0.93;
+                arms.left.rotation.x *= 0.93;
+                arms.right.rotation.z *= 0.93;
+                arms.left.rotation.z *= 0.93;
+                character.position.y += (originalY - character.position.y) * 0.15;
             }
             
-            // تأثير إضافي عند القفز: رفع الأذرع قليلاً
-            if (isJumping) {
-                const jumpT = Math.abs(jumpVelocity) / 6;
-                const armLift = Math.min(0.6, jumpT * 0.8);
-                if (!throwState.throwing) {
-                    arms.right.rotation.x = -armLift;
-                    arms.left.rotation.x = -armLift;
-                }
-            }
+            // حدود المشي
+            character.position.x = Math.min(12, Math.max(-12, character.position.x));
+            character.position.z = Math.min(12, Math.max(-12, character.position.z));
+            
+            // تحديث الكاميرا (OrbitControls تتبع الهدف)
+            controls.target.lerp(new THREE.Vector3(character.position.x, 2, character.position.z), 0.08);
         }
-        
-        // دوران بطيء للشخصية (اختياري للمعاينة لكن نبقيه كما هو)
-        let autoRotate = 0;
         
         function animate() {
             const now = performance.now();
-            let delta = Math.min(0.033, (now - lastTime) / 1000);
+            let delta = (now - lastTime) / 1000;
             lastTime = now;
-            
             updatePhysics(delta);
-            
-            // دوران بطيء جداً (نفس الأصلي)
-            character.rotation.y += 0.0025;
-            
-            // تحديث الكاميرا
             controls.update();
             renderer.render(scene, camera);
-            
             requestAnimationFrame(animate);
         }
         
+        originalY = character.position.y;
         animate();
         
         window.addEventListener('resize', () => {
@@ -614,7 +588,7 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
         
-        console.log('✅ شخصية المحارب المدرع مع حركات فيزيائية: قفز، ركض، رمي متناوب باليدين');
+        console.log('✅ تحكم جويستيك وأزرار للهاتف - قفز، ركض، رمي متناوب');
     </script>
 </body>
 </html>
