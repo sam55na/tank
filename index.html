@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Dwarf Bomber - Professional Character | Enhanced Physics</title>
+    <title>Dwarf Bomber - Enhanced Edition</title>
     <style>
         * {
             margin: 0;
@@ -17,7 +17,7 @@
         body {
             overflow: hidden;
             background: linear-gradient(135deg, #0a2f1f, #051a0e);
-            font-family: 'Segoe UI', system-ui, -apple-system, monospace;
+            font-family: 'Segoe UI', system-ui, monospace;
         }
 
         canvas {
@@ -39,12 +39,13 @@
             z-index: 100;
         }
 
+        /* Crosshair */
         #crosshair {
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             transform: translate(-50%, -50%);
             pointer-events: none;
             z-index: 150;
@@ -53,57 +54,58 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 44px;
-            height: 44px;
-            border: 2.5px solid #ff8844;
+            width: 38px;
+            height: 38px;
+            border: 2px solid #ff8844;
             border-radius: 50%;
             transform: translate(-50%, -50%);
-            box-shadow: 0 0 15px rgba(255,136,68,0.8);
+            box-shadow: 0 0 12px rgba(255,136,68,0.8);
             animation: crosshairPulse 0.8s ease-out infinite;
         }
         .crosshair-dot {
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 6px;
-            height: 6px;
+            width: 5px;
+            height: 5px;
             background: #ff8844;
             border-radius: 50%;
             transform: translate(-50%, -50%);
-            box-shadow: 0 0 8px #ffaa44;
+            box-shadow: 0 0 6px #ffaa44;
         }
         @keyframes crosshairPulse {
             0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
-            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.12); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
         }
 
+        /* Score Panel */
         #score-panel {
             position: absolute;
             top: 20px;
             right: 20px;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(12px);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
             color: #ffaa44;
-            padding: 12px 28px;
-            border-radius: 50px;
+            padding: 8px 22px;
+            border-radius: 40px;
             font-weight: bold;
-            font-size: 38px;
+            font-size: 32px;
             font-family: 'Courier New', monospace;
             pointer-events: none;
             z-index: 150;
-            border: 2px solid #ffaa55;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            border: 1px solid #ffaa55;
         }
         
+        /* Distance Slider */
         #slider-container {
             position: absolute;
-            bottom: 140px;
+            bottom: 120px;
             left: 20px;
-            width: 70px;
-            height: 200px;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(12px);
-            border-radius: 60px;
+            width: 60px;
+            height: 180px;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
             border: 2px solid #ffaa55;
             pointer-events: auto;
             z-index: 140;
@@ -112,100 +114,85 @@
             align-items: center;
             justify-content: flex-end;
             cursor: pointer;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
         #slider-handle {
-            width: 56px;
-            height: 56px;
+            width: 48px;
+            height: 48px;
             background: radial-gradient(circle, #ffaa66, #ff8844);
             border-radius: 50%;
             margin-bottom: 8px;
             cursor: pointer;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.5);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.5);
             transition: margin-bottom 0.03s linear;
             border: 2px solid #ffdd99;
         }
         .slider-label {
             position: absolute;
-            left: -55px;
-            top: 20px;
+            left: -48px;
+            top: 15px;
             color: #ffdd99;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: bold;
             text-align: center;
-            line-height: 1.4;
         }
         #distance-value {
             position: absolute;
-            bottom: -45px;
-            left: -10px;
-            right: -10px;
+            bottom: -40px;
+            left: -8px;
+            right: -8px;
             text-align: center;
             color: #ffaa55;
             font-weight: bold;
-            font-size: 12px;
-            background: rgba(0,0,0,0.8);
-            padding: 5px;
-            border-radius: 20px;
-            font-family: monospace;
+            font-size: 11px;
+            background: rgba(0,0,0,0.75);
+            padding: 4px;
+            border-radius: 18px;
         }
 
+        /* Movement Zone */
         .zone-move {
             position: absolute;
             bottom: 0;
             left: 0;
-            width: 50%;
-            height: 100%;
+            width: 45%;
+            height: 45%;
             pointer-events: auto;
             z-index: 110;
         }
         .joystick-base {
             position: absolute;
-            bottom: 80px;
+            bottom: 60px;
             left: 50%;
             transform: translateX(-50%);
-            width: 150px;
-            height: 150px;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(15px);
+            width: 130px;
+            height: 130px;
+            background: rgba(0,0,0,0.65);
+            backdrop-filter: blur(12px);
             border-radius: 50%;
-            border: 3px solid #ffaa55;
-            box-shadow: 0 0 25px rgba(0,0,0,0.6);
+            border: 2.5px solid #ffaa55;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
         .joystick-thumb {
             position: absolute;
-            width: 65px;
-            height: 65px;
+            width: 55px;
+            height: 55px;
             background: radial-gradient(circle, #ffcc77, #ffaa33);
             border-radius: 50%;
-            box-shadow: 0 4px 15px black;
+            box-shadow: 0 3px 12px black;
             pointer-events: none;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            transition: transform 0.02s linear;
             border: 2px solid #ffdd99;
         }
-        .move-label {
-            position: absolute;
-            bottom: 25px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: #ffdd99;
-            font-size: 12px;
-            background: rgba(0,0,0,0.7);
-            padding: 4px 14px;
-            border-radius: 20px;
-            white-space: nowrap;
-            font-weight: bold;
-        }
 
+        /* Right Zone Controls - SMALL BUTTONS with same response area */
         .zone-right {
             position: absolute;
             bottom: 0;
             right: 0;
-            width: 50%;
-            height: 100%;
+            width: 55%;
+            height: 55%;
             pointer-events: auto;
             z-index: 110;
             display: flex;
@@ -217,81 +204,62 @@
             pointer-events: auto;
         }
         .actions-area {
-            height: 180px;
+            position: absolute;
+            bottom: 30px;
+            right: 20px;
             display: flex;
-            gap: 20px;
-            padding: 20px;
-            background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(8px);
-            border-top: 2px solid #ffaa55;
+            gap: 15px;
+            pointer-events: auto;
+            z-index: 120;
         }
         .action-btn {
-            flex: 1;
-            border-radius: 70px;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(12px);
-            border: 2.5px solid #ffaa55;
-            color: white;
-            font-size: 28px;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(10px);
+            border: 2px solid #ffaa55;
+            color: #ffaa55;
+            font-size: 24px;
             font-weight: bold;
             cursor: pointer;
-            transition: transform 0.06s, background 0.08s;
+            transition: transform 0.05s, background 0.08s;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
             font-family: monospace;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            box-shadow: 0 3px 12px rgba(0,0,0,0.4);
         }
         .action-btn:active {
-            transform: scale(0.92);
+            transform: scale(0.88);
             background: #ffaa55;
             color: #1a1a1a;
         }
         
         .camera-hint {
             position: absolute;
-            bottom: 210px;
-            right: 25px;
-            color: rgba(255,200,150,0.8);
-            font-size: 11px;
-            background: rgba(0,0,0,0.6);
-            padding: 5px 12px;
-            border-radius: 20px;
+            bottom: 180px;
+            right: 20px;
+            color: rgba(255,200,150,0.6);
+            font-size: 9px;
+            background: rgba(0,0,0,0.5);
+            padding: 4px 10px;
+            border-radius: 16px;
             pointer-events: none;
             z-index: 120;
-            font-weight: bold;
-        }
-        
-        .info-text {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(10px);
-            color: #ffdd99;
-            padding: 8px 18px;
-            border-radius: 30px;
-            font-size: 11px;
-            font-weight: bold;
-            pointer-events: none;
-            z-index: 150;
-            border-left: 3px solid #ffaa44;
         }
         
         .bomb-marker-label {
             position: absolute;
-            bottom: 20px;
-            left: 110px;
-            background: rgba(0,0,0,0.7);
-            padding: 6px 16px;
-            border-radius: 25px;
+            bottom: 15px;
+            left: 100px;
+            background: rgba(0,0,0,0.6);
+            padding: 4px 12px;
+            border-radius: 18px;
             color: #ffaa66;
-            font-size: 10px;
+            font-size: 9px;
             pointer-events: none;
             z-index: 120;
-            font-weight: bold;
-            backdrop-filter: blur(4px);
         }
         
         #loading-screen {
@@ -306,34 +274,38 @@
             justify-content: center;
             z-index: 1000;
             color: #ffcc77;
-            font-size: 26px;
+            font-size: 22px;
             flex-direction: column;
-            gap: 20px;
+            gap: 15px;
             transition: opacity 0.5s;
             font-weight: bold;
         }
         
         @media (max-width: 768px) {
-            .joystick-base { width: 115px; height: 115px; bottom: 60px; }
-            .joystick-thumb { width: 52px; height: 52px; }
-            .action-btn { font-size: 24px; }
-            .actions-area { height: 150px; gap: 15px; padding: 15px; }
-            #score-panel { font-size: 28px; padding: 8px 22px; top: 12px; right: 12px; }
-            .info-text { font-size: 9px; top: 12px; left: 12px; }
-            .camera-hint { bottom: 180px; font-size: 9px; }
-            #slider-container { width: 60px; height: 170px; bottom: 110px; left: 12px; }
-            #slider-handle { width: 48px; height: 48px; }
+            .joystick-base { width: 105px; height: 105px; bottom: 50px; }
+            .joystick-thumb { width: 45px; height: 45px; }
+            .action-btn { width: 48px; height: 48px; font-size: 22px; }
+            .actions-area { bottom: 25px; right: 15px; gap: 12px; }
+            #score-panel { font-size: 26px; padding: 6px 18px; top: 12px; right: 12px; }
+            #slider-container { width: 52px; height: 150px; bottom: 100px; left: 12px; }
+            #slider-handle { width: 42px; height: 42px; }
+            .camera-hint { font-size: 8px; bottom: 150px; }
+            .bomb-marker-label { font-size: 8px; left: 85px; }
+        }
+        
+        @media (max-width: 480px) {
+            .joystick-base { width: 90px; height: 90px; }
+            .joystick-thumb { width: 40px; height: 40px; }
+            .action-btn { width: 42px; height: 42px; font-size: 20px; }
         }
     </style>
 </head>
 <body>
     <div id="loading-screen">
-        💣 DWARF BOMBER - PROFESSIONAL EDITION 💣
-        <div style="font-size: 14px;">🎮 LEFT: MOVE | RIGHT TOP: CAMERA | RIGHT BOTTOM: JUMP / THROW 🎮</div>
-        <div style="width: 280px; height: 4px; background: #2a2a2a; border-radius: 2px; overflow: hidden; margin-top: 15px;">
+        💣 DWARF BOMBER 💣
+        <div style="width: 250px; height: 3px; background: #2a2a2a; border-radius: 2px; overflow: hidden; margin-top: 12px;">
             <div style="width: 0%; height: 100%; background: #ffaa55;" id="loading-bar"></div>
         </div>
-        <div style="font-size: 12px;">Loading Professional Character...</div>
     </div>
 
     <div id="ui-overlay" style="display: none;">
@@ -342,27 +314,25 @@
             <div class="crosshair-dot"></div>
         </div>
         <div id="score-panel">💣 <span id="score">0</span></div>
-        <div class="info-text">🎮 LEFT = MOVE | TOP RIGHT = CAMERA | BOTTOM RIGHT = JUMP / THROW</div>
-        <div class="camera-hint">🎥 DRAG TOP-RIGHT AREA TO ROTATE CAMERA</div>
-        <div class="bomb-marker-label">🎯 ORANGE RING = BOMB IMPACT POINT</div>
+        <div class="camera-hint">🎥 DRAG TOP-RIGHT</div>
+        <div class="bomb-marker-label">🎯 IMPACT POINT</div>
         
         <div id="slider-container">
             <div id="slider-handle"></div>
-            <div class="slider-label">▲ LONGER<br>▼ SHORTER</div>
-            <div id="distance-value">📏 DISTANCE: <span id="dist-value">12.5</span> m</div>
+            <div class="slider-label">▲<br>▼</div>
+            <div id="distance-value"><span id="dist-value">12.5</span>m</div>
         </div>
         
         <div class="zone-move" id="zone-move">
             <div class="joystick-base" id="joystick-base"></div>
             <div class="joystick-thumb" id="joystick-thumb"></div>
-            <div class="move-label">🎮 MOVEMENT</div>
         </div>
         
         <div class="zone-right">
             <div class="camera-area" id="camera-area"></div>
             <div class="actions-area">
-                <button class="action-btn jump-btn" id="btn-jump">🦘 JUMP</button>
-                <button class="action-btn throw-btn" id="btn-throw">💣 THROW</button>
+                <button class="action-btn jump-btn" id="btn-jump">🦘</button>
+                <button class="action-btn throw-btn" id="btn-throw">💣</button>
             </div>
         </div>
     </div>
@@ -372,7 +342,7 @@
     
     <script>
         (function() {
-            // ========== ENHANCED PHYSICS CONFIGURATION ==========
+            // ========== PHYSICS CONFIGURATION ==========
             const PHYSICS = {
                 GRAVITY: 22.0,
                 JUMP_FORCE: 8.5,
@@ -397,7 +367,7 @@
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             document.body.appendChild(renderer.domElement);
             
-            // Enhanced Lighting
+            // Lighting
             const ambient = new THREE.AmbientLight(0x4a6e4a, 0.65);
             scene.add(ambient);
             const mainLight = new THREE.DirectionalLight(0xfff0cf, 1.3);
@@ -405,20 +375,14 @@
             mainLight.castShadow = true;
             mainLight.shadow.mapSize.width = 2048;
             mainLight.shadow.mapSize.height = 2048;
-            mainLight.shadow.camera.near = 0.5;
-            mainLight.shadow.camera.far = 70;
             scene.add(mainLight);
             
             const backFill = new THREE.PointLight(0x88aacc, 0.55);
             backFill.position.set(-6, 14, -8);
             scene.add(backFill);
             
-            const rimLight = new THREE.PointLight(0xffaa66, 0.45);
-            rimLight.position.set(4, 5, -12);
-            scene.add(rimLight);
-            
             // Ground
-            const groundMat = new THREE.MeshStandardMaterial({ color: 0x5a9e5a, roughness: 0.75, metalness: 0.1 });
+            const groundMat = new THREE.MeshStandardMaterial({ color: 0x5a9e5a, roughness: 0.75 });
             const ground = new THREE.Mesh(new THREE.PlaneGeometry(280, 280), groundMat);
             ground.rotation.x = -Math.PI/2;
             ground.position.y = -0.08;
@@ -428,22 +392,22 @@
             const grid = new THREE.GridHelper(280, 40, 0xaacc88, 0x558844);
             grid.position.y = 0.02;
             grid.material.transparent = true;
-            grid.material.opacity = 0.5;
+            grid.material.opacity = 0.45;
             scene.add(grid);
             
             // Decorative rocks
-            for(let i = 0; i < 100; i++) {
-                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.2 + Math.random() * 0.35), 
+            for(let i = 0; i < 80; i++) {
+                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.22 + Math.random() * 0.35), 
                     new THREE.MeshStandardMaterial({ color: 0x7a6a55, roughness: 0.85 }));
                 const angle = Math.random() * Math.PI * 2;
-                const radius = 40 + Math.random() * 100;
-                rock.position.set(Math.cos(angle) * radius, -0.15, Math.sin(angle) * radius);
+                const radius = 45 + Math.random() * 100;
+                rock.position.set(Math.cos(angle) * radius, -0.12, Math.sin(angle) * radius);
                 rock.castShadow = true;
-                rock.scale.set(1, 0.6 + Math.random() * 0.8, 1);
+                rock.scale.set(1, 0.5 + Math.random() * 0.7, 1);
                 scene.add(rock);
             }
             
-            // ========== PROFESSIONAL CHARACTER (GLTF) ==========
+            // ========== PROFESSIONAL CHARACTER ==========
             let character = null;
             let mixer = null;
             let animations = {};
@@ -452,73 +416,45 @@
             let modelLoaded = false;
             let bombInHand = null;
             
-            // Fallback character in case GLTF fails to load
-            let fallbackCharacter = null;
-            
-            function createFallbackCharacter() {
-                const group = new THREE.Group();
-                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.72, 0.78, 1.45, 8), 
-                    new THREE.MeshStandardMaterial({ color: 0x4aae77, metalness: 0.25, roughness: 0.45 }));
-                body.castShadow = true;
-                body.position.y = 0.72;
-                group.add(body);
-                
-                const armor = new THREE.Mesh(new THREE.CylinderGeometry(0.78, 0.82, 0.85, 6), 
-                    new THREE.MeshStandardMaterial({ color: 0xaa8866, metalness: 0.65 }));
-                armor.position.y = 0.85;
-                armor.castShadow = true;
-                group.add(armor);
-                
-                const head = new THREE.Mesh(new THREE.SphereGeometry(0.62, 32, 32), 
-                    new THREE.MeshStandardMaterial({ color: 0xffddbb }));
-                head.castShadow = true;
-                head.position.y = 1.48;
-                group.add(head);
-                
-                const helmet = new THREE.Mesh(new THREE.ConeGeometry(0.68, 0.62, 8), 
-                    new THREE.MeshStandardMaterial({ color: 0xccaa77, metalness: 0.7 }));
-                helmet.position.y = 1.82;
-                helmet.castShadow = true;
-                group.add(helmet);
-                
-                const beard = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.65, 0.55, 6), 
-                    new THREE.MeshStandardMaterial({ color: 0xcc8855 }));
-                beard.position.y = 1.18;
-                beard.castShadow = true;
-                group.add(beard);
-                
-                const rightHand = new THREE.Group();
-                rightHand.position.set(0.78, 1.12, 0.38);
-                group.add(rightHand);
-                
-                const leftHand = new THREE.Mesh(new THREE.SphereGeometry(0.32, 8, 8), 
-                    new THREE.MeshStandardMaterial({ color: 0xffccaa }));
-                leftHand.position.set(-0.78, 1.12, 0.38);
-                leftHand.castShadow = true;
-                group.add(leftHand);
-                
-                scene.add(group);
-                return { group, handBone: rightHand };
-            }
-            
             function createHandBomb(targetHand) {
                 if(bombInHand) return;
                 const bombGroup = new THREE.Group();
                 
-                const bombCore = new THREE.Mesh(new THREE.SphereGeometry(0.38, 32, 32), 
-                    new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.85, roughness: 0.2 }));
+                // Enhanced bomb model
+                const bombCore = new THREE.Mesh(new THREE.SphereGeometry(0.38, 48, 48), 
+                    new THREE.MeshStandardMaterial({ color: 0x2a2a2a, metalness: 0.9, roughness: 0.15, emissive: 0x111111 }));
                 bombCore.castShadow = true;
                 bombGroup.add(bombCore);
                 
-                const fuse = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.16, 0.52, 8), 
-                    new THREE.MeshStandardMaterial({ color: 0xff6644, emissive: 0x442200 }));
+                // Metallic rings
+                const ring1 = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.05, 16, 48), 
+                    new THREE.MeshStandardMaterial({ color: 0xccaa77, metalness: 0.85 }));
+                ring1.rotation.x = Math.PI / 2;
+                ring1.position.y = 0.15;
+                bombGroup.add(ring1);
+                
+                const ring2 = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.05, 16, 48), 
+                    new THREE.MeshStandardMaterial({ color: 0xccaa77, metalness: 0.85 }));
+                ring2.rotation.x = Math.PI / 2;
+                ring2.position.y = -0.15;
+                bombGroup.add(ring2);
+                
+                // Fuse with glow effect
+                const fuse = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.15, 0.58, 12), 
+                    new THREE.MeshStandardMaterial({ color: 0xcc6644, emissive: 0x442200, emissiveIntensity: 0.6 }));
                 fuse.position.y = 0.52;
                 bombGroup.add(fuse);
                 
-                const fuseTip = new THREE.Mesh(new THREE.SphereGeometry(0.09, 6, 6), 
-                    new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4400 }));
-                fuseTip.position.y = 0.78;
+                const fuseTip = new THREE.Mesh(new THREE.SphereGeometry(0.1, 12, 12), 
+                    new THREE.MeshStandardMaterial({ color: 0xff6644, emissive: 0xff4400, emissiveIntensity: 0.9 }));
+                fuseTip.position.y = 0.82;
                 bombGroup.add(fuseTip);
+                
+                // Spark particle effect (small glowing dot)
+                const spark = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 8), 
+                    new THREE.MeshStandardMaterial({ color: 0xffaa66, emissive: 0xff6600, emissiveIntensity: 1.2 }));
+                spark.position.y = 0.88;
+                bombGroup.add(spark);
                 
                 bombGroup.position.set(0.58, -0.12, 0.32);
                 targetHand.add(bombGroup);
@@ -532,7 +468,34 @@
                 }
             }
             
-            // Load professional GLTF character
+            function createFallbackCharacter() {
+                const group = new THREE.Group();
+                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.72, 0.78, 1.45, 8), 
+                    new THREE.MeshStandardMaterial({ color: 0x4aae77, metalness: 0.25 }));
+                body.castShadow = true;
+                body.position.y = 0.72;
+                group.add(body);
+                
+                const head = new THREE.Mesh(new THREE.SphereGeometry(0.62, 32, 32), 
+                    new THREE.MeshStandardMaterial({ color: 0xffddbb }));
+                head.castShadow = true;
+                head.position.y = 1.48;
+                group.add(head);
+                
+                const helmet = new THREE.Mesh(new THREE.ConeGeometry(0.68, 0.62, 8), 
+                    new THREE.MeshStandardMaterial({ color: 0xccaa77, metalness: 0.7 }));
+                helmet.position.y = 1.82;
+                helmet.castShadow = true;
+                group.add(helmet);
+                
+                const rightHand = new THREE.Group();
+                rightHand.position.set(0.78, 1.12, 0.38);
+                group.add(rightHand);
+                
+                scene.add(group);
+                return { group, handBone: rightHand };
+            }
+            
             const loader = new THREE.GLTFLoader();
             let loadAttempts = 0;
             
@@ -550,7 +513,6 @@
                             animations[clip.name.toLowerCase()] = mixer.clipAction(clip);
                         });
                         
-                        // Find hand bone for bomb attachment
                         character.traverse(node => {
                             if(node.isBone && (node.name.toLowerCase().includes('hand') || node.name.toLowerCase().includes('handr'))) {
                                 handBone = node;
@@ -564,7 +526,6 @@
                             handBone = dummyHand;
                         }
                         
-                        // Play idle animation
                         if(animations['idle']) {
                             currentAction = animations['idle'];
                             currentAction.play();
@@ -578,8 +539,7 @@
                         const progress = (xhr.loaded / xhr.total) * 100;
                         document.getElementById('loading-bar').style.width = Math.min(progress, 90) + '%';
                     },
-                    (error) => {
-                        console.warn('GLTF load failed, using fallback character', error);
+                    () => {
                         loadAttempts++;
                         if(loadAttempts < 2) {
                             setTimeout(loadProfessionalCharacter, 800);
@@ -606,7 +566,7 @@
             let velocityY = 0;
             let isGrounded = true;
             
-            // Keyboard support
+            // Keyboard
             const keys = { w: false, s: false, a: false, d: false };
             window.addEventListener('keydown', (e) => {
                 switch(e.code) {
@@ -643,14 +603,14 @@
                 }
             }
             
-            // Joystick - with REVERSED horizontal movement (عكس الحركة الأفقية)
+            // Joystick with clamped thumb movement (prevent thumb from going outside base)
             const zoneMove = document.getElementById('zone-move');
             const joystickBase = document.getElementById('joystick-base');
             const joystickThumb = document.getElementById('joystick-thumb');
             let joystickActive = false;
             let activeTouchId = null;
             let joyCenterX = 0, joyCenterY = 0;
-            const MAX_RADIUS = 65;
+            const MAX_RADIUS = 52; // Reduced to keep thumb inside base
             
             function updateJoystick(clientX, clientY) {
                 let dx = clientX - joyCenterX;
@@ -660,7 +620,7 @@
                 let limitedX = Math.cos(angle) * dist;
                 let limitedY = Math.sin(angle) * dist;
                 joystickThumb.style.transform = `translate(calc(-50% + ${limitedX}px), calc(-50% + ${limitedY}px))`;
-                // REVERSED: inverted horizontal movement (عكس الاتجاه الأفقي)
+                // Reversed horizontal movement
                 moveInput.x = -limitedX / MAX_RADIUS;
                 moveInput.z = -limitedY / MAX_RADIUS;
             }
@@ -712,7 +672,7 @@
                 if(!found) resetJoystick();
             });
             
-            // Camera Control
+            // Camera Control - follows player direction correctly
             const cameraArea = document.getElementById('camera-area');
             let cameraDragActive = false;
             let cameraYaw = 0;
@@ -728,7 +688,7 @@
             window.addEventListener('touchmove', (e) => {
                 if(!cameraDragActive) return;
                 let dx = e.touches[0].clientX - lastDragX;
-                targetYaw += dx * 0.006;
+                targetYaw += dx * 0.007;
                 lastDragX = e.touches[0].clientX;
             });
             
@@ -749,7 +709,7 @@
                 t = Math.min(1, Math.max(0, t));
                 throwDistance = 5 + t * 17;
                 document.getElementById('dist-value').innerText = throwDistance.toFixed(1);
-                let offset = t * (rect.height - 56);
+                let offset = t * (rect.height - 48);
                 sliderHandle.style.marginBottom = `${offset}px`;
                 updateLandingMarker();
             }
@@ -795,7 +755,7 @@
             throwBtn.addEventListener('mousedown', () => throwRequested = true);
             throwBtn.addEventListener('mouseup', () => setTimeout(() => throwRequested = false, 100));
             
-            // ========== BOMB SYSTEM ==========
+            // ========== ENHANCED BOMB WITH BETTER EXPLOSION ==========
             let bombs = [];
             let explosions = [];
             let targets = [];
@@ -803,12 +763,34 @@
             
             class Bomb {
                 constructor(position, velocity) {
-                    this.mesh = new THREE.Mesh(new THREE.SphereGeometry(0.45, 32, 32), 
-                        new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.85, roughness: 0.2 }));
-                    const fuse = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.55, 8), 
-                        new THREE.MeshStandardMaterial({ color: 0xff6644, emissive: 0x441100 }));
-                    fuse.position.y = 0.6;
-                    this.mesh.add(fuse);
+                    // Detailed bomb model
+                    const bombGroup = new THREE.Group();
+                    
+                    const core = new THREE.Mesh(new THREE.SphereGeometry(0.42, 48, 48), 
+                        new THREE.MeshStandardMaterial({ color: 0x2a2a2a, metalness: 0.88, roughness: 0.12 }));
+                    bombGroup.add(core);
+                    
+                    const ringTop = new THREE.Mesh(new THREE.TorusGeometry(0.46, 0.06, 16, 48), 
+                        new THREE.MeshStandardMaterial({ color: 0xccaa77, metalness: 0.85 }));
+                    ringTop.position.y = 0.2;
+                    bombGroup.add(ringTop);
+                    
+                    const ringBottom = new THREE.Mesh(new THREE.TorusGeometry(0.46, 0.06, 16, 48), 
+                        new THREE.MeshStandardMaterial({ color: 0xccaa77, metalness: 0.85 }));
+                    ringBottom.position.y = -0.2;
+                    bombGroup.add(ringBottom);
+                    
+                    const fuse = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.16, 0.62, 12), 
+                        new THREE.MeshStandardMaterial({ color: 0xdd6644, emissive: 0x552200, emissiveIntensity: 0.7 }));
+                    fuse.position.y = 0.55;
+                    bombGroup.add(fuse);
+                    
+                    const fuseTip = new THREE.Mesh(new THREE.SphereGeometry(0.11, 12, 12), 
+                        new THREE.MeshStandardMaterial({ color: 0xff7744, emissive: 0xff5500, emissiveIntensity: 1.0 }));
+                    fuseTip.position.y = 0.86;
+                    bombGroup.add(fuseTip);
+                    
+                    this.mesh = bombGroup;
                     this.mesh.position.copy(position);
                     this.mesh.castShadow = true;
                     scene.add(this.mesh);
@@ -825,8 +807,9 @@
                     this.mesh.position.x += this.velocity.x * delta;
                     this.mesh.position.y += this.velocity.y * delta;
                     this.mesh.position.z += this.velocity.z * delta;
-                    this.mesh.rotation.x += 8 * delta;
-                    this.mesh.rotation.z += 5 * delta;
+                    this.mesh.rotation.x += 10 * delta;
+                    this.mesh.rotation.z += 8 * delta;
+                    this.mesh.rotation.y += 5 * delta;
                     
                     if(this.mesh.position.y <= 0.15) {
                         this.explode();
@@ -844,38 +827,69 @@
                     if(this.hasExploded) return;
                     this.hasExploded = true;
                     
-                    const explosionGroup = new THREE.Group();
-                    const flash = new THREE.Mesh(new THREE.SphereGeometry(2.8, 16, 16), 
-                        new THREE.MeshBasicMaterial({ color: 0xff8844, transparent: true, opacity: 0.95 }));
-                    explosionGroup.add(flash);
-                    explosionGroup.position.copy(this.mesh.position);
-                    scene.add(explosionGroup);
+                    // Main explosion flash
+                    const flash = new THREE.Mesh(new THREE.SphereGeometry(3.2, 24, 24), 
+                        new THREE.MeshBasicMaterial({ color: 0xff8844, transparent: true, opacity: 0.98 }));
+                    flash.position.copy(this.mesh.position);
+                    scene.add(flash);
                     
-                    const ring = new THREE.Mesh(new THREE.RingGeometry(0.8, 2.2, 24), 
-                        new THREE.MeshBasicMaterial({ color: 0xffaa66, transparent: true, side: THREE.DoubleSide }));
-                    ring.rotation.x = -Math.PI / 2;
-                    ring.position.y = 0.1;
-                    explosionGroup.add(ring);
+                    // Shockwave ring
+                    const shockwave = new THREE.Mesh(new THREE.RingGeometry(1.0, 3.5, 32), 
+                        new THREE.MeshBasicMaterial({ color: 0xffaa66, transparent: true, opacity: 0.9, side: THREE.DoubleSide }));
+                    shockwave.rotation.x = -Math.PI / 2;
+                    shockwave.position.copy(this.mesh.position);
+                    shockwave.position.y = 0.1;
+                    scene.add(shockwave);
                     
-                    setTimeout(() => scene.remove(explosionGroup), 200);
+                    // Expanding fire ring
+                    const fireRing = new THREE.Mesh(new THREE.RingGeometry(1.2, 2.8, 32), 
+                        new THREE.MeshBasicMaterial({ color: 0xff6633, transparent: true, opacity: 0.85, side: THREE.DoubleSide }));
+                    fireRing.rotation.x = -Math.PI / 2;
+                    fireRing.position.copy(this.mesh.position);
+                    fireRing.position.y = 0.05;
+                    scene.add(fireRing);
                     
-                    for(let i = 0; i < 45; i++) {
-                        const particle = new THREE.Mesh(new THREE.SphereGeometry(0.12 + Math.random() * 0.2, 6, 6), 
-                            new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4411 }));
+                    setTimeout(() => scene.remove(flash), 180);
+                    setTimeout(() => scene.remove(shockwave), 250);
+                    setTimeout(() => scene.remove(fireRing), 200);
+                    
+                    // Enhanced particle system
+                    for(let i = 0; i < 70; i++) {
+                        const particle = new THREE.Mesh(new THREE.SphereGeometry(0.1 + Math.random() * 0.25, 8, 8), 
+                            new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4411, emissiveIntensity: 0.8 }));
                         particle.position.copy(this.mesh.position);
                         particle.userData = {
                             vel: new THREE.Vector3(
-                                (Math.random() - 0.5) * 5,
-                                Math.random() * 4,
-                                (Math.random() - 0.5) * 5
+                                (Math.random() - 0.5) * 6,
+                                Math.random() * 5 + 1,
+                                (Math.random() - 0.5) * 6
                             ),
                             life: 0,
-                            maxLife: 0.6
+                            maxLife: 0.7
                         };
                         scene.add(particle);
                         explosions.push(particle);
                     }
                     
+                    // Smoke particles
+                    for(let i = 0; i < 25; i++) {
+                        const smoke = new THREE.Mesh(new THREE.SphereGeometry(0.15 + Math.random() * 0.3, 6, 6), 
+                            new THREE.MeshStandardMaterial({ color: 0x664422, transparent: true, opacity: 0.6 }));
+                        smoke.position.copy(this.mesh.position);
+                        smoke.userData = {
+                            vel: new THREE.Vector3(
+                                (Math.random() - 0.5) * 3,
+                                Math.random() * 3,
+                                (Math.random() - 0.5) * 3
+                            ),
+                            life: 0,
+                            maxLife: 0.9
+                        };
+                        scene.add(smoke);
+                        explosions.push(smoke);
+                    }
+                    
+                    // Damage targets
                     for(let i = 0; i < targets.length; i++) {
                         const dist = targets[i].position.distanceTo(this.mesh.position);
                         if(dist < PHYSICS.BLAST_RADIUS) {
@@ -1024,9 +1038,8 @@
                     jumpRequested = false;
                     
                     if(modelLoaded && mixer && animations['jump']) {
-                        const jumpAnim = animations['jump'];
-                        jumpAnim.reset().play();
-                        setTimeout(() => jumpAnim.fadeOut(0.3), 400);
+                        animations['jump'].reset().play();
+                        setTimeout(() => { if(animations['jump']) animations['jump'].fadeOut(0.3); }, 400);
                     }
                 }
                 
@@ -1043,12 +1056,12 @@
                 }
             }
             
-            // ========== CAMERA SYSTEM ==========
+            // ========== CAMERA - FOLLOWS PLAYER DIRECTION CORRECTLY ==========
             function updateCamera() {
                 if(!character) return;
                 cameraYaw += (targetYaw - cameraYaw) * 0.12;
-                const distance = 9.8;
-                const height = 4.2;
+                const distance = 9.5;
+                const height = 4.0;
                 const camX = character.position.x - Math.sin(cameraYaw) * distance;
                 const camZ = character.position.z - Math.cos(cameraYaw) * distance;
                 const camY = character.position.y + height;
@@ -1065,9 +1078,9 @@
                         p.position.x += p.userData.vel.x * delta;
                         p.position.y += p.userData.vel.y * delta;
                         p.position.z += p.userData.vel.z * delta;
-                        p.userData.vel.y -= PHYSICS.GRAVITY * delta * 0.6;
+                        p.userData.vel.y -= PHYSICS.GRAVITY * delta * 0.55;
                         const alpha = 1 - (p.userData.life / p.userData.maxLife);
-                        p.material.opacity = alpha;
+                        if(p.material) p.material.opacity = alpha;
                         if(p.userData.life >= p.userData.maxLife || p.position.y < -0.5) {
                             scene.remove(p);
                             explosions.splice(i,1);
@@ -1110,7 +1123,6 @@
                 requestAnimationFrame(animate);
             }
             
-            // Loading
             function finishLoading() {
                 document.getElementById('loading-screen').style.opacity = '0';
                 setTimeout(() => {
@@ -1123,9 +1135,7 @@
             const loadInterval = setInterval(() => {
                 loadProgress += 12;
                 document.getElementById('loading-bar').style.width = Math.min(loadProgress, 100) + '%';
-                if(loadProgress >= 100) {
-                    clearInterval(loadInterval);
-                }
+                if(loadProgress >= 100) clearInterval(loadInterval);
             }, 70);
             
             loadProfessionalCharacter();
