@@ -3,42 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Dwarf Bomber - Pro Edition</title>
+    <title>Dwarf Bomber - Pro Edition | Enhanced</title>
     <style>
-        * { box-sizing: border-box; touch-action: none; }
-        body { margin: 0; overflow: hidden; background: #87ceeb; font-family: sans-serif; }
-        #ui-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
-        #crosshair { position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; transform: translate(-50%, -50%); pointer-events: none; border: 2px solid #ffaa00; border-radius: 50%; }
-        #info-panel { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); color: #fff; padding: 10px; border-radius: 5px; font-size: 12px; }
-        #score-panel { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: #ffaa00; padding: 10px; border-radius: 5px; font-weight: bold; }
+        * { box-sizing: border-box; touch-action: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; overflow: hidden; background: #0a2f1f; font-family: 'Segoe UI', 'Tahoma', sans-serif; }
+        #ui-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 20; }
+        #crosshair { 
+            position: absolute; top: 50%; left: 50%; width: 28px; height: 28px; 
+            transform: translate(-50%, -50%); pointer-events: none; 
+            border: 2px solid #ffaa44; border-radius: 50%; 
+            box-shadow: 0 0 8px rgba(0,0,0,0.5);
+            background: radial-gradient(circle, rgba(255,170,68,0.3) 0%, rgba(0,0,0,0) 70%);
+        }
+        #crosshair::before, #crosshair::after {
+            content: ''; position: absolute; background: #ffaa44;
+        }
+        #crosshair::before { top: 50%; left: 0; width: 100%; height: 2px; transform: translateY(-50%); }
+        #crosshair::after { top: 0; left: 50%; width: 2px; height: 100%; transform: translateX(-50%); }
         
-        /* Split Screen Controls */
-        #left-control { position: absolute; bottom: 0; left: 0; width: 50%; height: 200px; pointer-events: auto; }
-        #right-control { position: absolute; bottom: 0; right: 0; width: 50%; height: 200px; pointer-events: auto; }
+        #info-panel { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); color: #ffdd99; padding: 10px 16px; border-radius: 20px; font-size: 13px; font-weight: bold; border-left: 4px solid #ffaa44; font-family: monospace; pointer-events: none; }
+        #score-panel { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); color: #ffaa44; padding: 10px 20px; border-radius: 40px; font-weight: bold; font-size: 24px; font-family: monospace; letter-spacing: 2px; pointer-events: none; box-shadow: 0 0 10px rgba(0,0,0,0.3); }
         
-        #joystick-container { position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border: 2px solid #ffaa00; border-radius: 50%; }
-        #joystick-knob { position: absolute; top: 50%; left: 50%; width: 50px; height: 50px; background: #ffaa00; border-radius: 50%; transform: translate(-50%,-50%); }
+        /* Split Screen Controls - Touch Zones */
+        #left-control { position: absolute; bottom: 0; left: 0; width: 50%; height: 220px; pointer-events: auto; z-index: 30; }
+        #right-control { position: absolute; bottom: 0; right: 0; width: 50%; height: 220px; pointer-events: auto; z-index: 30; }
         
-        #action-buttons { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); display: flex; gap: 20px; pointer-events: auto; }
-        .action-btn { width: 70px; height: 70px; border-radius: 50%; background: rgba(0,0,0,0.7); color: white; border: 2px solid #ffaa00; font-size: 24px; cursor: pointer; }
-        #loading-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; color: #fff; display: flex; align-items: center; justify-content: center; z-index: 100; }
+        #joystick-container { 
+            position: absolute; bottom: 35px; left: 35px; width: 130px; height: 130px; 
+            background: rgba(30,30,40,0.6); backdrop-filter: blur(8px);
+            border: 2px solid #ffaa55; border-radius: 50%; 
+            box-shadow: 0 0 12px rgba(0,0,0,0.5);
+        }
+        #joystick-knob { 
+            position: absolute; top: 50%; left: 50%; width: 55px; height: 55px; 
+            background: radial-gradient(circle, #ffcc66, #ffaa33); 
+            border-radius: 50%; transform: translate(-50%,-50%);
+            box-shadow: 0 2px 8px black;
+            transition: transform 0.02s ease;
+        }
+        
+        #action-buttons { 
+            position: absolute; bottom: 45px; left: 50%; transform: translateX(-50%); 
+            display: flex; gap: 35px; pointer-events: auto; z-index: 40;
+        }
+        .action-btn { 
+            width: 75px; height: 75px; border-radius: 50%; background: rgba(20,20,30,0.85);
+            backdrop-filter: blur(8px); color: white; border: 2px solid #ffaa55; 
+            font-size: 32px; cursor: pointer; box-shadow: 0 4px 12px black;
+            transition: 0.05s linear; touch-action: manipulation;
+        }
+        .action-btn:active { transform: scale(0.92); background: #ffaa55; color: #222; }
+        
+        #loading-screen { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: linear-gradient(135deg, #1a2a0e, #000000); color: #ffcc66; 
+            display: flex; align-items: center; justify-content: center; 
+            z-index: 200; font-size: 28px; font-weight: bold; font-family: monospace;
+            flex-direction: column; gap: 20px;
+        }
+        #loading-screen span { font-size: 14px; letter-spacing: 2px; }
+        
+        /* landing indicator style via canvas overlay? no, it's 3D */
+        .control-hint { position: absolute; bottom: 10px; left: 20px; color: #ccc; font-size: 10px; background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 12px; pointer-events: none; }
     </style>
 </head>
 <body>
-    <div id="loading-screen">LOADING PRO DWARF...</div>
+    <div id="loading-screen">
+        ⚔️ DWARF BOMBER PRO ⚔️<br>
+        <span>LOADING HIGH-TECH DWARF...</span>
+    </div>
     <div id="ui-container">
         <div id="crosshair"></div>
-        <div id="info-panel">DWARF BOMBER PRO<br>Balanced Controls • Double Jump • Physics</div>
-        <div id="score-panel">SCORE: <span id="score">0</span></div>
+        <div id="info-panel">💣 DWARF ASSAULT | Double Jump | Predictive Bomb Sight 🎯</div>
+        <div id="score-panel">💥 <span id="score">0</span></div>
         
         <div id="left-control">
             <div id="joystick-container"><div id="joystick-knob"></div></div>
+            <div class="control-hint">← MOVEMENT →</div>
+        </div>
+        <div id="right-control">
+            <div class="control-hint" style="right:20px; left:auto;">🎥 CAMERA DRAG</div>
         </div>
         
-        <div id="right-control"></div>
-        
         <div id="action-buttons">
-            <button class="action-btn" id="btn-jump">⬆️</button>
+            <button class="action-btn" id="btn-jump">🦘</button>
             <button class="action-btn" id="btn-throw">💣</button>
         </div>
     </div>
@@ -47,326 +95,517 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
     <script>
-        // Scene Setup
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87ceeb);
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = true;
-        document.body.appendChild(renderer.domElement);
+        (function() {
+            // ---------- SCENE ----------
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0a2f2a);
+            scene.fog = new THREE.FogExp2(0x0a2f2a, 0.008);
+            const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 300);
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.body.appendChild(renderer.domElement);
 
-        // Lights
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-        scene.add(ambientLight);
-        const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-        dirLight.position.set(10, 20, 10);
-        dirLight.castShadow = true;
-        scene.add(dirLight);
-
-        // Ground
-        const ground = new THREE.Mesh(
-            new THREE.PlaneGeometry(500, 500),
-            new THREE.MeshStandardMaterial({ color: 0x336633 })
-        );
-        ground.rotation.x = -Math.PI / 2;
-        ground.receiveShadow = true;
-        scene.add(ground);
-
-        // Character Loading
-        let character, mixer, animations = {};
-        let currentAction;
-        const loader = new THREE.GLTFLoader();
-        const modelUrl = 'https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb';
-
-        loader.load(modelUrl, (gltf) => {
-            character = gltf.scene;
-            character.scale.set(0.5, 0.5, 0.5);
-            character.traverse(n => { if (n.isMesh) n.castShadow = true; });
-            scene.add(character);
-
-            mixer = new THREE.AnimationMixer(character);
-            gltf.animations.forEach(clip => {
-                animations[clip.name.toLowerCase()] = mixer.clipAction(clip);
-            });
-            if (animations['idle']) {
-                currentAction = animations['idle'];
-                currentAction.play();
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0x404060, 0.65);
+            scene.add(ambientLight);
+            const mainLight = new THREE.DirectionalLight(0xffeedd, 1.2);
+            mainLight.position.set(12, 24, 8);
+            mainLight.castShadow = true;
+            mainLight.receiveShadow = true;
+            mainLight.shadow.mapSize.width = 1024;
+            mainLight.shadow.mapSize.height = 1024;
+            scene.add(mainLight);
+            const fillLight = new THREE.PointLight(0x5577aa, 0.4);
+            fillLight.position.set(-5, 10, 10);
+            scene.add(fillLight);
+            const backLight = new THREE.PointLight(0xffaa66, 0.3);
+            backLight.position.set(0, 5, -8);
+            scene.add(backLight);
+            
+            // Ground with grid
+            const groundMat = new THREE.MeshStandardMaterial({ color: 0x3c8c40, roughness: 0.8, metalness: 0.1 });
+            const ground = new THREE.Mesh(new THREE.PlaneGeometry(280, 280), groundMat);
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = -0.05;
+            ground.receiveShadow = true;
+            scene.add(ground);
+            
+            const gridHelper = new THREE.GridHelper(280, 30, 0x88aa66, 0x446633);
+            gridHelper.position.y = 0;
+            gridHelper.material.transparent = true;
+            gridHelper.material.opacity = 0.5;
+            scene.add(gridHelper);
+            
+            // decorative rocks
+            for(let i=0;i<200;i++) {
+                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.2+Math.random()*0.3), new THREE.MeshStandardMaterial({ color: 0x6a5a4a, roughness: 0.9 }));
+                rock.position.set((Math.random()-0.5)*240, -0.2, (Math.random()-0.5)*240);
+                rock.scale.set(1, Math.random()*0.5+0.3, 1);
+                rock.castShadow = true;
+                rock.receiveShadow = true;
+                scene.add(rock);
             }
-            document.getElementById('loading-screen').style.display = 'none';
-        });
-
-        // Input
-        const input = { forward: 0, side: 0, jump: false, throw: false };
-        const keys = {};
-        window.addEventListener('keydown', e => keys[e.code] = true);
-        window.addEventListener('keyup', e => keys[e.code] = false);
-
-        // LEFT JOYSTICK - Movement (SLOWER & SMOOTH)
-        const knob = document.getElementById('joystick-knob');
-        let joyActive = false, joyStart = { x: 0, y: 0 };
-        document.getElementById('joystick-container').addEventListener('touchstart', e => {
-            joyActive = true;
-            joyStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-        });
-        window.addEventListener('touchmove', e => {
-            if (!joyActive) return;
-            let dx = e.touches[0].clientX - joyStart.x;
-            let dy = e.touches[0].clientY - joyStart.y;
-            const dist = Math.min(Math.sqrt(dx*dx + dy*dy), 50);
-            const angle = Math.atan2(dy, dx);
-            dx = Math.cos(angle) * dist;
-            dy = Math.sin(angle) * dist;
-            knob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-            input.side = -dx / 50;
-            input.forward = -dy / 50;
-        });
-        window.addEventListener('touchend', () => {
-            joyActive = false;
-            knob.style.transform = 'translate(-50%, -50%)';
-            input.forward = 0; input.side = 0;
-        });
-
-        // RIGHT CAMERA CONTROL - Free Touch Area (MEDIUM SPEED)
-        let cameraYaw = 0, cameraPitch = 0;
-        let cameraControlActive = false, cameraControlStart = { x: 0, y: 0 };
-        let cameraAutoReturn = true;
-        let lastCameraYaw = 0, lastCameraPitch = 0;
-        
-        document.getElementById('right-control').addEventListener('touchstart', e => {
-            cameraControlActive = true;
-            cameraAutoReturn = false;
-            cameraControlStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-            lastCameraYaw = cameraYaw;
-            lastCameraPitch = cameraPitch;
-        });
-        window.addEventListener('touchmove', e => {
-            if (!cameraControlActive) return;
-            let dx = e.touches[0].clientX - cameraControlStart.x;
-            let dy = e.touches[0].clientY - cameraControlStart.y;
-            cameraYaw = lastCameraYaw - dx * 0.003; // REDUCED SENSITIVITY
-            cameraPitch = lastCameraPitch - dy * 0.003; // REDUCED SENSITIVITY
-            cameraPitch = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, cameraPitch));
-        });
-        window.addEventListener('touchend', () => {
-            cameraControlActive = false;
-            cameraAutoReturn = true;
-        });
-
-        document.getElementById('btn-jump').onclick = () => input.jump = true;
-        document.getElementById('btn-throw').onclick = () => input.throw = true;
-
-        // Physics & Game Logic
-        const bombs = [], particles = [], targets = [];
-        let score = 0;
-        let jumpCount = 0, isJumping = false, velY = 0, isFlipping = false, flipRot = 0;
-        let landingIndicator = null;
-        let characterDirection = 0;
-
-        function createLandingIndicator() {
-            if (landingIndicator) scene.remove(landingIndicator);
-            const geo = new THREE.CircleGeometry(0.8, 32);
-            const mat = new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 0.6 });
-            landingIndicator = new THREE.Mesh(geo, mat);
-            landingIndicator.rotation.x = -Math.PI / 2;
-            landingIndicator.position.y = 0.01;
-            scene.add(landingIndicator);
-        }
-
-        function updateLandingIndicator() {
-            if (!character) return;
-            const startPos = character.position.clone().add(new THREE.Vector3(0, 1.5, 0));
-            const dir = new THREE.Vector3(0, 0, 1).applyQuaternion(character.quaternion);
-            const velocity = dir.multiplyScalar(1.2).add(new THREE.Vector3(0, 0.5, 0));
             
-            let pos = startPos.clone();
-            let vel = velocity.clone();
-            const gravity = 0.02;
+            // Character references
+            let character, mixer, animations = {};
+            let currentAction = null;
+            let isThrowingAnim = false;
+            let throwTimer = 0;
+            let bombInHand = null;      // visual bomb attached to hand
+            let handBone = null;
             
-            for (let i = 0; i < 200; i++) {
-                pos.add(vel);
-                vel.y -= gravity;
-                if (pos.y <= 0) {
-                    if (landingIndicator) {
-                        landingIndicator.position.set(pos.x, 0.01, pos.z);
+            // Load Model
+            const loader = new THREE.GLTFLoader();
+            const modelUrl = 'https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb';
+            loader.load(modelUrl, (gltf) => {
+                character = gltf.scene;
+                character.scale.set(0.55, 0.55, 0.55);
+                character.position.set(0, 0, 0);
+                character.traverse(n => { if (n.isMesh) { n.castShadow = true; n.receiveShadow = true; } });
+                scene.add(character);
+                
+                mixer = new THREE.AnimationMixer(character);
+                gltf.animations.forEach(clip => {
+                    let name = clip.name.toLowerCase();
+                    animations[name] = mixer.clipAction(clip);
+                });
+                // find hand bone for bomb attach
+                character.traverse(node => {
+                    if(node.isBone && (node.name.includes("Hand") || node.name.includes("hand") || node.name === "mixamorig:RightHand")) {
+                        handBone = node;
                     }
-                    return;
+                });
+                if(!handBone) {
+                    // fallback: create an empty group
+                    const fakeHand = new THREE.Group();
+                    character.add(fakeHand);
+                    handBone = fakeHand;
+                }
+                
+                if(animations['idle']) {
+                    currentAction = animations['idle'];
+                    currentAction.play();
+                }
+                document.getElementById('loading-screen').style.display = 'none';
+            });
+            
+            // ----- BOMB IN HAND VISUAL -----
+            function createHandBomb() {
+                if(bombInHand) return;
+                const bombGeo = new THREE.SphereGeometry(0.28, 16, 16);
+                const bombMat = new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.85, roughness: 0.3, emissive: 0x331100 });
+                const bombMesh = new THREE.Mesh(bombGeo, bombMat);
+                const fuse = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 0.3, 6), new THREE.MeshStandardMaterial({ color: 0xff6600, emissive: 0x442200 }));
+                fuse.position.y = 0.35;
+                bombMesh.add(fuse);
+                bombMesh.castShadow = true;
+                if(handBone) {
+                    bombMesh.position.set(0.4, -0.1, 0.15);
+                    handBone.add(bombMesh);
+                } else {
+                    character.add(bombMesh);
+                    bombMesh.position.set(0.7, 1.2, 0.5);
+                }
+                bombInHand = bombMesh;
+            }
+            function removeHandBomb() {
+                if(bombInHand) {
+                    if(bombInHand.parent) bombInHand.parent.remove(bombInHand);
+                    bombInHand = null;
                 }
             }
-        }
-
-        function spawnTarget() {
-            const t = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 0.5 }));
-            t.position.set((Math.random()-0.5)*100, 1, (Math.random()-0.5)*100);
-            scene.add(t);
-            targets.push(t);
-        }
-        for(let i=0; i<10; i++) spawnTarget();
-
-        function throwBomb() {
-            const bomb = new THREE.Mesh(new THREE.SphereGeometry(0.4), new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.9 }));
-            bomb.position.copy(character.position).add(new THREE.Vector3(0, 1.5, 0));
-            scene.add(bomb);
-            const dir = new THREE.Vector3(0, 0, 1).applyQuaternion(character.quaternion);
-            const vel = dir.multiplyScalar(1.2).add(new THREE.Vector3(0, 0.5, 0));
-            bombs.push({ mesh: bomb, vel: vel, life: 200 });
-        }
-
-        function explode(pos) {
-            const flash = new THREE.Mesh(new THREE.SphereGeometry(3), new THREE.MeshBasicMaterial({ color: 0xffff00, transparent: true, opacity: 0.8 }));
-            flash.position.copy(pos);
-            scene.add(flash);
-            setTimeout(() => scene.remove(flash), 100);
-
-            for(let i=0; i<60; i++) {
-                const p = new THREE.Mesh(new THREE.SphereGeometry(0.15 + Math.random() * 0.25), new THREE.MeshStandardMaterial({ color: 0xffaa00, emissive: 0xff4400, emissiveIntensity: 2 }));
-                p.position.copy(pos);
-                scene.add(p);
-                const vel = new THREE.Vector3(Math.random()-0.5, Math.random()-0.3, Math.random()-0.5).multiplyScalar(1.5);
-                particles.push({ mesh: p, vel: vel, life: 0, maxLife: 80 + Math.random() * 40, gravity: 0.015 });
+            
+            // ----- INPUT SYSTEM (supports multi-action: run + jump + throw simultaneously) -----
+            const input = { forward: 0, side: 0, jumpQueued: false, throwQueued: false };
+            const keys = {};
+            window.addEventListener('keydown', (e) => {
+                keys[e.code] = true;
+                if(e.code === 'Space') { e.preventDefault(); input.jumpQueued = true; }
+                if(e.code === 'KeyF') { e.preventDefault(); input.throwQueued = true; }
+            });
+            window.addEventListener('keyup', (e) => { keys[e.code] = false; });
+            
+            // JOYSTICK (Left)
+            const knob = document.getElementById('joystick-knob');
+            let joyActive = false, joyCenter = { x: 0, y: 0 };
+            const joyContainer = document.getElementById('joystick-container');
+            joyContainer.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                joyActive = true;
+                const rect = joyContainer.getBoundingClientRect();
+                joyCenter = { x: rect.left + rect.width/2, y: rect.top + rect.height/2 };
+                const tx = e.touches[0].clientX - joyCenter.x;
+                const ty = e.touches[0].clientY - joyCenter.y;
+                let dist = Math.min(Math.hypot(tx, ty), 55);
+                let angle = Math.atan2(ty, tx);
+                let dx = Math.cos(angle) * dist;
+                let dy = Math.sin(angle) * dist;
+                knob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+                input.side = Math.min(1, Math.max(-1, dx / 55)) * 1.0;
+                input.forward = Math.min(1, Math.max(-1, dy / 55)) * 1.0;
+            });
+            window.addEventListener('touchmove', (e) => {
+                if(!joyActive) return;
+                const tx = e.touches[0].clientX - joyCenter.x;
+                const ty = e.touches[0].clientY - joyCenter.y;
+                let dist = Math.min(Math.hypot(tx, ty), 55);
+                let angle = Math.atan2(ty, tx);
+                let dx = Math.cos(angle) * dist;
+                let dy = Math.sin(angle) * dist;
+                knob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+                input.side = dx / 55;
+                input.forward = dy / 55;
+            });
+            window.addEventListener('touchend', (e) => {
+                joyActive = false;
+                knob.style.transform = 'translate(-50%, -50%)';
+                input.forward = 0; input.side = 0;
+            });
+            
+            // Camera Control (Right side - smooth & responsive)
+            let cameraYaw = 0, cameraPitch = 0.15;
+            let camDrag = false, camLastX = 0, camLastY = 0;
+            const rightZone = document.getElementById('right-control');
+            rightZone.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                camDrag = true;
+                camLastX = e.touches[0].clientX;
+                camLastY = e.touches[0].clientY;
+            });
+            window.addEventListener('touchmove', (e) => {
+                if(!camDrag) return;
+                let dx = e.touches[0].clientX - camLastX;
+                let dy = e.touches[0].clientY - camLastY;
+                cameraYaw += dx * 0.008;
+                cameraPitch += dy * 0.006;
+                cameraPitch = Math.max(-0.9, Math.min(0.7, cameraPitch));
+                camLastX = e.touches[0].clientX;
+                camLastY = e.touches[0].clientY;
+            });
+            window.addEventListener('touchend', () => { camDrag = false; });
+            
+            // Buttons Multi-action
+            document.getElementById('btn-jump').onmousedown = () => { input.jumpQueued = true; };
+            document.getElementById('btn-throw').onmousedown = () => { input.throwQueued = true; };
+            document.getElementById('btn-jump').ontouchstart = (e) => { e.preventDefault(); input.jumpQueued = true; };
+            document.getElementById('btn-throw').ontouchstart = (e) => { e.preventDefault(); input.throwQueued = true; };
+            
+            // Keyboard movement update
+            function updateKeyboardMovement() {
+                let moveFwd = 0, moveSide = 0;
+                if(keys['KeyW']) moveFwd = 1;
+                if(keys['KeyS']) moveFwd = -1;
+                if(keys['KeyA']) moveSide = 1;
+                if(keys['KeyD']) moveSide = -1;
+                if(moveFwd !== 0 || moveSide !== 0) {
+                    input.forward = moveFwd;
+                    input.side = moveSide;
+                } else if(!joyActive) {
+                    if(input.forward !== 0 || input.side !== 0) {
+                        if(input.forward === 0 && input.side === 0) {}
+                        else { input.forward = 0; input.side = 0; }
+                    }
+                }
             }
-
-            for(let i=0; i<20; i++) {
-                const s = new THREE.Mesh(new THREE.SphereGeometry(0.5 + Math.random() * 1), new THREE.MeshBasicMaterial({ color: 0x666666, transparent: true, opacity: 0.5 }));
-                s.position.copy(pos).add(new THREE.Vector3((Math.random()-0.5)*2, Math.random()*1, (Math.random()-0.5)*2));
-                scene.add(s);
-                particles.push({ mesh: s, vel: new THREE.Vector3(0, 0.3, 0), life: 0, maxLife: 120, gravity: 0, isSmoke: true });
+            
+            // ---------- GAME MECHANICS ----------
+            let bombs = [];           // { mesh, vel, life }
+            let particles = [];
+            let targets = [];
+            let score = 0;
+            let jumpCount = 0, isJumping = false, velY = 0;
+            let characterSpeed = 0.21;   // FASTER RUNNING (requested)
+            let lastCharacterYaw = 0;
+            
+            // LANDING PREDICTOR (shows bomb impact point)
+            let landingMarker = null;
+            function createPredictor() {
+                const ringGeo = new THREE.RingGeometry(0.45, 0.85, 24);
+                const ringMat = new THREE.MeshStandardMaterial({ color: 0xffaa44, emissive: 0x442200, side: THREE.DoubleSide, transparent: true, opacity: 0.9 });
+                const marker = new THREE.Mesh(ringGeo, ringMat);
+                marker.rotation.x = -Math.PI/2;
+                marker.position.y = 0.02;
+                scene.add(marker);
+                return marker;
             }
-        }
-
-        // Animation Loop
-        const clock = new THREE.Clock();
-        function animate() {
-            requestAnimationFrame(animate);
-            const delta = clock.getDelta();
-            if (!character) return;
-
-            // Movement
-            if (keys['KeyW']) input.forward = 1; else if (keys['KeyS']) input.forward = -1;
-            if (keys['KeyA']) input.side = 1; else if (keys['KeyD']) input.side = -1;
-            if (keys['Space']) { input.jump = true; keys['Space'] = false; }
-            if (keys['KeyF']) { input.throw = true; keys['KeyF'] = false; }
-
-            const move = new THREE.Vector3(input.side, 0, input.forward);
-            if (move.length() > 0.1) {
-                const angle = Math.atan2(input.side, input.forward);
-                character.rotation.y = angle;
-                characterDirection = angle;
-                character.position.x += Math.sin(angle) * 0.08; // SLOWER MOVEMENT
-                character.position.z += Math.cos(angle) * 0.08; // SLOWER MOVEMENT
-                if (animations['walking']) {
-                    if (currentAction !== animations['walking']) {
-                        if (currentAction) currentAction.fadeOut(0.2);
+            landingMarker = createPredictor();
+            
+            // Update bomb trajectory predictor
+            function updateLandingPredictor() {
+                if(!character) return;
+                const startPos = character.position.clone().add(new THREE.Vector3(0, 1.6, 0));
+                const forwardDir = new THREE.Vector3(0, 0, 1).applyQuaternion(character.quaternion);
+                const throwVelocity = forwardDir.clone().multiplyScalar(1.55).add(new THREE.Vector3(0, 0.58, 0));
+                let pos = startPos.clone();
+                let vel = throwVelocity.clone();
+                const gravity = 0.022;
+                let hitGround = false;
+                let groundPos = null;
+                for(let step=0; step<150; step++) {
+                    pos.add(vel);
+                    vel.y -= gravity;
+                    if(pos.y <= 0.1) {
+                        groundPos = pos.clone();
+                        hitGround = true;
+                        break;
+                    }
+                }
+                if(landingMarker && groundPos) {
+                    landingMarker.position.set(groundPos.x, 0.03, groundPos.z);
+                    landingMarker.material.emissiveIntensity = 0.6 + Math.sin(Date.now() * 0.012) * 0.3;
+                } else if(landingMarker) {
+                    landingMarker.position.set(character.position.x + forwardDir.x*3, 0.03, character.position.z + forwardDir.z*3);
+                }
+            }
+            
+            // SPAWN TARGETS (random floating cubes with health style)
+            function spawnTarget() {
+                const boxMat = new THREE.MeshStandardMaterial({ color: 0xdd4444, emissive: 0x441111, metalness: 0.2 });
+                const targetMesh = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.7, 1.7), boxMat);
+                const angleRad = Math.random() * Math.PI * 2;
+                const radius = 25 + Math.random() * 60;
+                const x = Math.cos(angleRad) * radius;
+                const z = Math.sin(angleRad) * radius;
+                targetMesh.position.set(x, 0.85, z);
+                targetMesh.castShadow = true;
+                scene.add(targetMesh);
+                targets.push({ mesh: targetMesh, health: 1 });
+            }
+            for(let i=0;i<12;i++) spawnTarget();
+            
+            // THROW BOMB (with hand animation and removal of hand bomb)
+            function throwBomb() {
+                if(!character) return;
+                // remove visual bomb from hand
+                removeHandBomb();
+                const startPos = character.position.clone().add(new THREE.Vector3(0, 1.6, 0));
+                const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(character.quaternion);
+                const vel = forward.multiplyScalar(1.55).add(new THREE.Vector3(0, 0.58, 0));
+                const bombMesh = new THREE.Mesh(new THREE.SphereGeometry(0.42, 20, 20), new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.9, roughness: 0.2, emissive: 0x552200 }));
+                const fuse = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 0.35, 6), new THREE.MeshStandardMaterial({ color: 0xff7733 }));
+                fuse.position.y = 0.42;
+                bombMesh.add(fuse);
+                bombMesh.position.copy(startPos);
+                bombMesh.castShadow = true;
+                scene.add(bombMesh);
+                bombs.push({ mesh: bombMesh, vel: vel, life: 240 });
+                
+                // after throw, recreate hand bomb after short delay (reload)
+                setTimeout(() => { if(character) createHandBomb(); }, 200);
+                
+                // punch/throw animation trigger
+                if(animations['punch']) {
+                    if(currentAction && currentAction !== animations['punch']) {
+                        if(currentAction) currentAction.fadeOut(0.1);
+                        currentAction = animations['punch'];
+                        currentAction.reset().fadeIn(0.1).play();
+                        setTimeout(() => {
+                            if(animations['idle'] && currentAction === animations['punch']) {
+                                currentAction.fadeOut(0.2);
+                                currentAction = animations['idle'];
+                                currentAction.reset().play();
+                            }
+                        }, 350);
+                    }
+                }
+            }
+            
+            // Explosion effect
+            function explode(pos) {
+                const flashMat = new THREE.MeshBasicMaterial({ color: 0xffaa55, transparent: true, opacity: 0.9 });
+                const flash = new THREE.Mesh(new THREE.SphereGeometry(1.8, 8, 8), flashMat);
+                flash.position.copy(pos);
+                scene.add(flash);
+                setTimeout(() => scene.remove(flash), 120);
+                for(let i=0;i<45;i++) {
+                    const particle = new THREE.Mesh(new THREE.SphereGeometry(0.18+Math.random()*0.2), new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff3300 }));
+                    particle.position.copy(pos);
+                    scene.add(particle);
+                    const pVel = new THREE.Vector3((Math.random()-0.5)*2.2, Math.random()*1.2, (Math.random()-0.5)*2.2);
+                    particles.push({ mesh: particle, vel: pVel, life: 0, maxLife: 55, gravity: 0.018 });
+                }
+                // damage targets
+                for(let i=0;i<targets.length;i++) {
+                    if(targets[i].mesh.position.distanceTo(pos) < 2.5) {
+                        scene.remove(targets[i].mesh);
+                        targets.splice(i,1);
+                        score++;
+                        document.getElementById('score').innerText = score;
+                        spawnTarget();
+                        i--;
+                    }
+                }
+            }
+            
+            // Physics update for bombs
+            function updateBombs() {
+                for(let i=bombs.length-1;i>=0;i--) {
+                    const b = bombs[i];
+                    b.mesh.position.add(b.vel);
+                    b.vel.y -= 0.022;
+                    b.mesh.rotation.x += 0.18;
+                    b.mesh.rotation.z += 0.12;
+                    if(b.mesh.position.y < 0.1) {
+                        explode(b.mesh.position);
+                        scene.remove(b.mesh);
+                        bombs.splice(i,1);
+                        continue;
+                    }
+                    b.life--;
+                    if(b.life<=0) {
+                        explode(b.mesh.position);
+                        scene.remove(b.mesh);
+                        bombs.splice(i,1);
+                    }
+                }
+            }
+            
+            function updateParticles() {
+                for(let i=particles.length-1;i>=0;i--) {
+                    const p = particles[i];
+                    p.mesh.position.add(p.vel);
+                    p.vel.y -= p.gravity;
+                    p.life++;
+                    if(p.life>=p.maxLife || p.mesh.position.y < -0.5) {
+                        scene.remove(p.mesh);
+                        particles.splice(i,1);
+                    }
+                }
+            }
+            
+            // Jump logic (double jump)
+            function handleJump() {
+                if(input.jumpQueued) {
+                    if(!isJumping && jumpCount < 2) {
+                        velY = 0.51;
+                        isJumping = true;
+                        jumpCount++;
+                        input.jumpQueued = false;
+                        if(jumpCount === 2) {
+                            // extra visual
+                        }
+                    } else if(isJumping && jumpCount === 1 && velY < 0.1) {
+                        velY = 0.48;
+                        jumpCount++;
+                        input.jumpQueued = false;
+                    } else {
+                        input.jumpQueued = false;
+                    }
+                }
+                if(isJumping) {
+                    character.position.y += velY;
+                    velY -= 0.023;
+                    if(character.position.y <= 0) {
+                        character.position.y = 0;
+                        isJumping = false;
+                        jumpCount = 0;
+                        velY = 0;
+                    }
+                } else {
+                    character.position.y = 0;
+                }
+            }
+            
+            // Movement (run faster)
+            function updateMovement() {
+                if(!character) return;
+                let moveX = input.side;
+                let moveZ = input.forward;
+                if(moveX !== 0 || moveZ !== 0) {
+                    let angle = Math.atan2(moveX, moveZ);
+                    character.rotation.y = angle;
+                    lastCharacterYaw = angle;
+                    const spd = characterSpeed;
+                    character.position.x += Math.sin(angle) * spd;
+                    character.position.z += Math.cos(angle) * spd;
+                    // boundary
+                    const limit = 125;
+                    character.position.x = Math.min(limit, Math.max(-limit, character.position.x));
+                    character.position.z = Math.min(limit, Math.max(-limit, character.position.z));
+                    
+                    if(animations['walking'] && currentAction !== animations['walking'] && (!currentAction || currentAction !== animations['punch'])) {
+                        if(currentAction) currentAction.fadeOut(0.2);
                         currentAction = animations['walking'];
                         currentAction.reset().fadeIn(0.2).play();
                     }
-                }
-            } else {
-                if (animations['idle']) {
-                    if (currentAction !== animations['idle']) {
-                        if (currentAction) currentAction.fadeOut(0.2);
+                } else {
+                    if(animations['idle'] && currentAction !== animations['idle'] && currentAction !== animations['punch']) {
+                        if(currentAction) currentAction.fadeOut(0.2);
                         currentAction = animations['idle'];
-                        currentAction.reset().fadeIn(0.2).play();
+                        currentAction.reset().play();
                     }
                 }
             }
-
-            // CONTINUOUS PUNCHING
-            if (animations['punch']) {
-                if (currentAction !== animations['punch'] && currentAction !== animations['walking']) {
-                    if (currentAction) currentAction.fadeOut(0.1);
-                    currentAction = animations['punch'];
-                    currentAction.reset().fadeIn(0.1).play();
-                }
-            }
-
-            // Jump
-            if (input.jump && jumpCount < 2) {
-                velY = 0.5;
-                isJumping = true;
-                jumpCount++;
-                input.jump = false;
-                if (jumpCount === 2) isFlipping = true;
-            }
-            if (isJumping) {
-                character.position.y += velY;
-                velY -= 0.02;
-                if (isFlipping) {
-                    flipRot += 0.3;
-                    character.rotation.x = flipRot;
-                    if (flipRot >= Math.PI * 2) { isFlipping = false; flipRot = 0; character.rotation.x = 0; }
-                }
-                if (character.position.y <= 0) { character.position.y = 0; isJumping = false; jumpCount = 0; }
-            }
-
-            // Throw
-            if (input.throw) { throwBomb(); input.throw = false; }
-
-            // Update landing indicator
-            updateLandingIndicator();
-
-            // SMART CAMERA - Manual control or Auto-follow (SMOOTH RETURN)
-            if (cameraAutoReturn) {
-                cameraYaw += (characterDirection - cameraYaw) * 0.03; // SMOOTH RETURN
-                cameraPitch += (0 - cameraPitch) * 0.03; // SMOOTH RETURN
-            }
-
-            const cameraDistance = 10;
-            const cameraHeight = 5;
-            const cameraX = character.position.x - Math.sin(cameraYaw) * cameraDistance * Math.cos(cameraPitch);
-            const cameraY = character.position.y + cameraHeight + Math.sin(cameraPitch) * cameraDistance;
-            const cameraZ = character.position.z - Math.cos(cameraYaw) * cameraDistance * Math.cos(cameraPitch);
             
-            camera.position.set(cameraX, cameraY, cameraZ);
-            camera.lookAt(character.position.clone().add(new THREE.Vector3(0, 1.5, 0)));
-
-            // Bombs
-            for(let i=bombs.length-1; i>=0; i--) {
-                const b = bombs[i];
-                b.mesh.position.add(b.vel);
-                b.vel.y -= 0.02;
-                b.mesh.rotation.x += 0.15;
-                
-                targets.forEach((t, idx) => {
-                    if (b.mesh.position.distanceTo(t.position) < 2) {
-                        explode(t.position);
-                        scene.remove(t); targets.splice(idx, 1);
-                        score++; document.getElementById('score').innerText = score;
-                        spawnTarget(); b.life = 0;
-                    }
-                });
-
-                if (b.mesh.position.y < 0) { explode(b.mesh.position); b.life = 0; }
-                b.life--;
-                if (b.life <= 0) { scene.remove(b.mesh); bombs.splice(i, 1); }
-            }
-
-            // Particles
-            for(let i=particles.length-1; i>=0; i--) {
-                const p = particles[i];
-                p.mesh.position.add(p.vel);
-                if (!p.isSmoke) p.vel.y -= p.gravity;
-                p.life++;
-                if (p.isSmoke) {
-                    p.mesh.material.opacity = 0.5 * (1 - p.life / p.maxLife);
-                    p.mesh.scale.addScalar(0.02);
+            // ----- CAMERA SMOOTH & REALISTIC (third-person with spring effect) -----
+            let currentCamYaw = 0, currentCamPitch = 0.2;
+            function updateCamera() {
+                if(!character) return;
+                if(!camDrag) {
+                    // auto-align behind character smoothly
+                    const targetYaw = lastCharacterYaw;
+                    cameraYaw = cameraYaw * 0.96 + targetYaw * 0.04;
+                    cameraPitch = cameraPitch * 0.98 + 0.2 * 0.02;
                 }
-                if (p.life >= p.maxLife) { scene.remove(p.mesh); particles.splice(i, 1); }
+                currentCamYaw += (cameraYaw - currentCamYaw) * 0.12;
+                currentCamPitch += (cameraPitch - currentCamPitch) * 0.12;
+                const dist = 9.2;
+                const heightOffset = 2.8;
+                const camX = character.position.x - Math.sin(currentCamYaw) * dist * Math.cos(currentCamPitch);
+                const camY = character.position.y + heightOffset + Math.sin(currentCamPitch) * dist;
+                const camZ = character.position.z - Math.cos(currentCamYaw) * dist * Math.cos(currentCamPitch);
+                camera.position.set(camX, camY, camZ);
+                camera.lookAt(character.position.clone().add(new THREE.Vector3(0, 1.45, 0)));
             }
-
-            if (mixer) mixer.update(delta);
-            renderer.render(scene, camera);
-        }
-        animate();
-
-        createLandingIndicator();
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+            
+            // animation loop
+            let lastTime = 0;
+            function gameLoop() {
+                requestAnimationFrame(gameLoop);
+                const delta = Math.min(1/30, clock.getDelta());
+                if(!character) return;
+                
+                updateKeyboardMovement();
+                handleJump();
+                updateMovement();
+                updateBombs();
+                updateParticles();
+                updateLandingPredictor();
+                
+                // multi-action: throw while moving/jumping
+                if(input.throwQueued) {
+                    throwBomb();
+                    input.throwQueued = false;
+                }
+                
+                // ensure hand bomb is present after throw or at start
+                if(!bombInHand && handBone) createHandBomb();
+                
+                updateCamera();
+                if(mixer) mixer.update(delta);
+                renderer.render(scene, camera);
+            }
+            
+            const clock = new THREE.Clock();
+            gameLoop();
+            
+            // resize handler
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+            
+            // initial hand bomb after model loads but we check interval
+            const handCheck = setInterval(() => {
+                if(character && handBone && !bombInHand) {
+                    createHandBomb();
+                    clearInterval(handCheck);
+                }
+            }, 200);
+        })();
     </script>
 </body>
 </html>
-
