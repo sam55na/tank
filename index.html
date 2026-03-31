@@ -3,332 +3,772 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Dwarf Bomber - Pro Edition</title>
+    <title>Elite Grenadier - Advanced Bomb System</title>
     <style>
-        * { box-sizing: border-box; touch-action: none; }
-        body { margin: 0; overflow: hidden; background: #87ceeb; font-family: sans-serif; }
-        #ui-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
-        #crosshair { position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; transform: translate(-50%, -50%); pointer-events: none; border: 2px solid #ffaa00; border-radius: 50%; }
-        #info-panel { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); color: #fff; padding: 10px; border-radius: 5px; font-size: 12px; }
-        #score-panel { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: #ffaa00; padding: 10px; border-radius: 5px; font-weight: bold; }
-        #joystick-container { position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border-radius: 50%; pointer-events: auto; }
-        #joystick-knob { position: absolute; top: 50%; left: 50%; width: 50px; height: 50px; background: #ffaa00; border-radius: 50%; transform: translate(-50%,-50%); }
-        #action-buttons { position: absolute; bottom: 40px; right: 40px; display: flex; gap: 20px; pointer-events: auto; }
-        .action-btn { width: 70px; height: 70px; border-radius: 50%; background: rgba(0,0,0,0.7); color: white; border: 2px solid #ffaa00; font-size: 24px; cursor: pointer; }
-        #loading-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; color: #fff; display: flex; align-items: center; justify-content: center; z-index: 100; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { overflow: hidden; font-family: 'Segoe UI', monospace; }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            color: #ffaa33;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-family: monospace;
+            z-index: 100;
+            pointer-events: none;
+            border-left: 4px solid #ff6600;
+        }
+        #score {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: #ffaa33;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 24px;
+            font-weight: bold;
+            font-family: monospace;
+            z-index: 100;
+            pointer-events: none;
+            border: 1px solid #ff6600;
+        }
+        #controls-info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            color: #88ff88;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-family: monospace;
+            z-index: 100;
+            pointer-events: none;
+        }
+        .indicator {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,100,0,0.8), rgba(255,0,0,0));
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            animation: pulse 0.5s ease-out;
+        }
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(-5px, -5px); }
+            75% { transform: translate(5px, 5px); }
+        }
+        .screen-shake {
+            animation: shake 0.1s ease-in-out 3;
+        }
     </style>
 </head>
 <body>
-    <div id="loading-screen">LOADING PRO DWARF...</div>
-    <div id="ui-container">
-        <div id="crosshair"></div>
-        <div id="info-panel">DWARF BOMBER PRO<br>Ready-made Model • Double Jump • Physics</div>
-        <div id="score-panel">SCORE: <span id="score">0</span></div>
-        <div id="joystick-container"><div id="joystick-knob"></div></div>
-        <div id="action-buttons">
-            <button class="action-btn" id="btn-jump">⬆️</button>
-            <button class="action-btn" id="btn-throw">💣</button>
-        </div>
+    <div id="ui">
+        ⚡ ELITE GRENADIER ⚡<br>
+        <span style="font-size: 10px; color: #aaa;">TNT Grenade System • Double Jump • Trajectory Indicator</span>
+    </div>
+    <div id="score">
+        💥 SCORE: <span id="scoreValue">0</span>
+    </div>
+    <div id="controls-info">
+        🎮 WASD: Move | SPACE: Jump (Double) | F or CLICK: Throw Grenade
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+            }
+        }
+    </script>
 
-    <script>
-        // Scene Setup
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+        // ==========================================
+        // 1. SCENE SETUP
+        // ==========================================
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87ceeb);
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        scene.background = new THREE.Color(0x0a0a2a);
+        scene.fog = new THREE.FogExp2(0x0a0a2a, 0.006);
+
+        const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 500);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
 
-        // Lights
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-        scene.add(ambientLight);
-        const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-        dirLight.position.set(10, 20, 10);
-        dirLight.castShadow = true;
-        scene.add(dirLight);
+        // CSS2D for text labels
+        const labelRenderer = new CSS2DRenderer();
+        labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        labelRenderer.domElement.style.position = 'absolute';
+        labelRenderer.domElement.style.top = '0px';
+        labelRenderer.domElement.style.left = '0px';
+        labelRenderer.domElement.style.pointerEvents = 'none';
+        document.body.appendChild(labelRenderer.domElement);
 
-        // Ground
-        const ground = new THREE.Mesh(
-            new THREE.PlaneGeometry(500, 500),
-            new THREE.MeshStandardMaterial({ color: 0x336633 })
-        );
+        // ==========================================
+        // 2. LIGHTING
+        // ==========================================
+        const ambientLight = new THREE.AmbientLight(0x404060, 0.65);
+        scene.add(ambientLight);
+        
+        const mainLight = new THREE.DirectionalLight(0xffeedd, 1.4);
+        mainLight.position.set(15, 25, 10);
+        mainLight.castShadow = true;
+        mainLight.receiveShadow = true;
+        mainLight.shadow.mapSize.width = 2048;
+        mainLight.shadow.mapSize.height = 2048;
+        mainLight.shadow.camera.near = 0.5;
+        mainLight.shadow.camera.far = 60;
+        mainLight.shadow.camera.left = -15;
+        mainLight.shadow.camera.right = 15;
+        mainLight.shadow.camera.top = 15;
+        mainLight.shadow.camera.bottom = -15;
+        scene.add(mainLight);
+        
+        const fillLight = new THREE.PointLight(0x88aaff, 0.4);
+        fillLight.position.set(-5, 8, 6);
+        scene.add(fillLight);
+        
+        const rimLight = new THREE.PointLight(0xffaa66, 0.5);
+        rimLight.position.set(-3, 5, -8);
+        scene.add(rimLight);
+        
+        // Ground with checker pattern
+        const groundMat = new THREE.MeshStandardMaterial({ color: 0x2a4a2a, roughness: 0.85, metalness: 0.1 });
+        const ground = new THREE.Mesh(new THREE.PlaneGeometry(180, 180), groundMat);
         ground.rotation.x = -Math.PI / 2;
+        ground.position.y = -0.2;
         ground.receiveShadow = true;
         scene.add(ground);
-
-        // Character Loading
-        let character, mixer, animations = {};
-        let currentAction;
-        const loader = new THREE.GLTFLoader();
-        const modelUrl = 'https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb';
-
-        loader.load(modelUrl, (gltf) => {
+        
+        // Decorative grid
+        const gridHelper = new THREE.GridHelper(180, 40, 0x88aa55, 0x446633);
+        gridHelper.position.y = -0.15;
+        gridHelper.material.transparent = true;
+        gridHelper.material.opacity = 0.4;
+        scene.add(gridHelper);
+        
+        // ==========================================
+        // 3. CHARACTER - RobotExpressive Model
+        // ==========================================
+        let character = null;
+        let mixer = null;
+        let animations = {};
+        let currentAction = null;
+        
+        // Character state
+        const charState = {
+            velocityY: 0,
+            isGrounded: true,
+            jumpCount: 0,
+            isFlipping: false,
+            flipAngle: 0,
+            position: new THREE.Vector3(0, 0, 0)
+        };
+        
+        // Load character
+        const loader = new GLTFLoader();
+        const MODEL_URL = 'https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb';
+        
+        loader.load(MODEL_URL, (gltf) => {
             character = gltf.scene;
-            character.scale.set(0.5, 0.5, 0.5); // Dwarf scale
-            character.traverse(n => { if (n.isMesh) n.castShadow = true; });
+            character.scale.set(0.7, 0.7, 0.7);
+            character.position.y = 0;
+            
+            character.traverse(node => {
+                if (node.isMesh) {
+                    node.castShadow = true;
+                    node.receiveShadow = true;
+                }
+            });
+            
             scene.add(character);
-
+            
             mixer = new THREE.AnimationMixer(character);
             gltf.animations.forEach(clip => {
-                animations[clip.name.toLowerCase()] = mixer.clipAction(clip);
+                animations[clip.name] = mixer.clipAction(clip);
+                console.log('Animation:', clip.name);
             });
-            if (animations['idle']) {
-                currentAction = animations['idle'];
+            
+            if (animations['Idle']) {
+                currentAction = animations['Idle'];
                 currentAction.play();
             }
-            document.getElementById('loading-screen').style.display = 'none';
+            
+            // Add grenade to character's hand
+            addGrenadeToHand();
+            
+            console.log('✅ Character loaded!');
+        }, undefined, (error) => {
+            console.error('Model error:', error);
+            createFallbackCharacter();
         });
-
-        // Input
-        const input = { forward: 0, side: 0, jump: false, throw: false };
-        const keys = {};
-        window.addEventListener('keydown', e => keys[e.code] = true);
-        window.addEventListener('keyup', e => keys[e.code] = false);
-
-        // Joystick
-        const knob = document.getElementById('joystick-knob');
-        let joyActive = false, joyStart = { x: 0, y: 0 };
-        document.getElementById('joystick-container').addEventListener('touchstart', e => {
-            joyActive = true;
-            joyStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-        });
-        window.addEventListener('touchmove', e => {
-            if (!joyActive) return;
-            let dx = e.touches[0].clientX - joyStart.x;
-            let dy = e.touches[0].clientY - joyStart.y;
-            const dist = Math.min(Math.sqrt(dx*dx + dy*dy), 50);
-            const angle = Math.atan2(dy, dx);
-            dx = Math.cos(angle) * dist;
-            dy = Math.sin(angle) * dist;
-            knob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-            input.side = -dx / 50;
-            input.forward = -dy / 50;
-        });
-        window.addEventListener('touchend', () => {
-            joyActive = false;
-            knob.style.transform = 'translate(-50%, -50%)';
-            input.forward = 0; input.side = 0;
-        });
-
-        document.getElementById('btn-jump').onclick = () => input.jump = true;
-        document.getElementById('btn-throw').onclick = () => input.throw = true;
-
-        // Physics & Game Logic
-        const bombs = [], particles = [], targets = [];
-        let score = 0;
-        let jumpCount = 0, isJumping = false, velY = 0, isFlipping = false, flipRot = 0;
-        let landingIndicator = null;
-        let characterDirection = 0;
-
-        // Create Landing Indicator
-        function createLandingIndicator() {
-            if (landingIndicator) scene.remove(landingIndicator);
-            const geo = new THREE.CircleGeometry(0.8, 32);
-            const mat = new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 0.6 });
-            landingIndicator = new THREE.Mesh(geo, mat);
-            landingIndicator.rotation.x = -Math.PI / 2;
-            landingIndicator.position.y = 0.01;
-            scene.add(landingIndicator);
-        }
-
-        // Calculate bomb landing position DYNAMICALLY
-        function updateLandingIndicator() {
+        
+        // Grenade prop that stays in hand
+        let grenadeProp = null;
+        
+        function addGrenadeToHand() {
             if (!character) return;
-            const startPos = character.position.clone().add(new THREE.Vector3(0, 1.5, 0));
-            const dir = new THREE.Vector3(0, 0, 1).applyQuaternion(character.quaternion);
-            const velocity = dir.multiplyScalar(1.2).add(new THREE.Vector3(0, 0.5, 0));
             
-            let pos = startPos.clone();
-            let vel = velocity.clone();
-            const gravity = 0.02;
+            const grenadeGroup = new THREE.Group();
             
-            for (let i = 0; i < 200; i++) {
-                pos.add(vel);
-                vel.y -= gravity;
-                if (pos.y <= 0) {
-                    if (landingIndicator) {
-                        landingIndicator.position.set(pos.x, 0.01, pos.z);
+            // TNT body
+            const tntBody = new THREE.Mesh(
+                new THREE.BoxGeometry(0.45, 0.55, 0.45),
+                new THREE.MeshStandardMaterial({ color: 0xcc5533, roughness: 0.3, metalness: 0.2, emissive: 0x331100 })
+            );
+            tntBody.castShadow = true;
+            
+            // Fuse
+            const fuse = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.08, 0.1, 0.32, 6),
+                new THREE.MeshStandardMaterial({ color: 0xdd8866, emissive: 0x552200 })
+            );
+            fuse.position.y = 0.32;
+            
+            // Spark effect
+            const spark = new THREE.PointLight(0xff6600, 0.5, 1.2);
+            spark.position.y = 0.45;
+            
+            grenadeGroup.add(tntBody, fuse, spark);
+            grenadeGroup.userData = { light: spark };
+            
+            // Find right hand bone
+            let rightHand = null;
+            character.traverse(child => {
+                if (child.isBone && (child.name.includes('RightHand') || child.name.includes('mixamorigRightHand') || child.name.includes('hand_R'))) {
+                    rightHand = child;
+                }
+            });
+            
+            if (rightHand) {
+                rightHand.add(grenadeGroup);
+                grenadeGroup.position.set(0.18, -0.12, 0.28);
+                grenadeGroup.rotation.set(-0.3, 0.4, -0.2);
+            } else {
+                character.add(grenadeGroup);
+                grenadeGroup.position.set(0.45, 0.85, 0.55);
+            }
+            
+            grenadeProp = grenadeGroup;
+        }
+        
+        function createFallbackCharacter() {
+            character = new THREE.Group();
+            const body = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.6, 1.3, 8), new THREE.MeshStandardMaterial({ color: 0x5a7a4a }));
+            body.castShadow = true;
+            body.position.y = 0.65;
+            character.add(body);
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.5), new THREE.MeshStandardMaterial({ color: 0xddbb99 }));
+            head.position.y = 1.35;
+            head.castShadow = true;
+            character.add(head);
+            scene.add(character);
+            console.log('⚠️ Using fallback character');
+        }
+        
+        // ==========================================
+        // 4. GRENADE SYSTEM
+        // ==========================================
+        let activeGrenades = [];
+        let grenadeCooldown = 0;
+        const GRENADE_COOLDOWN_MAX = 35;
+        let trajectoryPoints = [];
+        let trajectoryLine = null;
+        let targetIndicator = null;
+        let score = 0;
+        let targets = [];
+        
+        // Create trajectory visualizer
+        function createTrajectoryVisualizer() {
+            const points = [];
+            for (let i = 0; i < 30; i++) {
+                points.push(new THREE.Vector3(0, 0, 0));
+            }
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const material = new THREE.LineBasicMaterial({ color: 0xffaa44, transparent: true, opacity: 0.7 });
+            trajectoryLine = new THREE.Line(geometry, material);
+            scene.add(trajectoryLine);
+        }
+        
+        // Calculate grenade trajectory
+        function calculateTrajectory(startPos, direction, power = 1.2) {
+            const points = [];
+            const gravity = 0.022;
+            const velocity = direction.clone().multiplyScalar(power);
+            velocity.y += 0.45; // Initial upward arc
+            
+            for (let i = 0; i <= 40; i++) {
+                const t = i * 0.1;
+                const x = startPos.x + velocity.x * t;
+                const z = startPos.z + velocity.z * t;
+                const y = startPos.y + velocity.y * t - 0.5 * gravity * t * t * 10;
+                points.push(new THREE.Vector3(x, y, z));
+                if (y < -0.5) break;
+            }
+            return points;
+        }
+        
+        // Update trajectory preview
+        function updateTrajectoryPreview() {
+            if (!character || !trajectoryLine) return;
+            
+            const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).normalize();
+            const startPos = character.position.clone();
+            startPos.y += 1.2;
+            startPos.x += direction.x * 0.6;
+            startPos.z += direction.z * 0.6;
+            
+            const points = calculateTrajectory(startPos, direction, 1.3);
+            
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            trajectoryLine.geometry.dispose();
+            trajectoryLine.geometry = geometry;
+            
+            // Update target indicator (where grenade will land)
+            if (points.length > 0) {
+                const landPoint = points[points.length - 1];
+                if (targetIndicator) scene.remove(targetIndicator);
+                
+                const indicatorMat = new THREE.MeshStandardMaterial({ color: 0xff4400, emissive: 0xff2200, transparent: true, opacity: 0.7 });
+                targetIndicator = new THREE.Mesh(new THREE.SphereGeometry(0.35, 8, 8), indicatorMat);
+                targetIndicator.position.copy(landPoint);
+                scene.add(targetIndicator);
+                
+                // Add pulsing ring
+                if (targetIndicator.userData.ring) scene.remove(targetIndicator.userData.ring);
+                const ringGeo = new THREE.TorusGeometry(0.55, 0.05, 16, 32);
+                const ringMat = new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4400 });
+                const ring = new THREE.Mesh(ringGeo, ringMat);
+                ring.rotation.x = Math.PI / 2;
+                targetIndicator.add(ring);
+                targetIndicator.userData.ring = ring;
+            }
+        }
+        
+        // Throw grenade
+        function throwGrenade() {
+            if (grenadeCooldown > 0 || !character) return false;
+            
+            const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).normalize();
+            const startPos = character.position.clone();
+            startPos.y += 1.2;
+            startPos.x += direction.x * 0.7;
+            startPos.z += direction.z * 0.7;
+            
+            // Create grenade mesh
+            const grenadeGroup = new THREE.Group();
+            const body = new THREE.Mesh(
+                new THREE.BoxGeometry(0.5, 0.6, 0.5),
+                new THREE.MeshStandardMaterial({ color: 0xcc5533, roughness: 0.2, metalness: 0.3 })
+            );
+            const fuse = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.1, 0.12, 0.4, 6),
+                new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4400 })
+            );
+            fuse.position.y = 0.38;
+            grenadeGroup.add(body, fuse);
+            grenadeGroup.castShadow = true;
+            grenadeGroup.position.copy(startPos);
+            scene.add(grenadeGroup);
+            
+            // Add smoke trail particle
+            const trailParticles = [];
+            
+            activeGrenades.push({
+                mesh: grenadeGroup,
+                velocity: direction.clone().multiplyScalar(1.35),
+                velocityY: 0.48,
+                life: 0,
+                maxLife: 180,
+                trail: trailParticles,
+                position: startPos
+            });
+            
+            grenadeCooldown = GRENADE_COOLDOWN_MAX;
+            
+            // Play throw animation
+            if (animations['Wave']) {
+                const throwAnim = animations['Wave'];
+                if (currentAction) currentAction.fadeOut(0.1);
+                throwAnim.reset().fadeIn(0.1).play();
+                setTimeout(() => {
+                    if (animations['Idle'] && !charState.isGrounded === false) {
+                        throwAnim.fadeOut(0.2);
+                        if (currentAction !== animations['Idle']) {
+                            currentAction = animations['Idle'];
+                            currentAction.reset().fadeIn(0.2).play();
+                        }
                     }
-                    return;
+                }, 350);
+            }
+            
+            // Flash effect on grenade
+            const flash = new THREE.PointLight(0xff6600, 0.8, 3);
+            grenadeGroup.add(flash);
+            setTimeout(() => grenadeGroup.remove(flash), 150);
+            
+            return true;
+        }
+        
+        // Create explosion effect
+        function createExplosion(position, radius = 2.5) {
+            // Particle explosion
+            for (let i = 0; i < 45; i++) {
+                const particle = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.12 + Math.random() * 0.1, 4, 4),
+                    new THREE.MeshStandardMaterial({ color: 0xff6644, emissive: 0xff3300 })
+                );
+                particle.position.copy(position);
+                scene.add(particle);
+                
+                const vel = new THREE.Vector3(
+                    (Math.random() - 0.5) * 1.2,
+                    Math.random() * 1.5,
+                    (Math.random() - 0.5) * 1.2
+                );
+                
+                // Store for animation
+                if (!window._tempParticles) window._tempParticles = [];
+                window._tempParticles.push({
+                    mesh: particle,
+                    vel: vel,
+                    life: 0,
+                    maxLife: 40
+                });
+            }
+            
+            // Explosion light
+            const boomLight = new THREE.PointLight(0xff5522, 1.8, 12);
+            boomLight.position.copy(position);
+            scene.add(boomLight);
+            setTimeout(() => scene.remove(boomLight), 200);
+            
+            // Shockwave ring
+            const ringGeo = new THREE.TorusGeometry(0.5, 0.08, 16, 32);
+            const ringMat = new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4400 });
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.position.copy(position);
+            scene.add(ring);
+            
+            let scale = 1;
+            const animateRing = setInterval(() => {
+                scale += 0.3;
+                ring.scale.set(scale, scale, scale);
+                ring.material.opacity = 1 - scale / 5;
+                if (scale > 5) {
+                    clearInterval(animateRing);
+                    scene.remove(ring);
+                }
+            }, 30);
+            
+            // Screen shake effect
+            document.body.classList.add('screen-shake');
+            setTimeout(() => document.body.classList.remove('screen-shake'), 300);
+            
+            // Damage nearby targets
+            for (let i = targets.length - 1; i >= 0; i--) {
+                const target = targets[i];
+                const dist = position.distanceTo(target.position);
+                if (dist < radius) {
+                    scene.remove(target);
+                    targets.splice(i, 1);
+                    score++;
+                    document.getElementById('scoreValue').innerText = score;
+                    spawnTarget();
                 }
             }
         }
-
+        
+        // Spawn enemy target
         function spawnTarget() {
-            const t = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 0.5 }));
-            t.position.set((Math.random()-0.5)*100, 1, (Math.random()-0.5)*100);
-            scene.add(t);
-            targets.push(t);
+            const targetGroup = new THREE.Group();
+            
+            const body = new THREE.Mesh(
+                new THREE.BoxGeometry(1.1, 1.4, 1.1),
+                new THREE.MeshStandardMaterial({ color: 0xcc4444, emissive: 0x331100, roughness: 0.3 })
+            );
+            body.castShadow = true;
+            
+            const eye = new THREE.Mesh(
+                new THREE.SphereGeometry(0.2),
+                new THREE.MeshStandardMaterial({ color: 0xffaa44, emissive: 0xff4400 })
+            );
+            eye.position.set(0.4, 0.3, 0.6);
+            
+            targetGroup.add(body, eye);
+            
+            const angle = Math.random() * Math.PI * 2;
+            const radius = 20 + Math.random() * 45;
+            targetGroup.position.x = Math.cos(angle) * radius;
+            targetGroup.position.z = Math.sin(angle) * radius;
+            targetGroup.position.y = 0.15;
+            
+            scene.add(targetGroup);
+            targets.push(targetGroup);
         }
-        for(let i=0; i<10; i++) spawnTarget();
-
-        function throwBomb() {
-            const bomb = new THREE.Mesh(new THREE.SphereGeometry(0.4), new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.9 }));
-            bomb.position.copy(character.position).add(new THREE.Vector3(0, 1.5, 0));
-            scene.add(bomb);
-            const dir = new THREE.Vector3(0, 0, 1).applyQuaternion(character.quaternion);
-            const vel = dir.multiplyScalar(1.2).add(new THREE.Vector3(0, 0.5, 0));
-            bombs.push({ mesh: bomb, vel: vel, life: 200 });
-        }
-
-        function explode(pos) {
-            // Bright flash
-            const flash = new THREE.Mesh(new THREE.SphereGeometry(3), new THREE.MeshBasicMaterial({ color: 0xffff00, transparent: true, opacity: 0.8 }));
-            flash.position.copy(pos);
-            scene.add(flash);
-            setTimeout(() => scene.remove(flash), 100);
-
-            // Particles
-            for(let i=0; i<60; i++) {
-                const p = new THREE.Mesh(new THREE.SphereGeometry(0.15 + Math.random() * 0.25), new THREE.MeshStandardMaterial({ color: 0xffaa00, emissive: 0xff4400, emissiveIntensity: 2 }));
-                p.position.copy(pos);
-                scene.add(p);
-                const vel = new THREE.Vector3(Math.random()-0.5, Math.random()-0.3, Math.random()-0.5).multiplyScalar(1.5);
-                particles.push({ mesh: p, vel: vel, life: 0, maxLife: 80 + Math.random() * 40, gravity: 0.015 });
+        
+        // Initial targets
+        for (let i = 0; i < 10; i++) spawnTarget();
+        createTrajectoryVisualizer();
+        
+        // ==========================================
+        // 5. INPUT SYSTEM
+        // ==========================================
+        const input = { forward: 0, right: 0, jump: false, throw: false };
+        const keys = {};
+        
+        window.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+            if (e.code === 'Space') {
+                e.preventDefault();
+                input.jump = true;
             }
-
-            // Smoke
-            for(let i=0; i<20; i++) {
-                const s = new THREE.Mesh(new THREE.SphereGeometry(0.5 + Math.random() * 1), new THREE.MeshBasicMaterial({ color: 0x666666, transparent: true, opacity: 0.5 }));
-                s.position.copy(pos).add(new THREE.Vector3((Math.random()-0.5)*2, Math.random()*1, (Math.random()-0.5)*2));
-                scene.add(s);
-                particles.push({ mesh: s, vel: new THREE.Vector3(0, 0.3, 0), life: 0, maxLife: 120, gravity: 0, isSmoke: true });
+            if (e.code === 'KeyF') {
+                e.preventDefault();
+                input.throw = true;
             }
-        }
-
-        // Animation Loop
-        const clock = new THREE.Clock();
-        function animate() {
-            requestAnimationFrame(animate);
-            const delta = clock.getDelta();
+        });
+        
+        window.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+        });
+        
+        // Mouse click to throw
+        window.addEventListener('click', () => {
+            input.throw = true;
+        });
+        
+        // ==========================================
+        // 6. MOVEMENT & PHYSICS
+        // ==========================================
+        const MOVE_SPEED = 5.8;
+        const JUMP_FORCE = 0.44;
+        const GRAVITY = 0.023;
+        
+        function updateMovement(delta) {
             if (!character) return;
-
-            // Movement
-            if (keys['KeyW']) input.forward = 1; else if (keys['KeyS']) input.forward = -1;
-            if (keys['KeyA']) input.side = 1; else if (keys['KeyD']) input.side = -1;
-            if (keys['Space']) { input.jump = true; keys['Space'] = false; }
-            if (keys['KeyF']) { input.throw = true; keys['KeyF'] = false; }
-
-            const move = new THREE.Vector3(input.side, 0, input.forward);
-            if (move.length() > 0.1) {
-                const angle = Math.atan2(input.side, input.forward);
+            
+            // Update keyboard input
+            let moveX = 0, moveZ = 0;
+            if (keys['KeyW']) moveZ -= 1;
+            if (keys['KeyS']) moveZ += 1;
+            if (keys['KeyA']) moveX -= 1;
+            if (keys['KeyD']) moveX += 1;
+            
+            if (moveX !== 0 || moveZ !== 0) {
+                const len = Math.hypot(moveX, moveZ);
+                moveX /= len;
+                moveZ /= len;
+            }
+            
+            // Apply movement
+            const speed = MOVE_SPEED * delta;
+            character.position.x += moveX * speed;
+            character.position.z += moveZ * speed;
+            
+            // Rotation
+            if (moveX !== 0 || moveZ !== 0) {
+                const angle = Math.atan2(moveX, moveZ);
                 character.rotation.y = angle;
-                characterDirection = angle;
-                character.position.x += Math.sin(angle) * 0.3;
-                character.position.z += Math.cos(angle) * 0.3;
-                if (animations['walking']) {
-                    if (currentAction !== animations['walking']) {
-                        if (currentAction) currentAction.fadeOut(0.2);
-                        currentAction = animations['walking'];
+            }
+            
+            // Animation based on movement
+            const isMoving = (moveX !== 0 || moveZ !== 0);
+            if (mixer && animations) {
+                if (isMoving && !charState.isGrounded === false) {
+                    if (currentAction !== animations['Running']) {
+                        if (currentAction) currentAction.fadeOut(0.15);
+                        currentAction = animations['Running'];
                         currentAction.reset().fadeIn(0.2).play();
                     }
+                } else if (!isMoving && charState.isGrounded && currentAction !== animations['Idle']) {
+                    if (currentAction) currentAction.fadeOut(0.15);
+                    currentAction = animations['Idle'];
+                    currentAction.reset().fadeIn(0.2).play();
+                }
+            }
+            
+            // Jump
+            if (input.jump && charState.jumpCount < 2) {
+                charState.velocityY = JUMP_FORCE;
+                charState.isGrounded = false;
+                charState.jumpCount++;
+                input.jump = false;
+                
+                if (charState.jumpCount === 2) {
+                    charState.isFlipping = true;
+                    charState.flipAngle = 0;
+                }
+                
+                if (mixer && animations['Jump']) {
+                    const jumpAnim = animations['Jump'];
+                    if (currentAction) currentAction.fadeOut(0.1);
+                    jumpAnim.reset().fadeIn(0.1).play();
+                    setTimeout(() => {
+                        if (charState.isGrounded && animations['Idle']) {
+                            jumpAnim.fadeOut(0.2);
+                            currentAction = animations['Idle'];
+                        }
+                    }, 400);
+                }
+            }
+            
+            // Physics
+            if (!charState.isGrounded) {
+                character.position.y += charState.velocityY;
+                charState.velocityY -= GRAVITY;
+                
+                if (charState.isFlipping) {
+                    charState.flipAngle += 0.28;
+                    character.rotation.x = charState.flipAngle;
+                    if (charState.flipAngle >= Math.PI * 2) {
+                        charState.isFlipping = false;
+                        character.rotation.x = 0;
+                    }
+                }
+                
+                if (character.position.y <= 0) {
+                    character.position.y = 0;
+                    charState.isGrounded = true;
+                    charState.jumpCount = 0;
+                    charState.isFlipping = false;
+                    character.rotation.x = 0;
                 }
             } else {
-                if (animations['idle']) {
-                    if (currentAction !== animations['idle']) {
-                        if (currentAction) currentAction.fadeOut(0.2);
-                        currentAction = animations['idle'];
-                        currentAction.reset().fadeIn(0.2).play();
-                    }
-                }
+                character.position.y = 0;
             }
-
-            // CONTINUOUS PUNCHING ANIMATION
-            if (animations['punch']) {
-                if (currentAction !== animations['punch'] && currentAction !== animations['walking']) {
-                    if (currentAction) currentAction.fadeOut(0.1);
-                    currentAction = animations['punch'];
-                    currentAction.reset().fadeIn(0.1).play();
-                }
-            }
-
-            // Jump
-            if (input.jump && jumpCount < 2) {
-                velY = 0.5;
-                isJumping = true;
-                jumpCount++;
-                input.jump = false;
-                if (jumpCount === 2) isFlipping = true;
-            }
-            if (isJumping) {
-                character.position.y += velY;
-                velY -= 0.02;
-                if (isFlipping) {
-                    flipRot += 0.3;
-                    character.rotation.x = flipRot;
-                    if (flipRot >= Math.PI * 2) { isFlipping = false; flipRot = 0; character.rotation.x = 0; }
-                }
-                if (character.position.y <= 0) { character.position.y = 0; isJumping = false; jumpCount = 0; }
-            }
-
-            // Throw
-            if (input.throw) { throwBomb(); input.throw = false; }
-
-            // UPDATE LANDING INDICATOR DYNAMICALLY
-            updateLandingIndicator();
-
-            // ROTATING CAMERA - Follows character direction while keeping centered
-            const cameraDistance = 10;
-            const cameraHeight = 5;
-            const cameraX = character.position.x - Math.sin(characterDirection) * cameraDistance;
-            const cameraZ = character.position.z - Math.cos(characterDirection) * cameraDistance;
             
-            camera.position.set(cameraX, character.position.y + cameraHeight, cameraZ);
-            camera.lookAt(character.position.clone().add(new THREE.Vector3(0, 1.5, 0)));
-
-            // Bombs
-            for(let i=bombs.length-1; i>=0; i--) {
-                const b = bombs[i];
-                b.mesh.position.add(b.vel);
-                b.vel.y -= 0.02;
-                b.mesh.rotation.x += 0.15;
-                
-                targets.forEach((t, idx) => {
-                    if (b.mesh.position.distanceTo(t.position) < 2) {
-                        explode(t.position);
-                        scene.remove(t); targets.splice(idx, 1);
-                        score++; document.getElementById('score').innerText = score;
-                        spawnTarget(); b.life = 0;
-                    }
-                });
-
-                if (b.mesh.position.y < 0) { explode(b.mesh.position); b.life = 0; }
-                b.life--;
-                if (b.life <= 0) { scene.remove(b.mesh); bombs.splice(i, 1); }
-            }
-
-            // Particles
-            for(let i=particles.length-1; i>=0; i--) {
-                const p = particles[i];
-                p.mesh.position.add(p.vel);
-                if (!p.isSmoke) p.vel.y -= p.gravity;
-                p.life++;
-                if (p.isSmoke) {
-                    p.mesh.material.opacity = 0.5 * (1 - p.life / p.maxLife);
-                    p.mesh.scale.addScalar(0.02);
-                }
-                if (p.life >= p.maxLife) { scene.remove(p.mesh); particles.splice(i, 1); }
-            }
-
-            if (mixer) mixer.update(delta);
-            renderer.render(scene, camera);
+            // Boundaries
+            character.position.x = Math.max(-70, Math.min(70, character.position.x));
+            character.position.z = Math.max(-70, Math.min(70, character.position.z));
         }
+        
+        // ==========================================
+        // 7. GRENADE UPDATE & PARTICLES
+        // ==========================================
+        function updateGrenades() {
+            // Update active grenades
+            for (let i = activeGrenades.length - 1; i >= 0; i--) {
+                const g = activeGrenades[i];
+                g.velocity.y -= 0.022;
+                g.mesh.position.x += g.velocity.x;
+                g.mesh.position.y += g.velocity.y;
+                g.mesh.position.z += g.velocity.z;
+                g.mesh.rotation.x += 0.15;
+                g.mesh.rotation.z += 0.12;
+                g.life++;
+                
+                // Check collision with ground
+                if (g.mesh.position.y <= 0.1 || g.life > g.maxLife) {
+                    createExplosion(g.mesh.position);
+                    scene.remove(g.mesh);
+                    activeGrenades.splice(i, 1);
+                }
+            }
+            
+            // Update particles
+            if (window._tempParticles) {
+                for (let i = window._tempParticles.length - 1; i >= 0; i--) {
+                    const p = window._tempParticles[i];
+                    p.mesh.position.x += p.vel.x;
+                    p.mesh.position.y += p.vel.y;
+                    p.mesh.position.z += p.vel.z;
+                    p.vel.y -= 0.02;
+                    p.life++;
+                    if (p.life >= p.maxLife) {
+                        scene.remove(p.mesh);
+                        window._tempParticles.splice(i, 1);
+                    }
+                }
+            }
+            
+            // Cooldown
+            if (grenadeCooldown > 0) {
+                grenadeCooldown--;
+            }
+            
+            if (input.throw && grenadeCooldown === 0) {
+                throwGrenade();
+                input.throw = false;
+            }
+        }
+        
+        // ==========================================
+        // 8. CAMERA & VISUALS
+        // ==========================================
+        function updateCamera() {
+            if (!character) return;
+            
+            const targetPos = character.position.clone();
+            const offset = new THREE.Vector3(-1.5, 3.2, 5.8);
+            const worldOffset = offset.clone().applyQuaternion(character.quaternion);
+            const desiredPos = targetPos.clone().add(worldOffset);
+            
+            camera.position.lerp(desiredPos, 0.12);
+            const lookAtPoint = targetPos.clone().add(new THREE.Vector3(0, 1.8, 2.2).applyQuaternion(character.quaternion));
+            camera.lookAt(lookAtPoint);
+            
+            // Update trajectory preview
+            updateTrajectoryPreview();
+        }
+        
+        function animateTargets() {
+            targets.forEach((target, idx) => {
+                target.position.y = 0.2 + Math.sin(Date.now() * 0.005 + idx) * 0.08;
+                target.rotation.y += 0.02;
+            });
+        }
+        
+        // ==========================================
+        // 9. MAIN LOOP
+        // ==========================================
+        let lastTime = performance.now();
+        
+        function animate() {
+            const now = performance.now();
+            let delta = Math.min(0.033, (now - lastTime) / 1000);
+            lastTime = now;
+            
+            updateMovement(delta);
+            updateGrenades();
+            updateCamera();
+            animateTargets();
+            
+            if (mixer) mixer.update(delta);
+            
+            renderer.render(scene, camera);
+            labelRenderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        }
+        
         animate();
-
-        // Create landing indicator on start
-        createLandingIndicator();
-
+        
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+            labelRenderer.setSize(window.innerWidth, window.innerHeight);
         });
+        
+        console.log('🎮 Elite Grenadier Ready!');
+        console.log('💣 Features: Trajectory indicator, explosion effect, grenade in hand, double jump');
     </script>
 </body>
 </html>
-
