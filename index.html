@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Dwarf Bomber - Enhanced Physics | Multiplayer Ready</title>
+    <title>Dwarf Bomber - Professional Character | Enhanced Physics</title>
     <style>
         * {
             margin: 0;
@@ -29,7 +29,6 @@
             left: 0;
         }
 
-        /* UI Overlay */
         #ui-overlay {
             position: fixed;
             top: 0;
@@ -40,7 +39,6 @@
             z-index: 100;
         }
 
-        /* Advanced Crosshair with Bomb Arc */
         #crosshair {
             position: absolute;
             top: 50%;
@@ -74,27 +72,11 @@
             transform: translate(-50%, -50%);
             box-shadow: 0 0 8px #ffaa44;
         }
-        .crosshair-arc {
-            position: absolute;
-            bottom: -40px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: #ffaa66;
-            font-size: 10px;
-            font-weight: bold;
-            text-shadow: 0 0 5px rgba(0,0,0,0.5);
-            white-space: nowrap;
-            background: rgba(0,0,0,0.6);
-            padding: 2px 8px;
-            border-radius: 12px;
-            pointer-events: none;
-        }
         @keyframes crosshairPulse {
             0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
             50% { opacity: 1; transform: translate(-50%, -50%) scale(1.12); }
         }
 
-        /* Score Panel */
         #score-panel {
             position: absolute;
             top: 20px;
@@ -111,10 +93,8 @@
             z-index: 150;
             border: 2px solid #ffaa55;
             box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-            letter-spacing: 2px;
         }
         
-        /* Distance Slider - Bomb Power */
         #slider-container {
             position: absolute;
             bottom: 140px;
@@ -170,7 +150,6 @@
             font-family: monospace;
         }
 
-        /* Movement Zone */
         .zone-move {
             position: absolute;
             bottom: 0;
@@ -221,7 +200,6 @@
             font-weight: bold;
         }
 
-        /* Right Zone Controls */
         .zone-right {
             position: absolute;
             bottom: 0;
@@ -346,33 +324,27 @@
             #slider-container { width: 60px; height: 170px; bottom: 110px; left: 12px; }
             #slider-handle { width: 48px; height: 48px; }
         }
-        
-        .particle-effect {
-            position: absolute;
-            pointer-events: none;
-        }
     </style>
 </head>
 <body>
     <div id="loading-screen">
-        💣 DWARF BOMBER - ENHANCED EDITION 💣
+        💣 DWARF BOMBER - PROFESSIONAL EDITION 💣
         <div style="font-size: 14px;">🎮 LEFT: MOVE | RIGHT TOP: CAMERA | RIGHT BOTTOM: JUMP / THROW 🎮</div>
         <div style="width: 280px; height: 4px; background: #2a2a2a; border-radius: 2px; overflow: hidden; margin-top: 15px;">
             <div style="width: 0%; height: 100%; background: #ffaa55;" id="loading-bar"></div>
         </div>
-        <div style="font-size: 12px;">Loading Physics Engine...</div>
+        <div style="font-size: 12px;">Loading Professional Character...</div>
     </div>
 
     <div id="ui-overlay" style="display: none;">
         <div id="crosshair">
             <div class="crosshair-ring"></div>
             <div class="crosshair-dot"></div>
-            <div class="crosshair-arc" id="arc-angle">⚡ 45° ARC ⚡</div>
         </div>
         <div id="score-panel">💣 <span id="score">0</span></div>
         <div class="info-text">🎮 LEFT = MOVE | TOP RIGHT = CAMERA | BOTTOM RIGHT = JUMP / THROW</div>
         <div class="camera-hint">🎥 DRAG TOP-RIGHT AREA TO ROTATE CAMERA</div>
-        <div class="bomb-marker-label">🎯 ORANGE RING = BOMB IMPACT POINT (ADJUST WITH SLIDER)</div>
+        <div class="bomb-marker-label">🎯 ORANGE RING = BOMB IMPACT POINT</div>
         
         <div id="slider-container">
             <div id="slider-handle"></div>
@@ -396,18 +368,19 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     
     <script>
         (function() {
             // ========== ENHANCED PHYSICS CONFIGURATION ==========
             const PHYSICS = {
-                GRAVITY: 22.0,          // m/s²
-                JUMP_FORCE: 8.5,        // m/s
-                THROW_ANGLE: 42,        // degrees
-                MAX_THROW_SPEED: 24,    // m/s
-                MIN_THROW_SPEED: 12,    // m/s
+                GRAVITY: 22.0,
+                JUMP_FORCE: 8.5,
+                THROW_ANGLE: 42,
+                MAX_THROW_SPEED: 24,
+                MIN_THROW_SPEED: 12,
                 BLAST_RADIUS: 9.5,
-                MOVEMENT_SPEED: 7.2,    // m/s
+                MOVEMENT_SPEED: 7.2,
                 AIR_CONTROL: 0.65,
                 GROUND_DRAG: 8.0
             };
@@ -434,10 +407,6 @@
             mainLight.shadow.mapSize.height = 2048;
             mainLight.shadow.camera.near = 0.5;
             mainLight.shadow.camera.far = 70;
-            mainLight.shadow.camera.left = -25;
-            mainLight.shadow.camera.right = 25;
-            mainLight.shadow.camera.top = 25;
-            mainLight.shadow.camera.bottom = -25;
             scene.add(mainLight);
             
             const backFill = new THREE.PointLight(0x88aacc, 0.55);
@@ -448,7 +417,7 @@
             rimLight.position.set(4, 5, -12);
             scene.add(rimLight);
             
-            // Ground with better material
+            // Ground
             const groundMat = new THREE.MeshStandardMaterial({ color: 0x5a9e5a, roughness: 0.75, metalness: 0.1 });
             const ground = new THREE.Mesh(new THREE.PlaneGeometry(280, 280), groundMat);
             ground.rotation.x = -Math.PI/2;
@@ -456,16 +425,15 @@
             ground.receiveShadow = true;
             scene.add(ground);
             
-            // Grid with better visibility
             const grid = new THREE.GridHelper(280, 40, 0xaacc88, 0x558844);
             grid.position.y = 0.02;
             grid.material.transparent = true;
             grid.material.opacity = 0.5;
             scene.add(grid);
             
-            // Decorative elements
-            for(let i = 0; i < 120; i++) {
-                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.18 + Math.random() * 0.32), 
+            // Decorative rocks
+            for(let i = 0; i < 100; i++) {
+                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.2 + Math.random() * 0.35), 
                     new THREE.MeshStandardMaterial({ color: 0x7a6a55, roughness: 0.85 }));
                 const angle = Math.random() * Math.PI * 2;
                 const radius = 40 + Math.random() * 100;
@@ -475,57 +443,50 @@
                 scene.add(rock);
             }
             
-            // ========== DWARF CHARACTER ==========
-            let character, characterGroup;
-            let velocityY = 0;
-            let isGrounded = true;
-            let modelLoaded = true;
+            // ========== PROFESSIONAL CHARACTER (GLTF) ==========
+            let character = null;
+            let mixer = null;
+            let animations = {};
+            let currentAction = null;
+            let handBone = null;
+            let modelLoaded = false;
+            let bombInHand = null;
             
-            function createDwarfCharacter() {
+            // Fallback character in case GLTF fails to load
+            let fallbackCharacter = null;
+            
+            function createFallbackCharacter() {
                 const group = new THREE.Group();
-                
-                // Body
                 const body = new THREE.Mesh(new THREE.CylinderGeometry(0.72, 0.78, 1.45, 8), 
                     new THREE.MeshStandardMaterial({ color: 0x4aae77, metalness: 0.25, roughness: 0.45 }));
                 body.castShadow = true;
                 body.position.y = 0.72;
                 group.add(body);
                 
-                // Armor vest
                 const armor = new THREE.Mesh(new THREE.CylinderGeometry(0.78, 0.82, 0.85, 6), 
-                    new THREE.MeshStandardMaterial({ color: 0xaa8866, metalness: 0.65, roughness: 0.35 }));
+                    new THREE.MeshStandardMaterial({ color: 0xaa8866, metalness: 0.65 }));
                 armor.position.y = 0.85;
                 armor.castShadow = true;
                 group.add(armor);
                 
-                // Head
                 const head = new THREE.Mesh(new THREE.SphereGeometry(0.62, 32, 32), 
-                    new THREE.MeshStandardMaterial({ color: 0xffddbb, roughness: 0.3 }));
+                    new THREE.MeshStandardMaterial({ color: 0xffddbb }));
                 head.castShadow = true;
                 head.position.y = 1.48;
                 group.add(head);
                 
-                // Helmet with horn
                 const helmet = new THREE.Mesh(new THREE.ConeGeometry(0.68, 0.62, 8), 
                     new THREE.MeshStandardMaterial({ color: 0xccaa77, metalness: 0.7 }));
                 helmet.position.y = 1.82;
                 helmet.castShadow = true;
                 group.add(helmet);
                 
-                const horn = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.45, 4), 
-                    new THREE.MeshStandardMaterial({ color: 0xddbb88, metalness: 0.8 }));
-                horn.position.set(0, 2.02, 0.45);
-                horn.castShadow = true;
-                group.add(horn);
-                
-                // Beard
                 const beard = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.65, 0.55, 6), 
-                    new THREE.MeshStandardMaterial({ color: 0xcc8855, roughness: 0.7 }));
+                    new THREE.MeshStandardMaterial({ color: 0xcc8855 }));
                 beard.position.y = 1.18;
                 beard.castShadow = true;
                 group.add(beard);
                 
-                // Hands with bomb grip
                 const rightHand = new THREE.Group();
                 rightHand.position.set(0.78, 1.12, 0.38);
                 group.add(rightHand);
@@ -536,24 +497,11 @@
                 leftHand.castShadow = true;
                 group.add(leftHand);
                 
-                // Belt
-                const belt = new THREE.Mesh(new THREE.TorusGeometry(0.72, 0.08, 16, 32), 
-                    new THREE.MeshStandardMaterial({ color: 0xaa8855, metalness: 0.5 }));
-                belt.rotation.x = Math.PI / 2;
-                belt.position.y = 0.55;
-                group.add(belt);
-                
+                scene.add(group);
                 return { group, handBone: rightHand };
             }
             
-            const dwarf = createDwarfCharacter();
-            characterGroup = dwarf.group;
-            const handBone = dwarf.handBone;
-            scene.add(characterGroup);
-            
-            let bombInHand = null;
-            
-            function createHandBomb() {
+            function createHandBomb(targetHand) {
                 if(bombInHand) return;
                 const bombGroup = new THREE.Group();
                 
@@ -573,25 +521,90 @@
                 bombGroup.add(fuseTip);
                 
                 bombGroup.position.set(0.58, -0.12, 0.32);
-                handBone.add(bombGroup);
+                targetHand.add(bombGroup);
                 bombInHand = bombGroup;
             }
             
             function removeHandBomb() {
                 if(bombInHand) {
-                    handBone.remove(bombInHand);
+                    bombInHand.parent.remove(bombInHand);
                     bombInHand = null;
                 }
             }
             
-            createHandBomb();
+            // Load professional GLTF character
+            const loader = new THREE.GLTFLoader();
+            let loadAttempts = 0;
             
-            // ========== ENHANCED CONTROLS ==========
+            function loadProfessionalCharacter() {
+                loader.load('https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb', 
+                    (gltf) => {
+                        character = gltf.scene;
+                        character.scale.set(0.52, 0.52, 0.52);
+                        character.position.set(0, 0, 0);
+                        character.traverse(n => { if(n.isMesh) { n.castShadow = true; n.receiveShadow = true; } });
+                        scene.add(character);
+                        
+                        mixer = new THREE.AnimationMixer(character);
+                        gltf.animations.forEach(clip => {
+                            animations[clip.name.toLowerCase()] = mixer.clipAction(clip);
+                        });
+                        
+                        // Find hand bone for bomb attachment
+                        character.traverse(node => {
+                            if(node.isBone && (node.name.toLowerCase().includes('hand') || node.name.toLowerCase().includes('handr'))) {
+                                handBone = node;
+                            }
+                        });
+                        
+                        if(!handBone) {
+                            const dummyHand = new THREE.Group();
+                            character.add(dummyHand);
+                            dummyHand.position.set(0.65, 1.15, 0.35);
+                            handBone = dummyHand;
+                        }
+                        
+                        // Play idle animation
+                        if(animations['idle']) {
+                            currentAction = animations['idle'];
+                            currentAction.play();
+                        }
+                        
+                        modelLoaded = true;
+                        createHandBomb(handBone);
+                        finishLoading();
+                    },
+                    (xhr) => {
+                        const progress = (xhr.loaded / xhr.total) * 100;
+                        document.getElementById('loading-bar').style.width = Math.min(progress, 90) + '%';
+                    },
+                    (error) => {
+                        console.warn('GLTF load failed, using fallback character', error);
+                        loadAttempts++;
+                        if(loadAttempts < 2) {
+                            setTimeout(loadProfessionalCharacter, 800);
+                        } else {
+                            const fallback = createFallbackCharacter();
+                            character = fallback.group;
+                            handBone = fallback.handBone;
+                            modelLoaded = true;
+                            createHandBomb(handBone);
+                            finishLoading();
+                        }
+                    }
+                );
+            }
+            
+            // ========== CONTROLS ==========
             let moveInput = { x: 0, z: 0 };
             let jumpRequested = false;
             let throwRequested = false;
             let throwCooldown = 0;
             let throwDistance = 12.5;
+            let playerVelocityX = 0;
+            let playerVelocityZ = 0;
+            let velocityY = 0;
+            let isGrounded = true;
             
             // Keyboard support
             const keys = { w: false, s: false, a: false, d: false };
@@ -630,7 +643,7 @@
                 }
             }
             
-            // Joystick
+            // Joystick - with REVERSED horizontal movement (عكس الحركة الأفقية)
             const zoneMove = document.getElementById('zone-move');
             const joystickBase = document.getElementById('joystick-base');
             const joystickThumb = document.getElementById('joystick-thumb');
@@ -647,7 +660,8 @@
                 let limitedX = Math.cos(angle) * dist;
                 let limitedY = Math.sin(angle) * dist;
                 joystickThumb.style.transform = `translate(calc(-50% + ${limitedX}px), calc(-50% + ${limitedY}px))`;
-                moveInput.x = limitedX / MAX_RADIUS;
+                // REVERSED: inverted horizontal movement (عكس الاتجاه الأفقي)
+                moveInput.x = -limitedX / MAX_RADIUS;
                 moveInput.z = -limitedY / MAX_RADIUS;
             }
             
@@ -781,7 +795,7 @@
             throwBtn.addEventListener('mousedown', () => throwRequested = true);
             throwBtn.addEventListener('mouseup', () => setTimeout(() => throwRequested = false, 100));
             
-            // ========== PHYSICS-BASED BOMB SYSTEM ==========
+            // ========== BOMB SYSTEM ==========
             let bombs = [];
             let explosions = [];
             let targets = [];
@@ -799,8 +813,8 @@
                     this.mesh.castShadow = true;
                     scene.add(this.mesh);
                     this.velocity = velocity;
-                    this.lifeTime = 1.8; // seconds until explosion
                     this.age = 0;
+                    this.lifeTime = 1.8;
                     this.hasExploded = false;
                 }
                 
@@ -814,7 +828,6 @@
                     this.mesh.rotation.x += 8 * delta;
                     this.mesh.rotation.z += 5 * delta;
                     
-                    // Ground collision
                     if(this.mesh.position.y <= 0.15) {
                         this.explode();
                         return false;
@@ -831,7 +844,6 @@
                     if(this.hasExploded) return;
                     this.hasExploded = true;
                     
-                    // Explosion effect
                     const explosionGroup = new THREE.Group();
                     const flash = new THREE.Mesh(new THREE.SphereGeometry(2.8, 16, 16), 
                         new THREE.MeshBasicMaterial({ color: 0xff8844, transparent: true, opacity: 0.95 }));
@@ -839,7 +851,6 @@
                     explosionGroup.position.copy(this.mesh.position);
                     scene.add(explosionGroup);
                     
-                    // Shockwave ring
                     const ring = new THREE.Mesh(new THREE.RingGeometry(0.8, 2.2, 24), 
                         new THREE.MeshBasicMaterial({ color: 0xffaa66, transparent: true, side: THREE.DoubleSide }));
                     ring.rotation.x = -Math.PI / 2;
@@ -848,7 +859,6 @@
                     
                     setTimeout(() => scene.remove(explosionGroup), 200);
                     
-                    // Particles
                     for(let i = 0; i < 45; i++) {
                         const particle = new THREE.Mesh(new THREE.SphereGeometry(0.12 + Math.random() * 0.2, 6, 6), 
                             new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4411 }));
@@ -866,7 +876,6 @@
                         explosions.push(particle);
                     }
                     
-                    // Damage targets
                     for(let i = 0; i < targets.length; i++) {
                         const dist = targets[i].position.distanceTo(this.mesh.position);
                         if(dist < PHYSICS.BLAST_RADIUS) {
@@ -884,7 +893,7 @@
             }
             
             function spawnTarget() {
-                const targetMat = new THREE.MeshStandardMaterial({ color: 0xdd5555, emissive: 0x331100, metalness: 0.2 });
+                const targetMat = new THREE.MeshStandardMaterial({ color: 0xdd5555, emissive: 0x331100 });
                 const target = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.7, 1.7), targetMat);
                 const angle = Math.random() * Math.PI * 2;
                 const radius = 35 + Math.random() * 110;
@@ -896,7 +905,6 @@
             
             for(let i = 0; i < 12; i++) spawnTarget();
             
-            // Landing marker
             let landingMarker = null;
             
             function createLandingMarker() {
@@ -909,17 +917,17 @@
                 return ring;
             }
             
-            function calculateTrajectory(distance, angleDeg = PHYSICS.THROW_ANGLE) {
-                const angleRad = angleDeg * Math.PI / 180;
+            function calculateTrajectory(distance) {
+                const angleRad = PHYSICS.THROW_ANGLE * Math.PI / 180;
                 const v0 = Math.sqrt((distance * PHYSICS.GRAVITY) / Math.sin(2 * angleRad));
                 return Math.min(PHYSICS.MAX_THROW_SPEED, Math.max(PHYSICS.MIN_THROW_SPEED, v0));
             }
             
             function getLandingPosition() {
-                if(!characterGroup) return null;
-                const startPos = characterGroup.position.clone();
+                if(!character) return null;
+                const startPos = character.position.clone();
                 startPos.y += 1.55;
-                const forwardAngle = characterGroup.rotation.y;
+                const forwardAngle = character.rotation.y;
                 const dir = new THREE.Vector3(Math.sin(forwardAngle), 0, Math.cos(forwardAngle));
                 const angleRad = PHYSICS.THROW_ANGLE * Math.PI / 180;
                 const speed = calculateTrajectory(throwDistance);
@@ -948,13 +956,13 @@
             }
             
             function throwBomb() {
-                if(throwCooldown > 0 || !characterGroup) return;
+                if(throwCooldown > 0 || !character) return;
                 throwCooldown = 0.65;
                 removeHandBomb();
                 
-                const startPos = characterGroup.position.clone();
+                const startPos = character.position.clone();
                 startPos.y += 1.55;
-                const forwardAngle = characterGroup.rotation.y;
+                const forwardAngle = character.rotation.y;
                 const dir = new THREE.Vector3(Math.sin(forwardAngle), 0, Math.cos(forwardAngle));
                 const angleRad = PHYSICS.THROW_ANGLE * Math.PI / 180;
                 const speed = calculateTrajectory(throwDistance);
@@ -965,75 +973,87 @@
                 const bomb = new Bomb(startPos, new THREE.Vector3(vx, vy, vz));
                 bombs.push(bomb);
                 
-                setTimeout(() => { createHandBomb(); }, 500);
+                setTimeout(() => { if(handBone) createHandBomb(handBone); }, 500);
                 setTimeout(() => { throwCooldown = 0; }, 650);
             }
             
             // ========== PLAYER PHYSICS ==========
-            let playerVelocityX = 0;
-            let playerVelocityZ = 0;
-            
             function updatePlayerPhysics(delta) {
-                // Movement with acceleration/deceleration
+                if(!character) return;
+                
                 const speed = PHYSICS.MOVEMENT_SPEED;
                 let targetVelX = moveInput.x * speed;
                 let targetVelZ = moveInput.z * speed;
                 
-                // Air control reduction
                 const control = isGrounded ? 1.0 : PHYSICS.AIR_CONTROL;
                 playerVelocityX += (targetVelX - playerVelocityX) * 12 * delta * control;
                 playerVelocityZ += (targetVelZ - playerVelocityZ) * 12 * delta * control;
                 
-                // Ground drag
                 if(isGrounded && (moveInput.x === 0 && moveInput.z === 0)) {
                     playerVelocityX *= (1 - PHYSICS.GROUND_DRAG * delta);
                     playerVelocityZ *= (1 - PHYSICS.GROUND_DRAG * delta);
                 }
                 
-                characterGroup.position.x += playerVelocityX * delta;
-                characterGroup.position.z += playerVelocityZ * delta;
+                character.position.x += playerVelocityX * delta;
+                character.position.z += playerVelocityZ * delta;
                 
-                // Boundaries
                 const bound = 135;
-                characterGroup.position.x = Math.min(bound, Math.max(-bound, characterGroup.position.x));
-                characterGroup.position.z = Math.min(bound, Math.max(-bound, characterGroup.position.z));
+                character.position.x = Math.min(bound, Math.max(-bound, character.position.x));
+                character.position.z = Math.min(bound, Math.max(-bound, character.position.z));
                 
-                // Apply movement direction for rotation
                 if(Math.abs(playerVelocityX) > 0.1 || Math.abs(playerVelocityZ) > 0.1) {
                     const moveAngle = Math.atan2(playerVelocityX, playerVelocityZ);
-                    characterGroup.rotation.y = moveAngle;
+                    character.rotation.y = moveAngle;
+                    
+                    if(modelLoaded && mixer && animations['walking'] && currentAction !== animations['walking']) {
+                        if(currentAction) currentAction.fadeOut(0.12);
+                        currentAction = animations['walking'];
+                        currentAction.reset().fadeIn(0.12).play();
+                    }
+                } else {
+                    if(modelLoaded && mixer && animations['idle'] && currentAction !== animations['idle']) {
+                        if(currentAction) currentAction.fadeOut(0.15);
+                        currentAction = animations['idle'];
+                        currentAction.reset().play();
+                    }
                 }
                 
-                // Jump physics
                 if(jumpRequested && isGrounded) {
                     velocityY = PHYSICS.JUMP_FORCE;
                     isGrounded = false;
                     jumpRequested = false;
+                    
+                    if(modelLoaded && mixer && animations['jump']) {
+                        const jumpAnim = animations['jump'];
+                        jumpAnim.reset().play();
+                        setTimeout(() => jumpAnim.fadeOut(0.3), 400);
+                    }
                 }
                 
                 if(!isGrounded) {
-                    characterGroup.position.y += velocityY * delta;
+                    character.position.y += velocityY * delta;
                     velocityY -= PHYSICS.GRAVITY * delta;
-                    if(characterGroup.position.y <= 0) {
-                        characterGroup.position.y = 0;
+                    if(character.position.y <= 0) {
+                        character.position.y = 0;
                         isGrounded = true;
                         velocityY = 0;
                     }
                 } else {
-                    characterGroup.position.y = 0;
+                    character.position.y = 0;
                 }
             }
             
             // ========== CAMERA SYSTEM ==========
             function updateCamera() {
+                if(!character) return;
                 cameraYaw += (targetYaw - cameraYaw) * 0.12;
                 const distance = 9.8;
                 const height = 4.2;
-                const camX = characterGroup.position.x - Math.sin(cameraYaw) * distance;
-                const camZ = characterGroup.position.z - Math.cos(cameraYaw) * distance;
-                const camY = characterGroup.position.y + height;
+                const camX = character.position.x - Math.sin(cameraYaw) * distance;
+                const camZ = character.position.z - Math.cos(cameraYaw) * distance;
+                const camY = character.position.y + height;
                 camera.position.set(camX, camY, camZ);
-                camera.lookAt(characterGroup.position.clone().add(new THREE.Vector3(0, 1.3, 0)));
+                camera.lookAt(character.position.clone().add(new THREE.Vector3(0, 1.3, 0)));
             }
             
             // ========== UPDATE SYSTEMS ==========
@@ -1065,6 +1085,7 @@
             
             // ========== ANIMATION LOOP ==========
             let lastTime = performance.now();
+            let clock = new THREE.Clock();
             
             function animate() {
                 const now = performance.now();
@@ -1082,6 +1103,8 @@
                     throwBomb();
                     throwRequested = false;
                 }
+                
+                if(mixer) mixer.update(clock.getDelta());
                 
                 renderer.render(scene, camera);
                 requestAnimationFrame(animate);
@@ -1102,13 +1125,10 @@
                 document.getElementById('loading-bar').style.width = Math.min(loadProgress, 100) + '%';
                 if(loadProgress >= 100) {
                     clearInterval(loadInterval);
-                    finishLoading();
                 }
             }, 70);
             
-            // Initial setup
-            characterGroup.position.set(0, 0, 0);
-            updateLandingMarker();
+            loadProfessionalCharacter();
             animate();
             
             window.addEventListener('resize', () => {
@@ -1117,10 +1137,9 @@
                 renderer.setSize(window.innerWidth, window.innerHeight);
             });
             
-            // Recreate bomb in hand after cooldown
             setInterval(() => {
                 if(modelLoaded && handBone && !bombInHand && throwCooldown === 0) {
-                    createHandBomb();
+                    createHandBomb(handBone);
                 }
             }, 800);
         })();
