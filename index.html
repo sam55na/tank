@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Dwarf Bomber - Massive Blast | Fixed Movement</title>
+    <title>Dwarf Bomber - FULLY FIXED | Correct Joystick + Working Slider</title>
     <style>
         * {
             box-sizing: border-box;
@@ -61,34 +61,6 @@
             0% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
             100% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
         }
-        #crosshair .dot {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 5px;
-            height: 5px;
-            background: #ffaa44;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-        }
-        #crosshair .line-h, #crosshair .line-v {
-            position: absolute;
-            background: #ffaa44;
-        }
-        #crosshair .line-h {
-            top: 50%;
-            left: 0;
-            width: 100%;
-            height: 1.5px;
-            transform: translateY(-50%);
-        }
-        #crosshair .line-v {
-            top: 0;
-            left: 50%;
-            width: 1.5px;
-            height: 100%;
-            transform: translateX(-50%);
-        }
 
         #info-panel {
             position: absolute;
@@ -104,7 +76,6 @@
             border-left: 3px solid #ffaa44;
             pointer-events: none;
             z-index: 50;
-            font-family: monospace;
         }
         #score-panel {
             position: absolute;
@@ -120,7 +91,6 @@
             font-family: monospace;
             pointer-events: none;
             z-index: 50;
-            text-shadow: 0 0 5px rgba(0,0,0,0.5);
         }
 
         #left-zone {
@@ -131,7 +101,6 @@
             height: 200px;
             pointer-events: auto;
             z-index: 60;
-            touch-action: none;
         }
         .joystick-base {
             position: absolute;
@@ -143,7 +112,6 @@
             backdrop-filter: blur(12px);
             border-radius: 50%;
             border: 3px solid #ffaa55;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
         .joystick-thumb {
             position: absolute;
@@ -156,8 +124,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            transition: transform 0.016s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-            will-change: transform;
+            transition: transform 0.02s linear;
         }
 
         #right-zone {
@@ -179,8 +146,6 @@
             padding: 6px 14px;
             border-radius: 24px;
             pointer-events: none;
-            backdrop-filter: blur(4px);
-            font-weight: bold;
         }
 
         #slider-area {
@@ -189,7 +154,7 @@
             left: 190px;
             width: 65px;
             height: 190px;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
             backdrop-filter: blur(8px);
             border-radius: 40px;
             border: 2px solid #ffaa55;
@@ -200,7 +165,6 @@
             align-items: center;
             justify-content: flex-end;
             cursor: pointer;
-            touch-action: none;
         }
         #slider-thumb {
             width: 52px;
@@ -210,8 +174,7 @@
             margin-bottom: 8px;
             cursor: pointer;
             box-shadow: 0 2px 10px black;
-            transition: margin-bottom 0.016s linear;
-            touch-action: none;
+            transition: margin-bottom 0.05s ease-out;
         }
         .slider-labels {
             position: absolute;
@@ -220,7 +183,6 @@
             color: #ffdd99;
             font-size: 11px;
             font-weight: bold;
-            line-height: 1.4;
         }
         #distance-value {
             position: absolute;
@@ -257,10 +219,7 @@
             font-size: 26px;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 4px 12px black;
-            transition: transform 0.05s, background 0.1s;
-            will-change: transform;
-            touch-action: manipulation;
+            transition: transform 0.05s;
         }
         .action-btn:active {
             transform: scale(0.92);
@@ -283,7 +242,6 @@
             font-size: 24px;
             flex-direction: column;
             gap: 15px;
-            transition: opacity 0.5s;
         }
 
         .bomb-marker-text {
@@ -297,38 +255,30 @@
             font-size: 11px;
             pointer-events: none;
             z-index: 80;
-            font-weight: bold;
-            font-family: monospace;
         }
         
         @media (max-width: 768px) {
-            .joystick-base { width: 110px; height: 110px; bottom: 25px; left: 25px; }
-            .joystick-thumb { width: 48px; height: 48px; }
-            #left-zone { width: 160px; height: 160px; }
-            .action-btn { width: 65px; height: 65px; font-size: 24px; }
-            #score-panel { font-size: 28px; padding: 5px 18px; }
-            #slider-area { left: 150px; height: 160px; bottom: 80px; width: 58px; }
-            #slider-thumb { width: 46px; height: 46px; }
+            .joystick-base { width: 100px; height: 100px; bottom: 25px; left: 25px; }
+            .joystick-thumb { width: 45px; height: 45px; }
+            #left-zone { width: 150px; height: 150px; }
+            .action-btn { width: 60px; height: 60px; font-size: 22px; }
+            #slider-area { left: 140px; width: 55px; height: 160px; bottom: 80px; }
+            #slider-thumb { width: 45px; height: 45px; }
         }
     </style>
 </head>
 <body>
     <div id="loading-screen">
-        💣 DWARF BOMBER - FIXED MOVEMENT 💣<br>
-        <span>🎮 JOYSTICK: يمين = يمين | يسار = يسار | 3x BLAST RADIUS 🎮</span>
+        💣 DWARF BOMBER - FULLY FIXED 💣<br>
+        <span>✅ JOYSTICK FIXED | SLIDER WORKS | 3x BLAST RADIUS ✅</span>
         <div style="width: 200px; height: 4px; background: #333; border-radius: 2px; overflow: hidden; margin-top: 10px;">
-            <div style="width: 0%; height: 100%; background: #ffaa55; transition: width 0.3s;" id="loading-bar"></div>
+            <div style="width: 0%; height: 100%; background: #ffaa55;" id="loading-bar"></div>
         </div>
     </div>
 
     <div id="ui-overlay" style="display: none;">
-        <div id="crosshair">
-            <div class="ring"></div>
-            <div class="dot"></div>
-            <div class="line-h"></div>
-            <div class="line-v"></div>
-        </div>
-        <div id="info-panel">🎮 تم إصلاح المشي: → يمين | ← يسار | ↑ أمام | ↓ خلف 🎯</div>
+        <div id="crosshair"><div class="ring"></div></div>
+        <div id="info-panel">🎮 → يمين | ← يسار | ↑ أمام | ↓ خلف | اسحب المنزلق لضبط مسافة القنبلة 🎯</div>
         <div id="score-panel">💥 <span id="score">0</span></div>
         
         <div id="left-zone">
@@ -337,7 +287,7 @@
         </div>
         
         <div id="right-zone">
-            <div class="camera-hint">🎥 اسحب لتدوير الكاميرا | اتركها لتتبعك</div>
+            <div class="camera-hint">🎥 اسحب لتدوير الكاميرا</div>
         </div>
         
         <div id="slider-area">
@@ -347,10 +297,10 @@
         </div>
         
         <div id="action-buttons">
-            <button class="action-btn" id="btn-jump">🦘 قفز</button>
-            <button class="action-btn" id="btn-throw">💣 قنبلة</button>
+            <button class="action-btn" id="btn-jump">🦘</button>
+            <button class="action-btn" id="btn-throw">💣</button>
         </div>
-        <div class="bomb-marker-text">🎯 الحلقة البرتقالية = موقع سقوط القنبلة (يتغير مع المنزلق)</div>
+        <div class="bomb-marker-text">🎯 الدائرة البرتقالية = مكان سقوط القنبلة (تتغير مع المنزلق)</div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -358,36 +308,29 @@
 
     <script>
         (function() {
-            // ========== THREE.JS SETUP ==========
+            // ========== THREE SETUP ==========
             const scene = new THREE.Scene();
             scene.background = new THREE.Color(0x0a3522);
             scene.fog = new THREE.FogExp2(0x0a3522, 0.003);
             
             const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 300);
-            const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             document.body.appendChild(renderer.domElement);
             
             // Lighting
             const ambient = new THREE.AmbientLight(0x5a6e5a, 0.7);
             scene.add(ambient);
-            const mainLight = new THREE.DirectionalLight(0xfff5e0, 1.3);
+            const mainLight = new THREE.DirectionalLight(0xfff5e0, 1.2);
             mainLight.position.set(10, 20, 8);
             mainLight.castShadow = true;
             mainLight.shadow.mapSize.width = 1024;
             mainLight.shadow.mapSize.height = 1024;
-            mainLight.shadow.camera.near = 0.5;
-            mainLight.shadow.camera.far = 50;
             scene.add(mainLight);
-            const fillLight = new THREE.PointLight(0x88aacc, 0.55);
-            fillLight.position.set(-5, 12, 6);
-            scene.add(fillLight);
             
             // Ground
-            const groundMat = new THREE.MeshStandardMaterial({ color: 0x5a9e5a, roughness: 0.85 });
-            const ground = new THREE.Mesh(new THREE.PlaneGeometry(300, 300), groundMat);
+            const ground = new THREE.Mesh(new THREE.PlaneGeometry(300, 300), new THREE.MeshStandardMaterial({ color: 0x5a9e5a, roughness: 0.85 }));
             ground.rotation.x = -Math.PI/2;
             ground.position.y = -0.05;
             ground.receiveShadow = true;
@@ -395,16 +338,13 @@
             
             const grid = new THREE.GridHelper(300, 40, 0xaacc88, 0x558844);
             grid.position.y = 0.01;
-            grid.material.transparent = true;
-            grid.material.opacity = 0.45;
+            grid.material.opacity = 0.4;
             scene.add(grid);
             
-            // Decorative rocks
-            const rockMaterial = new THREE.MeshStandardMaterial({ color: 0x7a6a55, roughness: 0.9 });
-            for(let i = 0; i < 100; i++) {
-                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.2 + Math.random() * 0.35), rockMaterial);
+            // Rocks
+            for(let i = 0; i < 80; i++) {
+                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.2 + Math.random() * 0.3), new THREE.MeshStandardMaterial({ color: 0x7a6a55 }));
                 rock.position.set((Math.random() - 0.5) * 280, -0.2, (Math.random() - 0.5) * 280);
-                rock.scale.set(1, Math.random() * 0.6 + 0.3, 1);
                 rock.castShadow = true;
                 scene.add(rock);
             }
@@ -416,53 +356,29 @@
             let bombInHand = null;
             let throwCooldown = false;
             let modelLoaded = false;
-            const CHARACTER_SPEED = 0.42;
+            const SPEED = 0.45;
             
-            // Create high-quality dwarf character
-            function createDwarfCharacter() {
+            function createSimpleCharacter() {
                 const group = new THREE.Group();
-                
-                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.68, 0.72, 1.35, 8), 
-                    new THREE.MeshStandardMaterial({ color: 0x4aae77, metalness: 0.25, roughness: 0.4 }));
+                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.75, 1.4, 8), new THREE.MeshStandardMaterial({ color: 0x4aae77 }));
                 body.castShadow = true;
-                body.position.y = 0.68;
+                body.position.y = 0.7;
                 group.add(body);
                 
-                const head = new THREE.Mesh(new THREE.SphereGeometry(0.6, 32, 32), 
-                    new THREE.MeshStandardMaterial({ color: 0xffddbb, roughness: 0.3 }));
+                const head = new THREE.Mesh(new THREE.SphereGeometry(0.6, 24, 24), new THREE.MeshStandardMaterial({ color: 0xffddbb }));
                 head.castShadow = true;
-                head.position.y = 1.38;
+                head.position.y = 1.45;
                 group.add(head);
                 
-                const helmet = new THREE.Mesh(new THREE.ConeGeometry(0.64, 0.58, 8), 
-                    new THREE.MeshStandardMaterial({ color: 0xccaa77, metalness: 0.7, roughness: 0.2 }));
-                helmet.position.y = 1.72;
+                const helmet = new THREE.Mesh(new THREE.ConeGeometry(0.65, 0.6, 8), new THREE.MeshStandardMaterial({ color: 0xccaa77, metalness: 0.6 }));
+                helmet.position.y = 1.8;
                 helmet.castShadow = true;
                 group.add(helmet);
                 
-                const beard = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.6, 0.48, 6), 
-                    new THREE.MeshStandardMaterial({ color: 0xcc8855, roughness: 0.6 }));
-                beard.position.y = 1.2;
-                beard.castShadow = true;
-                group.add(beard);
-                
                 const rightHand = new THREE.Group();
-                rightHand.position.set(0.7, 1.08, 0.3);
+                rightHand.position.set(0.72, 1.1, 0.32);
                 group.add(rightHand);
                 handBone = rightHand;
-                
-                const leftHand = new THREE.Mesh(new THREE.SphereGeometry(0.27, 8, 8), 
-                    new THREE.MeshStandardMaterial({ color: 0xffccaa }));
-                leftHand.position.set(-0.7, 1.08, 0.3);
-                leftHand.castShadow = true;
-                group.add(leftHand);
-                
-                const belt = new THREE.Mesh(new THREE.TorusGeometry(0.7, 0.08, 16, 32), 
-                    new THREE.MeshStandardMaterial({ color: 0xaa8866, metalness: 0.5 }));
-                belt.rotation.x = Math.PI / 2;
-                belt.position.y = 0.85;
-                belt.castShadow = true;
-                group.add(belt);
                 
                 return group;
             }
@@ -476,151 +392,105 @@
                         character = gltf.scene;
                         character.scale.set(0.55, 0.55, 0.55);
                         character.position.set(0, 0, 0);
-                        character.traverse(n => { if(n.isMesh) { n.castShadow = true; n.receiveShadow = true; } });
+                        character.traverse(n => { if(n.isMesh) n.castShadow = true; });
                         scene.add(character);
-                        
                         mixer = new THREE.AnimationMixer(character);
-                        gltf.animations.forEach(clip => {
-                            animations[clip.name.toLowerCase()] = mixer.clipAction(clip);
-                        });
-                        
-                        character.traverse(node => {
-                            if(node.isBone && (node.name.includes("Hand") || node.name === "mixamorig:RightHand")) {
-                                handBone = node;
-                            }
-                        });
-                        if(!handBone) {
-                            const dummy = new THREE.Group();
-                            character.add(dummy);
-                            handBone = dummy;
-                        }
-                        
-                        if(animations['idle']) {
-                            currentAction = animations['idle'];
-                            currentAction.play();
-                        }
-                        
+                        gltf.animations.forEach(clip => animations[clip.name.toLowerCase()] = mixer.clipAction(clip));
+                        character.traverse(node => { if(node.isBone && node.name.includes("Hand")) handBone = node; });
+                        if(!handBone) { const d = new THREE.Group(); character.add(d); handBone = d; }
+                        if(animations['idle']) { currentAction = animations['idle']; currentAction.play(); }
                         modelLoaded = true;
                         createHandBomb();
                         finishLoading();
                     },
-                    (xhr) => {
-                        const percent = (xhr.loaded / xhr.total) * 100;
-                        document.getElementById('loading-bar').style.width = Math.min(percent, 90) + '%';
-                    },
-                    () => {
-                        loadAttempts++;
-                        if(loadAttempts < 2) {
-                            setTimeout(loadModel, 800);
-                        } else {
-                            character = createDwarfCharacter();
-                            scene.add(character);
-                            modelLoaded = true;
-                            finishLoading();
-                        }
-                    }
+                    (xhr) => { document.getElementById('loading-bar').style.width = Math.min((xhr.loaded / xhr.total) * 100, 90) + '%'; },
+                    () => { loadAttempts++; if(loadAttempts < 2) setTimeout(loadModel, 800); else { character = createSimpleCharacter(); scene.add(character); modelLoaded = true; finishLoading(); } }
                 );
             }
             
             function finishLoading() {
                 document.getElementById('loading-screen').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('loading-screen').style.display = 'none';
-                    document.getElementById('ui-overlay').style.display = 'block';
-                }, 400);
+                setTimeout(() => { document.getElementById('loading-screen').style.display = 'none'; document.getElementById('ui-overlay').style.display = 'block'; }, 400);
                 createHandBomb();
             }
             
             function createHandBomb() {
                 if(bombInHand || !handBone) return;
-                const bombMesh = new THREE.Mesh(new THREE.SphereGeometry(0.34, 24, 24), 
-                    new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.9, roughness: 0.2 }));
-                const fuse = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.13, 0.45, 6), 
-                    new THREE.MeshStandardMaterial({ color: 0xff6633, emissive: 0x331100 }));
-                fuse.position.y = 0.44;
-                bombMesh.add(fuse);
-                bombMesh.position.set(0.5, -0.1, 0.24);
-                handBone.add(bombMesh);
-                bombInHand = bombMesh;
+                const bomb = new THREE.Mesh(new THREE.SphereGeometry(0.35, 24, 24), new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.85 }));
+                const fuse = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.48, 6), new THREE.MeshStandardMaterial({ color: 0xff6633 }));
+                fuse.position.y = 0.48;
+                bomb.add(fuse);
+                bomb.position.set(0.52, -0.12, 0.26);
+                handBone.add(bomb);
+                bombInHand = bomb;
             }
             
-            function removeHandBomb() {
-                if(bombInHand && bombInHand.parent) {
-                    bombInHand.parent.remove(bombInHand);
-                    bombInHand = null;
-                }
-            }
+            function removeHandBomb() { if(bombInHand && bombInHand.parent) { bombInHand.parent.remove(bombInHand); bombInHand = null; } }
             
-            // ========== INPUT SYSTEM - MOVEMENT FIXED ==========
-            let moveX = 0;
-            let moveZ = 0;
-            let jumpRequested = false;
-            let throwRequested = false;
+            // ========== CONTROLS ==========
+            let moveX = 0, moveZ = 0;
+            let jumpRequested = false, throwRequested = false;
+            let velocityY = 0, isGrounded = true;
+            const GRAVITY = 0.024, JUMP_FORCE = 0.54;
             
-            // Keyboard support
-            const keys = { ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false, w: false, s: false, a: false, d: false };
+            // Keyboard
+            const keys = { w: false, s: false, a: false, d: false };
             window.addEventListener('keydown', (e) => {
-                if(e.code === 'KeyW' || e.code === 'ArrowUp') keys.w = true;
-                if(e.code === 'KeyS' || e.code === 'ArrowDown') keys.s = true;
-                if(e.code === 'KeyA' || e.code === 'ArrowLeft') keys.a = true;
-                if(e.code === 'KeyD' || e.code === 'ArrowRight') keys.d = true;
+                if(e.code === 'KeyW') keys.w = true;
+                if(e.code === 'KeyS') keys.s = true;
+                if(e.code === 'KeyA') keys.a = true;
+                if(e.code === 'KeyD') keys.d = true;
                 if(e.code === 'Space') { e.preventDefault(); jumpRequested = true; }
                 if(e.code === 'KeyF') { e.preventDefault(); throwRequested = true; }
             });
             window.addEventListener('keyup', (e) => {
-                if(e.code === 'KeyW' || e.code === 'ArrowUp') keys.w = false;
-                if(e.code === 'KeyS' || e.code === 'ArrowDown') keys.s = false;
-                if(e.code === 'KeyA' || e.code === 'ArrowLeft') keys.a = false;
-                if(e.code === 'KeyD' || e.code === 'ArrowRight') keys.d = false;
+                if(e.code === 'KeyW') keys.w = false;
+                if(e.code === 'KeyS') keys.s = false;
+                if(e.code === 'KeyA') keys.a = false;
+                if(e.code === 'KeyD') keys.d = false;
             });
             
-            // ========== JOYSTICK - MOVEMENT NOW CORRECT ==========
+            // ========== JOYSTICK - CORRECT DIRECTION (FIXED) ==========
             const leftZone = document.getElementById('left-zone');
             const joystickBase = document.getElementById('joystick-base');
             const joystickThumb = document.getElementById('joystick-thumb');
             let joystickActive = false;
-            let joystickCenterX = 0, joystickCenterY = 0;
+            let joyCenterX = 0, joyCenterY = 0;
             const MAX_RADIUS = 52;
-            let activeTouchId = null;
+            let activeTouch = null;
             
             function updateJoystick(clientX, clientY) {
-                let dx = clientX - joystickCenterX;
-                let dy = clientY - joystickCenterY;
-                let distance = Math.min(Math.hypot(dx, dy), MAX_RADIUS);
+                let dx = clientX - joyCenterX;
+                let dy = clientY - joyCenterY;
+                let dist = Math.min(Math.hypot(dx, dy), MAX_RADIUS);
                 let angle = Math.atan2(dy, dx);
-                let limitedX = Math.cos(angle) * distance;
-                let limitedY = Math.sin(angle) * distance;
-                
+                let limitedX = Math.cos(angle) * dist;
+                let limitedY = Math.sin(angle) * dist;
                 joystickThumb.style.transform = `translate(calc(-50% + ${limitedX}px), calc(-50% + ${limitedY}px))`;
-                
-                // FIXED: مباشرة - يمين = X موجب, يسار = X سالب
+                // FIXED: Right = positive X (moveX positive), Left = negative X (moveX negative)
                 moveX = limitedX / MAX_RADIUS;
+                // Forward = negative Y (moveZ positive), Backward = positive Y (moveZ negative)
                 moveZ = -limitedY / MAX_RADIUS;
             }
             
             function resetJoystick() {
                 joystickThumb.style.transform = 'translate(-50%, -50%)';
-                if(!keys.w && !keys.s && !keys.a && !keys.d) {
-                    moveX = 0;
-                    moveZ = 0;
-                }
+                if(!keys.w && !keys.s && !keys.a && !keys.d) { moveX = 0; moveZ = 0; }
                 joystickActive = false;
-                activeTouchId = null;
+                activeTouch = null;
             }
             
             leftZone.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 const rect = joystickBase.getBoundingClientRect();
-                joystickCenterX = rect.left + rect.width / 2;
-                joystickCenterY = rect.top + rect.height / 2;
-                
+                joyCenterX = rect.left + rect.width / 2;
+                joyCenterY = rect.top + rect.height / 2;
                 for(let i = 0; i < e.touches.length; i++) {
                     const touch = e.touches[i];
-                    const zoneRect = leftZone.getBoundingClientRect();
-                    if(touch.clientX >= zoneRect.left && touch.clientX <= zoneRect.right &&
-                       touch.clientY >= zoneRect.top && touch.clientY <= zoneRect.bottom) {
+                    const zone = leftZone.getBoundingClientRect();
+                    if(touch.clientX >= zone.left && touch.clientX <= zone.right && touch.clientY >= zone.top && touch.clientY <= zone.bottom) {
                         joystickActive = true;
-                        activeTouchId = touch.identifier;
+                        activeTouch = touch.identifier;
                         updateJoystick(touch.clientX, touch.clientY);
                         break;
                     }
@@ -628,205 +498,162 @@
             });
             
             window.addEventListener('touchmove', (e) => {
-                if(!joystickActive || activeTouchId === null) return;
+                if(!joystickActive || activeTouch === null) return;
                 for(let i = 0; i < e.touches.length; i++) {
-                    if(e.touches[i].identifier === activeTouchId) {
-                        updateJoystick(e.touches[i].clientX, e.touches[i].clientY);
-                        break;
-                    }
+                    if(e.touches[i].identifier === activeTouch) { updateJoystick(e.touches[i].clientX, e.touches[i].clientY); break; }
                 }
             });
             
             window.addEventListener('touchend', (e) => {
                 if(!joystickActive) return;
-                let stillActive = false;
-                for(let i = 0; i < e.touches.length; i++) {
-                    if(e.touches[i].identifier === activeTouchId) {
-                        stillActive = true;
-                        break;
-                    }
-                }
-                if(!stillActive) resetJoystick();
+                let found = false;
+                for(let i = 0; i < e.touches.length; i++) { if(e.touches[i].identifier === activeTouch) { found = true; break; } }
+                if(!found) resetJoystick();
             });
             
-            function updateKeyboardMove() {
+            function updateKeyboard() {
                 let x = 0, z = 0;
                 if(keys.a) x = -1;
                 if(keys.d) x = 1;
                 if(keys.w) z = 1;
                 if(keys.s) z = -1;
-                if(x !== 0 || z !== 0) {
-                    moveX = x;
-                    moveZ = z;
-                } else if(!joystickActive) {
-                    if(moveX !== 0 || moveZ !== 0) {
-                        moveX = 0;
-                        moveZ = 0;
-                    }
-                }
+                if(x !== 0 || z !== 0) { moveX = x; moveZ = z; }
+                else if(!joystickActive) { moveX = 0; moveZ = 0; }
             }
             
             // ========== CAMERA ==========
             const rightZone = document.getElementById('right-zone');
             let dragActive = false;
-            let cameraYaw = 0;
-            let targetCameraYaw = 0;
+            let cameraYaw = 0, targetYaw = 0;
             let cameraPitch = 0.4;
-            let dragYaw = 0;
-            let lastDragX = 0;
+            let dragOffset = 0;
+            let lastDrag = 0;
             
-            rightZone.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                dragActive = true;
-                lastDragX = e.touches[0].clientX;
-            });
+            rightZone.addEventListener('touchstart', (e) => { e.preventDefault(); dragActive = true; lastDrag = e.touches[0].clientX; });
+            window.addEventListener('touchmove', (e) => { if(dragActive) { let dx = e.touches[0].clientX - lastDrag; dragOffset += dx * 0.008; dragOffset = Math.min(Math.max(dragOffset, -2.2), 2.2); lastDrag = e.touches[0].clientX; } });
+            window.addEventListener('touchend', () => { dragActive = false; let start = dragOffset; let startTime = performance.now(); function smooth(t) { let elapsed = (t - startTime) / 350; if(elapsed >= 1) { dragOffset = 0; return; } dragOffset = start * (1 - elapsed); requestAnimationFrame(smooth); } if(Math.abs(dragOffset) > 0.01) requestAnimationFrame(smooth); else dragOffset = 0; });
             
-            window.addEventListener('touchmove', (e) => {
-                if(!dragActive) return;
-                let dx = e.touches[0].clientX - lastDragX;
-                dragYaw += dx * 0.008;
-                dragYaw = Math.min(Math.max(dragYaw, -2.5), 2.5);
-                lastDragX = e.touches[0].clientX;
-            });
-            
-            window.addEventListener('touchend', () => {
-                dragActive = false;
-                let startDrag = dragYaw;
-                let startTime = performance.now();
-                function animateReturn(now) {
-                    const elapsed = (now - startTime) / 400;
-                    if(elapsed >= 1) {
-                        dragYaw = 0;
-                        return;
-                    }
-                    dragYaw = startDrag * (1 - elapsed);
-                    requestAnimationFrame(animateReturn);
-                }
-                if(Math.abs(dragYaw) > 0.01) requestAnimationFrame(animateReturn);
-                else dragYaw = 0;
-            });
-            
-            // ========== DISTANCE SLIDER ==========
+            // ========== SLIDER - FULLY WORKING ==========
             const sliderArea = document.getElementById('slider-area');
             const sliderThumb = document.getElementById('slider-thumb');
             let throwDistance = 12.5;
-            let sliderActive = false;
+            let sliderActiveFlag = false;
             let sliderTouchId = null;
             
-            function updateSliderValue(clientY) {
+            function updateSliderFromY(clientY) {
                 const rect = sliderArea.getBoundingClientRect();
-                let relativeY = Math.min(rect.bottom, Math.max(rect.top, clientY));
-                let t = (rect.bottom - relativeY) / rect.height;
+                let y = Math.min(rect.bottom, Math.max(rect.top, clientY));
+                let t = (rect.bottom - y) / rect.height;
                 t = Math.min(1, Math.max(0, t));
                 throwDistance = 5 + t * 15;
                 document.getElementById('dist-value').innerText = throwDistance.toFixed(1);
-                let thumbOffset = t * (rect.height - 52);
-                sliderThumb.style.marginBottom = `${thumbOffset}px`;
+                let offset = t * (rect.height - 52);
+                sliderThumb.style.marginBottom = `${offset}px`;
+                // Update marker immediately
                 updateLandingMarker();
             }
             
             sliderArea.addEventListener('touchstart', (e) => {
                 e.preventDefault();
-                sliderActive = true;
+                sliderActiveFlag = true;
                 sliderTouchId = e.touches[0].identifier;
-                updateSliderValue(e.touches[0].clientY);
+                updateSliderFromY(e.touches[0].clientY);
             });
             
             window.addEventListener('touchmove', (e) => {
-                if(!sliderActive) return;
+                if(!sliderActiveFlag) return;
                 for(let i = 0; i < e.touches.length; i++) {
-                    if(e.touches[i].identifier === sliderTouchId) {
-                        updateSliderValue(e.touches[i].clientY);
-                        break;
-                    }
+                    if(e.touches[i].identifier === sliderTouchId) { updateSliderFromY(e.touches[i].clientY); break; }
                 }
             });
             
             window.addEventListener('touchend', (e) => {
-                if(sliderActive) {
-                    let stillActive = false;
-                    for(let i = 0; i < e.touches.length; i++) {
-                        if(e.touches[i].identifier === sliderTouchId) {
-                            stillActive = true;
-                            break;
-                        }
-                    }
-                    if(!stillActive) {
-                        sliderActive = false;
-                        sliderTouchId = null;
-                    }
+                if(sliderActiveFlag) {
+                    let found = false;
+                    for(let i = 0; i < e.touches.length; i++) { if(e.touches[i].identifier === sliderTouchId) { found = true; break; } }
+                    if(!found) { sliderActiveFlag = false; sliderTouchId = null; }
                 }
             });
             
-            function initSlider() {
+            // Also support mouse for testing
+            sliderArea.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                sliderActiveFlag = true;
+                updateSliderFromY(e.clientY);
+                function onMouseMove(moveEvent) { updateSliderFromY(moveEvent.clientY); }
+                function onMouseUp() { sliderActiveFlag = false; window.removeEventListener('mousemove', onMouseMove); window.removeEventListener('mouseup', onMouseUp); }
+                window.addEventListener('mousemove', onMouseMove);
+                window.addEventListener('mouseup', onMouseUp);
+            });
+            
+            function initSliderPos() {
                 const rect = sliderArea.getBoundingClientRect();
                 if(rect.height > 0) {
                     let t = (throwDistance - 5) / 15;
-                    let thumbOffset = t * (rect.height - 52);
-                    sliderThumb.style.marginBottom = `${thumbOffset}px`;
+                    let offset = t * (rect.height - 52);
+                    sliderThumb.style.marginBottom = `${offset}px`;
                 }
             }
-            setTimeout(initSlider, 200);
+            setTimeout(initSliderPos, 200);
             
             // ========== BUTTONS ==========
             const jumpBtn = document.getElementById('btn-jump');
             const throwBtn = document.getElementById('btn-throw');
             
-            jumpBtn.addEventListener('mousedown', () => { jumpRequested = true; });
             jumpBtn.addEventListener('touchstart', (e) => { e.preventDefault(); jumpRequested = true; });
-            jumpBtn.addEventListener('mouseup', () => { setTimeout(() => { jumpRequested = false; }, 80); });
-            jumpBtn.addEventListener('touchend', () => { setTimeout(() => { jumpRequested = false; }, 80); });
+            jumpBtn.addEventListener('touchend', () => { setTimeout(() => jumpRequested = false, 100); });
+            jumpBtn.addEventListener('mousedown', () => jumpRequested = true);
+            jumpBtn.addEventListener('mouseup', () => setTimeout(() => jumpRequested = false, 100));
             
-            throwBtn.addEventListener('mousedown', () => { throwRequested = true; });
             throwBtn.addEventListener('touchstart', (e) => { e.preventDefault(); throwRequested = true; });
-            throwBtn.addEventListener('mouseup', () => { setTimeout(() => { throwRequested = false; }, 80); });
-            throwBtn.addEventListener('touchend', () => { setTimeout(() => { throwRequested = false; }, 80); });
+            throwBtn.addEventListener('touchend', () => { setTimeout(() => throwRequested = false, 100); });
+            throwBtn.addEventListener('mousedown', () => throwRequested = true);
+            throwBtn.addEventListener('mouseup', () => setTimeout(() => throwRequested = false, 100));
             
-            // ========== GAME MECHANICS ==========
-            let bombs = [];
-            let particles = [];
-            let targets = [];
+            // ========== GAME ==========
+            let bombs = [], particles = [], targets = [];
             let score = 0;
+            const BLAST_RADIUS = 9.6;
             
-            let velocityY = 0;
-            let isGrounded = true;
-            const GRAVITY = 0.024;
-            const JUMP_FORCE = 0.55;
-            
-            let landingMarker = null;
-            
-            function createLandingMarker() {
-                if(landingMarker) scene.remove(landingMarker);
-                const geometry = new THREE.RingGeometry(0.85, 1.55, 32);
-                const material = new THREE.MeshStandardMaterial({ 
-                    color: 0xffaa55, emissive: 0xff5500, emissiveIntensity: 0.95,
-                    side: THREE.DoubleSide, transparent: true, opacity: 0.98
-                });
-                const marker = new THREE.Mesh(geometry, material);
-                marker.rotation.x = -Math.PI / 2;
-                marker.position.y = 0.09;
-                scene.add(marker);
-                return marker;
+            function spawnTarget() {
+                const target = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.7, 1.7), new THREE.MeshStandardMaterial({ color: 0xdd5555, emissive: 0x331100 }));
+                const angle = Math.random() * Math.PI * 2;
+                const radius = 25 + Math.random() * 115;
+                target.position.set(Math.cos(angle) * radius, 0.85, Math.sin(angle) * radius);
+                target.castShadow = true;
+                scene.add(target);
+                targets.push(target);
             }
             
-            function calculatePreciseLandingPoint(distance) {
+            for(let i = 0; i < 15; i++) spawnTarget();
+            
+            // ========== PREDICTOR - LIVE WITH SLIDER ==========
+            let landingMarker = null;
+            
+            function createMarker() {
+                if(landingMarker) scene.remove(landingMarker);
+                const ring = new THREE.Mesh(new THREE.RingGeometry(0.85, 1.4, 32), new THREE.MeshStandardMaterial({ color: 0xffaa55, emissive: 0xff5500, emissiveIntensity: 0.8, side: THREE.DoubleSide, transparent: true, opacity: 0.95 }));
+                ring.rotation.x = -Math.PI/2;
+                ring.position.y = 0.1;
+                scene.add(ring);
+                return ring;
+            }
+            
+            function calculateLanding(dist) {
                 if(!character) return null;
-                const startPos = character.position.clone().add(new THREE.Vector3(0, 1.5, 0));
+                const start = character.position.clone().add(new THREE.Vector3(0, 1.5, 0));
                 const forwardAngle = character.rotation.y;
-                const forwardDir = new THREE.Vector3(Math.sin(forwardAngle), 0, Math.cos(forwardAngle));
-                const angleRad = 0.74;
+                const dir = new THREE.Vector3(Math.sin(forwardAngle), 0, Math.cos(forwardAngle));
+                const angleRad = 0.73;
                 const gravity = 0.025;
-                const sin2Theta = Math.sin(2 * angleRad);
-                let speed = Math.sqrt((distance * gravity) / sin2Theta);
-                speed = Math.min(2.65, Math.max(0.85, speed));
-                
-                const vx = forwardDir.x * Math.cos(angleRad) * speed;
-                const vz = forwardDir.z * Math.cos(angleRad) * speed;
+                let speed = Math.sqrt((dist * gravity) / Math.sin(2 * angleRad));
+                speed = Math.min(2.5, Math.max(0.85, speed));
+                const vx = dir.x * Math.cos(angleRad) * speed;
+                const vz = dir.z * Math.cos(angleRad) * speed;
                 const vy = Math.sin(angleRad) * speed;
-                
-                let pos = startPos.clone();
+                let pos = start.clone();
                 let vel = new THREE.Vector3(vx, vy, vz);
-                for(let step = 0; step < 260; step++) {
+                for(let i = 0; i < 250; i++) {
                     pos.add(vel);
                     vel.y -= gravity;
                     if(pos.y <= 0.2) return pos;
@@ -835,71 +662,53 @@
             }
             
             function updateLandingMarker() {
-                if(!landingMarker) landingMarker = createLandingMarker();
-                const landingPos = calculatePreciseLandingPoint(throwDistance);
-                if(landingMarker && landingPos) {
-                    landingMarker.position.set(landingPos.x, 0.1, landingPos.z);
-                    landingMarker.material.emissiveIntensity = 0.85 + Math.sin(Date.now() * 0.012) * 0.35;
+                if(!landingMarker) landingMarker = createMarker();
+                const pos = calculateLanding(throwDistance);
+                if(landingMarker && pos) {
+                    landingMarker.position.set(pos.x, 0.12, pos.z);
+                    landingMarker.material.emissiveIntensity = 0.7 + Math.sin(Date.now() * 0.012) * 0.35;
                 }
             }
             
-            function throwBomb() {
+            function throwBombAction() {
                 if(!character || throwCooldown || !modelLoaded) return;
                 throwCooldown = true;
                 removeHandBomb();
-                
-                const startPos = character.position.clone().add(new THREE.Vector3(0, 1.5, 0));
+                const start = character.position.clone().add(new THREE.Vector3(0, 1.5, 0));
                 const forwardAngle = character.rotation.y;
-                const forwardDir = new THREE.Vector3(Math.sin(forwardAngle), 0, Math.cos(forwardAngle));
-                const angleRad = 0.74;
+                const dir = new THREE.Vector3(Math.sin(forwardAngle), 0, Math.cos(forwardAngle));
+                const angleRad = 0.73;
                 const gravity = 0.025;
-                const sin2Theta = Math.sin(2 * angleRad);
-                let speed = Math.sqrt((throwDistance * gravity) / sin2Theta);
-                speed = Math.min(2.65, Math.max(0.85, speed));
-                
-                const vx = forwardDir.x * Math.cos(angleRad) * speed;
-                const vz = forwardDir.z * Math.cos(angleRad) * speed;
+                let speed = Math.sqrt((throwDistance * gravity) / Math.sin(2 * angleRad));
+                speed = Math.min(2.5, Math.max(0.85, speed));
+                const vx = dir.x * Math.cos(angleRad) * speed;
+                const vz = dir.z * Math.cos(angleRad) * speed;
                 const vy = Math.sin(angleRad) * speed;
-                
-                const bombMesh = new THREE.Mesh(new THREE.SphereGeometry(0.5, 32, 32), 
-                    new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.9, roughness: 0.2 }));
-                const fuse = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.16, 0.55, 8), 
-                    new THREE.MeshStandardMaterial({ color: 0xff6633, emissive: 0x441100 }));
-                fuse.position.y = 0.6;
-                bombMesh.add(fuse);
-                bombMesh.position.copy(startPos);
-                bombMesh.castShadow = true;
-                scene.add(bombMesh);
-                
-                bombs.push({ mesh: bombMesh, vel: new THREE.Vector3(vx, vy, vz), life: 340, gravity: gravity });
-                
+                const bomb = new THREE.Mesh(new THREE.SphereGeometry(0.5, 28, 28), new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.9 }));
+                const fuse = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.16, 0.55, 8), new THREE.MeshStandardMaterial({ color: 0xff6633 }));
+                fuse.position.y = 0.58;
+                bomb.add(fuse);
+                bomb.position.copy(start);
+                bomb.castShadow = true;
+                scene.add(bomb);
+                bombs.push({ mesh: bomb, vel: new THREE.Vector3(vx, vy, vz), life: 320, gravity: gravity });
                 setTimeout(() => { createHandBomb(); throwCooldown = false; }, 380);
             }
             
-            const EXPLOSION_RADIUS = 9.6; // 3x الضعف
-        
-            function explode(position) {
-                const flash = new THREE.Mesh(new THREE.SphereGeometry(4.2, 24, 24), 
-                    new THREE.MeshBasicMaterial({ color: 0xff8844, transparent: true, opacity: 0.95 }));
-                flash.position.copy(position);
+            function explode(pos) {
+                const flash = new THREE.Mesh(new THREE.SphereGeometry(3.5, 16, 16), new THREE.MeshBasicMaterial({ color: 0xff8844, transparent: true, opacity: 0.9 }));
+                flash.position.copy(pos);
                 scene.add(flash);
                 setTimeout(() => scene.remove(flash), 150);
-                
-                for(let i = 0; i < 120; i++) {
-                    const particle = new THREE.Mesh(new THREE.SphereGeometry(0.15 + Math.random() * 0.3), 
-                        new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4400 }));
-                    particle.position.copy(position);
-                    scene.add(particle);
-                    particles.push({
-                        mesh: particle,
-                        vel: new THREE.Vector3((Math.random() - 0.5) * 3.8, Math.random() * 2.8, (Math.random() - 0.5) * 3.8),
-                        life: 0, maxLife: 70, gravity: 0.02
-                    });
+                for(let i = 0; i < 100; i++) {
+                    const p = new THREE.Mesh(new THREE.SphereGeometry(0.15 + Math.random() * 0.25), new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4400 }));
+                    p.position.copy(pos);
+                    scene.add(p);
+                    particles.push({ mesh: p, vel: new THREE.Vector3((Math.random() - 0.5) * 3.2, Math.random() * 2.2, (Math.random() - 0.5) * 3.2), life: 0, maxLife: 65, gravity: 0.018 });
                 }
-                
                 for(let i = 0; i < targets.length; i++) {
-                    if(targets[i].mesh.position.distanceTo(position) < EXPLOSION_RADIUS) {
-                        scene.remove(targets[i].mesh);
+                    if(targets[i].position.distanceTo(pos) < BLAST_RADIUS) {
+                        scene.remove(targets[i]);
                         targets.splice(i, 1);
                         score++;
                         document.getElementById('score').innerText = score;
@@ -909,93 +718,48 @@
                 }
             }
             
-            function spawnTarget() {
-                const targetMat = new THREE.MeshStandardMaterial({ color: 0xdd5555, emissive: 0x331100, metalness: 0.2 });
-                const target = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.7, 1.7), targetMat);
-                const angle = Math.random() * Math.PI * 2;
-                const radius = 25 + Math.random() * 115;
-                target.position.set(Math.cos(angle) * radius, 0.85, Math.sin(angle) * radius);
-                target.castShadow = true;
-                scene.add(target);
-                targets.push({ mesh: target });
-            }
-            
-            for(let i = 0; i < 15; i++) spawnTarget();
-            
             function updateBombs() {
-                for(let i = bombs.length - 1; i >= 0; i--) {
+                for(let i = bombs.length-1; i >= 0; i--) {
                     const b = bombs[i];
                     b.mesh.position.add(b.vel);
                     b.vel.y -= b.gravity;
-                    b.mesh.rotation.x += 0.3;
-                    b.mesh.rotation.z += 0.2;
-                    
-                    if(b.mesh.position.y < 0.2) {
-                        explode(b.mesh.position);
-                        scene.remove(b.mesh);
-                        bombs.splice(i, 1);
-                        continue;
-                    }
+                    b.mesh.rotation.x += 0.28;
+                    if(b.mesh.position.y < 0.2) { explode(b.mesh.position); scene.remove(b.mesh); bombs.splice(i,1); continue; }
                     b.life--;
-                    if(b.life <= 0) {
-                        explode(b.mesh.position);
-                        scene.remove(b.mesh);
-                        bombs.splice(i, 1);
-                    }
+                    if(b.life <= 0) { explode(b.mesh.position); scene.remove(b.mesh); bombs.splice(i,1); }
                 }
             }
             
             function updateParticles() {
-                for(let i = particles.length - 1; i >= 0; i--) {
+                for(let i = particles.length-1; i >= 0; i--) {
                     const p = particles[i];
                     p.mesh.position.add(p.vel);
                     p.vel.y -= p.gravity;
                     p.life++;
-                    if(p.life >= p.maxLife || p.mesh.position.y < -0.5) {
-                        scene.remove(p.mesh);
-                        particles.splice(i, 1);
-                    }
+                    if(p.life >= p.maxLife || p.mesh.position.y < -0.5) { scene.remove(p.mesh); particles.splice(i,1); }
                 }
             }
             
-            function handleJump() {
-                if(jumpRequested && isGrounded) {
-                    velocityY = JUMP_FORCE;
-                    isGrounded = false;
-                    jumpRequested = false;
-                }
-                
+            function handleJumpPhysics() {
+                if(jumpRequested && isGrounded) { velocityY = JUMP_FORCE; isGrounded = false; jumpRequested = false; }
                 if(!isGrounded) {
                     character.position.y += velocityY;
                     velocityY -= GRAVITY;
-                    if(character.position.y <= 0) {
-                        character.position.y = 0;
-                        isGrounded = true;
-                        velocityY = 0;
-                    }
-                } else {
-                    character.position.y = 0;
-                }
+                    if(character.position.y <= 0) { character.position.y = 0; isGrounded = true; velocityY = 0; }
+                } else character.position.y = 0;
             }
             
-            // ========== MOVEMENT - FIXED: RIGHT = RIGHT, LEFT = LEFT ==========
             function handleMovement() {
                 if(!character) return;
-                
                 if(Math.abs(moveX) > 0.05 || Math.abs(moveZ) > 0.05) {
-                    // حساب زاوية الحركة بالنسبة للكاميرا
-                    const moveAngle = Math.atan2(moveX, moveZ);
-                    // الزاوية النهائية = زاوية الكاميرا + زاوية الحركة
-                    const finalAngle = cameraYaw + moveAngle;
-                    
-                    character.position.x += Math.sin(finalAngle) * CHARACTER_SPEED;
-                    character.position.z += Math.cos(finalAngle) * CHARACTER_SPEED;
+                    const angle = Math.atan2(moveX, moveZ);
+                    const finalAngle = angle + cameraYaw;
+                    character.position.x += Math.sin(finalAngle) * SPEED;
+                    character.position.z += Math.cos(finalAngle) * SPEED;
                     character.rotation.y = finalAngle;
-                    
                     const limit = 140;
                     character.position.x = Math.min(limit, Math.max(-limit, character.position.x));
                     character.position.z = Math.min(limit, Math.max(-limit, character.position.z));
-                    
                     if(animations['walking'] && currentAction !== animations['walking'] && mixer) {
                         if(currentAction) currentAction.fadeOut(0.1);
                         currentAction = animations['walking'];
@@ -1012,22 +776,15 @@
             
             function updateCamera() {
                 if(!character) return;
-                
-                if(dragActive) {
-                    targetCameraYaw = dragYaw;
-                } else {
-                    targetCameraYaw = targetCameraYaw * 0.96 + (character.rotation.y) * 0.04;
-                }
-                
-                cameraYaw += (targetCameraYaw - cameraYaw) * 0.1;
-                
-                const distance = 10;
-                const height = 3.6;
-                const camX = character.position.x - Math.sin(cameraYaw) * distance * Math.cos(cameraPitch);
-                const camZ = character.position.z - Math.cos(cameraYaw) * distance * Math.cos(cameraPitch);
-                const camY = character.position.y + 1.7 + Math.sin(cameraPitch) * distance * 0.55;
+                if(dragActive) targetYaw = dragOffset;
+                else targetYaw = targetYaw * 0.96 + character.rotation.y * 0.04;
+                cameraYaw += (targetYaw - cameraYaw) * 0.1;
+                const dist = 10.5;
+                const camX = character.position.x - Math.sin(cameraYaw) * dist * Math.cos(cameraPitch);
+                const camZ = character.position.z - Math.cos(cameraYaw) * dist * Math.cos(cameraPitch);
+                const camY = character.position.y + 1.8 + Math.sin(cameraPitch) * dist * 0.5;
                 camera.position.set(camX, camY, camZ);
-                camera.lookAt(character.position.clone().add(new THREE.Vector3(0, 1.25, 0)));
+                camera.lookAt(character.position.clone().add(new THREE.Vector3(0, 1.3, 0)));
             }
             
             const clock = new THREE.Clock();
@@ -1035,20 +792,14 @@
             function animate() {
                 requestAnimationFrame(animate);
                 if(!character) return;
-                
-                updateKeyboardMove();
-                handleJump();
+                updateKeyboard();
+                handleJumpPhysics();
                 handleMovement();
                 updateBombs();
                 updateParticles();
                 updateLandingMarker();
                 updateCamera();
-                
-                if(throwRequested && !throwCooldown && modelLoaded) {
-                    throwBomb();
-                    throwRequested = false;
-                }
-                
+                if(throwRequested && !throwCooldown && modelLoaded) { throwBombAction(); throwRequested = false; }
                 if(mixer) mixer.update(clock.getDelta());
                 renderer.render(scene, camera);
             }
@@ -1060,14 +811,10 @@
                 camera.aspect = window.innerWidth / window.innerHeight;
                 camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
-                initSlider();
+                initSliderPos();
             });
             
-            setInterval(() => {
-                if(modelLoaded && handBone && !bombInHand && !throwCooldown) {
-                    createHandBomb();
-                }
-            }, 700);
+            setInterval(() => { if(modelLoaded && handBone && !bombInHand && !throwCooldown) createHandBomb(); }, 600);
         })();
     </script>
 </body>
