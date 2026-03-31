@@ -186,7 +186,7 @@
             border: 2px solid #ffdd99;
         }
 
-        /* Right Zone Controls - SMALL BUTTONS with same response area */
+        /* Right Zone Controls */
         .zone-right {
             position: absolute;
             bottom: 0;
@@ -350,7 +350,7 @@
                 MAX_THROW_SPEED: 24,
                 MIN_THROW_SPEED: 12,
                 BLAST_RADIUS: 9.5,
-                MOVEMENT_SPEED: 7.2,
+                MOVEMENT_SPEED: 12.5,    // Increased for running/sprinting
                 AIR_CONTROL: 0.65,
                 GROUND_DRAG: 8.0
             };
@@ -420,13 +420,11 @@
                 if(bombInHand) return;
                 const bombGroup = new THREE.Group();
                 
-                // Enhanced bomb model
                 const bombCore = new THREE.Mesh(new THREE.SphereGeometry(0.38, 48, 48), 
                     new THREE.MeshStandardMaterial({ color: 0x2a2a2a, metalness: 0.9, roughness: 0.15, emissive: 0x111111 }));
                 bombCore.castShadow = true;
                 bombGroup.add(bombCore);
                 
-                // Metallic rings
                 const ring1 = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.05, 16, 48), 
                     new THREE.MeshStandardMaterial({ color: 0xccaa77, metalness: 0.85 }));
                 ring1.rotation.x = Math.PI / 2;
@@ -439,7 +437,6 @@
                 ring2.position.y = -0.15;
                 bombGroup.add(ring2);
                 
-                // Fuse with glow effect
                 const fuse = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.15, 0.58, 12), 
                     new THREE.MeshStandardMaterial({ color: 0xcc6644, emissive: 0x442200, emissiveIntensity: 0.6 }));
                 fuse.position.y = 0.52;
@@ -450,7 +447,6 @@
                 fuseTip.position.y = 0.82;
                 bombGroup.add(fuseTip);
                 
-                // Spark particle effect (small glowing dot)
                 const spark = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 8), 
                     new THREE.MeshStandardMaterial({ color: 0xffaa66, emissive: 0xff6600, emissiveIntensity: 1.2 }));
                 spark.position.y = 0.88;
@@ -603,14 +599,14 @@
                 }
             }
             
-            // Joystick with clamped thumb movement (prevent thumb from going outside base)
+            // Joystick with clamped thumb movement
             const zoneMove = document.getElementById('zone-move');
             const joystickBase = document.getElementById('joystick-base');
             const joystickThumb = document.getElementById('joystick-thumb');
             let joystickActive = false;
             let activeTouchId = null;
             let joyCenterX = 0, joyCenterY = 0;
-            const MAX_RADIUS = 52; // Reduced to keep thumb inside base
+            const MAX_RADIUS = 52;
             
             function updateJoystick(clientX, clientY) {
                 let dx = clientX - joyCenterX;
@@ -672,11 +668,11 @@
                 if(!found) resetJoystick();
             });
             
-            // Camera Control - follows player direction correctly
+            // Camera Control - FIXED: camera follows player direction correctly
             const cameraArea = document.getElementById('camera-area');
             let cameraDragActive = false;
-            let cameraYaw = 0;
-            let targetYaw = 0;
+            let cameraAngle = 0;
+            let targetCameraAngle = 0;
             let lastDragX = 0;
             
             cameraArea.addEventListener('touchstart', (e) => {
@@ -688,7 +684,7 @@
             window.addEventListener('touchmove', (e) => {
                 if(!cameraDragActive) return;
                 let dx = e.touches[0].clientX - lastDragX;
-                targetYaw += dx * 0.007;
+                targetCameraAngle += dx * 0.008;
                 lastDragX = e.touches[0].clientX;
             });
             
@@ -755,7 +751,7 @@
             throwBtn.addEventListener('mousedown', () => throwRequested = true);
             throwBtn.addEventListener('mouseup', () => setTimeout(() => throwRequested = false, 100));
             
-            // ========== ENHANCED BOMB WITH BETTER EXPLOSION ==========
+            // ========== ENHANCED BOMB ==========
             let bombs = [];
             let explosions = [];
             let targets = [];
@@ -763,7 +759,6 @@
             
             class Bomb {
                 constructor(position, velocity) {
-                    // Detailed bomb model
                     const bombGroup = new THREE.Group();
                     
                     const core = new THREE.Mesh(new THREE.SphereGeometry(0.42, 48, 48), 
@@ -827,13 +822,11 @@
                     if(this.hasExploded) return;
                     this.hasExploded = true;
                     
-                    // Main explosion flash
                     const flash = new THREE.Mesh(new THREE.SphereGeometry(3.2, 24, 24), 
                         new THREE.MeshBasicMaterial({ color: 0xff8844, transparent: true, opacity: 0.98 }));
                     flash.position.copy(this.mesh.position);
                     scene.add(flash);
                     
-                    // Shockwave ring
                     const shockwave = new THREE.Mesh(new THREE.RingGeometry(1.0, 3.5, 32), 
                         new THREE.MeshBasicMaterial({ color: 0xffaa66, transparent: true, opacity: 0.9, side: THREE.DoubleSide }));
                     shockwave.rotation.x = -Math.PI / 2;
@@ -841,7 +834,6 @@
                     shockwave.position.y = 0.1;
                     scene.add(shockwave);
                     
-                    // Expanding fire ring
                     const fireRing = new THREE.Mesh(new THREE.RingGeometry(1.2, 2.8, 32), 
                         new THREE.MeshBasicMaterial({ color: 0xff6633, transparent: true, opacity: 0.85, side: THREE.DoubleSide }));
                     fireRing.rotation.x = -Math.PI / 2;
@@ -853,7 +845,6 @@
                     setTimeout(() => scene.remove(shockwave), 250);
                     setTimeout(() => scene.remove(fireRing), 200);
                     
-                    // Enhanced particle system
                     for(let i = 0; i < 70; i++) {
                         const particle = new THREE.Mesh(new THREE.SphereGeometry(0.1 + Math.random() * 0.25, 8, 8), 
                             new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4411, emissiveIntensity: 0.8 }));
@@ -871,7 +862,6 @@
                         explosions.push(particle);
                     }
                     
-                    // Smoke particles
                     for(let i = 0; i < 25; i++) {
                         const smoke = new THREE.Mesh(new THREE.SphereGeometry(0.15 + Math.random() * 0.3, 6, 6), 
                             new THREE.MeshStandardMaterial({ color: 0x664422, transparent: true, opacity: 0.6 }));
@@ -889,7 +879,6 @@
                         explosions.push(smoke);
                     }
                     
-                    // Damage targets
                     for(let i = 0; i < targets.length; i++) {
                         const dist = targets[i].position.distanceTo(this.mesh.position);
                         if(dist < PHYSICS.BLAST_RADIUS) {
@@ -991,11 +980,11 @@
                 setTimeout(() => { throwCooldown = 0; }, 650);
             }
             
-            // ========== PLAYER PHYSICS ==========
+            // ========== PLAYER PHYSICS WITH RUNNING SPEED ==========
             function updatePlayerPhysics(delta) {
                 if(!character) return;
                 
-                const speed = PHYSICS.MOVEMENT_SPEED;
+                const speed = PHYSICS.MOVEMENT_SPEED; // Now 12.5 for running
                 let targetVelX = moveInput.x * speed;
                 let targetVelZ = moveInput.z * speed;
                 
@@ -1056,15 +1045,22 @@
                 }
             }
             
-            // ========== CAMERA - FOLLOWS PLAYER DIRECTION CORRECTLY ==========
+            // ========== CAMERA - CORRECTLY FOLLOWS PLAYER DIRECTION ==========
             function updateCamera() {
                 if(!character) return;
-                cameraYaw += (targetYaw - cameraYaw) * 0.12;
+                
+                // Smooth camera angle transition
+                cameraAngle += (targetCameraAngle - cameraAngle) * 0.1;
+                
+                // Camera follows player's forward direction + user rotation offset
+                const totalAngle = character.rotation.y + cameraAngle;
                 const distance = 9.5;
                 const height = 4.0;
-                const camX = character.position.x - Math.sin(cameraYaw) * distance;
-                const camZ = character.position.z - Math.cos(cameraYaw) * distance;
+                
+                const camX = character.position.x - Math.sin(totalAngle) * distance;
+                const camZ = character.position.z - Math.cos(totalAngle) * distance;
                 const camY = character.position.y + height;
+                
                 camera.position.set(camX, camY, camZ);
                 camera.lookAt(character.position.clone().add(new THREE.Vector3(0, 1.3, 0)));
             }
