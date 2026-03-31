@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Dwarf Bomber - Enhanced Edition</title>
+    <title>Dwarf Bomber - Running Edition</title>
     <style>
         * {
             margin: 0;
@@ -149,7 +149,7 @@
             border-radius: 18px;
         }
 
-        /* Movement Zone */
+        /* Movement Zone - Fixed Joystick */
         .zone-move {
             position: absolute;
             bottom: 0;
@@ -164,18 +164,31 @@
             bottom: 60px;
             left: 50%;
             transform: translateX(-50%);
-            width: 130px;
-            height: 130px;
+            width: 140px;
+            height: 140px;
             background: rgba(0,0,0,0.65);
             backdrop-filter: blur(12px);
             border-radius: 50%;
             border: 2.5px solid #ffaa55;
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
+        /* Outer ring decoration */
+        .joystick-base::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            border: 1px dashed rgba(255,170,85,0.4);
+            pointer-events: none;
+        }
         .joystick-thumb {
             position: absolute;
-            width: 55px;
-            height: 55px;
+            width: 60px;
+            height: 60px;
             background: radial-gradient(circle, #ffcc77, #ffaa33);
             border-radius: 50%;
             box-shadow: 0 3px 12px black;
@@ -184,6 +197,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             border: 2px solid #ffdd99;
+            transition: transform 0.02s linear;
         }
 
         /* Right Zone Controls */
@@ -282,8 +296,9 @@
         }
         
         @media (max-width: 768px) {
-            .joystick-base { width: 105px; height: 105px; bottom: 50px; }
-            .joystick-thumb { width: 45px; height: 45px; }
+            .joystick-base { width: 110px; height: 110px; bottom: 50px; }
+            .joystick-base::before { width: 85px; height: 85px; }
+            .joystick-thumb { width: 48px; height: 48px; }
             .action-btn { width: 48px; height: 48px; font-size: 22px; }
             .actions-area { bottom: 25px; right: 15px; gap: 12px; }
             #score-panel { font-size: 26px; padding: 6px 18px; top: 12px; right: 12px; }
@@ -294,15 +309,16 @@
         }
         
         @media (max-width: 480px) {
-            .joystick-base { width: 90px; height: 90px; }
-            .joystick-thumb { width: 40px; height: 40px; }
+            .joystick-base { width: 95px; height: 95px; }
+            .joystick-base::before { width: 72px; height: 72px; }
+            .joystick-thumb { width: 42px; height: 42px; }
             .action-btn { width: 42px; height: 42px; font-size: 20px; }
         }
     </style>
 </head>
 <body>
     <div id="loading-screen">
-        💣 DWARF BOMBER 💣
+        💣 DWARF BOMBER - RUNNING EDITION 💣
         <div style="width: 250px; height: 3px; background: #2a2a2a; border-radius: 2px; overflow: hidden; margin-top: 12px;">
             <div style="width: 0%; height: 100%; background: #ffaa55;" id="loading-bar"></div>
         </div>
@@ -350,7 +366,7 @@
                 MAX_THROW_SPEED: 24,
                 MIN_THROW_SPEED: 12,
                 BLAST_RADIUS: 9.5,
-                MOVEMENT_SPEED: 12.5,    // Increased for running/sprinting
+                MOVEMENT_SPEED: 18.0,    // Increased for running (fast sprint)
                 AIR_CONTROL: 0.65,
                 GROUND_DRAG: 8.0
             };
@@ -599,26 +615,32 @@
                 }
             }
             
-            // Joystick with clamped thumb movement
+            // ========== FIXED JOYSTICK - Proper inner/outer circle alignment ==========
             const zoneMove = document.getElementById('zone-move');
             const joystickBase = document.getElementById('joystick-base');
             const joystickThumb = document.getElementById('joystick-thumb');
             let joystickActive = false;
             let activeTouchId = null;
             let joyCenterX = 0, joyCenterY = 0;
-            const MAX_RADIUS = 52;
+            
+            // Get the base radius dynamically for perfect alignment
+            function getBaseRadius() {
+                const rect = joystickBase.getBoundingClientRect();
+                return rect.width / 2;
+            }
             
             function updateJoystick(clientX, clientY) {
                 let dx = clientX - joyCenterX;
                 let dy = clientY - joyCenterY;
-                let dist = Math.min(Math.hypot(dx, dy), MAX_RADIUS);
+                const maxRadius = getBaseRadius() - 12; // Leave margin for thumb to stay inside
+                let dist = Math.min(Math.hypot(dx, dy), maxRadius);
                 let angle = Math.atan2(dy, dx);
                 let limitedX = Math.cos(angle) * dist;
                 let limitedY = Math.sin(angle) * dist;
                 joystickThumb.style.transform = `translate(calc(-50% + ${limitedX}px), calc(-50% + ${limitedY}px))`;
                 // Reversed horizontal movement
-                moveInput.x = -limitedX / MAX_RADIUS;
-                moveInput.z = -limitedY / MAX_RADIUS;
+                moveInput.x = -limitedX / maxRadius;
+                moveInput.z = -limitedY / maxRadius;
             }
             
             function resetJoystick() {
@@ -668,7 +690,7 @@
                 if(!found) resetJoystick();
             });
             
-            // Camera Control - FIXED: camera follows player direction correctly
+            // Camera Control
             const cameraArea = document.getElementById('camera-area');
             let cameraDragActive = false;
             let cameraAngle = 0;
@@ -751,7 +773,7 @@
             throwBtn.addEventListener('mousedown', () => throwRequested = true);
             throwBtn.addEventListener('mouseup', () => setTimeout(() => throwRequested = false, 100));
             
-            // ========== ENHANCED BOMB ==========
+            // ========== BOMB SYSTEM ==========
             let bombs = [];
             let explosions = [];
             let targets = [];
@@ -984,7 +1006,7 @@
             function updatePlayerPhysics(delta) {
                 if(!character) return;
                 
-                const speed = PHYSICS.MOVEMENT_SPEED; // Now 12.5 for running
+                const speed = PHYSICS.MOVEMENT_SPEED; // 18.0 for fast running
                 let targetVelX = moveInput.x * speed;
                 let targetVelZ = moveInput.z * speed;
                 
@@ -1045,14 +1067,11 @@
                 }
             }
             
-            // ========== CAMERA - CORRECTLY FOLLOWS PLAYER DIRECTION ==========
+            // ========== CAMERA - FOLLOWS PLAYER DIRECTION ==========
             function updateCamera() {
                 if(!character) return;
                 
-                // Smooth camera angle transition
                 cameraAngle += (targetCameraAngle - cameraAngle) * 0.1;
-                
-                // Camera follows player's forward direction + user rotation offset
                 const totalAngle = character.rotation.y + cameraAngle;
                 const distance = 9.5;
                 const height = 4.0;
