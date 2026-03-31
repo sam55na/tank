@@ -2,1180 +2,676 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Commando Assault - Pro Soldier</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Neon Samurai - تجربة قتال الساموراي</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            touch-action: none;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            overflow: hidden;
-            background: linear-gradient(135deg, #1a2a1a, #0a1a0a);
-            font-family: 'Segoe UI', system-ui, monospace;
-        }
-
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-            position: fixed;
-            top: 0;
-            left: 0;
-        }
-
-        #ui-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 100;
-        }
-
-        /* Tactical Crosshair */
-        #crosshair {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 70px;
-            height: 70px;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-            z-index: 150;
-        }
-        .crosshair-outer {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 50px;
-            height: 50px;
-            border: 2px solid #ff3333;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            box-shadow: 0 0 12px rgba(255,51,51,0.8);
-            animation: crosshairPulse 0.6s ease-out infinite;
-        }
-        .crosshair-dot {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 4px;
-            height: 4px;
-            background: #ff3333;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-        }
-        .crosshair-line {
-            position: absolute;
-            background: #ff3333;
-        }
-        .crosshair-line-top { top: 0; left: 50%; width: 2px; height: 15px; transform: translateX(-50%); }
-        .crosshair-line-bottom { bottom: 0; left: 50%; width: 2px; height: 15px; transform: translateX(-50%); }
-        .crosshair-line-left { top: 50%; left: 0; width: 15px; height: 2px; transform: translateY(-50%); }
-        .crosshair-line-right { top: 50%; right: 0; width: 15px; height: 2px; transform: translateY(-50%); }
-        @keyframes crosshairPulse {
-            0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
-            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
-        }
-
-        /* HUD */
-        #score-panel {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(10px);
-            color: #ff3333;
-            padding: 8px 22px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 32px;
-            font-family: 'Courier New', monospace;
-            pointer-events: none;
-            z-index: 150;
-            border: 1px solid #ff3333;
-        }
-        
-        #ammo-panel {
-            position: absolute;
-            bottom: 100px;
-            right: 20px;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(10px);
-            color: #ffaa44;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
-            pointer-events: none;
-            z-index: 150;
-            border: 1px solid #ffaa44;
-            text-align: center;
-        }
-        .ammo-label { font-size: 11px; color: #aaa; letter-spacing: 2px; }
-        .ammo-count { font-size: 36px; font-weight: bold; color: #ffaa44; }
-        .ammo-max { font-size: 16px; color: #888; }
-        
-        #kill-panel {
+        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        #ui {
             position: absolute;
             top: 20px;
             left: 20px;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(10px);
-            color: #ffaa44;
-            padding: 8px 18px;
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
-            font-size: 18px;
-            pointer-events: none;
-            z-index: 150;
-            border-left: 3px solid #ff3333;
-        }
-        
-        #reload-panel {
-            position: absolute;
-            bottom: 180px;
             right: 20px;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(8px);
-            color: #ffaa44;
-            padding: 5px 12px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-family: monospace;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.2s;
-            border: 1px solid #ffaa44;
-        }
-        
-        #roll-cooldown {
-            position: absolute;
-            bottom: 100px;
-            left: 20px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: rgba(0,0,0,0.7);
-            border: 2px solid #ffaa44;
-            pointer-events: none;
-            z-index: 150;
-        }
-        .roll-fill {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255,170,68,0.4);
-            border-radius: 50%;
-            transition: height 0.05s linear;
-        }
-        .roll-icon {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 24px;
-            color: #ffaa44;
-        }
-
-        /* Joystick */
-        .zone-move {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 45%;
-            height: 45%;
-            pointer-events: auto;
-            z-index: 110;
-        }
-        
-        .joystick-base {
-            position: absolute;
-            bottom: 60px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 140px;
-            height: 140px;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(15px);
-            border-radius: 50%;
-            border: 3px solid rgba(255,68,68,0.8);
-            box-shadow: 0 0 25px rgba(255,68,68,0.3);
-        }
-        
-        .joystick-base::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 98px;
-            height: 98px;
-            border-radius: 50%;
-            border: 1.5px dashed rgba(255,68,68,0.5);
-            background: radial-gradient(circle, rgba(255,68,68,0.05), transparent);
-        }
-        
-        .joystick-base::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: rgba(255,68,68,0.6);
-        }
-        
-        .joystick-thumb {
-            position: absolute;
-            width: 56px;
-            height: 56px;
-            background: radial-gradient(circle at 30% 30%, #ff6666, #cc3333);
-            border-radius: 50%;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-            pointer-events: none;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            transition: transform 0.02s linear;
-            border: 2px solid #ff8888;
-        }
-        
-        .joystick-thumb::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background: radial-gradient(circle, #ff9999, #ff4444);
-        }
-
-        /* Camera Zone */
-        .zone-right {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 55%;
-            height: 55%;
-            pointer-events: auto;
-            z-index: 110;
-            display: flex;
-            flex-direction: column;
-        }
-        .camera-area {
-            flex: 1;
-            background: transparent;
-            pointer-events: auto;
-        }
-        
-        /* Action Buttons */
-        .actions-area {
-            position: absolute;
-            bottom: 30px;
-            right: 20px;
-            display: flex;
-            gap: 15px;
-            pointer-events: auto;
-            z-index: 120;
-        }
-        .action-btn {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(10px);
-            border: 2px solid #ff3333;
-            color: #ff3333;
-            font-size: 24px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.05s, background 0.08s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: monospace;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.4);
-        }
-        .action-btn:active {
-            transform: scale(0.88);
-            background: #ff3333;
-            color: #1a1a1a;
-        }
-        
-        .fire-btn {
-            width: 70px;
-            height: 70px;
-            background: rgba(0,0,0,0.9);
-            border: 3px solid #ff3333;
-            color: #ff3333;
-            font-size: 28px;
-        }
-        .fire-btn:active {
-            background: #ff3333;
             color: white;
-            box-shadow: 0 0 25px #ff3333;
-        }
-        
-        .camera-hint {
-            position: absolute;
-            bottom: 180px;
-            right: 20px;
-            color: rgba(255,100,100,0.6);
-            font-size: 9px;
-            background: rgba(0,0,0,0.5);
-            padding: 4px 10px;
-            border-radius: 16px;
+            z-index: 100;
             pointer-events: none;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
         }
-        
-        #loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
+        .stat-panel {
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            padding: 12px 20px;
+            border-radius: 15px;
+            border-left: 4px solid #00ffff;
+            font-size: 1.1rem;
+        }
+        .health-bar-container {
+            background: rgba(0,0,0,0.5);
+            border-radius: 10px;
+            width: 200px;
+            height: 20px;
+            margin-top: 8px;
+        }
+        .health-bar {
+            background: linear-gradient(90deg, #ff3366, #ff6680);
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #1a1a2a, #0a0a1a);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            color: #ff3333;
-            font-size: 22px;
-            flex-direction: column;
-            gap: 15px;
-            transition: opacity 0.5s;
-            font-weight: bold;
+            border-radius: 10px;
+            transition: width 0.2s;
         }
-        
-        @media (max-width: 768px) {
-            .joystick-base { width: 110px; height: 110px; bottom: 50px; }
-            .joystick-base::before { width: 77px; height: 77px; }
-            .joystick-thumb { width: 44px; height: 44px; }
-            .action-btn { width: 50px; height: 50px; font-size: 20px; }
-            .fire-btn { width: 60px; height: 60px; font-size: 24px; }
-            .ammo-count { font-size: 28px; }
-            #roll-cooldown { width: 50px; height: 50px; }
-            .roll-icon { font-size: 20px; }
+        #minimap {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 180px;
+            height: 180px;
+            background: rgba(0,0,0,0.85);
+            border: 2px solid #00ffff;
+            border-radius: 12px;
+            z-index: 100;
+            backdrop-filter: blur(4px);
+        }
+        #minimapCanvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+        }
+        #kill-feed {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            width: 260px;
+            background: rgba(0,0,0,0.75);
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 13px;
+            z-index: 100;
+            pointer-events: none;
+            font-family: monospace;
+        }
+        .kill-entry {
+            color: #ffaa44;
+            margin: 6px 0;
+            animation: fadeOut 3s forwards;
+            border-left: 2px solid #ffaa44;
+            padding-left: 8px;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; transform: translateX(0); }
+            70% { opacity: 1; }
+            100% { opacity: 0; transform: translateX(20px); display: none; }
+        }
+        #controls-info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.65);
+            padding: 10px 15px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #ccc;
+            z-index: 100;
+            pointer-events: none;
+            font-family: monospace;
+            backdrop-filter: blur(4px);
+        }
+        .game-over-panel {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #0a0a2aee;
+            border: 2px solid cyan;
+            border-radius: 25px;
+            padding: 30px;
+            text-align: center;
+            z-index: 200;
+            display: none;
+            min-width: 350px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 0 40px rgba(0,255,255,0.3);
+        }
+        button {
+            pointer-events: auto;
+            background: linear-gradient(90deg, #00aaff, #0066cc);
+            border: none;
+            padding: 10px 24px;
+            margin: 10px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+        button:hover {
+            transform: scale(1.03);
+            box-shadow: 0 0 15px cyan;
+        }
+        .damage-number {
+            position: absolute;
+            color: #ff6666;
+            font-weight: bold;
+            font-size: 20px;
+            text-shadow: 0 0 5px red;
+            pointer-events: none;
+            z-index: 150;
+            animation: floatUp 0.8s ease-out forwards;
+        }
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-40px); }
+        }
+        @keyframes screenFlash {
+            0% { background-color: rgba(255,0,0,0); }
+            50% { background-color: rgba(255,0,0,0.3); }
+            100% { background-color: rgba(255,0,0,0); }
+        }
+        .flash {
+            animation: screenFlash 0.2s;
         }
     </style>
 </head>
 <body>
-    <div id="loading-screen">
-        🔫 COMMANDO ASSAULT - PRO SOLDIER 🔫
-        <div style="width: 250px; height: 3px; background: #2a2a2a; border-radius: 2px; overflow: hidden; margin-top: 12px;">
-            <div style="width: 0%; height: 100%; background: #ff3333;" id="loading-bar"></div>
-        </div>
-        <div style="font-size: 12px;">Loading Professional Soldier Model...</div>
-    </div>
-
-    <div id="ui-overlay" style="display: none;">
-        <div id="crosshair">
-            <div class="crosshair-outer"></div>
-            <div class="crosshair-dot"></div>
-            <div class="crosshair-line crosshair-line-top"></div>
-            <div class="crosshair-line crosshair-line-bottom"></div>
-            <div class="crosshair-line crosshair-line-left"></div>
-            <div class="crosshair-line crosshair-line-right"></div>
-        </div>
-        <div id="score-panel">🎯 <span id="score">0</span></div>
-        <div id="kill-panel">💀 KILLS: <span id="kills">0</span></div>
-        <div id="ammo-panel">
-            <div class="ammo-label">🔫 AMMO</div>
-            <div class="ammo-count" id="ammo">30</div>
-            <div class="ammo-max">/ 30</div>
-        </div>
-        <div id="reload-panel">⟳ RELOADING...</div>
-        <div id="roll-cooldown">
-            <div class="roll-fill" id="roll-fill"></div>
-            <div class="roll-icon">🌀</div>
-        </div>
-        <div class="camera-hint">🎥 DRAG TOP-RIGHT TO AIM</div>
-        
-        <div class="zone-move" id="zone-move">
-            <div class="joystick-base" id="joystick-base"></div>
-            <div class="joystick-thumb" id="joystick-thumb"></div>
-        </div>
-        
-        <div class="zone-right">
-            <div class="camera-area" id="camera-area"></div>
-            <div class="actions-area">
-                <button class="action-btn" id="btn-jump">🦘</button>
-                <button class="action-btn fire-btn" id="btn-fire">🔫</button>
-                <button class="action-btn" id="btn-reload">⟳</button>
-                <button class="action-btn" id="btn-roll">🌀</button>
+    <div id="ui">
+        <div class="stat-panel">
+            ⚔️ <span id="kills">0</span> قتلى
+            <div class="health-bar-container">
+                <div class="health-bar" id="healthBar" style="width: 100%"></div>
             </div>
+            ❤️ <span id="healthValue">100</span>%
         </div>
+        <div class="stat-panel">
+            💰 المكافأة: <span id="currentReward">0</span>
+        </div>
+    </div>
+    <div id="minimap">
+        <canvas id="minimapCanvas" width="180" height="180"></canvas>
+    </div>
+    <div id="kill-feed"></div>
+    <div id="controls-info">
+        🎮 WASD: حركة | 🖱️ زر الفأرة الأيسر: ضربة خفيفة (20 دمج)<br>
+        🖱️ زر الفأرة الأيمن: ضربة ثقيلة (40 دمج) | ⬆️ Shift: ركض | ␣ Space: قفز
+    </div>
+    <div id="gameOverPanel" class="game-over-panel">
+        <h2>⚔️ نهاية المعركة ⚔️</h2>
+        <div id="finalResults"></div>
+        <button onclick="location.reload()">🔄 إعادة اللعب</button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    
     <script>
-        (function() {
-            // ========== GAME CONFIGURATION ==========
-            const CONFIG = {
-                GRAVITY: 22.0,
-                JUMP_FORCE: 8.5,
-                MOVEMENT_SPEED: 22.0,
-                AIR_CONTROL: 0.65,
-                GROUND_DRAG: 8.0,
-                BULLET_SPEED: 55,
-                FIRE_RATE: 0.1,
-                DAMAGE: 34,
-                RELOAD_TIME: 1.2,
-                CLIP_SIZE: 30,
-                ENEMY_HEALTH: 100,
-                ROLL_SPEED: 28,
-                ROLL_DURATION: 0.35,
-                ROLL_COOLDOWN: 1.2
-            };
+        // ------------------- إعدادات التجربة -------------------
+        let scene, camera, renderer;
+        let playerModel;
+        let enemies = [];  // قائمة الأعداء (ساموراي خصوم)
+        let keys = { w: false, s: false, a: false, d: false, shift: false, space: false };
+        let mouseX = 0, mouseY = 0;
+        let health = 100;
+        let kills = 0;
+        let attackCooldown = false;
+        let isBlocking = false;
+        let playerPos = { x: 0, z: 0 };
+        let velocity = { x: 0, z: 0 };
+        let verticalVelocity = 0;
+        let canJump = true;
+        let lastTime = 0;
+        
+        // إعدادات القتال
+        const MOVE_SPEED = 5.5;
+        const RUN_SPEED = 9;
+        const JUMP_POWER = 7;
+        const GRAVITY = 18;
+        const ATTACK_COOLDOWN_MS = 500;
+        const LIGHT_DAMAGE = 20;
+        const HEAVY_DAMAGE = 40;
+        const ATTACK_RANGE = 2.2;
+        
+        // متغيرات الكاميرا
+        let cameraAngleYaw = 0;
+        let cameraDistance = 7;
+        let cameraHeight = 4.5;
+        
+        // ------------------- إنشاء العالم -------------------
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x050b1a);
+            scene.fog = new THREE.FogExp2(0x050b1a, 0.0006);
             
-            // ========== THREE.JS SETUP ==========
-            const scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x0a1522);
-            scene.fog = new THREE.FogExp2(0x0a1522, 0.004);
-            
-            const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 400);
-            const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             document.body.appendChild(renderer.domElement);
             
-            // Lighting
-            const ambient = new THREE.AmbientLight(0x2a3a4a, 0.6);
+            // إضاءة
+            const ambient = new THREE.AmbientLight(0x404060);
             scene.add(ambient);
-            const mainLight = new THREE.DirectionalLight(0xfff0cf, 1.2);
-            mainLight.position.set(10, 20, 8);
+            const mainLight = new THREE.DirectionalLight(0xffffff, 1);
+            mainLight.position.set(10, 20, 5);
             mainLight.castShadow = true;
-            mainLight.shadow.mapSize.width = 2048;
-            mainLight.shadow.mapSize.height = 2048;
             scene.add(mainLight);
-            
-            const fillLight = new THREE.PointLight(0x88aacc, 0.5);
-            fillLight.position.set(-5, 10, 6);
+            const fillLight = new THREE.PointLight(0x3366ff, 0.4);
+            fillLight.position.set(0, 12, 0);
             scene.add(fillLight);
             
-            // Ground
-            const groundMat = new THREE.MeshStandardMaterial({ color: 0x2a4a2a, roughness: 0.8 });
-            const ground = new THREE.Mesh(new THREE.PlaneGeometry(280, 280), groundMat);
-            ground.rotation.x = -Math.PI/2;
-            ground.position.y = -0.08;
+            // أضواء نيون متحركة
+            for (let i = 0; i < 30; i++) {
+                const neon = new THREE.PointLight(0xff44aa, 0.5, 40);
+                neon.position.set((Math.random() - 0.5) * 400, Math.random() * 15, (Math.random() - 0.5) * 400);
+                scene.add(neon);
+            }
+            
+            createCity();
+            createPlayer();
+            createEnemies(5);  // 5 أعداء ساموراي
+            
+            setupControls();
+            setupMouseEvents();
+            
+            animate();
+        }
+        
+        function createCity() {
+            // أرضية شبكة طرق
+            const grid = new THREE.GridHelper(700, 40, 0x33aaff, 0x2266aa);
+            grid.position.y = -0.4;
+            scene.add(grid);
+            
+            const groundMat = new THREE.MeshStandardMaterial({ color: 0x141428, roughness: 0.8 });
+            const ground = new THREE.Mesh(new THREE.PlaneGeometry(700, 700), groundMat);
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = -0.5;
             ground.receiveShadow = true;
             scene.add(ground);
             
-            const grid = new THREE.GridHelper(280, 35, 0x88aa88, 0x446644);
-            grid.position.y = 0.02;
-            grid.material.transparent = true;
-            grid.material.opacity = 0.4;
-            scene.add(grid);
-            
-            // Cover objects
-            for(let i = 0; i < 50; i++) {
-                const cover = new THREE.Mesh(new THREE.BoxGeometry(0.8 + Math.random() * 1.5, 0.6 + Math.random() * 1.2, 0.8 + Math.random() * 1.5), 
-                    new THREE.MeshStandardMaterial({ color: 0x6a5a4a, roughness: 0.7 }));
-                const angle = Math.random() * Math.PI * 2;
-                const radius = 40 + Math.random() * 100;
-                cover.position.set(Math.cos(angle) * radius, -0.1, Math.sin(angle) * radius);
-                cover.castShadow = true;
-                cover.receiveShadow = true;
-                scene.add(cover);
+            // مبانٍ مهجورة
+            const colors = [0x2a3a4a, 0x3a4a5a, 0x1a2a3a, 0x4a5a6a];
+            for (let i = 0; i < 120; i++) {
+                const w = Math.random() * 12 + 4;
+                const h = Math.random() * 10 + 2;
+                const d = Math.random() * 12 + 4;
+                const mat = new THREE.MeshStandardMaterial({ color: colors[Math.floor(Math.random() * colors.length)], roughness: 0.6 });
+                const building = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+                const x = (Math.random() - 0.5) * 600;
+                const z = (Math.random() - 0.5) * 600;
+                building.position.set(x, h / 2 - 0.5, z);
+                building.castShadow = true;
+                scene.add(building);
+                
+                // نوافذ مضيئة
+                if (Math.random() > 0.75) {
+                    const winMat = new THREE.MeshStandardMaterial({ color: 0xff6600, emissive: 0xff2200 });
+                    const windowLight = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.8, 0.1), winMat);
+                    windowLight.position.set(x + (Math.random() - 0.5) * w * 0.6, h * (Math.random() * 0.5 + 0.3), z + d / 2 + 0.1);
+                    scene.add(windowLight);
+                }
             }
+        }
+        
+        function createPlayer() {
+            const group = new THREE.Group();
             
-            // ========== PROFESSIONAL SOLDIER CHARACTER (GLTF) ==========
-            let character = null;
-            let mixer = null;
-            let animations = {};
-            let currentAction = null;
-            let handBone = null;
-            let modelLoaded = false;
-            let isRolling = false;
-            let rollTimer = 0;
-            let rollCooldownTimer = 0;
-            let rollVelocity = { x: 0, z: 0 };
+            // درع أحمر
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0xcc3333, metalness: 0.7, roughness: 0.3 });
+            const body = new THREE.Mesh(new THREE.BoxGeometry(0.85, 1.25, 0.65), bodyMat);
+            body.position.y = 0.65;
+            body.castShadow = true;
+            group.add(body);
             
-            // Load professional soldier model
-            const loader = new THREE.GLTFLoader();
-            let loadAttempts = 0;
+            // خوذة
+            const headMat = new THREE.MeshStandardMaterial({ color: 0xdd4444, metalness: 0.8 });
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.48), headMat);
+            head.position.y = 1.25;
+            group.add(head);
             
-            function loadSoldierModel() {
-                loader.load('https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb', 
-                    (gltf) => {
-                        character = gltf.scene;
-                        character.scale.set(0.55, 0.55, 0.55);
-                        character.position.set(0, 0, 0);
-                        character.traverse(n => { if(n.isMesh) { n.castShadow = true; n.receiveShadow = true; } });
-                        scene.add(character);
-                        
-                        mixer = new THREE.AnimationMixer(character);
-                        gltf.animations.forEach(clip => {
-                            animations[clip.name.toLowerCase()] = mixer.clipAction(clip);
-                        });
-                        
-                        // Add weapon attachment point
-                        const weaponPoint = new THREE.Group();
-                        character.add(weaponPoint);
-                        weaponPoint.position.set(0.45, 1.05, 0.55);
-                        handBone = weaponPoint;
-                        
-                        // Add visual weapon
-                        const weapon = new THREE.Group();
-                        const barrel = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.7), 
-                            new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.85 }));
-                        barrel.position.set(0, 0, 0.35);
-                        weapon.add(barrel);
-                        const grip = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.22, 0.1), 
-                            new THREE.MeshStandardMaterial({ color: 0x2a2a2a }));
-                        grip.position.set(0, -0.12, 0.15);
-                        weapon.add(grip);
-                        const stock = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.15, 0.3), 
-                            new THREE.MeshStandardMaterial({ color: 0x4a3a2a }));
-                        stock.position.set(0, 0.02, -0.15);
-                        weapon.add(stock);
-                        weaponPoint.add(weapon);
-                        
-                        // Play idle animation
-                        if(animations['idle']) {
-                            currentAction = animations['idle'];
-                            currentAction.play();
-                        }
-                        
-                        modelLoaded = true;
-                        finishLoading();
-                    },
-                    (xhr) => {
-                        const progress = (xhr.loaded / xhr.total) * 100;
-                        document.getElementById('loading-bar').style.width = Math.min(progress, 90) + '%';
-                    },
-                    () => {
-                        loadAttempts++;
-                        if(loadAttempts < 2) {
-                            setTimeout(loadSoldierModel, 800);
-                        } else {
-                            createFallbackSoldier();
-                        }
-                    }
-                );
-            }
+            // قمة الخوذة
+            const crest = new THREE.Mesh(new THREE.ConeGeometry(0.32, 0.55, 8), new THREE.MeshStandardMaterial({ color: 0xffaa66, metalness: 0.9 }));
+            crest.position.y = 1.6;
+            group.add(crest);
             
-            function createFallbackSoldier() {
+            // سيف نيون (أزرق)
+            const swordGroup = new THREE.Group();
+            const handle = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.45, 0.16), new THREE.MeshStandardMaterial({ color: 0xaa8866 }));
+            handle.position.y = -0.2;
+            swordGroup.add(handle);
+            const bladeMat = new THREE.MeshStandardMaterial({ color: 0x00ffff, emissive: 0x00aaff, emissiveIntensity: 0.9 });
+            const blade = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.3, 0.06), bladeMat);
+            blade.position.y = 0.55;
+            swordGroup.add(blade);
+            const glow = new THREE.Mesh(new THREE.BoxGeometry(0.22, 1.5, 0.12), new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.3 }));
+            glow.position.y = 0.55;
+            swordGroup.add(glow);
+            
+            swordGroup.position.set(0.7, 0.35, 0.4);
+            swordGroup.rotation.z = -0.3;
+            group.add(swordGroup);
+            
+            group.position.set(0, 0, 0);
+            scene.add(group);
+            playerModel = group;
+            playerModel.userData = { swordGroup, attackTimer: 0 };
+            playerPos = { x: 0, z: 0 };
+        }
+        
+        function createEnemies(count) {
+            const colors = [0xaa44ff, 0xff44aa, 0x44ffaa, 0xffaa44, 0x44aaff];
+            for (let i = 0; i < count; i++) {
                 const group = new THREE.Group();
-                
-                // Body
-                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.7, 1.35, 8), 
-                    new THREE.MeshStandardMaterial({ color: 0x3a5a3a, metalness: 0.2 }));
-                body.castShadow = true;
-                body.position.y = 0.68;
+                const bodyMat = new THREE.MeshStandardMaterial({ color: colors[i % colors.length], metalness: 0.6 });
+                const body = new THREE.Mesh(new THREE.BoxGeometry(0.85, 1.25, 0.65), bodyMat);
+                body.position.y = 0.65;
                 group.add(body);
-                
-                // Vest
-                const vest = new THREE.Mesh(new THREE.CylinderGeometry(0.72, 0.74, 0.85, 6), 
-                    new THREE.MeshStandardMaterial({ color: 0x5a7a5a }));
-                vest.position.y = 0.85;
-                vest.castShadow = true;
-                group.add(vest);
-                
-                // Head
-                const head = new THREE.Mesh(new THREE.SphereGeometry(0.58, 32, 32), 
-                    new THREE.MeshStandardMaterial({ color: 0xddccaa }));
-                head.castShadow = true;
-                head.position.y = 1.42;
+                const head = new THREE.Mesh(new THREE.SphereGeometry(0.48), bodyMat);
+                head.position.y = 1.25;
                 group.add(head);
                 
-                // Helmet
-                const helmet = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.68, 0.55, 8), 
-                    new THREE.MeshStandardMaterial({ color: 0x5a6a5a, metalness: 0.6 }));
-                helmet.position.y = 1.72;
-                helmet.castShadow = true;
-                group.add(helmet);
+                // سيف نيون بلون مختلف
+                const swordGroup = new THREE.Group();
+                const bladeMat = new THREE.MeshStandardMaterial({ color: colors[i % colors.length], emissive: colors[i % colors.length], emissiveIntensity: 0.6 });
+                const blade = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.2, 0.06), bladeMat);
+                blade.position.y = 0.5;
+                swordGroup.add(blade);
+                swordGroup.position.set(0.7, 0.35, 0.4);
+                group.add(swordGroup);
                 
-                // Visor
-                const visor = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.18, 0.05), 
-                    new THREE.MeshStandardMaterial({ color: 0x3366aa, metalness: 0.8 }));
-                visor.position.set(0, 1.68, 0.55);
-                group.add(visor);
-                
-                // Weapon
-                const weaponPoint = new THREE.Group();
-                weaponPoint.position.set(0.45, 0.95, 0.65);
-                const barrel = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.7), 
-                    new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.85 }));
-                barrel.position.set(0, 0, 0.35);
-                weaponPoint.add(barrel);
-                group.add(weaponPoint);
-                handBone = weaponPoint;
-                
-                scene.add(group);
-                character = group;
-                modelLoaded = true;
-                finishLoading();
-            }
-            
-            // ========== WEAPON SYSTEM ==========
-            let ammo = 30;
-            let isReloading = false;
-            let fireCooldown = 0;
-            let bullets = [];
-            let enemies = [];
-            let kills = 0;
-            let score = 0;
-            
-            class Bullet {
-                constructor(position, direction) {
-                    this.mesh = new THREE.Mesh(new THREE.SphereGeometry(0.08, 6, 6), 
-                        new THREE.MeshStandardMaterial({ color: 0xffaa44, emissive: 0xff4400, emissiveIntensity: 0.8 }));
-                    this.mesh.position.copy(position);
-                    this.mesh.castShadow = true;
-                    scene.add(this.mesh);
-                    this.direction = direction;
-                    this.life = 0;
-                    this.maxLife = 3.0;
-                }
-                
-                update(delta) {
-                    this.life += delta;
-                    this.mesh.position.x += this.direction.x * CONFIG.BULLET_SPEED * delta;
-                    this.mesh.position.z += this.direction.z * CONFIG.BULLET_SPEED * delta;
-                    this.mesh.position.y += this.direction.y * CONFIG.BULLET_SPEED * delta;
-                    
-                    if(this.life >= this.maxLife || this.mesh.position.y < -0.5 || 
-                       Math.abs(this.mesh.position.x) > 150 || Math.abs(this.mesh.position.z) > 150) {
-                        scene.remove(this.mesh);
-                        return false;
-                    }
-                    
-                    for(let i = 0; i < enemies.length; i++) {
-                        const enemy = enemies[i];
-                        const dist = enemy.mesh.position.distanceTo(this.mesh.position);
-                        if(dist < 0.8) {
-                            const killed = enemy.takeDamage(CONFIG.DAMAGE);
-                            scene.remove(this.mesh);
-                            return false;
-                        }
-                    }
-                    return true;
-                }
-            }
-            
-            class EnemySoldier {
-                constructor(position) {
-                    this.mesh = new THREE.Group();
-                    
-                    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.65, 1.3, 6), 
-                        new THREE.MeshStandardMaterial({ color: 0xaa4444, metalness: 0.2 }));
-                    body.castShadow = true;
-                    body.position.y = 0.65;
-                    this.mesh.add(body);
-                    
-                    const head = new THREE.Mesh(new THREE.SphereGeometry(0.52, 24, 24), 
-                        new THREE.MeshStandardMaterial({ color: 0xccaa88 }));
-                    head.castShadow = true;
-                    head.position.y = 1.35;
-                    this.mesh.add(head);
-                    
-                    const helmet = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.6, 0.45, 6), 
-                        new THREE.MeshStandardMaterial({ color: 0x5a5a5a, metalness: 0.5 }));
-                    helmet.position.y = 1.62;
-                    helmet.castShadow = true;
-                    this.mesh.add(helmet);
-                    
-                    const redVisor = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.14, 0.04), 
-                        new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0x440000 }));
-                    redVisor.position.set(0, 1.6, 0.52);
-                    this.mesh.add(redVisor);
-                    
-                    this.mesh.position.copy(position);
-                    this.health = CONFIG.ENEMY_HEALTH;
-                    this.patrolAngle = Math.random() * Math.PI * 2;
-                    this.centerPos = position.clone();
-                    this.alerted = false;
-                    this.attackCooldown = 0;
-                    
-                    scene.add(this.mesh);
-                }
-                
-                update(delta, playerPos) {
-                    const distToPlayer = this.mesh.position.distanceTo(playerPos);
-                    
-                    if(distToPlayer < 14) {
-                        this.alerted = true;
-                    }
-                    
-                    if(this.alerted) {
-                        const direction = new THREE.Vector3().subVectors(playerPos, this.mesh.position).normalize();
-                        this.mesh.position.x += direction.x * 3.8 * delta;
-                        this.mesh.position.z += direction.z * 3.8 * delta;
-                        const angle = Math.atan2(direction.x, direction.z);
-                        this.mesh.rotation.y = angle;
-                    } else {
-                        this.patrolAngle += 0.6 * delta;
-                        this.mesh.position.x = this.centerPos.x + Math.cos(this.patrolAngle) * 12;
-                        this.mesh.position.z = this.centerPos.z + Math.sin(this.patrolAngle) * 12;
-                    }
-                    
-                    this.mesh.position.x = Math.min(130, Math.max(-130, this.mesh.position.x));
-                    this.mesh.position.z = Math.min(130, Math.max(-130, this.mesh.position.z));
-                    
-                    if(this.attackCooldown > 0) this.attackCooldown -= delta;
-                }
-                
-                takeDamage(amount) {
-                    this.health -= amount;
-                    
-                    const hitFlash = new THREE.Mesh(new THREE.SphereGeometry(0.35, 6, 6), 
-                        new THREE.MeshBasicMaterial({ color: 0xffaa44, transparent: true }));
-                    hitFlash.position.copy(this.mesh.position);
-                    hitFlash.position.y += 0.8;
-                    scene.add(hitFlash);
-                    setTimeout(() => scene.remove(hitFlash), 80);
-                    
-                    if(this.health <= 0) {
-                        this.destroy();
-                        return true;
-                    }
-                    return false;
-                }
-                
-                destroy() {
-                    scene.remove(this.mesh);
-                    const explosion = new THREE.Mesh(new THREE.SphereGeometry(0.8, 8, 8), 
-                        new THREE.MeshBasicMaterial({ color: 0xff6633, transparent: true }));
-                    explosion.position.copy(this.mesh.position);
-                    scene.add(explosion);
-                    setTimeout(() => scene.remove(explosion), 150);
-                }
-            }
-            
-            function spawnEnemy() {
+                // موقع عشوائي
                 const angle = Math.random() * Math.PI * 2;
-                const radius = 45 + Math.random() * 70;
-                const pos = new THREE.Vector3(Math.cos(angle) * radius, 0, Math.sin(angle) * radius);
-                enemies.push(new EnemySoldier(pos));
-                document.getElementById('kills').innerText = kills;
+                const radius = 80 + Math.random() * 150;
+                const x = Math.cos(angle) * radius;
+                const z = Math.sin(angle) * radius;
+                group.position.set(x, 0, z);
+                scene.add(group);
+                
+                enemies.push({
+                    model: group,
+                    swordGroup,
+                    health: 100,
+                    pos: { x, z },
+                    name: `عدو ${i+1}`,
+                    color: colors[i % colors.length],
+                    attackCooldown: 0,
+                    lastSeenTime: 0
+                });
+            }
+        }
+        
+        function updateEnemiesAI(deltaTime) {
+            for (let enemy of enemies) {
+                if (enemy.health <= 0) continue;
+                
+                // تحرك العدو نحو اللاعب
+                const dx = playerPos.x - enemy.pos.x;
+                const dz = playerPos.z - enemy.pos.z;
+                const dist = Math.hypot(dx, dz);
+                if (dist > 1.2) {
+                    const move = Math.min(3.5 * deltaTime, 0.2);
+                    const dirX = dx / dist;
+                    const dirZ = dz / dist;
+                    enemy.pos.x += dirX * move;
+                    enemy.pos.z += dirZ * move;
+                    // حدود
+                    enemy.pos.x = Math.min(340, Math.max(-340, enemy.pos.x));
+                    enemy.pos.z = Math.min(340, Math.max(-340, enemy.pos.z));
+                    enemy.model.position.set(enemy.pos.x, 0, enemy.pos.z);
+                    
+                    // تدوير العدو باتجاه اللاعب
+                    const angleToPlayer = Math.atan2(dx, dz);
+                    enemy.model.rotation.y = angleToPlayer;
+                }
+                
+                // هجوم العدو إذا كان قريباً
+                if (enemy.attackCooldown <= 0 && dist < ATTACK_RANGE && health > 0) {
+                    // ضربة خفيفة من العدو
+                    const damage = LIGHT_DAMAGE;
+                    health = Math.max(0, health - damage);
+                    updateUI();
+                    addDamageNumber(enemy.pos.x, enemy.pos.z, damage);
+                    addKillFeed(`🗡️ ${enemy.name} ضربك بـ ${damage} ضرر!`);
+                    screenFlash();
+                    enemy.attackCooldown = 1.2;  // ثانية
+                    
+                    // اهتزاز الكاميرا
+                    if (camera) {
+                        camera.position.x += (Math.random() - 0.5) * 0.2;
+                        camera.position.z += (Math.random() - 0.5) * 0.2;
+                    }
+                }
+                if (enemy.attackCooldown > 0) enemy.attackCooldown -= deltaTime;
+                
+                // إذا مات العدو
+                if (enemy.health <= 0) {
+                    scene.remove(enemy.model);
+                    // حذفه من القائمة بعد قليل
+                }
+            }
+            // إزالة الأعداء الموتى
+            enemies = enemies.filter(e => e.health > 0);
+        }
+        
+        function attackEnemies(damage) {
+            for (let i = 0; i < enemies.length; i++) {
+                const e = enemies[i];
+                const dx = e.pos.x - playerPos.x;
+                const dz = e.pos.z - playerPos.z;
+                const dist = Math.hypot(dx, dz);
+                if (dist < ATTACK_RANGE && e.health > 0) {
+                    e.health = Math.max(0, e.health - damage);
+                    addDamageNumber(e.pos.x, e.pos.z, damage);
+                    if (e.health <= 0) {
+                        kills++;
+                        updateUI();
+                        addKillFeed(`⚔️ قتلت ${e.name}! ⚔️`);
+                        // تأثير انفجار نيون
+                        const explosionColor = e.color;
+                        const particles = new THREE.PointLight(explosionColor, 1, 15);
+                        particles.position.set(e.pos.x, 1.5, e.pos.z);
+                        scene.add(particles);
+                        setTimeout(() => scene.remove(particles), 300);
+                    } else {
+                        addKillFeed(`💥 ضربت ${e.name} بـ ${damage} ضرر`);
+                    }
+                    break; // ضربة واحدة تصيب عدو واحد فقط
+                }
+            }
+        }
+        
+        function performAttack(damage, type) {
+            if (attackCooldown) return;
+            attackCooldown = true;
+            
+            // حركة السيف
+            if (playerModel && playerModel.userData.swordGroup) {
+                playerModel.userData.swordGroup.rotation.x = -Math.PI / 1.8;
+                setTimeout(() => {
+                    if (playerModel && playerModel.userData.swordGroup)
+                        playerModel.userData.swordGroup.rotation.x = 0;
+                }, 180);
             }
             
-            for(let i = 0; i < 10; i++) spawnEnemy();
+            attackEnemies(damage);
             
-            // ========== CONTROLS ==========
-            let moveInput = { x: 0, z: 0 };
-            let jumpRequested = false;
-            let fireRequested = false;
-            let reloadRequested = false;
-            let rollRequested = false;
-            let playerVelocityX = 0, playerVelocityZ = 0;
-            let velocityY = 0, isGrounded = true;
+            setTimeout(() => { attackCooldown = false; }, ATTACK_COOLDOWN_MS);
+        }
+        
+        function updateMovement(deltaTime) {
+            let speed = keys.shift ? RUN_SPEED : MOVE_SPEED;
+            let moveX = 0, moveZ = 0;
+            if (keys.w) moveZ -= 1;
+            if (keys.s) moveZ += 1;
+            if (keys.a) moveX -= 1;
+            if (keys.d) moveX += 1;
+            if (moveX !== 0 || moveZ !== 0) {
+                const len = Math.hypot(moveX, moveZ);
+                moveX /= len;
+                moveZ /= len;
+            }
             
-            // Keyboard
-            const keys = { w: false, s: false, a: false, d: false };
+            playerPos.x += moveX * speed * deltaTime;
+            playerPos.z += moveZ * speed * deltaTime;
+            playerPos.x = Math.min(340, Math.max(-340, playerPos.x));
+            playerPos.z = Math.min(340, Math.max(-340, playerPos.z));
+            
+            // الجاذبية والقفز
+            verticalVelocity -= GRAVITY * deltaTime;
+            let newY = verticalVelocity * deltaTime;
+            if (playerPos.y + newY <= 0) {
+                playerPos.y = 0;
+                verticalVelocity = 0;
+                canJump = true;
+            } else {
+                playerPos.y += newY;
+            }
+            
+            if (playerModel) {
+                playerModel.position.set(playerPos.x, playerPos.y, playerPos.z);
+                // تدوير حسب اتجاه الكاميرا
+                playerModel.rotation.y = cameraAngleYaw;
+            }
+            
+            // كاميرا خلف اللاعب
+            const targetCamX = playerPos.x - Math.sin(cameraAngleYaw) * cameraDistance;
+            const targetCamZ = playerPos.z - Math.cos(cameraAngleYaw) * cameraDistance;
+            camera.position.x += (targetCamX - camera.position.x) * 0.1;
+            camera.position.z += (targetCamZ - camera.position.z) * 0.1;
+            camera.position.y += (playerPos.y + cameraHeight - camera.position.y) * 0.1;
+            camera.lookAt(playerPos.x, playerPos.y + 1.2, playerPos.z);
+        }
+        
+        function updateUI() {
+            document.getElementById('kills').innerText = kills;
+            const percent = Math.max(0, health);
+            document.getElementById('healthBar').style.width = percent + '%';
+            document.getElementById('healthValue').innerText = Math.floor(percent);
+            const reward = kills * 8 + (kills >= 5 ? 20 : 0);
+            document.getElementById('currentReward').innerText = reward;
+            
+            if (health <= 0) {
+                endGame();
+            }
+        }
+        
+        function endGame() {
+            const panel = document.getElementById('gameOverPanel');
+            const resultsDiv = document.getElementById('finalResults');
+            const reward = kills * 8 + (kills >= 5 ? 20 : 0);
+            resultsDiv.innerHTML = `
+                <p>⚔️ القتلى: ${kills}</p>
+                <p>💰 المكافأة: ${reward}</p>
+                <p>🏆 ${kills > 3 ? 'انتصار مذهل!' : 'حاول مرة أخرى'}</p>
+            `;
+            panel.style.display = 'block';
+            // إيقاف الحركة
+            keys = { w: false, s: false, a: false, d: false, shift: false, space: false };
+        }
+        
+        function addKillFeed(msg) {
+            const feed = document.getElementById('kill-feed');
+            const entry = document.createElement('div');
+            entry.className = 'kill-entry';
+            entry.innerText = msg;
+            feed.appendChild(entry);
+            setTimeout(() => entry.remove(), 3200);
+        }
+        
+        function addDamageNumber(x, z, dmg) {
+            const div = document.createElement('div');
+            div.className = 'damage-number';
+            div.innerText = `-${dmg}`;
+            const screenX = (x / 700) * window.innerWidth + window.innerWidth/2;
+            const screenY = (z / 700) * window.innerHeight + window.innerHeight/2 - 100;
+            div.style.left = screenX + 'px';
+            div.style.top = screenY + 'px';
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 800);
+        }
+        
+        function screenFlash() {
+            const flashDiv = document.createElement('div');
+            flashDiv.style.position = 'fixed';
+            flashDiv.style.top = 0;
+            flashDiv.style.left = 0;
+            flashDiv.style.width = '100%';
+            flashDiv.style.height = '100%';
+            flashDiv.style.backgroundColor = 'rgba(255,0,0,0.3)';
+            flashDiv.style.pointerEvents = 'none';
+            flashDiv.style.zIndex = 1000;
+            document.body.appendChild(flashDiv);
+            setTimeout(() => flashDiv.remove(), 120);
+        }
+        
+        function updateMinimap() {
+            const canvas = document.getElementById('minimapCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#0a0a2a';
+            ctx.fillRect(0, 0, 180, 180);
+            
+            // شبكة
+            ctx.strokeStyle = '#3366aa';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i <= 8; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * 22.5, 0);
+                ctx.lineTo(i * 22.5, 180);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, i * 22.5);
+                ctx.lineTo(180, i * 22.5);
+                ctx.stroke();
+            }
+            
+            // اللاعب
+            const px = ((playerPos.x + 350) / 700) * 180;
+            const pz = ((playerPos.z + 350) / 700) * 180;
+            ctx.fillStyle = '#00ff88';
+            ctx.beginPath();
+            ctx.arc(px, pz, 5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // الأعداء
+            for (let e of enemies) {
+                const ex = ((e.pos.x + 350) / 700) * 180;
+                const ez = ((e.pos.z + 350) / 700) * 180;
+                ctx.fillStyle = '#ff4444';
+                ctx.beginPath();
+                ctx.arc(ex, ez, 4, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        function setupControls() {
             window.addEventListener('keydown', (e) => {
-                switch(e.code) {
-                    case 'KeyW': keys.w = true; break;
-                    case 'KeyS': keys.s = true; break;
-                    case 'KeyA': keys.a = true; break;
-                    case 'KeyD': keys.d = true; break;
-                    case 'Space': e.preventDefault(); jumpRequested = true; break;
-                    case 'KeyR': e.preventDefault(); reloadRequested = true; break;
-                    case 'KeyQ': e.preventDefault(); rollRequested = true; break;
+                switch(e.key) {
+                    case 'w': keys.w = true; break;
+                    case 's': keys.s = true; break;
+                    case 'a': keys.a = true; break;
+                    case 'd': keys.d = true; break;
+                    case 'Shift': keys.shift = true; break;
+                    case ' ': keys.space = true; if (canJump && health>0) { verticalVelocity = JUMP_POWER; canJump = false; } break;
                 }
             });
             window.addEventListener('keyup', (e) => {
-                switch(e.code) {
-                    case 'KeyW': keys.w = false; break;
-                    case 'KeyS': keys.s = false; break;
-                    case 'KeyA': keys.a = false; break;
-                    case 'KeyD': keys.d = false; break;
+                switch(e.key) {
+                    case 'w': keys.w = false; break;
+                    case 's': keys.s = false; break;
+                    case 'a': keys.a = false; break;
+                    case 'd': keys.d = false; break;
+                    case 'Shift': keys.shift = false; break;
+                    case ' ': keys.space = false; break;
                 }
             });
-            
-            function updateKeyboardInput() {
-                let x = 0, z = 0;
-                if(keys.w) z = 1;
-                if(keys.s) z = -1;
-                if(keys.d) x = 1;
-                if(keys.a) x = -1;
-                if(x !== 0 || z !== 0) {
-                    const len = Math.hypot(x, z);
-                    moveInput.x = x / len;
-                    moveInput.z = z / len;
-                } else if(!joystickActive) {
-                    moveInput.x = 0;
-                    moveInput.z = 0;
-                }
-            }
-            
-            // Joystick
-            const zoneMove = document.getElementById('zone-move');
-            const joystickBase = document.getElementById('joystick-base');
-            const joystickThumb = document.getElementById('joystick-thumb');
-            let joystickActive = false;
-            let activeTouchId = null;
-            let joyCenterX = 0, joyCenterY = 0;
-            
-            function getMaxRadius() {
-                const rect = joystickBase.getBoundingClientRect();
-                return (rect.width / 2) * 0.7;
-            }
-            
-            function updateJoystick(clientX, clientY) {
-                let dx = clientX - joyCenterX;
-                let dy = clientY - joyCenterY;
-                const maxRadius = getMaxRadius();
-                let dist = Math.min(Math.hypot(dx, dy), maxRadius);
-                let angle = Math.atan2(dy, dx);
-                let limitedX = Math.cos(angle) * dist;
-                let limitedY = Math.sin(angle) * dist;
-                joystickThumb.style.transform = `translate(calc(-50% + ${limitedX}px), calc(-50% + ${limitedY}px))`;
-                moveInput.x = -limitedX / maxRadius;
-                moveInput.z = -limitedY / maxRadius;
-            }
-            
-            function resetJoystick() {
-                joystickThumb.style.transform = 'translate(-50%, -50%)';
-                if(!keys.w && !keys.s && !keys.a && !keys.d) moveInput.x = moveInput.z = 0;
-                joystickActive = false;
-            }
-            
-            zoneMove.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                const rect = joystickBase.getBoundingClientRect();
-                joyCenterX = rect.left + rect.width / 2;
-                joyCenterY = rect.top + rect.height / 2;
-                for(let i = 0; i < e.touches.length; i++) {
-                    const touch = e.touches[i];
-                    const zoneRect = zoneMove.getBoundingClientRect();
-                    if(touch.clientX >= zoneRect.left && touch.clientX <= zoneRect.right &&
-                       touch.clientY >= zoneRect.top && touch.clientY <= zoneRect.bottom) {
-                        joystickActive = true;
-                        activeTouchId = touch.identifier;
-                        updateJoystick(touch.clientX, touch.clientY);
-                        break;
-                    }
-                }
+        }
+        
+        function setupMouseEvents() {
+            window.addEventListener('mousemove', (e) => {
+                mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+                mouseY = (e.clientY / window.innerHeight) * 2 - 1;
+                cameraAngleYaw += (mouseX * 0.03);
+                cameraAngleYaw = Math.atan2(Math.sin(cameraAngleYaw), Math.cos(cameraAngleYaw));
             });
-            
-            window.addEventListener('touchmove', (e) => {
-                if(!joystickActive) return;
-                for(let i = 0; i < e.touches.length; i++) {
-                    if(e.touches[i].identifier === activeTouchId) {
-                        updateJoystick(e.touches[i].clientX, e.touches[i].clientY);
-                        break;
-                    }
-                }
+            window.addEventListener('mousedown', (e) => {
+                if (health <= 0) return;
+                if (e.button === 0) performAttack(LIGHT_DAMAGE, 'light');
+                else if (e.button === 2) performAttack(HEAVY_DAMAGE, 'heavy');
             });
-            
-            window.addEventListener('touchend', () => resetJoystick());
-            
-            // Camera
-            const cameraArea = document.getElementById('camera-area');
-            let cameraDragActive = false;
-            let cameraAngle = 0, targetCameraAngle = 0, lastDragX = 0;
-            
-            cameraArea.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                cameraDragActive = true;
-                lastDragX = e.touches[0].clientX;
-            });
-            
-            window.addEventListener('touchmove', (e) => {
-                if(!cameraDragActive) return;
-                let dx = e.touches[0].clientX - lastDragX;
-                targetCameraAngle += dx * 0.008;
-                lastDragX = e.touches[0].clientX;
-            });
-            
-            window.addEventListener('touchend', () => { cameraDragActive = false; });
-            
-            // Buttons
-            const jumpBtn = document.getElementById('btn-jump');
-            const fireBtn = document.getElementById('btn-fire');
-            const reloadBtn = document.getElementById('btn-reload');
-            const rollBtn = document.getElementById('btn-roll');
-            
-            jumpBtn.addEventListener('touchstart', (e) => { e.preventDefault(); jumpRequested = true; });
-            jumpBtn.addEventListener('touchend', () => setTimeout(() => jumpRequested = false, 100));
-            
-            fireBtn.addEventListener('touchstart', (e) => { e.preventDefault(); fireRequested = true; });
-            fireBtn.addEventListener('touchend', () => setTimeout(() => fireRequested = false, 100));
-            
-            reloadBtn.addEventListener('touchstart', (e) => { e.preventDefault(); reloadRequested = true; });
-            reloadBtn.addEventListener('touchend', () => setTimeout(() => reloadRequested = false, 100));
-            
-            rollBtn.addEventListener('touchstart', (e) => { e.preventDefault(); rollRequested = true; });
-            rollBtn.addEventListener('touchend', () => setTimeout(() => rollRequested = false, 100));
-            
-            // Roll System
-            function performRoll() {
-                if(isRolling || rollCooldownTimer > 0 || !isGrounded) return;
-                
-                isRolling = true;
-                rollTimer = CONFIG.ROLL_DURATION;
-                rollCooldownTimer = CONFIG.ROLL_COOLDOWN;
-                
-                // Calculate roll direction
-                const rollDir = { x: moveInput.x, z: moveInput.z };
-                if(rollDir.x === 0 && rollDir.z === 0) {
-                    // Roll forward if no input
-                    const forwardAngle = character.rotation.y;
-                    rollDir.x = Math.sin(forwardAngle);
-                    rollDir.z = Math.cos(forwardAngle);
-                }
-                
-                rollVelocity.x = rollDir.x * CONFIG.ROLL_SPEED;
-                rollVelocity.z = rollDir.z * CONFIG.ROLL_SPEED;
-                
-                // Play roll animation if available
-                if(animations['roll'] || animations['dodge']) {
-                    const rollAnim = animations['roll'] || animations['dodge'];
-                    if(currentAction) currentAction.fadeOut(0.1);
-                    currentAction = rollAnim;
-                    currentAction.reset().play();
-                }
-                
-                // Visual effect
-                const dustRing = new THREE.Mesh(new THREE.RingGeometry(0.4, 0.9, 16), 
-                    new THREE.MeshBasicMaterial({ color: 0xaa8866, transparent: true, side: THREE.DoubleSide }));
-                dustRing.rotation.x = -Math.PI/2;
-                dustRing.position.copy(character.position);
-                dustRing.position.y = 0.05;
-                scene.add(dustRing);
-                setTimeout(() => scene.remove(dustRing), 200);
+            window.addEventListener('contextmenu', (e) => e.preventDefault());
+        }
+        
+        function animate(currentTime = 0) {
+            requestAnimationFrame(animate);
+            const delta = Math.min(0.033, (currentTime - lastTime) / 1000);
+            lastTime = currentTime;
+            if (health > 0) {
+                updateMovement(delta);
+                updateEnemiesAI(delta);
             }
-            
-            // Fire System
-            function shoot() {
-                if(isReloading || fireCooldown > 0 || ammo <= 0) return;
-                
-                ammo--;
-                document.getElementById('ammo').innerText = ammo;
-                fireCooldown = CONFIG.FIRE_RATE;
-                
-                const startPos = character.position.clone();
-                startPos.y += 1.3;
-                const dir = new THREE.Vector3(Math.sin(cameraAngle + character.rotation.y), 0, Math.cos(cameraAngle + character.rotation.y));
-                
-                const flash = new THREE.Mesh(new THREE.SphereGeometry(0.12, 6, 6), 
-                    new THREE.MeshBasicMaterial({ color: 0xffaa44 }));
-                flash.position.copy(startPos);
-                flash.position.x += dir.x * 0.8;
-                flash.position.z += dir.z * 0.8;
-                scene.add(flash);
-                setTimeout(() => scene.remove(flash), 50);
-                
-                bullets.push(new Bullet(startPos, dir));
-                
-                // Muzzle flash on weapon
-                if(handBone) {
-                    const muzzle = new THREE.Mesh(new THREE.SphereGeometry(0.08, 4, 4), 
-                        new THREE.MeshBasicMaterial({ color: 0xff6600 }));
-                    muzzle.position.set(0.6, 0, 0.9);
-                    handBone.add(muzzle);
-                    setTimeout(() => handBone.remove(muzzle), 40);
-                }
-            }
-            
-            function reload() {
-                if(isReloading || ammo === CONFIG.CLIP_SIZE) return;
-                isReloading = true;
-                const reloadPanel = document.getElementById('reload-panel');
-                reloadPanel.style.opacity = '1';
-                setTimeout(() => {
-                    ammo = CONFIG.CLIP_SIZE;
-                    document.getElementById('ammo').innerText = ammo;
-                    isReloading = false;
-                    reloadPanel.style.opacity = '0';
-                }, CONFIG.RELOAD_TIME * 1000);
-            }
-            
-            // ========== PLAYER PHYSICS ==========
-            function updatePlayerPhysics(delta) {
-                if(!character) return;
-                
-                let targetVelX = moveInput.x * CONFIG.MOVEMENT_SPEED;
-                let targetVelZ = moveInput.z * CONFIG.MOVEMENT_SPEED;
-                
-                if(isRolling) {
-                    // Override velocity during roll
-                    playerVelocityX = rollVelocity.x;
-                    playerVelocityZ = rollVelocity.z;
-                    rollTimer -= delta;
-                    if(rollTimer <= 0) {
-                        isRolling = false;
-                        // Return to idle animation
-                        if(animations['idle'] && currentAction !== animations['idle']) {
-                            if(currentAction) currentAction.fadeOut(0.1);
-                            currentAction = animations['idle'];
-                            currentAction.reset().play();
-                        }
-                    }
-                } else {
-                    const control = isGrounded ? 1.0 : CONFIG.AIR_CONTROL;
-                    playerVelocityX += (targetVelX - playerVelocityX) * 12 * delta * control;
-                    playerVelocityZ += (targetVelZ - playerVelocityZ) * 12 * delta * control;
-                    
-                    if(isGrounded && moveInput.x === 0 && moveInput.z === 0 && !isRolling) {
-                        playerVelocityX *= (1 - CONFIG.GROUND_DRAG * delta);
-                        playerVelocityZ *= (1 - CONFIG.GROUND_DRAG * delta);
-                    }
-                }
-                
-                character.position.x += playerVelocityX * delta;
-                character.position.z += playerVelocityZ * delta;
-                character.position.x = Math.min(135, Math.max(-135, character.position.x));
-                character.position.z = Math.min(135, Math.max(-135, character.position.z));
-                
-                if(Math.abs(playerVelocityX) > 0.1 || Math.abs(playerVelocityZ) > 0.1) {
-                    const moveAngle = Math.atan2(playerVelocityX, playerVelocityZ);
-                    character.rotation.y = moveAngle;
-                    
-                    if(!isRolling && modelLoaded && animations['walking'] && currentAction !== animations['walking']) {
-                        if(currentAction) currentAction.fadeOut(0.12);
-                        currentAction = animations['walking'];
-                        currentAction.reset().fadeIn(0.12).play();
-                    }
-                } else {
-                    if(!isRolling && modelLoaded && animations['idle'] && currentAction !== animations['idle']) {
-                        if(currentAction) currentAction.fadeOut(0.15);
-                        currentAction = animations['idle'];
-                        currentAction.reset().play();
-                    }
-                }
-                
-                if(jumpRequested && isGrounded && !isRolling) {
-                    velocityY = CONFIG.JUMP_FORCE;
-                    isGrounded = false;
-                    jumpRequested = false;
-                    
-                    if(animations['jump']) {
-                        animations['jump'].reset().play();
-                        setTimeout(() => { if(animations['jump']) animations['jump'].fadeOut(0.3); }, 400);
-                    }
-                }
-                
-                if(!isGrounded) {
-                    character.position.y += velocityY * delta;
-                    velocityY -= CONFIG.GRAVITY * delta;
-                    if(character.position.y <= 0) {
-                        character.position.y = 0;
-                        isGrounded = true;
-                        velocityY = 0;
-                    }
-                } else {
-                    character.position.y = 0;
-                }
-                
-                // Update roll cooldown UI
-                if(rollCooldownTimer > 0) {
-                    rollCooldownTimer -= delta;
-                    const percent = (rollCooldownTimer / CONFIG.ROLL_COOLDOWN) * 100;
-                    document.getElementById('roll-fill').style.height = percent + '%';
-                } else {
-                    document.getElementById('roll-fill').style.height = '0%';
-                }
-            }
-            
-            // Camera
-            function updateCamera() {
-                if(!character) return;
-                cameraAngle += (targetCameraAngle - cameraAngle) * 0.12;
-                const totalAngle = character.rotation.y + cameraAngle;
-                const distance = 10.5;
-                const height = 4.5;
-                const camX = character.position.x - Math.sin(totalAngle) * distance;
-                const camZ = character.position.z - Math.cos(totalAngle) * distance;
-                const camY = character.position.y + height;
-                camera.position.set(camX, camY, camZ);
-                camera.lookAt(character.position.clone().add(new THREE.Vector3(0, 1.3, 0)));
-            }
-            
-            // Update systems
-            function updateEnemies(delta) {
-                for(let i = enemies.length-1; i >= 0; i--) {
-                    enemies[i].update(delta, character.position);
-                    if(enemies[i].health <= 0) {
-                        enemies.splice(i, 1);
-                        kills++;
-                        score += 10;
-                        document.getElementById('score').innerText = score;
-                        document.getElementById('kills').innerText = kills;
-                        spawnEnemy();
-                    }
-                }
-            }
-            
-            function updateBullets(delta) {
-                for(let i = bullets.length-1; i >= 0; i--) {
-                    const alive = bullets[i].update(delta);
-                    if(!alive) bullets.splice(i,1);
-                }
-            }
-            
-            function updateCooldowns(delta) {
-                if(fireCooldown > 0) fireCooldown -= delta;
-            }
-            
-            // Animation loop
-            let lastTime = performance.now();
-            let clock = new THREE.Clock();
-            
-            function animate() {
-                const now = performance.now();
-                let delta = Math.min(0.033, (now - lastTime) / 1000);
-                lastTime = now;
-                
-                updateKeyboardInput();
-                updatePlayerPhysics(delta);
-                updateEnemies(delta);
-                updateBullets(delta);
-                updateCooldowns(delta);
-                updateCamera();
-                
-                if(fireRequested) shoot();
-                if(reloadRequested) { reload(); reloadRequested = false; }
-                if(rollRequested) { performRoll(); rollRequested = false; }
-                
-                if(mixer) mixer.update(clock.getDelta());
-                
-                renderer.render(scene, camera);
-                requestAnimationFrame(animate);
-            }
-            
-            function finishLoading() {
-                document.getElementById('loading-screen').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('loading-screen').style.display = 'none';
-                    document.getElementById('ui-overlay').style.display = 'block';
-                }, 400);
-            }
-            
-            let loadProgress = 0;
-            const loadInterval = setInterval(() => {
-                loadProgress += 12;
-                document.getElementById('loading-bar').style.width = Math.min(loadProgress, 100) + '%';
-                if(loadProgress >= 100) clearInterval(loadInterval);
-            }, 70);
-            
-            loadSoldierModel();
-            animate();
-            
-            window.addEventListener('resize', () => {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-            });
-        })();
+            updateMinimap();
+            renderer.render(scene, camera);
+        }
+        
+        // بدء اللعبة
+        init();
     </script>
 </body>
 </html>
