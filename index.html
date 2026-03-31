@@ -3,824 +3,370 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Elite Grenadier - Custom Movement System</title>
+    <title>Dwarf Bomber - Pro Edition</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { overflow: hidden; font-family: 'Segoe UI', monospace; }
-        #ui {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(0,0,0,0.85);
-            color: #ffaa33;
-            padding: 15px 25px;
-            border-radius: 8px;
-            font-family: monospace;
-            z-index: 100;
-            pointer-events: none;
-            border-left: 4px solid #ff6600;
-            backdrop-filter: blur(5px);
-        }
-        #score {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(0,0,0,0.85);
-            color: #ffaa33;
-            padding: 15px 30px;
-            border-radius: 8px;
-            font-size: 24px;
-            font-weight: bold;
-            font-family: monospace;
-            z-index: 100;
-            pointer-events: none;
-            border: 1px solid #ff6600;
-            backdrop-filter: blur(5px);
-        }
-        #controls-info {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background: rgba(0,0,0,0.7);
-            color: #88ff88;
-            padding: 10px 15px;
-            border-radius: 5px;
-            font-size: 12px;
-            font-family: monospace;
-            z-index: 100;
-            pointer-events: none;
-        }
-        #grenade-status {
-            position: absolute;
-            bottom: 30px;
-            right: 30px;
-            background: rgba(0,0,0,0.8);
-            color: #ffaa33;
-            padding: 10px 20px;
-            border-radius: 30px;
-            font-family: monospace;
-            font-size: 14px;
-            z-index: 100;
-            pointer-events: none;
-            border: 1px solid #ff6600;
-        }
-        @keyframes shake {
-            0%, 100% { transform: translate(0, 0); }
-            25% { transform: translate(-3px, -3px); }
-            75% { transform: translate(3px, 3px); }
-        }
-        .screen-shake {
-            animation: shake 0.1s ease-in-out 3;
-        }
-        .indicator-pulse {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(255,100,0,0.9), rgba(255,0,0,0));
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-            animation: pulseAnim 0.6s ease-out forwards;
-        }
-        @keyframes pulseAnim {
-            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
-        }
+        * { box-sizing: border-box; touch-action: none; }
+        body { margin: 0; overflow: hidden; background: #87ceeb; font-family: sans-serif; }
+        #ui-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
+        #crosshair { position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; transform: translate(-50%, -50%); pointer-events: none; border: 2px solid #ffaa00; border-radius: 50%; }
+        #info-panel { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); color: #fff; padding: 10px; border-radius: 5px; font-size: 12px; }
+        #score-panel { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: #ffaa00; padding: 10px; border-radius: 5px; font-weight: bold; }
+        
+        /* Split Screen Controls */
+        #left-control { position: absolute; bottom: 0; left: 0; width: 50%; height: 200px; pointer-events: auto; }
+        #right-control { position: absolute; bottom: 0; right: 0; width: 50%; height: 200px; pointer-events: auto; }
+        
+        #joystick-container { position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border: 2px solid #ffaa00; border-radius: 50%; }
+        #joystick-knob { position: absolute; top: 50%; left: 50%; width: 50px; height: 50px; background: #ffaa00; border-radius: 50%; transform: translate(-50%,-50%); }
+        
+        #action-buttons { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); display: flex; gap: 20px; pointer-events: auto; }
+        .action-btn { width: 70px; height: 70px; border-radius: 50%; background: rgba(0,0,0,0.7); color: white; border: 2px solid #ffaa00; font-size: 24px; cursor: pointer; }
+        #loading-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; color: #fff; display: flex; align-items: center; justify-content: center; z-index: 100; }
     </style>
 </head>
 <body>
-    <div id="ui">
-        💣 ELITE GRENADIER • CUSTOM MOVEMENT SYSTEM<br>
-        <span style="font-size: 10px; color: #aaa;">RUNNING • DOUBLE JUMP • GRENADE IN HAND</span>
-    </div>
-    <div id="score">
-        🎯 SCORE: <span id="scoreValue">0</span>
-    </div>
-    <div id="controls-info">
-        🎮 WASD: RUN | SPACE: DOUBLE JUMP | LEFT CLICK or F: THROW GRENADE
-    </div>
-    <div id="grenade-status">
-        💣 GRENADE READY
+    <div id="loading-screen">LOADING PRO DWARF...</div>
+    <div id="ui-container">
+        <div id="crosshair"></div>
+        <div id="info-panel">DWARF BOMBER PRO<br>Balanced Controls • Double Jump • Physics</div>
+        <div id="score-panel">SCORE: <span id="score">0</span></div>
+        
+        <div id="left-control">
+            <div id="joystick-container"><div id="joystick-knob"></div></div>
+        </div>
+        
+        <div id="right-control"></div>
+        
+        <div id="action-buttons">
+            <button class="action-btn" id="btn-jump">⬆️</button>
+            <button class="action-btn" id="btn-throw">💣</button>
+        </div>
     </div>
 
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
-            }
-        }
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
-    <script type="module">
-        import * as THREE from 'three';
-        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-
-        // ==========================================
-        // SCENE SETUP
-        // ==========================================
+    <script>
+        // Scene Setup
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0a0a2a);
-        scene.fog = new THREE.FogExp2(0x0a0a2a, 0.005);
-
-        const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 500);
+        scene.background = new THREE.Color(0x87ceeb);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
 
-        // ==========================================
-        // LIGHTING
-        // ==========================================
-        const ambientLight = new THREE.AmbientLight(0x404060, 0.7);
+        // Lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
         scene.add(ambientLight);
-        
-        const mainLight = new THREE.DirectionalLight(0xfff5e6, 1.3);
-        mainLight.position.set(15, 25, 10);
-        mainLight.castShadow = true;
-        mainLight.shadow.mapSize.width = 2048;
-        mainLight.shadow.mapSize.height = 2048;
-        mainLight.shadow.camera.near = 0.5;
-        mainLight.shadow.camera.far = 50;
-        mainLight.shadow.camera.left = -15;
-        mainLight.shadow.camera.right = 15;
-        mainLight.shadow.camera.top = 15;
-        mainLight.shadow.camera.bottom = -15;
-        scene.add(mainLight);
-        
-        const backLight = new THREE.PointLight(0xffaa66, 0.4);
-        backLight.position.set(-3, 4, -6);
-        scene.add(backLight);
-        
-        const fillLight = new THREE.PointLight(0x88aaff, 0.3);
-        fillLight.position.set(4, 5, 3);
-        scene.add(fillLight);
-        
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+        dirLight.position.set(10, 20, 10);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
         // Ground
-        const groundMat = new THREE.MeshStandardMaterial({ color: 0x2a4a2a, roughness: 0.85, metalness: 0.1 });
-        const ground = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), groundMat);
+        const ground = new THREE.Mesh(
+            new THREE.PlaneGeometry(500, 500),
+            new THREE.MeshStandardMaterial({ color: 0x336633 })
+        );
         ground.rotation.x = -Math.PI / 2;
-        ground.position.y = -0.2;
         ground.receiveShadow = true;
         scene.add(ground);
-        
-        const gridHelper = new THREE.GridHelper(200, 50, 0x88aa55, 0x446633);
-        gridHelper.position.y = -0.15;
-        gridHelper.material.transparent = true;
-        gridHelper.material.opacity = 0.4;
-        scene.add(gridHelper);
-        
-        // Decorative elements
-        const rockMat = new THREE.MeshStandardMaterial({ color: 0x6a5a4a, roughness: 0.9 });
-        for (let i = 0; i < 100; i++) {
-            const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.3 + Math.random() * 0.5), rockMat);
-            const angle = Math.random() * Math.PI * 2;
-            const rad = 20 + Math.random() * 75;
-            rock.position.x = Math.cos(angle) * rad;
-            rock.position.z = Math.sin(angle) * rad;
-            rock.position.y = -0.15;
-            rock.scale.set(1, Math.random() * 0.6 + 0.4, 1);
-            rock.castShadow = true;
-            rock.receiveShadow = true;
-            scene.add(rock);
-        }
-        
-        // ==========================================
-        // CHARACTER - Custom Movement System
-        // ==========================================
-        let character = null;
-        let mixer = null;
-        
-        // Custom animation actions
-        let runAction = null;
-        let idleAction = null;
-        let jumpAction = null;
-        let throwAction = null;
-        
-        let currentAnimAction = null;
-        
-        // Character state
-        const charState = {
-            velocityY: 0,
-            isGrounded: true,
-            jumpCount: 0,
-            runSpeed: 7.2,      // FAST RUNNING
-            jumpForce: 0.48,
-            gravity: 0.024,
-            position: new THREE.Vector3(0, 0, 0)
-        };
-        
-        // Grenade in hand
-        let grenadeInHand = null;
-        let activeGrenades = [];
-        let grenadeCooldown = 0;
-        let particles = [];
-        let targets = [];
-        let score = 0;
-        
-        // Trajectory system
-        let trajectoryLine = null;
-        let targetMarker = null;
-        
-        // Load character
-        const loader = new GLTFLoader();
-        const MODEL_URL = 'https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb';
-        
-        loader.load(MODEL_URL, (gltf) => {
+
+        // Character Loading
+        let character, mixer, animations = {};
+        let currentAction;
+        const loader = new THREE.GLTFLoader();
+        const modelUrl = 'https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb';
+
+        loader.load(modelUrl, (gltf) => {
             character = gltf.scene;
-            character.scale.set(0.7, 0.7, 0.7);
-            character.position.y = 0;
-            
-            character.traverse(node => {
-                if (node.isMesh) {
-                    node.castShadow = true;
-                    node.receiveShadow = true;
-                }
-            });
-            
+            character.scale.set(0.5, 0.5, 0.5);
+            character.traverse(n => { if (n.isMesh) n.castShadow = true; });
             scene.add(character);
-            
-            // Setup animations
+
             mixer = new THREE.AnimationMixer(character);
-            
             gltf.animations.forEach(clip => {
-                const action = mixer.clipAction(clip);
-                const name = clip.name.toLowerCase();
-                
-                if (name.includes('run') || name.includes('running')) {
-                    runAction = action;
-                } else if (name.includes('idle')) {
-                    idleAction = action;
-                } else if (name.includes('jump')) {
-                    jumpAction = action;
-                } else if (name.includes('wave') || name.includes('punch')) {
-                    throwAction = action;
-                }
+                animations[clip.name.toLowerCase()] = mixer.clipAction(clip);
             });
-            
-            // Set default action
-            if (idleAction) {
-                currentAnimAction = idleAction;
-                currentAnimAction.play();
-            } else if (runAction) {
-                currentAnimAction = runAction;
-                currentAnimAction.play();
+            if (animations['idle']) {
+                currentAction = animations['idle'];
+                currentAction.play();
             }
-            
-            // Add grenade to hand
-            addGrenadeToHand();
-            
-            // Create trajectory visualizer
-            createTrajectoryVisualizer();
-            
-            console.log('✅ Character ready with custom movement!');
-        }, undefined, (error) => {
-            console.error('Model error:', error);
-            createCustomCharacter();
+            document.getElementById('loading-screen').style.display = 'none';
         });
-        
-        // Create custom character if model fails
-        function createCustomCharacter() {
-            character = new THREE.Group();
-            
-            // Body (soldier style)
-            const body = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.6, 0.65, 1.4, 8),
-                new THREE.MeshStandardMaterial({ color: 0x5a7a4a, roughness: 0.4, metalness: 0.3 })
-            );
-            body.castShadow = true;
-            body.position.y = 0.7;
-            character.add(body);
-            
-            // Head with helmet
-            const head = new THREE.Mesh(
-                new THREE.SphereGeometry(0.48),
-                new THREE.MeshStandardMaterial({ color: 0xddbb99 })
-            );
-            head.position.y = 1.45;
-            head.castShadow = true;
-            character.add(head);
-            
-            const helmet = new THREE.Mesh(
-                new THREE.ConeGeometry(0.52, 0.4, 8),
-                new THREE.MeshStandardMaterial({ color: 0x8a6a3a, metalness: 0.7 })
-            );
-            helmet.position.y = 1.7;
-            helmet.castShadow = true;
-            character.add(helmet);
-            
-            scene.add(character);
-            
-            // Add grenade to hand
-            addGrenadeToHand();
-            createTrajectoryVisualizer();
-            console.log('✅ Custom character created');
-        }
-        
-        // Add grenade to character's hand (always visible)
-        function addGrenadeToHand() {
-            if (!character) return;
-            
-            const grenadeGroup = new THREE.Group();
-            
-            // TNT body
-            const tntBody = new THREE.Mesh(
-                new THREE.BoxGeometry(0.48, 0.58, 0.48),
-                new THREE.MeshStandardMaterial({ color: 0xcc5533, roughness: 0.25, metalness: 0.2, emissive: 0x331100 })
-            );
-            tntBody.castShadow = true;
-            
-            // Fuse
-            const fuse = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.09, 0.11, 0.35, 6),
-                new THREE.MeshStandardMaterial({ color: 0xdd8866, emissive: 0x552200 })
-            );
-            fuse.position.y = 0.34;
-            
-            // Spark effect (flickering)
-            const spark = new THREE.PointLight(0xff6600, 0.6, 1.5);
-            spark.position.y = 0.48;
-            
-            grenadeGroup.add(tntBody, fuse, spark);
-            grenadeGroup.userData = { spark, flicker: 0 };
-            
-            // Attach to right hand area
-            if (character.children.length > 0) {
-                character.add(grenadeGroup);
-                grenadeGroup.position.set(0.45, 0.85, 0.55);
-                grenadeGroup.rotation.set(-0.2, 0.3, -0.15);
-            } else {
-                character.add(grenadeGroup);
-                grenadeGroup.position.set(0.45, 0.85, 0.55);
-            }
-            
-            grenadeInHand = grenadeGroup;
-            
-            // Animate spark flicker
-            setInterval(() => {
-                if (grenadeInHand && grenadeInHand.userData.spark) {
-                    grenadeInHand.userData.spark.intensity = 0.4 + Math.random() * 0.5;
-                }
-            }, 150);
-        }
-        
-        // Create trajectory preview line
-        function createTrajectoryVisualizer() {
-            const points = [];
-            for (let i = 0; i < 35; i++) {
-                points.push(new THREE.Vector3(0, 0, 0));
-            }
-            const geometry = new THREE.BufferGeometry().setFromPoints(points);
-            const material = new THREE.LineBasicMaterial({ color: 0xff8844, transparent: true, opacity: 0.9 });
-            trajectoryLine = new THREE.Line(geometry, material);
-            scene.add(trajectoryLine);
-            
-            // Target marker
-            const markerMat = new THREE.MeshStandardMaterial({ color: 0xff4400, emissive: 0xff2200 });
-            targetMarker = new THREE.Mesh(new THREE.SphereGeometry(0.4, 12, 12), markerMat);
-            scene.add(targetMarker);
-            
-            // Add ring around marker
-            const ringGeo = new THREE.TorusGeometry(0.65, 0.08, 16, 32);
-            const ringMat = new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4400 });
-            const ring = new THREE.Mesh(ringGeo, ringMat);
-            ring.rotation.x = Math.PI / 2;
-            targetMarker.add(ring);
-        }
-        
-        // Calculate and update trajectory
-        function updateTrajectory() {
-            if (!character || !trajectoryLine) return;
-            
-            const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).normalize();
-            const startPos = character.position.clone();
-            startPos.y += 1.3;
-            startPos.x += direction.x * 0.7;
-            startPos.z += direction.z * 0.7;
-            
-            const points = [];
-            const velocity = direction.clone().multiplyScalar(1.45);
-            velocity.y += 0.5;
-            const gravity = 0.023;
-            
-            for (let i = 0; i <= 45; i++) {
-                const t = i * 0.08;
-                const x = startPos.x + velocity.x * t;
-                const z = startPos.z + velocity.z * t;
-                const y = startPos.y + velocity.y * t - 0.5 * gravity * t * t * 12;
-                points.push(new THREE.Vector3(x, y, z));
-                if (y < -0.3) break;
-            }
-            
-            const geometry = new THREE.BufferGeometry().setFromPoints(points);
-            trajectoryLine.geometry.dispose();
-            trajectoryLine.geometry = geometry;
-            
-            // Update target marker
-            if (points.length > 0) {
-                const landPoint = points[points.length - 1];
-                targetMarker.position.copy(landPoint);
-                
-                // Pulsing animation
-                const scale = 0.8 + Math.sin(Date.now() * 0.012) * 0.2;
-                targetMarker.scale.set(scale, scale, scale);
-            }
-        }
-        
-        // Throw grenade
-        function throwGrenade() {
-            if (grenadeCooldown > 0 || !character) return false;
-            
-            const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).normalize();
-            const startPos = character.position.clone();
-            startPos.y += 1.3;
-            startPos.x += direction.x * 0.8;
-            startPos.z += direction.z * 0.8;
-            
-            // Create grenade projectile
-            const grenadeProj = new THREE.Group();
-            const body = new THREE.Mesh(
-                new THREE.BoxGeometry(0.5, 0.6, 0.5),
-                new THREE.MeshStandardMaterial({ color: 0xcc5533, roughness: 0.2 })
-            );
-            const fuse = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.1, 0.12, 0.4, 6),
-                new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4400 })
-            );
-            fuse.position.y = 0.38;
-            grenadeProj.add(body, fuse);
-            grenadeProj.castShadow = true;
-            grenadeProj.position.copy(startPos);
-            scene.add(grenadeProj);
-            
-            activeGrenades.push({
-                mesh: grenadeProj,
-                velocity: direction.clone().multiplyScalar(1.45),
-                velocityY: 0.52,
-                life: 0
-            });
-            
-            grenadeCooldown = 28;
-            
-            // Flash effect on grenade in hand
-            if (grenadeInHand && grenadeInHand.userData.spark) {
-                grenadeInHand.userData.spark.intensity = 1.2;
-                setTimeout(() => {
-                    if (grenadeInHand && grenadeInHand.userData.spark)
-                        grenadeInHand.userData.spark.intensity = 0.5;
-                }, 100);
-            }
-            
-            // Play throw animation
-            if (throwAction) {
-                if (currentAnimAction) currentAnimAction.fadeOut(0.1);
-                throwAction.reset().fadeIn(0.1).play();
-                setTimeout(() => {
-                    if (idleAction && currentAnimAction !== idleAction) {
-                        throwAction.fadeOut(0.2);
-                        currentAnimAction = idleAction;
-                        currentAnimAction.reset().fadeIn(0.2).play();
-                    }
-                }, 350);
-            }
-            
-            // Update UI
-            document.getElementById('grenade-status').style.opacity = '0.5';
-            document.getElementById('grenade-status').innerHTML = '⏳ RELOADING...';
-            setTimeout(() => {
-                document.getElementById('grenade-status').style.opacity = '1';
-                document.getElementById('grenade-status').innerHTML = '💣 GRENADE READY';
-            }, 500);
-            
-            return true;
-        }
-        
-        // Create explosion effect
-        function createExplosion(position) {
-            // Particle explosion
-            for (let i = 0; i < 50; i++) {
-                const particle = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.12 + Math.random() * 0.12, 4, 4),
-                    new THREE.MeshStandardMaterial({ color: 0xff6633, emissive: 0xff3300 })
-                );
-                particle.position.copy(position);
-                scene.add(particle);
-                particles.push({
-                    mesh: particle,
-                    vel: new THREE.Vector3(
-                        (Math.random() - 0.5) * 1.3,
-                        Math.random() * 1.6,
-                        (Math.random() - 0.5) * 1.3
-                    ),
-                    life: 0,
-                    maxLife: 45
-                });
-            }
-            
-            // Explosion light
-            const boomLight = new THREE.PointLight(0xff5522, 1.6, 14);
-            boomLight.position.copy(position);
-            scene.add(boomLight);
-            setTimeout(() => scene.remove(boomLight), 200);
-            
-            // Shockwave ring
-            const ringGeo = new THREE.TorusGeometry(0.6, 0.1, 16, 32);
-            const ringMat = new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4400 });
-            const ring = new THREE.Mesh(ringGeo, ringMat);
-            ring.position.copy(position);
-            scene.add(ring);
-            
-            let scaleRing = 1;
-            const ringInterval = setInterval(() => {
-                scaleRing += 0.35;
-                ring.scale.set(scaleRing, scaleRing, scaleRing);
-                ring.material.opacity = 1 - scaleRing / 6;
-                if (scaleRing > 6) {
-                    clearInterval(ringInterval);
-                    scene.remove(ring);
-                }
-            }, 30);
-            
-            // Screen shake
-            document.body.classList.add('screen-shake');
-            setTimeout(() => document.body.classList.remove('screen-shake'), 250);
-            
-            // Damage targets
-            for (let i = targets.length - 1; i >= 0; i--) {
-                const target = targets[i];
-                const dist = position.distanceTo(target.position);
-                if (dist < 2.8) {
-                    scene.remove(target);
-                    targets.splice(i, 1);
-                    score++;
-                    document.getElementById('scoreValue').innerText = score;
-                    spawnTarget();
-                }
-            }
-        }
-        
-        // Spawn enemy target
-        function spawnTarget() {
-            const targetGroup = new THREE.Group();
-            
-            const body = new THREE.Mesh(
-                new THREE.BoxGeometry(1.2, 1.5, 1.2),
-                new THREE.MeshStandardMaterial({ color: 0xdd4444, emissive: 0x331100, roughness: 0.3 })
-            );
-            body.castShadow = true;
-            
-            const eye1 = new THREE.Mesh(new THREE.SphereGeometry(0.18), new THREE.MeshStandardMaterial({ color: 0xffaa44, emissive: 0xff4400 }));
-            eye1.position.set(0.4, 0.4, 0.65);
-            const eye2 = new THREE.Mesh(new THREE.SphereGeometry(0.18), new THREE.MeshStandardMaterial({ color: 0xffaa44, emissive: 0xff4400 }));
-            eye2.position.set(-0.4, 0.4, 0.65);
-            
-            targetGroup.add(body, eye1, eye2);
-            
-            const angle = Math.random() * Math.PI * 2;
-            const radius = 18 + Math.random() * 50;
-            targetGroup.position.x = Math.cos(angle) * radius;
-            targetGroup.position.z = Math.sin(angle) * radius;
-            targetGroup.position.y = 0.2;
-            
-            scene.add(targetGroup);
-            targets.push(targetGroup);
-        }
-        
-        // Initial targets
-        for (let i = 0; i < 12; i++) spawnTarget();
-        
-        // ==========================================
-        // INPUT SYSTEM
-        // ==========================================
+
+        // Input
+        const input = { forward: 0, side: 0, jump: false, throw: false };
         const keys = {};
-        let mouseThrow = false;
-        
-        window.addEventListener('keydown', (e) => {
-            keys[e.code] = true;
-            if (e.code === 'Space') {
-                e.preventDefault();
-            }
-            if (e.code === 'KeyF') {
-                e.preventDefault();
-                throwGrenade();
-            }
+        window.addEventListener('keydown', e => keys[e.code] = true);
+        window.addEventListener('keyup', e => keys[e.code] = false);
+
+        // LEFT JOYSTICK - Movement (SLOWER & SMOOTH)
+        const knob = document.getElementById('joystick-knob');
+        let joyActive = false, joyStart = { x: 0, y: 0 };
+        document.getElementById('joystick-container').addEventListener('touchstart', e => {
+            joyActive = true;
+            joyStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
         });
-        
-        window.addEventListener('keyup', (e) => {
-            keys[e.code] = false;
+        window.addEventListener('touchmove', e => {
+            if (!joyActive) return;
+            let dx = e.touches[0].clientX - joyStart.x;
+            let dy = e.touches[0].clientY - joyStart.y;
+            const dist = Math.min(Math.sqrt(dx*dx + dy*dy), 50);
+            const angle = Math.atan2(dy, dx);
+            dx = Math.cos(angle) * dist;
+            dy = Math.sin(angle) * dist;
+            knob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+            input.side = -dx / 50;
+            input.forward = -dy / 50;
         });
-        
-        window.addEventListener('click', () => {
-            throwGrenade();
+        window.addEventListener('touchend', () => {
+            joyActive = false;
+            knob.style.transform = 'translate(-50%, -50%)';
+            input.forward = 0; input.side = 0;
         });
+
+        // RIGHT CAMERA CONTROL - Free Touch Area (MEDIUM SPEED)
+        let cameraYaw = 0, cameraPitch = 0;
+        let cameraControlActive = false, cameraControlStart = { x: 0, y: 0 };
+        let cameraAutoReturn = true;
+        let lastCameraYaw = 0, lastCameraPitch = 0;
         
-        // ==========================================
-        // MOVEMENT SYSTEM - CUSTOM (RUNNING FOCUS)
-        // ==========================================
-        function updateMovement(delta) {
+        document.getElementById('right-control').addEventListener('touchstart', e => {
+            cameraControlActive = true;
+            cameraAutoReturn = false;
+            cameraControlStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            lastCameraYaw = cameraYaw;
+            lastCameraPitch = cameraPitch;
+        });
+        window.addEventListener('touchmove', e => {
+            if (!cameraControlActive) return;
+            let dx = e.touches[0].clientX - cameraControlStart.x;
+            let dy = e.touches[0].clientY - cameraControlStart.y;
+            cameraYaw = lastCameraYaw - dx * 0.003; // REDUCED SENSITIVITY
+            cameraPitch = lastCameraPitch - dy * 0.003; // REDUCED SENSITIVITY
+            cameraPitch = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, cameraPitch));
+        });
+        window.addEventListener('touchend', () => {
+            cameraControlActive = false;
+            cameraAutoReturn = true;
+        });
+
+        document.getElementById('btn-jump').onclick = () => input.jump = true;
+        document.getElementById('btn-throw').onclick = () => input.throw = true;
+
+        // Physics & Game Logic
+        const bombs = [], particles = [], targets = [];
+        let score = 0;
+        let jumpCount = 0, isJumping = false, velY = 0, isFlipping = false, flipRot = 0;
+        let landingIndicator = null;
+        let characterDirection = 0;
+
+        function createLandingIndicator() {
+            if (landingIndicator) scene.remove(landingIndicator);
+            const geo = new THREE.CircleGeometry(0.8, 32);
+            const mat = new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 0.6 });
+            landingIndicator = new THREE.Mesh(geo, mat);
+            landingIndicator.rotation.x = -Math.PI / 2;
+            landingIndicator.position.y = 0.01;
+            scene.add(landingIndicator);
+        }
+
+        function updateLandingIndicator() {
             if (!character) return;
+            const startPos = character.position.clone().add(new THREE.Vector3(0, 1.5, 0));
+            const dir = new THREE.Vector3(0, 0, 1).applyQuaternion(character.quaternion);
+            const velocity = dir.multiplyScalar(1.2).add(new THREE.Vector3(0, 0.5, 0));
             
-            // Get input
-            let moveX = 0, moveZ = 0;
-            if (keys['KeyW']) moveZ -= 1;
-            if (keys['KeyS']) moveZ += 1;
-            if (keys['KeyA']) moveX -= 1;
-            if (keys['KeyD']) moveX += 1;
+            let pos = startPos.clone();
+            let vel = velocity.clone();
+            const gravity = 0.02;
             
-            // Normalize diagonal
-            if (moveX !== 0 || moveZ !== 0) {
-                const len = Math.hypot(moveX, moveZ);
-                moveX /= len;
-                moveZ /= len;
+            for (let i = 0; i < 200; i++) {
+                pos.add(vel);
+                vel.y -= gravity;
+                if (pos.y <= 0) {
+                    if (landingIndicator) {
+                        landingIndicator.position.set(pos.x, 0.01, pos.z);
+                    }
+                    return;
+                }
             }
-            
-            const isMoving = (moveX !== 0 || moveZ !== 0);
-            
-            // APPLY RUNNING SPEED (fast)
-            const speed = charState.runSpeed * delta;
-            character.position.x += moveX * speed;
-            character.position.z += moveZ * speed;
-            
-            // Rotate character to face movement direction
-            if (isMoving) {
-                const angle = Math.atan2(moveX, moveZ);
+        }
+
+        function spawnTarget() {
+            const t = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 0.5 }));
+            t.position.set((Math.random()-0.5)*100, 1, (Math.random()-0.5)*100);
+            scene.add(t);
+            targets.push(t);
+        }
+        for(let i=0; i<10; i++) spawnTarget();
+
+        function throwBomb() {
+            const bomb = new THREE.Mesh(new THREE.SphereGeometry(0.4), new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.9 }));
+            bomb.position.copy(character.position).add(new THREE.Vector3(0, 1.5, 0));
+            scene.add(bomb);
+            const dir = new THREE.Vector3(0, 0, 1).applyQuaternion(character.quaternion);
+            const vel = dir.multiplyScalar(1.2).add(new THREE.Vector3(0, 0.5, 0));
+            bombs.push({ mesh: bomb, vel: vel, life: 200 });
+        }
+
+        function explode(pos) {
+            const flash = new THREE.Mesh(new THREE.SphereGeometry(3), new THREE.MeshBasicMaterial({ color: 0xffff00, transparent: true, opacity: 0.8 }));
+            flash.position.copy(pos);
+            scene.add(flash);
+            setTimeout(() => scene.remove(flash), 100);
+
+            for(let i=0; i<60; i++) {
+                const p = new THREE.Mesh(new THREE.SphereGeometry(0.15 + Math.random() * 0.25), new THREE.MeshStandardMaterial({ color: 0xffaa00, emissive: 0xff4400, emissiveIntensity: 2 }));
+                p.position.copy(pos);
+                scene.add(p);
+                const vel = new THREE.Vector3(Math.random()-0.5, Math.random()-0.3, Math.random()-0.5).multiplyScalar(1.5);
+                particles.push({ mesh: p, vel: vel, life: 0, maxLife: 80 + Math.random() * 40, gravity: 0.015 });
+            }
+
+            for(let i=0; i<20; i++) {
+                const s = new THREE.Mesh(new THREE.SphereGeometry(0.5 + Math.random() * 1), new THREE.MeshBasicMaterial({ color: 0x666666, transparent: true, opacity: 0.5 }));
+                s.position.copy(pos).add(new THREE.Vector3((Math.random()-0.5)*2, Math.random()*1, (Math.random()-0.5)*2));
+                scene.add(s);
+                particles.push({ mesh: s, vel: new THREE.Vector3(0, 0.3, 0), life: 0, maxLife: 120, gravity: 0, isSmoke: true });
+            }
+        }
+
+        // Animation Loop
+        const clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+            if (!character) return;
+
+            // Movement
+            if (keys['KeyW']) input.forward = 1; else if (keys['KeyS']) input.forward = -1;
+            if (keys['KeyA']) input.side = 1; else if (keys['KeyD']) input.side = -1;
+            if (keys['Space']) { input.jump = true; keys['Space'] = false; }
+            if (keys['KeyF']) { input.throw = true; keys['KeyF'] = false; }
+
+            const move = new THREE.Vector3(input.side, 0, input.forward);
+            if (move.length() > 0.1) {
+                const angle = Math.atan2(input.side, input.forward);
                 character.rotation.y = angle;
-            }
-            
-            // Animation management (RUN vs IDLE)
-            if (mixer) {
-                if (isMoving && charState.isGrounded) {
-                    if (runAction && currentAnimAction !== runAction) {
-                        if (currentAnimAction) currentAnimAction.fadeOut(0.15);
-                        currentAnimAction = runAction;
-                        currentAnimAction.reset().fadeIn(0.2).play();
+                characterDirection = angle;
+                character.position.x += Math.sin(angle) * 0.08; // SLOWER MOVEMENT
+                character.position.z += Math.cos(angle) * 0.08; // SLOWER MOVEMENT
+                if (animations['walking']) {
+                    if (currentAction !== animations['walking']) {
+                        if (currentAction) currentAction.fadeOut(0.2);
+                        currentAction = animations['walking'];
+                        currentAction.reset().fadeIn(0.2).play();
                     }
-                } else if (!isMoving && charState.isGrounded) {
-                    if (idleAction && currentAnimAction !== idleAction) {
-                        if (currentAnimAction) currentAnimAction.fadeOut(0.15);
-                        currentAnimAction = idleAction;
-                        currentAnimAction.reset().fadeIn(0.2).play();
-                    }
-                }
-            }
-            
-            // JUMP SYSTEM (interactive double jump)
-            if (keys['Space'] && !charState.isJumping && charState.jumpCount < 2) {
-                charState.velocityY = charState.jumpForce;
-                charState.isJumping = true;
-                charState.jumpCount++;
-                keys['Space'] = false;
-                
-                // Play jump animation
-                if (jumpAction && mixer) {
-                    if (currentAnimAction) currentAnimAction.fadeOut(0.1);
-                    currentAnimAction = jumpAction;
-                    currentAnimAction.reset().fadeIn(0.1).play();
-                    
-                    // Return to idle/run after jump
-                    setTimeout(() => {
-                        if (charState.isGrounded && currentAnimAction !== idleAction) {
-                            if (currentAnimAction) currentAnimAction.fadeOut(0.2);
-                            currentAnimAction = idleAction;
-                            if (currentAnimAction) currentAnimAction.reset().fadeIn(0.2).play();
-                        }
-                    }, 400);
-                }
-            }
-            
-            // Physics
-            if (charState.isJumping) {
-                character.position.y += charState.velocityY;
-                charState.velocityY -= charState.gravity;
-                
-                if (character.position.y <= 0) {
-                    character.position.y = 0;
-                    charState.isJumping = false;
-                    charState.jumpCount = 0;
                 }
             } else {
-                character.position.y = 0;
+                if (animations['idle']) {
+                    if (currentAction !== animations['idle']) {
+                        if (currentAction) currentAction.fadeOut(0.2);
+                        currentAction = animations['idle'];
+                        currentAction.reset().fadeIn(0.2).play();
+                    }
+                }
             }
+
+            // CONTINUOUS PUNCHING
+            if (animations['punch']) {
+                if (currentAction !== animations['punch'] && currentAction !== animations['walking']) {
+                    if (currentAction) currentAction.fadeOut(0.1);
+                    currentAction = animations['punch'];
+                    currentAction.reset().fadeIn(0.1).play();
+                }
+            }
+
+            // Jump
+            if (input.jump && jumpCount < 2) {
+                velY = 0.5;
+                isJumping = true;
+                jumpCount++;
+                input.jump = false;
+                if (jumpCount === 2) isFlipping = true;
+            }
+            if (isJumping) {
+                character.position.y += velY;
+                velY -= 0.02;
+                if (isFlipping) {
+                    flipRot += 0.3;
+                    character.rotation.x = flipRot;
+                    if (flipRot >= Math.PI * 2) { isFlipping = false; flipRot = 0; character.rotation.x = 0; }
+                }
+                if (character.position.y <= 0) { character.position.y = 0; isJumping = false; jumpCount = 0; }
+            }
+
+            // Throw
+            if (input.throw) { throwBomb(); input.throw = false; }
+
+            // Update landing indicator
+            updateLandingIndicator();
+
+            // SMART CAMERA - Manual control or Auto-follow (SMOOTH RETURN)
+            if (cameraAutoReturn) {
+                cameraYaw += (characterDirection - cameraYaw) * 0.03; // SMOOTH RETURN
+                cameraPitch += (0 - cameraPitch) * 0.03; // SMOOTH RETURN
+            }
+
+            const cameraDistance = 10;
+            const cameraHeight = 5;
+            const cameraX = character.position.x - Math.sin(cameraYaw) * cameraDistance * Math.cos(cameraPitch);
+            const cameraY = character.position.y + cameraHeight + Math.sin(cameraPitch) * cameraDistance;
+            const cameraZ = character.position.z - Math.cos(cameraYaw) * cameraDistance * Math.cos(cameraPitch);
             
-            // Boundaries
-            character.position.x = Math.max(-75, Math.min(75, character.position.x));
-            character.position.z = Math.max(-75, Math.min(75, character.position.z));
-        }
-        
-        // ==========================================
-        // GRENADE UPDATE
-        // ==========================================
-        function updateGrenades() {
-            // Update active grenades
-            for (let i = activeGrenades.length - 1; i >= 0; i--) {
-                const g = activeGrenades[i];
-                g.velocity.y -= 0.022;
-                g.mesh.position.x += g.velocity.x;
-                g.mesh.position.y += g.velocity.y;
-                g.mesh.position.z += g.velocity.z;
-                g.mesh.rotation.x += 0.18;
-                g.mesh.rotation.z += 0.15;
-                g.life++;
+            camera.position.set(cameraX, cameraY, cameraZ);
+            camera.lookAt(character.position.clone().add(new THREE.Vector3(0, 1.5, 0)));
+
+            // Bombs
+            for(let i=bombs.length-1; i>=0; i--) {
+                const b = bombs[i];
+                b.mesh.position.add(b.vel);
+                b.vel.y -= 0.02;
+                b.mesh.rotation.x += 0.15;
                 
-                if (g.mesh.position.y <= 0.1 || g.life > 180) {
-                    createExplosion(g.mesh.position);
-                    scene.remove(g.mesh);
-                    activeGrenades.splice(i, 1);
-                }
+                targets.forEach((t, idx) => {
+                    if (b.mesh.position.distanceTo(t.position) < 2) {
+                        explode(t.position);
+                        scene.remove(t); targets.splice(idx, 1);
+                        score++; document.getElementById('score').innerText = score;
+                        spawnTarget(); b.life = 0;
+                    }
+                });
+
+                if (b.mesh.position.y < 0) { explode(b.mesh.position); b.life = 0; }
+                b.life--;
+                if (b.life <= 0) { scene.remove(b.mesh); bombs.splice(i, 1); }
             }
-            
-            // Update particles
-            for (let i = particles.length - 1; i >= 0; i--) {
+
+            // Particles
+            for(let i=particles.length-1; i>=0; i--) {
                 const p = particles[i];
-                p.mesh.position.x += p.vel.x;
-                p.mesh.position.y += p.vel.y;
-                p.mesh.position.z += p.vel.z;
-                p.vel.y -= 0.018;
+                p.mesh.position.add(p.vel);
+                if (!p.isSmoke) p.vel.y -= p.gravity;
                 p.life++;
-                if (p.life >= p.maxLife) {
-                    scene.remove(p.mesh);
-                    particles.splice(i, 1);
+                if (p.isSmoke) {
+                    p.mesh.material.opacity = 0.5 * (1 - p.life / p.maxLife);
+                    p.mesh.scale.addScalar(0.02);
                 }
+                if (p.life >= p.maxLife) { scene.remove(p.mesh); particles.splice(i, 1); }
             }
-            
-            // Cooldown
-            if (grenadeCooldown > 0) grenadeCooldown--;
-        }
-        
-        // ==========================================
-        // CAMERA - BEHIND PLAYER (shows what's ahead)
-        // ==========================================
-        function updateCamera() {
-            if (!character) return;
-            
-            // Get character's forward direction
-            const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(character.quaternion);
-            
-            // Camera positioned behind the player (relative to player's rotation)
-            const offset = new THREE.Vector3(-1.2, 2.5, 5.5);
-            const rotatedOffset = offset.clone().applyQuaternion(character.quaternion);
-            const targetPos = character.position.clone().add(rotatedOffset);
-            
-            camera.position.lerp(targetPos, 0.12);
-            
-            // Look at a point ahead of the player
-            const lookAtPoint = character.position.clone().add(forward.clone().multiplyScalar(3));
-            lookAtPoint.y += 1.3;
-            camera.lookAt(lookAtPoint);
-        }
-        
-        // Animate targets floating
-        function animateTargets() {
-            targets.forEach((target, idx) => {
-                target.position.y = 0.25 + Math.sin(Date.now() * 0.006 + idx) * 0.1;
-                target.rotation.y += 0.02;
-            });
-        }
-        
-        // Flicker grenade spark
-        function updateGrenadeSpark() {
-            if (grenadeInHand && grenadeInHand.userData.spark) {
-                grenadeInHand.userData.spark.intensity = 0.45 + Math.random() * 0.35;
-            }
-        }
-        
-        // ==========================================
-        // MAIN LOOP
-        // ==========================================
-        let lastTime = performance.now();
-        
-        function animate() {
-            const now = performance.now();
-            let delta = Math.min(0.033, (now - lastTime) / 1000);
-            lastTime = now;
-            
-            updateMovement(delta);
-            updateGrenades();
-            updateCamera();
-            updateTrajectory();
-            animateTargets();
-            updateGrenadeSpark();
-            
+
             if (mixer) mixer.update(delta);
-            
             renderer.render(scene, camera);
-            requestAnimationFrame(animate);
         }
-        
         animate();
-        
+
+        createLandingIndicator();
+
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
-        
-        console.log('🎮 Custom Movement System Active!');
-        console.log('🏃 RUNNING speed: 7.2 units/sec');
-        console.log('🦶 Double jump enabled');
-        console.log('💣 Grenade always in hand');
-        console.log('🎯 Trajectory indicator shows landing point');
     </script>
 </body>
 </html>
+
