@@ -3,255 +3,705 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Dwarf Bomber - Pro Edition</title>
+    <title>Professional Dwarf Character - Complete Source Code</title>
     <style>
-        * { box-sizing: border-box; touch-action: none; }
-        body { margin: 0; overflow: hidden; background: #87ceeb; font-family: sans-serif; }
-        #ui-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
-        #crosshair { position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; transform: translate(-50%, -50%); pointer-events: none; border: 2px solid #ffaa00; border-radius: 50%; }
-        #info-panel { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); color: #fff; padding: 10px; border-radius: 5px; font-size: 12px; }
-        #score-panel { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: #ffaa00; padding: 10px; border-radius: 5px; font-weight: bold; }
-        #joystick-container { position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border-radius: 50%; pointer-events: auto; }
-        #joystick-knob { position: absolute; top: 50%; left: 50%; width: 50px; height: 50px; background: #ffaa00; border-radius: 50%; transform: translate(-50%,-50%); }
-        #action-buttons { position: absolute; bottom: 40px; right: 40px; display: flex; gap: 20px; pointer-events: auto; }
-        .action-btn { width: 70px; height: 70px; border-radius: 50%; background: rgba(0,0,0,0.7); color: white; border: 2px solid #ffaa00; font-size: 24px; cursor: pointer; }
-        #loading-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; color: #fff; display: flex; align-items: center; justify-content: center; z-index: 100; }
+        * { box-sizing: border-box; touch-action: none; user-select: none; }
+        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        #controls-panel { position: absolute; bottom: 20px; left: 20px; right: 20px; background: rgba(0,0,0,0.8); color: white; padding: 15px; border-radius: 10px; font-size: 12px; z-index: 20; pointer-events: none; text-align: center; font-family: monospace; }
+        #controls-panel span { color: #ffaa00; }
+        @keyframes pulse { 0% { opacity: 0.5; } 100% { opacity: 1; } }
+        .instruction { position: absolute; top: 80px; left: 20px; background: rgba(0,0,0,0.6); padding: 10px; border-radius: 8px; color: #ffaa00; font-size: 12px; z-index: 20; font-family: monospace; pointer-events: none; }
     </style>
 </head>
 <body>
-    <div id="loading-screen">LOADING PRO DWARF...</div>
-    <div id="ui-container">
-        <div id="crosshair"></div>
-        <div id="info-panel">DWARF BOMBER PRO<br>Ready-made Model • Double Jump • Physics</div>
-        <div id="score-panel">SCORE: <span id="score">0</span></div>
-        <div id="joystick-container"><div id="joystick-knob"></div></div>
-        <div id="action-buttons">
-            <button class="action-btn" id="btn-jump">⬆️</button>
-            <button class="action-btn" id="btn-throw">💣</button>
-        </div>
+    <div class="instruction">
+        🎮 KEYBOARD: WASD | SPACE (Jump x2) | F (Bomb)<br>
+        📱 MOBILE: Joystick + Buttons
+    </div>
+    <div id="controls-panel">
+        🧙‍♂️ <span>PROFESSIONAL DWARF CHARACTER</span> | RobotExpressive Model | All Animations Included | Double Jump & Flip | Grenade Throw
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <!-- Import Three.js and GLTF Loader -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+            }
+        }
+    </script>
 
-    <script>
-        // Scene Setup
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // ==========================================
+        // 1. SCENE SETUP
+        // ==========================================
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87ceeb);
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        scene.background = new THREE.Color(0x0a1030);
+        scene.fog = new THREE.FogExp2(0x0a1030, 0.008);
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
 
-        // Lights
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-        scene.add(ambientLight);
-        const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-        dirLight.position.set(10, 20, 10);
-        dirLight.castShadow = true;
-        scene.add(dirLight);
+        // ==========================================
+        // 2. LIGHTING SYSTEM
+        // ==========================================
+        // Main directional light (sun)
+        const sunLight = new THREE.DirectionalLight(0xffeedd, 1.5);
+        sunLight.position.set(15, 20, 10);
+        sunLight.castShadow = true;
+        sunLight.receiveShadow = true;
+        sunLight.shadow.mapSize.width = 1024;
+        sunLight.shadow.mapSize.height = 1024;
+        sunLight.shadow.camera.near = 0.5;
+        sunLight.shadow.camera.far = 50;
+        sunLight.shadow.camera.left = -15;
+        sunLight.shadow.camera.right = 15;
+        sunLight.shadow.camera.top = 15;
+        sunLight.shadow.camera.bottom = -15;
+        scene.add(sunLight);
 
-        // Ground
-        const ground = new THREE.Mesh(
-            new THREE.PlaneGeometry(500, 500),
-            new THREE.MeshStandardMaterial({ color: 0x336633 })
-        );
+        // Ambient light
+        const ambientLight = new THREE.AmbientLight(0x404060, 0.7);
+        scene.add(ambientLight);
+
+        // Fill light from below
+        const fillLight = new THREE.PointLight(0x4466aa, 0.4);
+        fillLight.position.set(0, -2, 0);
+        scene.add(fillLight);
+
+        // Back rim light
+        const rimLight = new THREE.PointLight(0xffaa66, 0.5);
+        rimLight.position.set(-5, 5, -8);
+        scene.add(rimLight);
+
+        // ==========================================
+        // 3. GROUND & ENVIRONMENT
+        // ==========================================
+        // Ground plane
+        const groundMat = new THREE.MeshStandardMaterial({ color: 0x2c3e2c, roughness: 0.8, metalness: 0.1 });
+        const ground = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), groundMat);
         ground.rotation.x = -Math.PI / 2;
+        ground.position.y = -0.1;
         ground.receiveShadow = true;
         scene.add(ground);
 
-        // Character Loading
-        let character, mixer, animations = {};
-        let currentAction;
-        const loader = new THREE.GLTFLoader();
+        // Grid helper
+        const gridHelper = new THREE.GridHelper(200, 40, 0x88aa88, 0x446644);
+        gridHelper.position.y = -0.05;
+        gridHelper.material.transparent = true;
+        gridHelper.material.opacity = 0.5;
+        scene.add(gridHelper);
+
+        // Decorative rocks
+        const rockMat = new THREE.MeshStandardMaterial({ color: 0x6a5a4a, roughness: 0.9 });
+        for (let i = 0; i < 80; i++) {
+            const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.3 + Math.random() * 0.4), rockMat);
+            const angle = Math.random() * Math.PI * 2;
+            const radius = 15 + Math.random() * 70;
+            rock.position.x = Math.cos(angle) * radius;
+            rock.position.z = Math.sin(angle) * radius;
+            rock.position.y = -0.1;
+            rock.scale.set(1, Math.random() * 0.5 + 0.4, 1);
+            rock.castShadow = true;
+            rock.receiveShadow = true;
+            scene.add(rock);
+        }
+
+        // ==========================================
+        // 4. THE CHARACTER - RobotExpressive Model
+        // ==========================================
+        let character = null;
+        let mixer = null;
+        let animations = {};
+        let currentAction = null;
+        
+        // Character state
+        let characterState = {
+            velocityY: 0,
+            isJumping: false,
+            jumpCount: 0,
+            isFlipping: false,
+            flipAngle: 0,
+            position: new THREE.Vector3(0, 0, 0)
+        };
+
+        const loader = new GLTFLoader();
         const modelUrl = 'https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb';
 
         loader.load(modelUrl, (gltf) => {
             character = gltf.scene;
-            character.scale.set(0.5, 0.5, 0.5); // Dwarf scale
-            character.traverse(n => { if (n.isMesh) n.castShadow = true; });
-            scene.add(character);
-
-            mixer = new THREE.AnimationMixer(character);
-            gltf.animations.forEach(clip => {
-                animations[clip.name.toLowerCase()] = mixer.clipAction(clip);
+            
+            // Scale to dwarf size (smaller, stocky)
+            character.scale.set(0.65, 0.65, 0.65);
+            character.position.y = 0;
+            
+            // Enable shadows on all meshes
+            character.traverse((node) => {
+                if (node.isMesh) {
+                    node.castShadow = true;
+                    node.receiveShadow = true;
+                }
             });
-            if (animations['idle']) {
-                currentAction = animations['idle'];
+            
+            scene.add(character);
+            
+            // Setup animation mixer
+            mixer = new THREE.AnimationMixer(character);
+            
+            // Load all animations
+            gltf.animations.forEach((clip) => {
+                const action = mixer.clipAction(clip);
+                animations[clip.name] = action;
+                console.log('Animation loaded:', clip.name);
+            });
+            
+            // Start with idle animation
+            if (animations['Idle']) {
+                currentAction = animations['Idle'];
                 currentAction.play();
             }
-            document.getElementById('loading-screen').style.display = 'none';
+            
+            console.log('✅ Character loaded successfully!');
+            
+        }, undefined, (error) => {
+            console.error('Error loading model:', error);
+            createFallbackCharacter();
         });
+        
+        // Fallback character if model fails to load
+        function createFallbackCharacter() {
+            character = new THREE.Group();
+            
+            // Body (dwarf-like)
+            const body = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.6, 0.7, 1.2, 8),
+                new THREE.MeshStandardMaterial({ color: 0xaa8866, roughness: 0.3, metalness: 0.2 })
+            );
+            body.castShadow = true;
+            body.position.y = 0.6;
+            character.add(body);
+            
+            // Head with beard
+            const head = new THREE.Mesh(
+                new THREE.SphereGeometry(0.55),
+                new THREE.MeshStandardMaterial({ color: 0xddaa88 })
+            );
+            head.position.y = 1.25;
+            head.castShadow = true;
+            character.add(head);
+            
+            // Helmet / Hat
+            const hat = new THREE.Mesh(
+                new THREE.ConeGeometry(0.65, 0.5, 8),
+                new THREE.MeshStandardMaterial({ color: 0xcc8844, metalness: 0.6 })
+            );
+            hat.position.y = 1.6;
+            hat.castShadow = true;
+            character.add(hat);
+            
+            // Beard
+            const beard = new THREE.Mesh(
+                new THREE.BoxGeometry(0.8, 0.4, 0.3),
+                new THREE.MeshStandardMaterial({ color: 0xaa7744 })
+            );
+            beard.position.set(0, 1.05, 0.55);
+            character.add(beard);
+            
+            scene.add(character);
+            console.log('✅ Fallback dwarf character created');
+        }
 
-        // Input
-        const input = { forward: 0, side: 0, jump: false, throw: false };
-        const keys = {};
-        window.addEventListener('keydown', e => keys[e.code] = true);
-        window.addEventListener('keyup', e => keys[e.code] = false);
-
-        // Joystick
-        const knob = document.getElementById('joystick-knob');
-        let joyActive = false, joyStart = { x: 0, y: 0 };
-        document.getElementById('joystick-container').addEventListener('touchstart', e => {
-            joyActive = true;
-            joyStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-        });
-        window.addEventListener('touchmove', e => {
-            if (!joyActive) return;
-            let dx = e.touches[0].clientX - joyStart.x;
-            let dy = e.touches[0].clientY - joyStart.y;
-            const dist = Math.min(Math.sqrt(dx*dx + dy*dy), 50);
-            const angle = Math.atan2(dy, dx);
-            dx = Math.cos(angle) * dist;
-            dy = Math.sin(angle) * dist;
-            knob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-            input.side = -dx / 50;
-            input.forward = -dy / 50;
-        });
-        window.addEventListener('touchend', () => {
-            joyActive = false;
-            knob.style.transform = 'translate(-50%, -50%)';
-            input.forward = 0; input.side = 0;
-        });
-
-        document.getElementById('btn-jump').onclick = () => input.jump = true;
-        document.getElementById('btn-throw').onclick = () => input.throw = true;
-
-        // Physics & Game Logic
-        const bombs = [], particles = [], targets = [];
+        // ==========================================
+        // 5. GAME MECHANICS - Bombs & Targets
+        // ==========================================
+        let bombs = [];
+        let particles = [];
+        let targets = [];
         let score = 0;
-        let jumpCount = 0, isJumping = false, velY = 0, isFlipping = false, flipRot = 0;
-
+        let throwCooldown = 0;
+        
+        // Score display
+        const scoreDiv = document.createElement('div');
+        scoreDiv.style.position = 'absolute';
+        scoreDiv.style.top = '20px';
+        scoreDiv.style.right = '20px';
+        scoreDiv.style.background = 'rgba(0,0,0,0.7)';
+        scoreDiv.style.color = '#ffaa33';
+        scoreDiv.style.padding = '12px 24px';
+        scoreDiv.style.borderRadius = '8px';
+        scoreDiv.style.fontSize = '24px';
+        scoreDiv.style.fontWeight = 'bold';
+        scoreDiv.style.fontFamily = 'monospace';
+        scoreDiv.style.border = '1px solid #ffaa33';
+        scoreDiv.style.zIndex = '100';
+        scoreDiv.innerHTML = '💥 SCORE: 0';
+        document.body.appendChild(scoreDiv);
+        
+        function updateScore() {
+            scoreDiv.innerHTML = `💥 SCORE: ${score}`;
+        }
+        
         function spawnTarget() {
-            const t = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), new THREE.MeshStandardMaterial({ color: 0xff0000 }));
-            t.position.set((Math.random()-0.5)*100, 1, (Math.random()-0.5)*100);
-            scene.add(t);
-            targets.push(t);
+            const targetGroup = new THREE.Group();
+            
+            // Main body
+            const body = new THREE.Mesh(
+                new THREE.BoxGeometry(1.2, 1.2, 1.2),
+                new THREE.MeshStandardMaterial({ color: 0xcc3333, emissive: 0x331100, roughness: 0.3 })
+            );
+            body.castShadow = true;
+            targetGroup.add(body);
+            
+            // Eye
+            const eye = new THREE.Mesh(
+                new THREE.SphereGeometry(0.2),
+                new THREE.MeshStandardMaterial({ color: 0xffff00, emissive: 0xff4400 })
+            );
+            eye.position.set(0.4, 0.3, 0.61);
+            targetGroup.add(eye);
+            
+            const angle = Math.random() * Math.PI * 2;
+            const radius = 25 + Math.random() * 45;
+            targetGroup.position.x = Math.cos(angle) * radius;
+            targetGroup.position.z = Math.sin(angle) * radius;
+            targetGroup.position.y = 0.2;
+            
+            scene.add(targetGroup);
+            targets.push(targetGroup);
         }
-        for(let i=0; i<10; i++) spawnTarget();
-
+        
         function throwBomb() {
-            const bomb = new THREE.Mesh(new THREE.SphereGeometry(0.4), new THREE.MeshStandardMaterial({ color: 0x111111 }));
-            bomb.position.copy(character.position).add(new THREE.Vector3(0, 1.5, 0));
+            if (throwCooldown > 0 || !character) return;
+            
+            // Get direction from camera
+            const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).normalize();
+            const bombPos = character.position.clone();
+            bombPos.y += 1.2;
+            bombPos.x += direction.x * 0.8;
+            bombPos.z += direction.z * 0.8;
+            
+            // Create bomb mesh
+            const bomb = new THREE.Mesh(
+                new THREE.SphereGeometry(0.35, 16, 16),
+                new THREE.MeshStandardMaterial({ color: 0x442222, emissive: 0x441100, metalness: 0.3 })
+            );
+            bomb.castShadow = true;
+            bomb.position.copy(bombPos);
             scene.add(bomb);
-            const dir = new THREE.Vector3(0, 0, 1).applyQuaternion(character.quaternion);
-            bombs.push({ mesh: bomb, vel: dir.multiplyScalar(1.2).add(new THREE.Vector3(0, 0.5, 0)), life: 200 });
-            if (animations['punch']) {
-                animations['punch'].reset().play();
-                setTimeout(() => animations['idle'].play(), 500);
-            }
-        }
-
-        function explode(pos) {
-            for(let i=0; i<30; i++) {
-                const p = new THREE.Mesh(new THREE.SphereGeometry(0.2), new THREE.MeshStandardMaterial({ color: 0xffaa00 }));
-                p.position.copy(pos);
-                scene.add(p);
-                particles.push({ mesh: p, vel: new THREE.Vector3(Math.random()-0.5, Math.random()-0.5, Math.random()-0.5).multiplyScalar(1), life: 50 });
-            }
-        }
-
-        // Animation Loop
-        const clock = new THREE.Clock();
-        function animate() {
-            requestAnimationFrame(animate);
-            const delta = clock.getDelta();
-            if (!character) return;
-
-            // Movement
-            if (keys['KeyW']) input.forward = 1; else if (keys['KeyS']) input.forward = -1;
-            if (keys['KeyA']) input.side = 1; else if (keys['KeyD']) input.side = -1;
-            if (keys['Space']) { input.jump = true; keys['Space'] = false; }
-            if (keys['KeyF']) { input.throw = true; keys['KeyF'] = false; }
-
-            const move = new THREE.Vector3(input.side, 0, input.forward);
-            if (move.length() > 0.1) {
-                const angle = Math.atan2(input.side, input.forward);
-                character.rotation.y = angle;
-                character.position.x += Math.sin(angle) * 0.3;
-                character.position.z += Math.cos(angle) * 0.3;
-                if (animations['walking']) {
-                    if (currentAction !== animations['walking']) {
-                        if (currentAction) currentAction.fadeOut(0.2);
-                        currentAction = animations['walking'];
-                        currentAction.reset().fadeIn(0.2).play();
+            
+            // Add fuse effect
+            const fuse = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.08, 0.1, 0.25, 6),
+                new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4400 })
+            );
+            fuse.position.y = 0.4;
+            bomb.add(fuse);
+            
+            bombs.push({
+                mesh: bomb,
+                velocity: direction.clone().multiplyScalar(1.4),
+                gravity: 0.02,
+                life: 0
+            });
+            
+            throwCooldown = 30;
+            
+            // Play throw animation if available
+            if (mixer && animations['Wave']) {
+                const waveAnim = animations['Wave'];
+                if (currentAction) currentAction.fadeOut(0.1);
+                waveAnim.reset().fadeIn(0.1).play();
+                setTimeout(() => {
+                    if (animations['Idle']) {
+                        waveAnim.fadeOut(0.2);
+                        animations['Idle'].reset().fadeIn(0.2).play();
+                        currentAction = animations['Idle'];
                     }
+                }, 400);
+            }
+        }
+        
+        function createExplosion(position) {
+            // Explosion particles
+            for (let i = 0; i < 35; i++) {
+                const particle = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.12, 6, 6),
+                    new THREE.MeshStandardMaterial({ color: 0xff6633, emissive: 0xff3300 })
+                );
+                particle.position.copy(position);
+                scene.add(particle);
+                particles.push({
+                    mesh: particle,
+                    velocity: new THREE.Vector3(
+                        (Math.random() - 0.5) * 1.2,
+                        Math.random() * 1.5,
+                        (Math.random() - 0.5) * 1.2
+                    ),
+                    life: 0,
+                    maxLife: 40
+                });
+            }
+            
+            // Flash light
+            const flash = new THREE.PointLight(0xff6600, 1.5, 15);
+            flash.position.copy(position);
+            scene.add(flash);
+            setTimeout(() => scene.remove(flash), 200);
+        }
+        
+        // Initial targets
+        for (let i = 0; i < 8; i++) spawnTarget();
+        
+        // ==========================================
+        // 6. INPUT SYSTEM (Keyboard + Mouse + Touch)
+        // ==========================================
+        const input = {
+            forward: 0,
+            right: 0,
+            jump: false,
+            throw: false
+        };
+        
+        const keys = {};
+        
+        window.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+            if (e.code === 'Space') {
+                e.preventDefault();
+                input.jump = true;
+            }
+            if (e.code === 'KeyF') {
+                e.preventDefault();
+                input.throw = true;
+            }
+        });
+        
+        window.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+        });
+        
+        // Touch joystick
+        const joystickContainer = document.createElement('div');
+        joystickContainer.style.position = 'absolute';
+        joystickContainer.style.bottom = '50px';
+        joystickContainer.style.left = '50px';
+        joystickContainer.style.width = '130px';
+        joystickContainer.style.height = '130px';
+        joystickContainer.style.background = 'rgba(0,0,0,0.4)';
+        joystickContainer.style.borderRadius = '50%';
+        joystickContainer.style.border = '2px solid rgba(255,170,0,0.6)';
+        joystickContainer.style.backdropFilter = 'blur(5px)';
+        joystickContainer.style.zIndex = '50';
+        document.body.appendChild(joystickContainer);
+        
+        const joystickKnob = document.createElement('div');
+        joystickKnob.style.position = 'absolute';
+        joystickKnob.style.top = '50%';
+        joystickKnob.style.left = '50%';
+        joystickKnob.style.width = '55px';
+        joystickKnob.style.height = '55px';
+        joystickKnob.style.background = '#ffaa33';
+        joystickKnob.style.borderRadius = '50%';
+        joystickKnob.style.transform = 'translate(-50%, -50%)';
+        joystickKnob.style.boxShadow = '0 0 10px rgba(0,0,0,0.5)';
+        joystickContainer.appendChild(joystickKnob);
+        
+        let joystickActive = false;
+        let joystickStart = { x: 0, y: 0 };
+        
+        joystickContainer.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            joystickActive = true;
+            joystickStart.x = e.touches[0].clientX;
+            joystickStart.y = e.touches[0].clientY;
+        });
+        
+        window.addEventListener('touchmove', (e) => {
+            if (!joystickActive) return;
+            let dx = e.touches[0].clientX - joystickStart.x;
+            let dy = e.touches[0].clientY - joystickStart.y;
+            const maxDist = 55;
+            const dist = Math.hypot(dx, dy);
+            if (dist > maxDist) {
+                dx = dx * maxDist / dist;
+                dy = dy * maxDist / dist;
+            }
+            joystickKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+            input.right = -dx / maxDist;
+            input.forward = -dy / maxDist;
+        });
+        
+        window.addEventListener('touchend', () => {
+            joystickActive = false;
+            joystickKnob.style.transform = 'translate(-50%, -50%)';
+            input.forward = 0;
+            input.right = 0;
+        });
+        
+        // Action buttons
+        const jumpBtn = document.createElement('button');
+        jumpBtn.textContent = '⬆️ JUMP';
+        jumpBtn.style.position = 'absolute';
+        jumpBtn.style.bottom = '50px';
+        jumpBtn.style.right = '140px';
+        jumpBtn.style.width = '80px';
+        jumpBtn.style.height = '80px';
+        jumpBtn.style.borderRadius = '50%';
+        jumpBtn.style.background = 'rgba(0,0,0,0.7)';
+        jumpBtn.style.border = '3px solid #33ccff';
+        jumpBtn.style.color = 'white';
+        jumpBtn.style.fontSize = '20px';
+        jumpBtn.style.zIndex = '50';
+        jumpBtn.style.backdropFilter = 'blur(5px)';
+        document.body.appendChild(jumpBtn);
+        
+        const throwBtn = document.createElement('button');
+        throwBtn.textContent = '💣 THROW';
+        throwBtn.style.position = 'absolute';
+        throwBtn.style.bottom = '50px';
+        throwBtn.style.right = '40px';
+        throwBtn.style.width = '80px';
+        throwBtn.style.height = '80px';
+        throwBtn.style.borderRadius = '50%';
+        throwBtn.style.background = 'rgba(0,0,0,0.7)';
+        throwBtn.style.border = '3px solid #ff6633';
+        throwBtn.style.color = 'white';
+        throwBtn.style.fontSize = '20px';
+        throwBtn.style.zIndex = '50';
+        throwBtn.style.backdropFilter = 'blur(5px)';
+        document.body.appendChild(throwBtn);
+        
+        jumpBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            input.jump = true;
+        });
+        
+        throwBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            input.throw = true;
+        });
+        
+        // Keyboard controls for forward/right
+        function updateKeyboardInput() {
+            let f = 0, r = 0;
+            if (keys['KeyW']) f = 1;
+            if (keys['KeyS']) f = -1;
+            if (keys['KeyD']) r = 1;
+            if (keys['KeyA']) r = -1;
+            if (f !== 0 || r !== 0) {
+                input.forward = f;
+                input.right = r;
+            } else if (!joystickActive) {
+                // Don't override joystick if active
+                if (input.forward !== 0 && !keys['KeyW'] && !keys['KeyS']) input.forward = 0;
+                if (input.right !== 0 && !keys['KeyD'] && !keys['KeyA']) input.right = 0;
+            }
+        }
+        
+        // ==========================================
+        // 7. MAIN ANIMATION LOOP
+        // ==========================================
+        let lastTime = performance.now();
+        
+        function updateMovement(delta) {
+            if (!character) return;
+            
+            updateKeyboardInput();
+            
+            const moveSpeed = 5.5 * delta;
+            const moveDir = new THREE.Vector3(input.right, 0, input.forward);
+            
+            if (moveDir.length() > 0.1) {
+                const angle = Math.atan2(input.right, input.forward);
+                character.rotation.y = angle;
+                character.position.x += Math.sin(angle) * moveSpeed;
+                character.position.z += Math.cos(angle) * moveSpeed;
+                
+                // Play running animation
+                if (mixer && animations['Running'] && currentAction !== animations['Running'] && !characterState.isJumping) {
+                    if (currentAction) currentAction.fadeOut(0.2);
+                    currentAction = animations['Running'];
+                    currentAction.reset().fadeIn(0.2).play();
                 }
             } else {
-                if (animations['idle']) {
-                    if (currentAction !== animations['idle']) {
-                        if (currentAction) currentAction.fadeOut(0.2);
-                        currentAction = animations['idle'];
-                        currentAction.reset().fadeIn(0.2).play();
-                    }
+                // Play idle animation
+                if (mixer && animations['Idle'] && currentAction !== animations['Idle'] && !characterState.isJumping) {
+                    if (currentAction) currentAction.fadeOut(0.2);
+                    currentAction = animations['Idle'];
+                    currentAction.reset().fadeIn(0.2).play();
                 }
             }
-
-            // Jump
-            if (input.jump && jumpCount < 2) {
-                velY = 0.5;
-                isJumping = true;
-                jumpCount++;
+            
+            // Jump mechanics
+            if (input.jump && characterState.jumpCount < 2) {
+                characterState.velocityY = 0.42;
+                characterState.isJumping = true;
+                characterState.jumpCount++;
                 input.jump = false;
-                if (jumpCount === 2) isFlipping = true;
-            }
-            if (isJumping) {
-                character.position.y += velY;
-                velY -= 0.02;
-                if (isFlipping) {
-                    flipRot += 0.3;
-                    character.rotation.x = flipRot;
-                    if (flipRot >= Math.PI * 2) { isFlipping = false; flipRot = 0; character.rotation.x = 0; }
+                
+                if (characterState.jumpCount === 2) {
+                    characterState.isFlipping = true;
+                    characterState.flipAngle = 0;
                 }
-                if (character.position.y <= 0) { character.position.y = 0; isJumping = false; jumpCount = 0; }
+                
+                // Play jump animation
+                if (mixer && animations['Jump']) {
+                    const jumpAnim = animations['Jump'];
+                    if (currentAction) currentAction.fadeOut(0.1);
+                    jumpAnim.reset().fadeIn(0.1).play();
+                    setTimeout(() => {
+                        if (animations['Idle'] && !characterState.isJumping) {
+                            jumpAnim.fadeOut(0.2);
+                            currentAction = animations['Idle'];
+                        }
+                    }, 400);
+                }
             }
-
-            // Throw
-            if (input.throw) { throwBomb(); input.throw = false; }
-
-            // Camera
-            const camPos = character.position.clone().add(new THREE.Vector3(0, 6, -10).applyQuaternion(character.quaternion));
-            camera.position.lerp(camPos, 0.1);
-            camera.lookAt(character.position.clone().add(new THREE.Vector3(0, 2, 5)));
-
-            // Bombs
-            for(let i=bombs.length-1; i>=0; i--) {
-                const b = bombs[i];
-                b.mesh.position.add(b.vel);
-                b.vel.y -= 0.02;
-                targets.forEach((t, idx) => {
-                    if (b.mesh.position.distanceTo(t.position) < 2) {
-                        explode(t.position);
-                        scene.remove(t); targets.splice(idx, 1);
-                        score++; document.getElementById('score').innerText = score;
-                        spawnTarget(); b.life = 0;
+            
+            if (characterState.isJumping) {
+                character.position.y += characterState.velocityY;
+                characterState.velocityY -= 0.022;
+                
+                if (characterState.isFlipping) {
+                    characterState.flipAngle += 0.28;
+                    character.rotation.x = characterState.flipAngle;
+                    if (characterState.flipAngle >= Math.PI * 2) {
+                        characterState.isFlipping = false;
+                        character.rotation.x = 0;
                     }
-                });
-                if (b.mesh.position.y < 0) { explode(b.mesh.position); b.life = 0; }
-                b.life--;
-                if (b.life <= 0) { scene.remove(b.mesh); bombs.splice(i, 1); }
+                }
+                
+                if (character.position.y <= 0) {
+                    character.position.y = 0;
+                    characterState.isJumping = false;
+                    characterState.jumpCount = 0;
+                    characterState.isFlipping = false;
+                    character.rotation.x = 0;
+                }
+            } else {
+                character.position.y = 0;
             }
-
-            // Particles
-            for(let i=particles.length-1; i>=0; i--) {
-                const p = particles[i];
-                p.mesh.position.add(p.vel);
-                p.life--;
-                if (p.life <= 0) { scene.remove(p.mesh); particles.splice(i, 1); }
-            }
-
-            if (mixer) mixer.update(delta);
-            renderer.render(scene, camera);
+            
+            // Boundary limits
+            character.position.x = Math.max(-85, Math.min(85, character.position.x));
+            character.position.z = Math.max(-85, Math.min(85, character.position.z));
         }
-        animate();
-
+        
+        function updateBombsAndTargets() {
+            // Update bombs
+            for (let i = bombs.length - 1; i >= 0; i--) {
+                const bomb = bombs[i];
+                bomb.velocity.y -= bomb.gravity;
+                bomb.mesh.position.x += bomb.velocity.x;
+                bomb.mesh.position.y += bomb.velocity.y;
+                bomb.mesh.position.z += bomb.velocity.z;
+                bomb.mesh.rotation.x += 0.15;
+                bomb.mesh.rotation.z += 0.12;
+                bomb.life++;
+                
+                // Check collision with targets
+                let hit = false;
+                for (let j = 0; j < targets.length; j++) {
+                    const target = targets[j];
+                    if (bomb.mesh.position.distanceTo(target.position) < 1.5) {
+                        createExplosion(target.position);
+                        scene.remove(target);
+                        targets.splice(j, 1);
+                        score++;
+                        updateScore();
+                        spawnTarget();
+                        hit = true;
+                        break;
+                    }
+                }
+                
+                if (hit || bomb.mesh.position.y < -0.5 || bomb.life > 180) {
+                    if (!hit && bomb.mesh.position.y < -0.5) {
+                        createExplosion(bomb.mesh.position);
+                    }
+                    scene.remove(bomb.mesh);
+                    bombs.splice(i, 1);
+                }
+            }
+            
+            // Update particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.mesh.position.x += p.velocity.x;
+                p.mesh.position.y += p.velocity.y;
+                p.mesh.position.z += p.velocity.z;
+                p.velocity.y -= 0.02;
+                p.life++;
+                if (p.life >= p.maxLife) {
+                    scene.remove(p.mesh);
+                    particles.splice(i, 1);
+                }
+            }
+            
+            // Cooldown
+            if (throwCooldown > 0) throwCooldown--;
+            if (input.throw && throwCooldown === 0) {
+                throwBomb();
+                input.throw = false;
+            }
+        }
+        
+        function updateCamera() {
+            if (!character) return;
+            
+            // Dynamic shoulder camera
+            const targetPos = character.position.clone();
+            const offset = new THREE.Vector3(-1.2, 2.8, 5.5);
+            const worldOffset = offset.clone().applyQuaternion(character.quaternion);
+            const desiredPos = targetPos.clone().add(worldOffset);
+            
+            camera.position.lerp(desiredPos, 0.12);
+            const lookAtPoint = targetPos.clone().add(new THREE.Vector3(0, 1.8, 2).applyQuaternion(character.quaternion));
+            camera.lookAt(lookAtPoint);
+        }
+        
+        function animateTargets() {
+            targets.forEach((target, idx) => {
+                target.position.y = 0.2 + Math.sin(Date.now() * 0.005 + idx) * 0.1;
+                target.rotation.y += 0.02;
+            });
+        }
+        
+        function gameLoop() {
+            const now = performance.now();
+            let delta = Math.min(0.033, (now - lastTime) / 1000);
+            lastTime = now;
+            
+            updateMovement(delta);
+            updateBombsAndTargets();
+            updateCamera();
+            animateTargets();
+            
+            if (mixer) mixer.update(delta);
+            
+            renderer.render(scene, camera);
+            requestAnimationFrame(gameLoop);
+        }
+        
+        gameLoop();
+        
+        // Window resize handler
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
+        
+        console.log('🎮 Game initialized! Model: RobotExpressive.glb');
     </script>
 </body>
 </html>
-
