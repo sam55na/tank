@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Dwarf Bomber - PERFECT | Fixed All Issues</title>
+    <title>Dwarf Bomber - Complete Control | Slow & Precise</title>
     <style>
         * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
             touch-action: none;
             user-select: none;
@@ -13,7 +15,6 @@
         }
 
         body {
-            margin: 0;
             overflow: hidden;
             background: #0a2f1f;
             font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -23,212 +24,276 @@
             display: block;
             width: 100%;
             height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
         }
 
+        /* UI Overlay */
         #ui-overlay {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             pointer-events: none;
-            z-index: 30;
+            z-index: 100;
         }
 
+        /* Crosshair */
         #crosshair {
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 44px;
-            height: 44px;
+            width: 48px;
+            height: 48px;
             transform: translate(-50%, -50%);
             pointer-events: none;
-            z-index: 40;
+            z-index: 150;
         }
-        #crosshair .ring {
+        .crosshair-ring {
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 38px;
-            height: 38px;
+            width: 42px;
+            height: 42px;
             border: 2px solid #ffaa44;
             border-radius: 50%;
             transform: translate(-50%, -50%);
             box-shadow: 0 0 10px rgba(0,0,0,0.5);
-            animation: pulse 0.8s infinite;
+            animation: pulse 1s infinite;
         }
-        @keyframes pulse {
-            0% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
-            100% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
-        }
-
-        #info-panel {
+        .crosshair-dot {
             position: absolute;
-            top: 15px;
-            left: 15px;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(8px);
-            color: #ffdd99;
-            padding: 8px 16px;
-            border-radius: 24px;
-            font-size: 11px;
-            font-weight: bold;
-            border-left: 3px solid #ffaa44;
-            pointer-events: none;
-            z-index: 50;
-        }
-        #score-panel {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(8px);
-            color: #ffaa44;
-            padding: 8px 24px;
-            border-radius: 40px;
-            font-weight: bold;
-            font-size: 36px;
-            font-family: monospace;
-            pointer-events: none;
-            z-index: 50;
-        }
-
-        #left-zone {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 200px;
-            height: 200px;
-            pointer-events: auto;
-            z-index: 60;
-        }
-        .joystick-base {
-            position: absolute;
-            bottom: 35px;
-            left: 35px;
-            width: 130px;
-            height: 130px;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(12px);
-            border-radius: 50%;
-            border: 3px solid #ffaa55;
-        }
-        .joystick-thumb {
-            position: absolute;
-            width: 55px;
-            height: 55px;
-            background: radial-gradient(circle, #ffcc77, #ffaa33);
-            border-radius: 50%;
-            box-shadow: 0 4px 12px black;
-            pointer-events: none;
             top: 50%;
             left: 50%;
+            width: 5px;
+            height: 5px;
+            background: #ffaa44;
+            border-radius: 50%;
             transform: translate(-50%, -50%);
-            transition: transform 0.02s linear;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1.12); }
         }
 
-        #right-zone {
+        /* Score Panel */
+        #score-panel {
             position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 50%;
-            height: 100%;
-            pointer-events: auto;
-            z-index: 60;
-        }
-        .camera-hint {
-            position: absolute;
-            bottom: 30px;
-            right: 30px;
-            color: rgba(255,255,200,0.8);
-            font-size: 12px;
-            background: rgba(0,0,0,0.6);
-            padding: 6px 14px;
-            border-radius: 24px;
-            pointer-events: none;
-        }
-
-        #slider-area {
-            position: absolute;
-            bottom: 100px;
-            left: 190px;
-            width: 65px;
-            height: 190px;
+            top: 20px;
+            right: 20px;
             background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(8px);
-            border-radius: 40px;
+            backdrop-filter: blur(10px);
+            color: #ffaa44;
+            padding: 10px 28px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 38px;
+            font-family: monospace;
+            pointer-events: none;
+            z-index: 150;
+            border: 1px solid #ffaa55;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        /* Distance Slider */
+        #slider-container {
+            position: absolute;
+            bottom: 120px;
+            left: 20px;
+            width: 70px;
+            height: 180px;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
             border: 2px solid #ffaa55;
             pointer-events: auto;
-            z-index: 70;
+            z-index: 140;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: flex-end;
             cursor: pointer;
         }
-        #slider-thumb {
-            width: 52px;
-            height: 52px;
+        #slider-handle {
+            width: 55px;
+            height: 55px;
             background: #ffaa55;
             border-radius: 50%;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             cursor: pointer;
-            box-shadow: 0 2px 10px black;
+            box-shadow: 0 2px 12px black;
             transition: margin-bottom 0.05s ease-out;
         }
-        .slider-labels {
+        .slider-label {
             position: absolute;
-            left: -48px;
-            top: 10px;
+            left: -50px;
+            top: 15px;
             color: #ffdd99;
             font-size: 11px;
             font-weight: bold;
         }
         #distance-value {
             position: absolute;
-            bottom: -38px;
+            bottom: -40px;
             left: -5px;
             right: -5px;
             text-align: center;
             color: #ffaa55;
             font-weight: bold;
-            font-size: 13px;
-            background: rgba(0,0,0,0.75);
-            padding: 4px;
+            font-size: 12px;
+            background: rgba(0,0,0,0.7);
+            padding: 5px;
             border-radius: 20px;
         }
 
-        #action-buttons {
+        /* LEFT ZONE - Movement (Full Left Half) */
+        .zone-move {
             position: absolute;
-            bottom: 100px;
-            right: 25px;
+            bottom: 0;
+            left: 0;
+            width: 50%;
+            height: 100%;
+            pointer-events: auto;
+            z-index: 110;
+        }
+        .joystick-base {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            height: 140px;
+            background: rgba(0,0,0,0.65);
+            backdrop-filter: blur(15px);
+            border-radius: 50%;
+            border: 3px solid #ffaa55;
+            box-shadow: 0 0 25px rgba(0,0,0,0.6);
+        }
+        .joystick-thumb {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, #ffcc77, #ffaa33);
+            border-radius: 50%;
+            box-shadow: 0 4px 15px black;
+            pointer-events: none;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: transform 0.02s linear;
+        }
+        .move-label {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ffdd99;
+            font-size: 12px;
+            background: rgba(0,0,0,0.6);
+            padding: 4px 12px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+
+        /* RIGHT ZONE - Split into Camera (Top) and Actions (Bottom) */
+        .zone-right {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 50%;
+            height: 100%;
+            pointer-events: auto;
+            z-index: 110;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+        }
+        .camera-area {
+            flex: 1;
+            background: transparent;
             pointer-events: auto;
-            z-index: 70;
+            border-bottom: 2px solid rgba(255,170,85,0.3);
+        }
+        .actions-area {
+            height: 180px;
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(5px);
+            border-top: 1px solid #ffaa55;
         }
         .action-btn {
-            width: 75px;
-            height: 75px;
-            border-radius: 50%;
+            flex: 1;
+            border-radius: 60px;
             background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(8px);
+            backdrop-filter: blur(10px);
             border: 2px solid #ffaa55;
             color: white;
-            font-size: 26px;
+            font-size: 28px;
             font-weight: bold;
             cursor: pointer;
-            transition: transform 0.05s;
+            transition: transform 0.08s, background 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-family: monospace;
         }
         .action-btn:active {
-            transform: scale(0.92);
+            transform: scale(0.94);
             background: #ffaa55;
             color: #222;
         }
-
-        #loading-screen {
+        .jump-btn { background: rgba(0,0,0,0.85); }
+        .throw-btn { background: rgba(0,0,0,0.85); }
+        
+        .camera-hint {
             position: absolute;
+            bottom: 210px;
+            right: 25px;
+            color: rgba(255,255,200,0.7);
+            font-size: 11px;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 12px;
+            border-radius: 20px;
+            pointer-events: none;
+            z-index: 120;
+        }
+        
+        .info-text {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            color: #ffdd99;
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 150;
+            border-left: 3px solid #ffaa44;
+        }
+        
+        .bomb-marker-label {
+            position: absolute;
+            bottom: 20px;
+            left: 110px;
+            background: rgba(0,0,0,0.65);
+            padding: 5px 14px;
+            border-radius: 20px;
+            color: #ffaa66;
+            font-size: 10px;
+            pointer-events: none;
+            z-index: 120;
+            font-weight: bold;
+        }
+        
+        #loading-screen {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
@@ -237,70 +302,67 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 200;
+            z-index: 1000;
             color: #ffcc77;
             font-size: 24px;
             flex-direction: column;
             gap: 15px;
-        }
-
-        .bomb-marker-text {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background: rgba(0,0,0,0.7);
-            padding: 6px 16px;
-            border-radius: 20px;
-            color: #ffaa66;
-            font-size: 11px;
-            pointer-events: none;
-            z-index: 80;
+            transition: opacity 0.5s;
         }
         
         @media (max-width: 768px) {
-            .joystick-base { width: 100px; height: 100px; bottom: 25px; left: 25px; }
-            .joystick-thumb { width: 45px; height: 45px; }
-            #left-zone { width: 150px; height: 150px; }
-            .action-btn { width: 60px; height: 60px; font-size: 22px; }
-            #slider-area { left: 140px; width: 55px; height: 160px; bottom: 80px; }
-            #slider-thumb { width: 45px; height: 45px; }
+            .joystick-base { width: 110px; height: 110px; bottom: 60px; }
+            .joystick-thumb { width: 48px; height: 48px; }
+            .action-btn { font-size: 22px; }
+            .actions-area { height: 150px; gap: 12px; }
+            #score-panel { font-size: 28px; padding: 6px 20px; top: 12px; right: 12px; }
+            .info-text { font-size: 9px; top: 12px; left: 12px; }
+            .camera-hint { bottom: 180px; font-size: 9px; }
+            #slider-container { width: 55px; height: 150px; bottom: 100px; left: 15px; }
+            #slider-handle { width: 42px; height: 42px; }
         }
     </style>
 </head>
 <body>
     <div id="loading-screen">
-        💣 DWARF BOMBER - PERFECT EDITION 💣<br>
-        <span>✅ JOYSTICK FIXED | SLIDER WORKS | SMOOTH MOVEMENT ✅</span>
+        💣 DWARF BOMBER - COMPLETE CONTROL 💣<br>
+        <span>🎮 LEFT: MOVE | RIGHT TOP: CAMERA | RIGHT BOTTOM: JUMP/THROW 🎮</span>
         <div style="width: 200px; height: 4px; background: #333; border-radius: 2px; overflow: hidden; margin-top: 10px;">
             <div style="width: 0%; height: 100%; background: #ffaa55;" id="loading-bar"></div>
         </div>
     </div>
 
     <div id="ui-overlay" style="display: none;">
-        <div id="crosshair"><div class="ring"></div></div>
-        <div id="info-panel">🎮 اسحب العصا: → يمين | ← يسار | ↑ أمام | ↓ خلف | المنزلق يتحكم بمسافة القنبلة 🎯</div>
+        <div id="crosshair">
+            <div class="crosshair-ring"></div>
+            <div class="crosshair-dot"></div>
+        </div>
         <div id="score-panel">💥 <span id="score">0</span></div>
+        <div class="info-text">🎮 LEFT ZONE = MOVE | TOP RIGHT = CAMERA | BOTTOM RIGHT = JUMP / THROW</div>
+        <div class="camera-hint">🎥 اسحب في المنطقة العلوية اليمنى لتدوير الكاميرا</div>
+        <div class="bomb-marker-label">🎯 الدائرة البرتقالية = مكان سقوط القنبلة (تتغير مع المنزلق)</div>
         
-        <div id="left-zone">
-            <div class="joystick-base" id="joystick-base"></div>
-            <div class="joystick-thumb" id="joystick-thumb"></div>
-        </div>
-        
-        <div id="right-zone">
-            <div class="camera-hint">🎥 اسحب لتدوير الكاميرا</div>
-        </div>
-        
-        <div id="slider-area">
-            <div id="slider-thumb"></div>
-            <div class="slider-labels">▲ 20m<br><br>▼ 5m</div>
+        <div id="slider-container">
+            <div id="slider-handle"></div>
+            <div class="slider-label">▲ 20m<br><br>▼ 5m</div>
             <div id="distance-value">📏 <span id="dist-value">12.5</span> m</div>
         </div>
         
-        <div id="action-buttons">
-            <button class="action-btn" id="btn-jump">🦘</button>
-            <button class="action-btn" id="btn-throw">💣</button>
+        <!-- LEFT ZONE: Movement -->
+        <div class="zone-move" id="zone-move">
+            <div class="joystick-base" id="joystick-base"></div>
+            <div class="joystick-thumb" id="joystick-thumb"></div>
+            <div class="move-label">🎮 MOVE</div>
         </div>
-        <div class="bomb-marker-text">🎯 الدائرة البرتقالية = مكان سقوط القنبلة (تتغير فوراً مع المنزلق)</div>
+        
+        <!-- RIGHT ZONE: Split -->
+        <div class="zone-right">
+            <div class="camera-area" id="camera-area"></div>
+            <div class="actions-area">
+                <button class="action-btn jump-btn" id="btn-jump">🦘 JUMP</button>
+                <button class="action-btn throw-btn" id="btn-throw">💣 THROW</button>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -308,15 +370,16 @@
 
     <script>
         (function() {
-            // ========== THREE SETUP ==========
+            // ========== THREE.JS SETUP ==========
             const scene = new THREE.Scene();
             scene.background = new THREE.Color(0x0a3522);
-            scene.fog = new THREE.FogExp2(0x0a3522, 0.003);
+            scene.fog = new THREE.FogExp2(0x0a3522, 0.0025);
             
-            const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 300);
+            const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 300);
             const renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             document.body.appendChild(renderer.domElement);
             
             // Lighting
@@ -327,24 +390,32 @@
             mainLight.castShadow = true;
             mainLight.shadow.mapSize.width = 1024;
             mainLight.shadow.mapSize.height = 1024;
+            mainLight.shadow.camera.near = 0.5;
+            mainLight.shadow.camera.far = 50;
             scene.add(mainLight);
+            const fillLight = new THREE.PointLight(0x88aacc, 0.5);
+            fillLight.position.set(-5, 12, 6);
+            scene.add(fillLight);
             
             // Ground
-            const ground = new THREE.Mesh(new THREE.PlaneGeometry(300, 300), new THREE.MeshStandardMaterial({ color: 0x5a9e5a, roughness: 0.85 }));
+            const groundMat = new THREE.MeshStandardMaterial({ color: 0x5a9e5a, roughness: 0.85 });
+            const ground = new THREE.Mesh(new THREE.PlaneGeometry(280, 280), groundMat);
             ground.rotation.x = -Math.PI/2;
             ground.position.y = -0.05;
             ground.receiveShadow = true;
             scene.add(ground);
             
-            const grid = new THREE.GridHelper(300, 40, 0xaacc88, 0x558844);
+            const grid = new THREE.GridHelper(280, 35, 0xaacc88, 0x558844);
             grid.position.y = 0.01;
-            grid.material.opacity = 0.4;
+            grid.material.transparent = true;
+            grid.material.opacity = 0.45;
             scene.add(grid);
             
-            // Rocks
-            for(let i = 0; i < 80; i++) {
-                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.2 + Math.random() * 0.3), new THREE.MeshStandardMaterial({ color: 0x7a6a55 }));
-                rock.position.set((Math.random() - 0.5) * 280, -0.2, (Math.random() - 0.5) * 280);
+            // Decorative rocks
+            for(let i = 0; i < 70; i++) {
+                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.2 + Math.random() * 0.3), 
+                    new THREE.MeshStandardMaterial({ color: 0x7a6a55, roughness: 0.9 }));
+                rock.position.set((Math.random() - 0.5) * 260, -0.2, (Math.random() - 0.5) * 260);
                 rock.castShadow = true;
                 scene.add(rock);
             }
@@ -356,29 +427,44 @@
             let bombInHand = null;
             let throwCooldown = false;
             let modelLoaded = false;
-            const SPEED = 0.48;
+            const SPEED = 0.28; // Slow and controlled movement
             
-            function createSimpleCharacter() {
+            function createDwarfCharacter() {
                 const group = new THREE.Group();
-                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.75, 1.4, 8), new THREE.MeshStandardMaterial({ color: 0x4aae77 }));
+                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.68, 0.72, 1.4, 8), 
+                    new THREE.MeshStandardMaterial({ color: 0x4aae77, metalness: 0.2, roughness: 0.4 }));
                 body.castShadow = true;
                 body.position.y = 0.7;
                 group.add(body);
                 
-                const head = new THREE.Mesh(new THREE.SphereGeometry(0.6, 24, 24), new THREE.MeshStandardMaterial({ color: 0xffddbb }));
+                const head = new THREE.Mesh(new THREE.SphereGeometry(0.6, 32, 32), 
+                    new THREE.MeshStandardMaterial({ color: 0xffddbb }));
                 head.castShadow = true;
                 head.position.y = 1.45;
                 group.add(head);
                 
-                const helmet = new THREE.Mesh(new THREE.ConeGeometry(0.65, 0.6, 8), new THREE.MeshStandardMaterial({ color: 0xccaa77, metalness: 0.6 }));
-                helmet.position.y = 1.8;
+                const helmet = new THREE.Mesh(new THREE.ConeGeometry(0.64, 0.58, 8), 
+                    new THREE.MeshStandardMaterial({ color: 0xccaa77, metalness: 0.6 }));
+                helmet.position.y = 1.78;
                 helmet.castShadow = true;
                 group.add(helmet);
+                
+                const beard = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.6, 0.5, 6), 
+                    new THREE.MeshStandardMaterial({ color: 0xcc8855 }));
+                beard.position.y = 1.2;
+                beard.castShadow = true;
+                group.add(beard);
                 
                 const rightHand = new THREE.Group();
                 rightHand.position.set(0.72, 1.1, 0.32);
                 group.add(rightHand);
                 handBone = rightHand;
+                
+                const leftHand = new THREE.Mesh(new THREE.SphereGeometry(0.27, 8, 8), 
+                    new THREE.MeshStandardMaterial({ color: 0xffccaa }));
+                leftHand.position.set(-0.72, 1.1, 0.32);
+                leftHand.castShadow = true;
+                group.add(leftHand);
                 
                 return group;
             }
@@ -390,9 +476,9 @@
                 loader.load('https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb', 
                     (gltf) => {
                         character = gltf.scene;
-                        character.scale.set(0.55, 0.55, 0.55);
+                        character.scale.set(0.52, 0.52, 0.52);
                         character.position.set(0, 0, 0);
-                        character.traverse(n => { if(n.isMesh) n.castShadow = true; });
+                        character.traverse(n => { if(n.isMesh) { n.castShadow = true; n.receiveShadow = true; } });
                         scene.add(character);
                         mixer = new THREE.AnimationMixer(character);
                         gltf.animations.forEach(clip => animations[clip.name.toLowerCase()] = mixer.clipAction(clip));
@@ -404,23 +490,28 @@
                         finishLoading();
                     },
                     (xhr) => { document.getElementById('loading-bar').style.width = Math.min((xhr.loaded / xhr.total) * 100, 90) + '%'; },
-                    () => { loadAttempts++; if(loadAttempts < 2) setTimeout(loadModel, 800); else { character = createSimpleCharacter(); scene.add(character); modelLoaded = true; finishLoading(); } }
+                    () => { loadAttempts++; if(loadAttempts < 2) setTimeout(loadModel, 800); else { character = createDwarfCharacter(); scene.add(character); modelLoaded = true; finishLoading(); } }
                 );
             }
             
             function finishLoading() {
                 document.getElementById('loading-screen').style.opacity = '0';
-                setTimeout(() => { document.getElementById('loading-screen').style.display = 'none'; document.getElementById('ui-overlay').style.display = 'block'; }, 400);
+                setTimeout(() => {
+                    document.getElementById('loading-screen').style.display = 'none';
+                    document.getElementById('ui-overlay').style.display = 'block';
+                }, 400);
                 createHandBomb();
             }
             
             function createHandBomb() {
                 if(bombInHand || !handBone) return;
-                const bomb = new THREE.Mesh(new THREE.SphereGeometry(0.35, 24, 24), new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.85 }));
-                const fuse = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.48, 6), new THREE.MeshStandardMaterial({ color: 0xff6633 }));
+                const bomb = new THREE.Mesh(new THREE.SphereGeometry(0.34, 24, 24), 
+                    new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.85 }));
+                const fuse = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.48, 6), 
+                    new THREE.MeshStandardMaterial({ color: 0xff6633 }));
                 fuse.position.y = 0.48;
                 bomb.add(fuse);
-                bomb.position.set(0.52, -0.12, 0.26);
+                bomb.position.set(0.5, -0.1, 0.25);
                 handBone.add(bomb);
                 bombInHand = bomb;
             }
@@ -431,9 +522,9 @@
             let moveX = 0, moveZ = 0;
             let jumpRequested = false, throwRequested = false;
             let velocityY = 0, isGrounded = true;
-            const GRAVITY = 0.022, JUMP_FORCE = 0.52;
+            const GRAVITY = 0.022, JUMP_FORCE = 0.48;
             
-            // Keyboard
+            // Keyboard support
             const keys = { w: false, s: false, a: false, d: false };
             window.addEventListener('keydown', (e) => {
                 if(e.code === 'KeyW') keys.w = true;
@@ -450,14 +541,14 @@
                 if(e.code === 'KeyD') keys.d = false;
             });
             
-            // ========== JOYSTICK - PERFECT DIRECTION ==========
-            const leftZone = document.getElementById('left-zone');
+            // ========== JOYSTICK (LEFT ZONE) ==========
+            const zoneMove = document.getElementById('zone-move');
             const joystickBase = document.getElementById('joystick-base');
             const joystickThumb = document.getElementById('joystick-thumb');
             let joystickActive = false;
             let joyCenterX = 0, joyCenterY = 0;
-            const MAX_RADIUS = 52;
-            let activeTouch = null;
+            const MAX_RADIUS = 55;
+            let activeTouchId = null;
             
             function updateJoystick(clientX, clientY) {
                 let dx = clientX - joyCenterX;
@@ -467,9 +558,7 @@
                 let limitedX = Math.cos(angle) * dist;
                 let limitedY = Math.sin(angle) * dist;
                 joystickThumb.style.transform = `translate(calc(-50% + ${limitedX}px), calc(-50% + ${limitedY}px))`;
-                // PERFECT: Right = positive X, Left = negative X
                 moveX = limitedX / MAX_RADIUS;
-                // Up = negative Y -> positive Z, Down = positive Y -> negative Z
                 moveZ = -limitedY / MAX_RADIUS;
             }
             
@@ -477,20 +566,21 @@
                 joystickThumb.style.transform = 'translate(-50%, -50%)';
                 if(!keys.w && !keys.s && !keys.a && !keys.d) { moveX = 0; moveZ = 0; }
                 joystickActive = false;
-                activeTouch = null;
+                activeTouchId = null;
             }
             
-            leftZone.addEventListener('touchstart', (e) => {
+            zoneMove.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 const rect = joystickBase.getBoundingClientRect();
                 joyCenterX = rect.left + rect.width / 2;
                 joyCenterY = rect.top + rect.height / 2;
                 for(let i = 0; i < e.touches.length; i++) {
                     const touch = e.touches[i];
-                    const zone = leftZone.getBoundingClientRect();
-                    if(touch.clientX >= zone.left && touch.clientX <= zone.right && touch.clientY >= zone.top && touch.clientY <= zone.bottom) {
+                    const zoneRect = zoneMove.getBoundingClientRect();
+                    if(touch.clientX >= zoneRect.left && touch.clientX <= zoneRect.right &&
+                       touch.clientY >= zoneRect.top && touch.clientY <= zoneRect.bottom) {
                         joystickActive = true;
-                        activeTouch = touch.identifier;
+                        activeTouchId = touch.identifier;
                         updateJoystick(touch.clientX, touch.clientY);
                         break;
                     }
@@ -498,11 +588,11 @@
             });
             
             window.addEventListener('touchmove', (e) => {
-                if(!joystickActive || activeTouch === null) return;
+                if(!joystickActive || activeTouchId === null) return;
                 for(let i = 0; i < e.touches.length; i++) {
-                    if(e.touches[i].identifier === activeTouch) { 
-                        updateJoystick(e.touches[i].clientX, e.touches[i].clientY); 
-                        break; 
+                    if(e.touches[i].identifier === activeTouchId) {
+                        updateJoystick(e.touches[i].clientX, e.touches[i].clientY);
+                        break;
                     }
                 }
             });
@@ -510,13 +600,13 @@
             window.addEventListener('touchend', (e) => {
                 if(!joystickActive) return;
                 let found = false;
-                for(let i = 0; i < e.touches.length; i++) { 
-                    if(e.touches[i].identifier === activeTouch) { found = true; break; } 
+                for(let i = 0; i < e.touches.length; i++) {
+                    if(e.touches[i].identifier === activeTouchId) { found = true; break; }
                 }
                 if(!found) resetJoystick();
             });
             
-            function updateKeyboard() {
+            function updateKeyboardMove() {
                 let x = 0, z = 0;
                 if(keys.a) x = -1;
                 if(keys.d) x = 1;
@@ -526,64 +616,62 @@
                 else if(!joystickActive) { moveX = 0; moveZ = 0; }
             }
             
-            // ========== CAMERA ==========
-            const rightZone = document.getElementById('right-zone');
-            let dragActive = false;
+            // ========== CAMERA (RIGHT TOP AREA) ==========
+            const cameraArea = document.getElementById('camera-area');
+            let cameraDragActive = false;
             let cameraYaw = 0, targetYaw = 0;
-            let cameraPitch = 0.4;
+            let cameraPitch = 0.38;
             let dragOffset = 0;
-            let lastDrag = 0;
+            let lastDragX = 0;
             
-            rightZone.addEventListener('touchstart', (e) => { 
-                e.preventDefault(); 
-                dragActive = true; 
-                lastDrag = e.touches[0].clientX; 
+            cameraArea.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                cameraDragActive = true;
+                lastDragX = e.touches[0].clientX;
             });
             
-            window.addEventListener('touchmove', (e) => { 
-                if(dragActive) { 
-                    let dx = e.touches[0].clientX - lastDrag; 
-                    dragOffset += dx * 0.008; 
-                    dragOffset = Math.min(Math.max(dragOffset, -2.2), 2.2); 
-                    lastDrag = e.touches[0].clientX; 
-                } 
+            window.addEventListener('touchmove', (e) => {
+                if(!cameraDragActive) return;
+                let dx = e.touches[0].clientX - lastDragX;
+                dragOffset += dx * 0.007;
+                dragOffset = Math.min(Math.max(dragOffset, -2.2), 2.2);
+                lastDragX = e.touches[0].clientX;
             });
             
-            window.addEventListener('touchend', () => { 
-                dragActive = false; 
-                let start = dragOffset; 
-                let startTime = performance.now(); 
-                function smooth(t) { 
-                    let elapsed = (t - startTime) / 350; 
-                    if(elapsed >= 1) { dragOffset = 0; return; } 
-                    dragOffset = start * (1 - elapsed); 
-                    requestAnimationFrame(smooth); 
-                } 
-                if(Math.abs(dragOffset) > 0.01) requestAnimationFrame(smooth); 
-                else dragOffset = 0; 
+            window.addEventListener('touchend', () => {
+                cameraDragActive = false;
+                let start = dragOffset;
+                let startTime = performance.now();
+                function smoothReturn(t) {
+                    let elapsed = (t - startTime) / 400;
+                    if(elapsed >= 1) { dragOffset = 0; return; }
+                    dragOffset = start * (1 - elapsed);
+                    requestAnimationFrame(smoothReturn);
+                }
+                if(Math.abs(dragOffset) > 0.01) requestAnimationFrame(smoothReturn);
+                else dragOffset = 0;
             });
             
-            // ========== SLIDER - FULLY WORKING ==========
-            const sliderArea = document.getElementById('slider-area');
-            const sliderThumb = document.getElementById('slider-thumb');
+            // ========== SLIDER ==========
+            const sliderContainer = document.getElementById('slider-container');
+            const sliderHandle = document.getElementById('slider-handle');
             let throwDistance = 12.5;
             let sliderActiveFlag = false;
             let sliderTouchId = null;
             
             function updateSliderFromY(clientY) {
-                const rect = sliderArea.getBoundingClientRect();
+                const rect = sliderContainer.getBoundingClientRect();
                 let y = Math.min(rect.bottom, Math.max(rect.top, clientY));
                 let t = (rect.bottom - y) / rect.height;
                 t = Math.min(1, Math.max(0, t));
                 throwDistance = 5 + t * 15;
                 document.getElementById('dist-value').innerText = throwDistance.toFixed(1);
-                let offset = t * (rect.height - 52);
-                sliderThumb.style.marginBottom = `${offset}px`;
-                // Update marker immediately
+                let offset = t * (rect.height - 55);
+                sliderHandle.style.marginBottom = `${offset}px`;
                 updateLandingMarker();
             }
             
-            sliderArea.addEventListener('touchstart', (e) => {
+            sliderContainer.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 sliderActiveFlag = true;
                 sliderTouchId = e.touches[0].identifier;
@@ -593,9 +681,9 @@
             window.addEventListener('touchmove', (e) => {
                 if(!sliderActiveFlag) return;
                 for(let i = 0; i < e.touches.length; i++) {
-                    if(e.touches[i].identifier === sliderTouchId) { 
-                        updateSliderFromY(e.touches[i].clientY); 
-                        break; 
+                    if(e.touches[i].identifier === sliderTouchId) {
+                        updateSliderFromY(e.touches[i].clientY);
+                        break;
                     }
                 }
             });
@@ -603,33 +691,22 @@
             window.addEventListener('touchend', (e) => {
                 if(sliderActiveFlag) {
                     let found = false;
-                    for(let i = 0; i < e.touches.length; i++) { 
-                        if(e.touches[i].identifier === sliderTouchId) { found = true; break; } 
+                    for(let i = 0; i < e.touches.length; i++) {
+                        if(e.touches[i].identifier === sliderTouchId) { found = true; break; }
                     }
                     if(!found) { sliderActiveFlag = false; sliderTouchId = null; }
                 }
             });
             
-            // Mouse support for testing
-            sliderArea.addEventListener('mousedown', (e) => {
-                e.preventDefault();
-                sliderActiveFlag = true;
-                updateSliderFromY(e.clientY);
-                function onMouseMove(moveEvent) { updateSliderFromY(moveEvent.clientY); }
-                function onMouseUp() { sliderActiveFlag = false; window.removeEventListener('mousemove', onMouseMove); window.removeEventListener('mouseup', onMouseUp); }
-                window.addEventListener('mousemove', onMouseMove);
-                window.addEventListener('mouseup', onMouseUp);
-            });
-            
-            function initSliderPos() {
-                const rect = sliderArea.getBoundingClientRect();
+            function initSlider() {
+                const rect = sliderContainer.getBoundingClientRect();
                 if(rect.height > 0) {
                     let t = (throwDistance - 5) / 15;
-                    let offset = t * (rect.height - 52);
-                    sliderThumb.style.marginBottom = `${offset}px`;
+                    let offset = t * (rect.height - 55);
+                    sliderHandle.style.marginBottom = `${offset}px`;
                 }
             }
-            setTimeout(initSliderPos, 200);
+            setTimeout(initSlider, 200);
             
             // ========== BUTTONS ==========
             const jumpBtn = document.getElementById('btn-jump');
@@ -645,29 +722,30 @@
             throwBtn.addEventListener('mousedown', () => throwRequested = true);
             throwBtn.addEventListener('mouseup', () => setTimeout(() => throwRequested = false, 100));
             
-            // ========== GAME ==========
+            // ========== GAME MECHANICS ==========
             let bombs = [], particles = [], targets = [];
             let score = 0;
             const BLAST_RADIUS = 9.6;
             
             function spawnTarget() {
-                const target = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.7, 1.7), new THREE.MeshStandardMaterial({ color: 0xdd5555, emissive: 0x331100 }));
+                const targetMat = new THREE.MeshStandardMaterial({ color: 0xdd5555, emissive: 0x331100 });
+                const target = new THREE.Mesh(new THREE.BoxGeometry(1.65, 1.65, 1.65), targetMat);
                 const angle = Math.random() * Math.PI * 2;
-                const radius = 25 + Math.random() * 115;
+                const radius = 28 + Math.random() * 110;
                 target.position.set(Math.cos(angle) * radius, 0.85, Math.sin(angle) * radius);
                 target.castShadow = true;
                 scene.add(target);
                 targets.push(target);
             }
             
-            for(let i = 0; i < 15; i++) spawnTarget();
+            for(let i = 0; i < 14; i++) spawnTarget();
             
-            // ========== PREDICTOR - LIVE WITH SLIDER ==========
             let landingMarker = null;
             
             function createMarker() {
                 if(landingMarker) scene.remove(landingMarker);
-                const ring = new THREE.Mesh(new THREE.RingGeometry(0.85, 1.4, 32), new THREE.MeshStandardMaterial({ color: 0xffaa55, emissive: 0xff5500, emissiveIntensity: 0.8, side: THREE.DoubleSide, transparent: true, opacity: 0.95 }));
+                const ring = new THREE.Mesh(new THREE.RingGeometry(0.85, 1.4, 32), 
+                    new THREE.MeshStandardMaterial({ color: 0xffaa55, emissive: 0xff5500, emissiveIntensity: 0.8, side: THREE.DoubleSide, transparent: true }));
                 ring.rotation.x = -Math.PI/2;
                 ring.position.y = 0.1;
                 scene.add(ring);
@@ -676,13 +754,13 @@
             
             function calculateLanding(dist) {
                 if(!character) return null;
-                const start = character.position.clone().add(new THREE.Vector3(0, 1.5, 0));
+                const start = character.position.clone().add(new THREE.Vector3(0, 1.48, 0));
                 const forwardAngle = character.rotation.y;
                 const dir = new THREE.Vector3(Math.sin(forwardAngle), 0, Math.cos(forwardAngle));
                 const angleRad = 0.73;
-                const gravity = 0.025;
+                const gravity = 0.024;
                 let speed = Math.sqrt((dist * gravity) / Math.sin(2 * angleRad));
-                speed = Math.min(2.5, Math.max(0.85, speed));
+                speed = Math.min(2.4, Math.max(0.85, speed));
                 const vx = dir.x * Math.cos(angleRad) * speed;
                 const vz = dir.z * Math.cos(angleRad) * speed;
                 const vy = Math.sin(angleRad) * speed;
@@ -701,7 +779,7 @@
                 const pos = calculateLanding(throwDistance);
                 if(landingMarker && pos) {
                     landingMarker.position.set(pos.x, 0.12, pos.z);
-                    landingMarker.material.emissiveIntensity = 0.7 + Math.sin(Date.now() * 0.012) * 0.35;
+                    landingMarker.material.emissiveIntensity = 0.65 + Math.sin(Date.now() * 0.01) * 0.4;
                 }
             }
             
@@ -709,37 +787,41 @@
                 if(!character || throwCooldown || !modelLoaded) return;
                 throwCooldown = true;
                 removeHandBomb();
-                const start = character.position.clone().add(new THREE.Vector3(0, 1.5, 0));
+                const start = character.position.clone().add(new THREE.Vector3(0, 1.48, 0));
                 const forwardAngle = character.rotation.y;
                 const dir = new THREE.Vector3(Math.sin(forwardAngle), 0, Math.cos(forwardAngle));
                 const angleRad = 0.73;
-                const gravity = 0.025;
+                const gravity = 0.024;
                 let speed = Math.sqrt((throwDistance * gravity) / Math.sin(2 * angleRad));
-                speed = Math.min(2.5, Math.max(0.85, speed));
+                speed = Math.min(2.4, Math.max(0.85, speed));
                 const vx = dir.x * Math.cos(angleRad) * speed;
                 const vz = dir.z * Math.cos(angleRad) * speed;
                 const vy = Math.sin(angleRad) * speed;
-                const bomb = new THREE.Mesh(new THREE.SphereGeometry(0.5, 28, 28), new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.9 }));
-                const fuse = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.16, 0.55, 8), new THREE.MeshStandardMaterial({ color: 0xff6633 }));
+                const bomb = new THREE.Mesh(new THREE.SphereGeometry(0.48, 28, 28), 
+                    new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.9 }));
+                const fuse = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.15, 0.55, 8), 
+                    new THREE.MeshStandardMaterial({ color: 0xff6633 }));
                 fuse.position.y = 0.58;
                 bomb.add(fuse);
                 bomb.position.copy(start);
                 bomb.castShadow = true;
                 scene.add(bomb);
-                bombs.push({ mesh: bomb, vel: new THREE.Vector3(vx, vy, vz), life: 320, gravity: gravity });
-                setTimeout(() => { createHandBomb(); throwCooldown = false; }, 380);
+                bombs.push({ mesh: bomb, vel: new THREE.Vector3(vx, vy, vz), life: 330, gravity: gravity });
+                setTimeout(() => { createHandBomb(); throwCooldown = false; }, 400);
             }
             
             function explode(pos) {
-                const flash = new THREE.Mesh(new THREE.SphereGeometry(3.5, 16, 16), new THREE.MeshBasicMaterial({ color: 0xff8844, transparent: true, opacity: 0.9 }));
+                const flash = new THREE.Mesh(new THREE.SphereGeometry(3.5, 16, 16), 
+                    new THREE.MeshBasicMaterial({ color: 0xff8844, transparent: true, opacity: 0.9 }));
                 flash.position.copy(pos);
                 scene.add(flash);
                 setTimeout(() => scene.remove(flash), 150);
-                for(let i = 0; i < 100; i++) {
-                    const p = new THREE.Mesh(new THREE.SphereGeometry(0.15 + Math.random() * 0.25), new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4400 }));
+                for(let i = 0; i < 90; i++) {
+                    const p = new THREE.Mesh(new THREE.SphereGeometry(0.14 + Math.random() * 0.26), 
+                        new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4400 }));
                     p.position.copy(pos);
                     scene.add(p);
-                    particles.push({ mesh: p, vel: new THREE.Vector3((Math.random() - 0.5) * 3.2, Math.random() * 2.2, (Math.random() - 0.5) * 3.2), life: 0, maxLife: 65, gravity: 0.018 });
+                    particles.push({ mesh: p, vel: new THREE.Vector3((Math.random() - 0.5) * 3, Math.random() * 2, (Math.random() - 0.5) * 3), life: 0, maxLife: 60, gravity: 0.018 });
                 }
                 for(let i = 0; i < targets.length; i++) {
                     if(targets[i].position.distanceTo(pos) < BLAST_RADIUS) {
@@ -758,7 +840,7 @@
                     const b = bombs[i];
                     b.mesh.position.add(b.vel);
                     b.vel.y -= b.gravity;
-                    b.mesh.rotation.x += 0.28;
+                    b.mesh.rotation.x += 0.25;
                     if(b.mesh.position.y < 0.2) { explode(b.mesh.position); scene.remove(b.mesh); bombs.splice(i,1); continue; }
                     b.life--;
                     if(b.life <= 0) { explode(b.mesh.position); scene.remove(b.mesh); bombs.splice(i,1); }
@@ -776,18 +858,18 @@
             }
             
             function handleJumpPhysics() {
-                if(jumpRequested && isGrounded) { 
-                    velocityY = JUMP_FORCE; 
-                    isGrounded = false; 
-                    jumpRequested = false; 
+                if(jumpRequested && isGrounded) {
+                    velocityY = JUMP_FORCE;
+                    isGrounded = false;
+                    jumpRequested = false;
                 }
                 if(!isGrounded) {
                     character.position.y += velocityY;
                     velocityY -= GRAVITY;
-                    if(character.position.y <= 0) { 
-                        character.position.y = 0; 
-                        isGrounded = true; 
-                        velocityY = 0; 
+                    if(character.position.y <= 0) {
+                        character.position.y = 0;
+                        isGrounded = true;
+                        velocityY = 0;
                     }
                 } else {
                     character.position.y = 0;
@@ -802,13 +884,13 @@
                     character.position.x += Math.sin(finalAngle) * SPEED;
                     character.position.z += Math.cos(finalAngle) * SPEED;
                     character.rotation.y = finalAngle;
-                    const limit = 140;
+                    const limit = 135;
                     character.position.x = Math.min(limit, Math.max(-limit, character.position.x));
                     character.position.z = Math.min(limit, Math.max(-limit, character.position.z));
                     if(animations['walking'] && currentAction !== animations['walking'] && mixer) {
-                        if(currentAction) currentAction.fadeOut(0.1);
+                        if(currentAction) currentAction.fadeOut(0.12);
                         currentAction = animations['walking'];
-                        currentAction.reset().fadeIn(0.1).play();
+                        currentAction.reset().fadeIn(0.12).play();
                     }
                 } else {
                     if(animations['idle'] && currentAction !== animations['idle'] && mixer) {
@@ -821,15 +903,15 @@
             
             function updateCamera() {
                 if(!character) return;
-                if(dragActive) targetYaw = dragOffset;
+                if(cameraDragActive) targetYaw = dragOffset;
                 else targetYaw = targetYaw * 0.96 + character.rotation.y * 0.04;
-                cameraYaw += (targetYaw - cameraYaw) * 0.12;
-                const dist = 10.5;
+                cameraYaw += (targetYaw - cameraYaw) * 0.09;
+                const dist = 10;
                 const camX = character.position.x - Math.sin(cameraYaw) * dist * Math.cos(cameraPitch);
                 const camZ = character.position.z - Math.cos(cameraYaw) * dist * Math.cos(cameraPitch);
-                const camY = character.position.y + 1.8 + Math.sin(cameraPitch) * dist * 0.5;
+                const camY = character.position.y + 1.7 + Math.sin(cameraPitch) * dist * 0.55;
                 camera.position.set(camX, camY, camZ);
-                camera.lookAt(character.position.clone().add(new THREE.Vector3(0, 1.3, 0)));
+                camera.lookAt(character.position.clone().add(new THREE.Vector3(0, 1.25, 0)));
             }
             
             const clock = new THREE.Clock();
@@ -837,17 +919,14 @@
             function animate() {
                 requestAnimationFrame(animate);
                 if(!character) return;
-                updateKeyboard();
+                updateKeyboardMove();
                 handleJumpPhysics();
                 handleMovement();
                 updateBombs();
                 updateParticles();
                 updateLandingMarker();
                 updateCamera();
-                if(throwRequested && !throwCooldown && modelLoaded) { 
-                    throwBombAction(); 
-                    throwRequested = false; 
-                }
+                if(throwRequested && !throwCooldown && modelLoaded) { throwBombAction(); throwRequested = false; }
                 if(mixer) mixer.update(clock.getDelta());
                 renderer.render(scene, camera);
             }
@@ -859,12 +938,10 @@
                 camera.aspect = window.innerWidth / window.innerHeight;
                 camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
-                initSliderPos();
+                initSlider();
             });
             
-            setInterval(() => { 
-                if(modelLoaded && handBone && !bombInHand && !throwCooldown) createHandBomb(); 
-            }, 600);
+            setInterval(() => { if(modelLoaded && handBone && !bombInHand && !throwCooldown) createHandBomb(); }, 700);
         })();
     </script>
 </body>
