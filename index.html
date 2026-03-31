@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Dwarf Bomber - Precision Edition | 100% Accurate Controls</title>
+    <title>Dwarf Bomber - ULTIMATE | Fixed Controls + 3x Blast Radius</title>
     <style>
         * {
             box-sizing: border-box;
@@ -314,8 +314,8 @@
 </head>
 <body>
     <div id="loading-screen">
-        💣 DWARF BOMBER - PRECISION EDITION 💣<br>
-        <span>🎯 100% ACCURATE CONTROLS | PRECISE AIMING 🎯</span>
+        💣 DWARF BOMBER - ULTIMATE EDITION 💣<br>
+        <span>🔥 3x BLAST RADIUS | FIXED CONTROLS | LIVE PREDICTOR 🔥</span>
         <div style="width: 200px; height: 4px; background: #333; border-radius: 2px; overflow: hidden; margin-top: 10px;">
             <div style="width: 0%; height: 100%; background: #ffaa55; transition: width 0.3s;" id="loading-bar"></div>
         </div>
@@ -328,7 +328,7 @@
             <div class="line-h"></div>
             <div class="line-v"></div>
         </div>
-        <div id="info-panel">🎮 JOYSTICK: → ← ↑ ↓ | PRECISION AIMING SYSTEM 🎯</div>
+        <div id="info-panel">🎮 JOYSTICK: → RIGHT | ← LEFT | ↑ FORWARD | ↓ BACK | 3x EXPLOSION RADIUS 💥</div>
         <div id="score-panel">💥 <span id="score">0</span></div>
         
         <div id="left-zone">
@@ -350,7 +350,7 @@
             <button class="action-btn" id="btn-jump">🦘 JUMP</button>
             <button class="action-btn" id="btn-throw">💣 THROW</button>
         </div>
-        <div class="bomb-marker-text">🎯 ORANGE RING = EXACT BOMB LANDING POSITION</div>
+        <div class="bomb-marker-text">🎯 ORANGE RING = EXACT BOMB LANDING (UPDATES WITH SLIDER)</div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -418,52 +418,43 @@
             let modelLoaded = false;
             const CHARACTER_SPEED = 0.42;
             
-            // Create high-quality dwarf character
             function createDwarfCharacter() {
                 const group = new THREE.Group();
-                
-                // Body
                 const body = new THREE.Mesh(new THREE.CylinderGeometry(0.68, 0.72, 1.35, 8), 
                     new THREE.MeshStandardMaterial({ color: 0x4aae77, metalness: 0.25, roughness: 0.4 }));
                 body.castShadow = true;
                 body.position.y = 0.68;
                 group.add(body);
                 
-                // Head
                 const head = new THREE.Mesh(new THREE.SphereGeometry(0.6, 32, 32), 
                     new THREE.MeshStandardMaterial({ color: 0xffddbb, roughness: 0.3 }));
                 head.castShadow = true;
                 head.position.y = 1.38;
                 group.add(head);
                 
-                // Helmet
                 const helmet = new THREE.Mesh(new THREE.ConeGeometry(0.64, 0.58, 8), 
                     new THREE.MeshStandardMaterial({ color: 0xccaa77, metalness: 0.7, roughness: 0.2 }));
                 helmet.position.y = 1.72;
                 helmet.castShadow = true;
                 group.add(helmet);
                 
-                // Beard
                 const beard = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.6, 0.48, 6), 
                     new THREE.MeshStandardMaterial({ color: 0xcc8855, roughness: 0.6 }));
                 beard.position.y = 1.2;
                 beard.castShadow = true;
                 group.add(beard);
                 
-                // Right hand (for bomb)
                 const rightHand = new THREE.Group();
                 rightHand.position.set(0.7, 1.08, 0.3);
                 group.add(rightHand);
                 handBone = rightHand;
                 
-                // Left hand
                 const leftHand = new THREE.Mesh(new THREE.SphereGeometry(0.27, 8, 8), 
                     new THREE.MeshStandardMaterial({ color: 0xffccaa }));
                 leftHand.position.set(-0.7, 1.08, 0.3);
                 leftHand.castShadow = true;
                 group.add(leftHand);
                 
-                // Belt
                 const belt = new THREE.Mesh(new THREE.TorusGeometry(0.7, 0.08, 16, 32), 
                     new THREE.MeshStandardMaterial({ color: 0xaa8866, metalness: 0.5 }));
                 belt.rotation.x = Math.PI / 2;
@@ -565,23 +556,23 @@
             let throwRequested = false;
             
             // Keyboard support
-            const keys = { ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false, w: false, s: false, a: false, d: false };
+            const keys = { w: false, s: false, a: false, d: false };
             window.addEventListener('keydown', (e) => {
-                if(e.code === 'KeyW' || e.code === 'ArrowUp') keys.w = true;
-                if(e.code === 'KeyS' || e.code === 'ArrowDown') keys.s = true;
-                if(e.code === 'KeyA' || e.code === 'ArrowLeft') keys.a = true;
-                if(e.code === 'KeyD' || e.code === 'ArrowRight') keys.d = true;
+                if(e.code === 'KeyW') keys.w = true;
+                if(e.code === 'KeyS') keys.s = true;
+                if(e.code === 'KeyA') keys.a = true;
+                if(e.code === 'KeyD') keys.d = true;
                 if(e.code === 'Space') { e.preventDefault(); jumpRequested = true; }
                 if(e.code === 'KeyF') { e.preventDefault(); throwRequested = true; }
             });
             window.addEventListener('keyup', (e) => {
-                if(e.code === 'KeyW' || e.code === 'ArrowUp') keys.w = false;
-                if(e.code === 'KeyS' || e.code === 'ArrowDown') keys.s = false;
-                if(e.code === 'KeyA' || e.code === 'ArrowLeft') keys.a = false;
-                if(e.code === 'KeyD' || e.code === 'ArrowRight') keys.d = false;
+                if(e.code === 'KeyW') keys.w = false;
+                if(e.code === 'KeyS') keys.s = false;
+                if(e.code === 'KeyA') keys.a = false;
+                if(e.code === 'KeyD') keys.d = false;
             });
             
-            // ========== JOYSTICK - PERFECT DIRECTION ==========
+            // ========== JOYSTICK - FIXED DIRECTION (RIGHT/LEFT CORRECT) ==========
             const leftZone = document.getElementById('left-zone');
             const joystickBase = document.getElementById('joystick-base');
             const joystickThumb = document.getElementById('joystick-thumb');
@@ -600,9 +591,9 @@
                 
                 joystickThumb.style.transform = `translate(calc(-50% + ${limitedX}px), calc(-50% + ${limitedY}px))`;
                 
-                // PERFECT DIRECTION MAPPING
+                // FIXED: Correct direction mapping - RIGHT/LEFT now correct
                 // Right = positive X, Left = negative X
-                // Up = negative Y (since screen Y increases downward), Down = positive Y
+                // Up = negative Y (screen Y increases downward), Down = positive Y
                 moveX = limitedX / MAX_RADIUS;
                 moveZ = -limitedY / MAX_RADIUS;
             }
@@ -715,7 +706,7 @@
                 else dragYaw = 0;
             });
             
-            // ========== DISTANCE SLIDER ==========
+            // ========== DISTANCE SLIDER - LIVE PREDICTOR ==========
             const sliderArea = document.getElementById('slider-area');
             const sliderThumb = document.getElementById('slider-thumb');
             let throwDistance = 12.5;
@@ -731,6 +722,7 @@
                 document.getElementById('dist-value').innerText = throwDistance.toFixed(1);
                 let thumbOffset = t * (rect.height - 52);
                 sliderThumb.style.marginBottom = `${thumbOffset}px`;
+                // Update marker immediately when slider changes
                 updateLandingMarker();
             }
             
@@ -788,7 +780,7 @@
             
             throwBtn.addEventListener('mousedown', () => { throwRequested = true; });
             throwBtn.addEventListener('touchstart', (e) => { e.preventDefault(); throwRequested = true; });
-            throwBtn.addEventListener('mouseup', () => { setTimeout(() => { jumpRequested = false; }, 80); });
+            throwBtn.addEventListener('mouseup', () => { setTimeout(() => { throwRequested = false; }, 80); });
             throwBtn.addEventListener('touchend', () => { setTimeout(() => { throwRequested = false; }, 80); });
             
             // ========== GAME MECHANICS ==========
@@ -801,6 +793,9 @@
             let isGrounded = true;
             const GRAVITY = 0.024;
             const JUMP_FORCE = 0.55;
+            
+            // BLAST RADIUS - INCREASED 3x (from 3.2 to 9.6)
+            const BLAST_RADIUS = 9.6;
             
             // ========== PRECISION BOMB PREDICTOR ==========
             let landingMarker = null;
@@ -897,28 +892,31 @@
             }
             
             function explode(position) {
-                const flash = new THREE.Mesh(new THREE.SphereGeometry(2.2, 16, 16), 
-                    new THREE.MeshBasicMaterial({ color: 0xff8844, transparent: true, opacity: 0.95 }));
+                // Larger flash effect for 3x radius
+                const flash = new THREE.Mesh(new THREE.SphereGeometry(3.5, 20, 20), 
+                    new THREE.MeshBasicMaterial({ color: 0xff8844, transparent: true, opacity: 0.9 }));
                 flash.position.copy(position);
                 scene.add(flash);
-                setTimeout(() => scene.remove(flash), 130);
+                setTimeout(() => scene.remove(flash), 150);
                 
-                for(let i = 0; i < 60; i++) {
-                    const particle = new THREE.Mesh(new THREE.SphereGeometry(0.13 + Math.random() * 0.24), 
+                // More particles for bigger explosion
+                for(let i = 0; i < 120; i++) {
+                    const particle = new THREE.Mesh(new THREE.SphereGeometry(0.15 + Math.random() * 0.3), 
                         new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4400 }));
                     particle.position.copy(position);
                     scene.add(particle);
                     particles.push({
                         mesh: particle,
-                        vel: new THREE.Vector3((Math.random() - 0.5) * 2.5, Math.random() * 1.8, (Math.random() - 0.5) * 2.5),
+                        vel: new THREE.Vector3((Math.random() - 0.5) * 3.5, Math.random() * 2.5, (Math.random() - 0.5) * 3.5),
                         life: 0,
-                        maxLife: 60,
-                        gravity: 0.02
+                        maxLife: 70,
+                        gravity: 0.018
                     });
                 }
                 
+                // 3x blast radius - hit targets within 9.6 units
                 for(let i = 0; i < targets.length; i++) {
-                    if(targets[i].mesh.position.distanceTo(position) < 3.2) {
+                    if(targets[i].mesh.position.distanceTo(position) < BLAST_RADIUS) {
                         scene.remove(targets[i].mesh);
                         targets.splice(i, 1);
                         score++;
