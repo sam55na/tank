@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Dwarf Bomber - Ultimate Arcade | Fixed Joystick & Slider</title>
+    <title>Dwarf Bomber - FINAL | Fixed Joystick Direction</title>
     <style>
         * {
             box-sizing: border-box;
@@ -25,7 +25,6 @@
             height: 100%;
         }
 
-        /* UI Overlay */
         #ui-overlay {
             position: absolute;
             top: 0;
@@ -36,7 +35,6 @@
             z-index: 30;
         }
 
-        /* Crosshair */
         #crosshair {
             position: absolute;
             top: 50%;
@@ -92,7 +90,6 @@
             transform: translateX(-50%);
         }
 
-        /* Info Panels */
         #info-panel {
             position: absolute;
             top: 15px;
@@ -125,7 +122,6 @@
             text-shadow: 0 0 5px rgba(0,0,0,0.5);
         }
 
-        /* LEFT ZONE - Movement Joystick - BOTTOM LEFT CORNER */
         #left-zone {
             position: absolute;
             bottom: 0;
@@ -142,7 +138,7 @@
             left: 30px;
             width: 120px;
             height: 120px;
-            background: rgba(0,0,0,0.6);
+            background: rgba(0,0,0,0.65);
             backdrop-filter: blur(12px);
             border-radius: 50%;
             border: 3px solid #ffaa55;
@@ -159,11 +155,10 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            transition: transform 0.03s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            transition: transform 0.02s linear;
             will-change: transform;
         }
 
-        /* RIGHT ZONE - Camera Control */
         #right-zone {
             position: absolute;
             bottom: 0;
@@ -186,7 +181,6 @@
             backdrop-filter: blur(4px);
         }
 
-        /* Distance Slider */
         #slider-area {
             position: absolute;
             bottom: 100px;
@@ -240,7 +234,6 @@
             border-radius: 20px;
         }
 
-        /* Action Buttons */
         #action-buttons {
             position: absolute;
             bottom: 100px;
@@ -319,8 +312,8 @@
 </head>
 <body>
     <div id="loading-screen">
-        💣 DWARF BOMBER - ULTIMATE EDITION 💣<br>
-        <span>⚡ FIXED JOYSTICK | LIVE PREDICTOR ⚡</span>
+        💣 DWARF BOMBER - FINAL EDITION 💣<br>
+        <span>✅ JOYSTICK DIRECTION FIXED | LIVE PREDICTOR ✅</span>
         <div style="width: 200px; height: 4px; background: #333; border-radius: 2px; overflow: hidden; margin-top: 10px;">
             <div style="width: 0%; height: 100%; background: #ffaa55; transition: width 0.3s;" id="loading-bar"></div>
         </div>
@@ -333,7 +326,7 @@
             <div class="line-h"></div>
             <div class="line-v"></div>
         </div>
-        <div id="info-panel">⚡ JOYSTICK LEFT | SLIDER CHANGES BOMB DISTANCE LIVE ⚡</div>
+        <div id="info-panel">🎮 JOYSTICK: RIGHT=يمين | LEFT=يسار | UP=أمام | DOWN=خلف 🎮</div>
         <div id="score-panel">💥 <span id="score">0</span></div>
         
         <div id="left-zone">
@@ -342,7 +335,7 @@
         </div>
         
         <div id="right-zone">
-            <div class="camera-hint">🎥 DRAG TO ROTATE | RELEASE TO FOLLOW</div>
+            <div class="camera-hint">🎥 اسحب لتدوير الكاميرا | اترك لتعود خلف اللاعب</div>
         </div>
         
         <div id="slider-area">
@@ -355,7 +348,7 @@
             <button class="action-btn" id="btn-jump">🦘 JUMP</button>
             <button class="action-btn" id="btn-throw">💣 THROW</button>
         </div>
-        <div class="bomb-marker-text">🎯 ORANGE RING = REAL-TIME BOMB PREDICTION</div>
+        <div class="bomb-marker-text">🎯 الدائرة البرتقالية = مكان سقوط القنبلة (يتغير مع المنزلق)</div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -596,8 +589,8 @@
                 
                 joystickThumb.style.transform = `translate(calc(-50% + ${limitedX}px), calc(-50% + ${limitedY}px))`;
                 
-                // FIXED: Correct direction mapping - right/left now correct
-                // X: positive = right, negative = left
+                // FIXED: Correct direction mapping
+                // X: positive = right, negative = left (correct!)
                 // Z: positive = forward (up), negative = backward (down)
                 let normX = limitedX / maxRadius;
                 let normZ = -limitedY / maxRadius;
@@ -616,7 +609,6 @@
                 activeTouchId = null;
             }
             
-            // Touch start on joystick area
             leftZone.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 const rect = joystickBase.getBoundingClientRect();
@@ -636,7 +628,6 @@
                 }
             });
             
-            // Global touch move - track active joystick touch
             window.addEventListener('touchmove', (e) => {
                 if(!joystickActive || activeTouchId === null) return;
                 
@@ -649,11 +640,9 @@
                 }
             });
             
-            // Global touch end - reset if active touch ends
             window.addEventListener('touchend', (e) => {
                 if(!joystickActive) return;
                 
-                // Check if the active touch is gone
                 let stillActive = false;
                 for(let i = 0; i < e.touches.length; i++) {
                     if(e.touches[i].identifier === activeTouchId) {
@@ -708,7 +697,6 @@
             
             window.addEventListener('touchend', () => {
                 dragActive = false;
-                // Smooth return
                 let startDrag = dragYaw;
                 let startTime = performance.now();
                 function animateReturn(now) {
@@ -724,7 +712,7 @@
                 else dragYaw = 0;
             });
             
-            // ========== DISTANCE SLIDER - LIVE UPDATE ==========
+            // ========== DISTANCE SLIDER ==========
             const sliderArea = document.getElementById('slider-area');
             const sliderThumb = document.getElementById('slider-thumb');
             let throwDistance = 12.5;
@@ -742,7 +730,6 @@
                 let thumbOffset = t * (rect.height - 48);
                 sliderThumb.style.marginBottom = `${thumbOffset}px`;
                 
-                // Force immediate marker update
                 updateLandingMarker();
             }
             
@@ -814,7 +801,7 @@
             const GRAVITY = 0.024;
             const JUMP_FORCE = 0.54;
             
-            // ========== BOMB LANDING PREDICTOR - LIVE WITH SLIDER ==========
+            // ========== BOMB LANDING PREDICTOR ==========
             let landingMarker = null;
             
             function createLandingMarker() {
