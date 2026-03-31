@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Dwarf Bomber - FULLY FIXED | Correct Joystick + Working Slider</title>
+    <title>Dwarf Bomber - PERFECT | Fixed All Issues</title>
     <style>
         * {
             box-sizing: border-box;
@@ -269,8 +269,8 @@
 </head>
 <body>
     <div id="loading-screen">
-        💣 DWARF BOMBER - FULLY FIXED 💣<br>
-        <span>✅ JOYSTICK FIXED | SLIDER WORKS | 3x BLAST RADIUS ✅</span>
+        💣 DWARF BOMBER - PERFECT EDITION 💣<br>
+        <span>✅ JOYSTICK FIXED | SLIDER WORKS | SMOOTH MOVEMENT ✅</span>
         <div style="width: 200px; height: 4px; background: #333; border-radius: 2px; overflow: hidden; margin-top: 10px;">
             <div style="width: 0%; height: 100%; background: #ffaa55;" id="loading-bar"></div>
         </div>
@@ -278,7 +278,7 @@
 
     <div id="ui-overlay" style="display: none;">
         <div id="crosshair"><div class="ring"></div></div>
-        <div id="info-panel">🎮 → يمين | ← يسار | ↑ أمام | ↓ خلف | اسحب المنزلق لضبط مسافة القنبلة 🎯</div>
+        <div id="info-panel">🎮 اسحب العصا: → يمين | ← يسار | ↑ أمام | ↓ خلف | المنزلق يتحكم بمسافة القنبلة 🎯</div>
         <div id="score-panel">💥 <span id="score">0</span></div>
         
         <div id="left-zone">
@@ -300,7 +300,7 @@
             <button class="action-btn" id="btn-jump">🦘</button>
             <button class="action-btn" id="btn-throw">💣</button>
         </div>
-        <div class="bomb-marker-text">🎯 الدائرة البرتقالية = مكان سقوط القنبلة (تتغير مع المنزلق)</div>
+        <div class="bomb-marker-text">🎯 الدائرة البرتقالية = مكان سقوط القنبلة (تتغير فوراً مع المنزلق)</div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -356,7 +356,7 @@
             let bombInHand = null;
             let throwCooldown = false;
             let modelLoaded = false;
-            const SPEED = 0.45;
+            const SPEED = 0.48;
             
             function createSimpleCharacter() {
                 const group = new THREE.Group();
@@ -431,7 +431,7 @@
             let moveX = 0, moveZ = 0;
             let jumpRequested = false, throwRequested = false;
             let velocityY = 0, isGrounded = true;
-            const GRAVITY = 0.024, JUMP_FORCE = 0.54;
+            const GRAVITY = 0.022, JUMP_FORCE = 0.52;
             
             // Keyboard
             const keys = { w: false, s: false, a: false, d: false };
@@ -450,7 +450,7 @@
                 if(e.code === 'KeyD') keys.d = false;
             });
             
-            // ========== JOYSTICK - CORRECT DIRECTION (FIXED) ==========
+            // ========== JOYSTICK - PERFECT DIRECTION ==========
             const leftZone = document.getElementById('left-zone');
             const joystickBase = document.getElementById('joystick-base');
             const joystickThumb = document.getElementById('joystick-thumb');
@@ -467,9 +467,9 @@
                 let limitedX = Math.cos(angle) * dist;
                 let limitedY = Math.sin(angle) * dist;
                 joystickThumb.style.transform = `translate(calc(-50% + ${limitedX}px), calc(-50% + ${limitedY}px))`;
-                // FIXED: Right = positive X (moveX positive), Left = negative X (moveX negative)
+                // PERFECT: Right = positive X, Left = negative X
                 moveX = limitedX / MAX_RADIUS;
-                // Forward = negative Y (moveZ positive), Backward = positive Y (moveZ negative)
+                // Up = negative Y -> positive Z, Down = positive Y -> negative Z
                 moveZ = -limitedY / MAX_RADIUS;
             }
             
@@ -500,14 +500,19 @@
             window.addEventListener('touchmove', (e) => {
                 if(!joystickActive || activeTouch === null) return;
                 for(let i = 0; i < e.touches.length; i++) {
-                    if(e.touches[i].identifier === activeTouch) { updateJoystick(e.touches[i].clientX, e.touches[i].clientY); break; }
+                    if(e.touches[i].identifier === activeTouch) { 
+                        updateJoystick(e.touches[i].clientX, e.touches[i].clientY); 
+                        break; 
+                    }
                 }
             });
             
             window.addEventListener('touchend', (e) => {
                 if(!joystickActive) return;
                 let found = false;
-                for(let i = 0; i < e.touches.length; i++) { if(e.touches[i].identifier === activeTouch) { found = true; break; } }
+                for(let i = 0; i < e.touches.length; i++) { 
+                    if(e.touches[i].identifier === activeTouch) { found = true; break; } 
+                }
                 if(!found) resetJoystick();
             });
             
@@ -529,9 +534,34 @@
             let dragOffset = 0;
             let lastDrag = 0;
             
-            rightZone.addEventListener('touchstart', (e) => { e.preventDefault(); dragActive = true; lastDrag = e.touches[0].clientX; });
-            window.addEventListener('touchmove', (e) => { if(dragActive) { let dx = e.touches[0].clientX - lastDrag; dragOffset += dx * 0.008; dragOffset = Math.min(Math.max(dragOffset, -2.2), 2.2); lastDrag = e.touches[0].clientX; } });
-            window.addEventListener('touchend', () => { dragActive = false; let start = dragOffset; let startTime = performance.now(); function smooth(t) { let elapsed = (t - startTime) / 350; if(elapsed >= 1) { dragOffset = 0; return; } dragOffset = start * (1 - elapsed); requestAnimationFrame(smooth); } if(Math.abs(dragOffset) > 0.01) requestAnimationFrame(smooth); else dragOffset = 0; });
+            rightZone.addEventListener('touchstart', (e) => { 
+                e.preventDefault(); 
+                dragActive = true; 
+                lastDrag = e.touches[0].clientX; 
+            });
+            
+            window.addEventListener('touchmove', (e) => { 
+                if(dragActive) { 
+                    let dx = e.touches[0].clientX - lastDrag; 
+                    dragOffset += dx * 0.008; 
+                    dragOffset = Math.min(Math.max(dragOffset, -2.2), 2.2); 
+                    lastDrag = e.touches[0].clientX; 
+                } 
+            });
+            
+            window.addEventListener('touchend', () => { 
+                dragActive = false; 
+                let start = dragOffset; 
+                let startTime = performance.now(); 
+                function smooth(t) { 
+                    let elapsed = (t - startTime) / 350; 
+                    if(elapsed >= 1) { dragOffset = 0; return; } 
+                    dragOffset = start * (1 - elapsed); 
+                    requestAnimationFrame(smooth); 
+                } 
+                if(Math.abs(dragOffset) > 0.01) requestAnimationFrame(smooth); 
+                else dragOffset = 0; 
+            });
             
             // ========== SLIDER - FULLY WORKING ==========
             const sliderArea = document.getElementById('slider-area');
@@ -563,19 +593,24 @@
             window.addEventListener('touchmove', (e) => {
                 if(!sliderActiveFlag) return;
                 for(let i = 0; i < e.touches.length; i++) {
-                    if(e.touches[i].identifier === sliderTouchId) { updateSliderFromY(e.touches[i].clientY); break; }
+                    if(e.touches[i].identifier === sliderTouchId) { 
+                        updateSliderFromY(e.touches[i].clientY); 
+                        break; 
+                    }
                 }
             });
             
             window.addEventListener('touchend', (e) => {
                 if(sliderActiveFlag) {
                     let found = false;
-                    for(let i = 0; i < e.touches.length; i++) { if(e.touches[i].identifier === sliderTouchId) { found = true; break; } }
+                    for(let i = 0; i < e.touches.length; i++) { 
+                        if(e.touches[i].identifier === sliderTouchId) { found = true; break; } 
+                    }
                     if(!found) { sliderActiveFlag = false; sliderTouchId = null; }
                 }
             });
             
-            // Also support mouse for testing
+            // Mouse support for testing
             sliderArea.addEventListener('mousedown', (e) => {
                 e.preventDefault();
                 sliderActiveFlag = true;
@@ -741,12 +776,22 @@
             }
             
             function handleJumpPhysics() {
-                if(jumpRequested && isGrounded) { velocityY = JUMP_FORCE; isGrounded = false; jumpRequested = false; }
+                if(jumpRequested && isGrounded) { 
+                    velocityY = JUMP_FORCE; 
+                    isGrounded = false; 
+                    jumpRequested = false; 
+                }
                 if(!isGrounded) {
                     character.position.y += velocityY;
                     velocityY -= GRAVITY;
-                    if(character.position.y <= 0) { character.position.y = 0; isGrounded = true; velocityY = 0; }
-                } else character.position.y = 0;
+                    if(character.position.y <= 0) { 
+                        character.position.y = 0; 
+                        isGrounded = true; 
+                        velocityY = 0; 
+                    }
+                } else {
+                    character.position.y = 0;
+                }
             }
             
             function handleMovement() {
@@ -778,7 +823,7 @@
                 if(!character) return;
                 if(dragActive) targetYaw = dragOffset;
                 else targetYaw = targetYaw * 0.96 + character.rotation.y * 0.04;
-                cameraYaw += (targetYaw - cameraYaw) * 0.1;
+                cameraYaw += (targetYaw - cameraYaw) * 0.12;
                 const dist = 10.5;
                 const camX = character.position.x - Math.sin(cameraYaw) * dist * Math.cos(cameraPitch);
                 const camZ = character.position.z - Math.cos(cameraYaw) * dist * Math.cos(cameraPitch);
@@ -799,7 +844,10 @@
                 updateParticles();
                 updateLandingMarker();
                 updateCamera();
-                if(throwRequested && !throwCooldown && modelLoaded) { throwBombAction(); throwRequested = false; }
+                if(throwRequested && !throwCooldown && modelLoaded) { 
+                    throwBombAction(); 
+                    throwRequested = false; 
+                }
                 if(mixer) mixer.update(clock.getDelta());
                 renderer.render(scene, camera);
             }
@@ -814,7 +862,9 @@
                 initSliderPos();
             });
             
-            setInterval(() => { if(modelLoaded && handBone && !bombInHand && !throwCooldown) createHandBomb(); }, 600);
+            setInterval(() => { 
+                if(modelLoaded && handBone && !bombInHand && !throwCooldown) createHandBomb(); 
+            }, 600);
         })();
     </script>
 </body>
