@@ -2,841 +2,243 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Dwarf Bomber - Dual Zone | Multi-Touch Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Dwarf Bomber - Fixed & Ready</title>
     <style>
-        * {
-            box-sizing: border-box;
-            touch-action: none;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { box-sizing: border-box; touch-action: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
+        
+        /* واجهة اللمس */
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
+        .touch-region { pointer-events: auto; position: absolute; bottom: 0; height: 100%; width: 50%; }
+        #left-region { left: 0; }
+        #right-region { right: 0; }
 
-        body {
-            margin: 0;
-            overflow: hidden;
-            background: #0a2f1f;
-            font-family: 'Segoe UI', 'Tahoma', system-ui, -apple-system, sans-serif;
-        }
+        /* الجويستك */
+        #joy-base { position: absolute; bottom: 50px; left: 50px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; }
+        #joy-stick { position: absolute; top: 50%; left: 50%; width: 50px; height: 50px; background: #ffaa44; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 15px rgba(255,170,68,0.6); }
 
-        /* Canvas fullscreen */
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
+        /* التحكم بالمسافة (يسار) */
+        #dist-container { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); width: 45px; height: 220px; background: rgba(0,0,0,0.6); border-radius: 25px; border: 1px solid #ffaa44; display: flex; flex-direction: column; align-items: center; padding: 15px 0; pointer-events: auto; }
+        #dist-slider { appearance: none; width: 180px; height: 10px; background: #333; border-radius: 5px; transform: rotate(-90deg); margin-top: 85px; cursor: pointer; }
+        #dist-slider::-webkit-slider-thumb { appearance: none; width: 25px; height: 25px; background: #ffaa44; border-radius: 50%; border: 2px solid #fff; }
 
-        /* UI Overlay */
-        #ui-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 30;
-        }
+        /* الأزرار (يمين) */
+        #action-container { position: absolute; bottom: 40px; right: 30px; display: flex; flex-direction: column; gap: 20px; pointer-events: auto; }
+        .btn { width: 75px; height: 75px; border-radius: 50%; border: 2px solid #ffaa44; background: rgba(0,0,0,0.5); color: white; font-size: 30px; display: flex; align-items: center; justify-content: center; }
+        .btn:active { background: #ffaa44; transform: scale(0.9); }
+        #throw-btn { width: 95px; height: 95px; border-width: 4px; font-size: 40px; }
 
-        /* Crosshair */
-        #crosshair {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 32px;
-            height: 32px;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-            z-index: 40;
-        }
-        #crosshair .dot {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 6px;
-            height: 6px;
-            background: #ffaa44;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            box-shadow: 0 0 8px rgba(0,0,0,0.8);
-        }
-        #crosshair .ring {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 28px;
-            height: 28px;
-            border: 2px solid #ffaa44;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            box-shadow: 0 0 5px rgba(0,0,0,0.5);
-        }
-        #crosshair .line-h, #crosshair .line-v {
-            position: absolute;
-            background: #ffaa44;
-        }
-        #crosshair .line-h {
-            top: 50%;
-            left: 0;
-            width: 100%;
-            height: 1.5px;
-            transform: translateY(-50%);
-        }
-        #crosshair .line-v {
-            top: 0;
-            left: 50%;
-            width: 1.5px;
-            height: 100%;
-            transform: translateX(-50%);
-        }
-
-        /* Info Panels */
-        #info-panel {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(8px);
-            color: #ffdd99;
-            padding: 8px 16px;
-            border-radius: 24px;
-            font-size: 12px;
-            font-weight: bold;
-            font-family: monospace;
-            border-left: 3px solid #ffaa44;
-            pointer-events: none;
-            z-index: 50;
-        }
-        #score-panel {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(0,0,0,0.75);
-            backdrop-filter: blur(8px);
-            color: #ffaa44;
-            padding: 8px 20px;
-            border-radius: 40px;
-            font-weight: bold;
-            font-size: 26px;
-            font-family: monospace;
-            letter-spacing: 2px;
-            pointer-events: none;
-            z-index: 50;
-            box-shadow: 0 2px 12px black;
-        }
-        #throw-distance-label {
-            position: absolute;
-            bottom: 140px;
-            left: 20px;
-            background: rgba(0,0,0,0.6);
-            padding: 5px 12px;
-            border-radius: 20px;
-            color: #ffaa66;
-            font-size: 14px;
-            font-weight: bold;
-            font-family: monospace;
-            pointer-events: none;
-            z-index: 50;
-            backdrop-filter: blur(4px);
-        }
-
-        /* LEFT ZONE - Movement Joystick (50% width) */
-        #left-zone {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 50%;
-            height: 100%;
-            pointer-events: auto;
-            z-index: 60;
-            touch-action: none;
-        }
-        #joystick-base {
-            position: absolute;
-            bottom: 80px;
-            left: 80px;
-            width: 140px;
-            height: 140px;
-            background: rgba(20, 20, 35, 0.65);
-            backdrop-filter: blur(12px);
-            border-radius: 50%;
-            border: 2px solid #ffaa55;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            pointer-events: none;
-        }
-        #joystick-thumb {
-            position: absolute;
-            bottom: 80px;
-            left: 80px;
-            width: 60px;
-            height: 60px;
-            background: radial-gradient(circle, #ffcc77, #ffaa33);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            box-shadow: 0 4px 12px black;
-            pointer-events: none;
-            transition: transform 0.02s linear;
-        }
-
-        /* RIGHT ZONE - Camera Control (50% width) */
-        #right-zone {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 50%;
-            height: 100%;
-            pointer-events: auto;
-            z-index: 60;
-            touch-action: none;
-        }
-        .camera-hint {
-            position: absolute;
-            bottom: 30px;
-            right: 30px;
-            color: rgba(255,255,200,0.7);
-            font-size: 12px;
-            background: rgba(0,0,0,0.4);
-            padding: 4px 12px;
-            border-radius: 20px;
-            pointer-events: none;
-            font-family: monospace;
-        }
-
-        /* ACTION BUTTONS (right side vertical layout) */
-        #action-buttons {
-            position: absolute;
-            bottom: 100px;
-            right: 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            pointer-events: auto;
-            z-index: 70;
-        }
-        .action-btn {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            background: rgba(0,0,0,0.75);
-            backdrop-filter: blur(8px);
-            border: 2px solid #ffaa55;
-            color: white;
-            font-size: 32px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 12px black;
-            transition: 0.04s linear;
-            touch-action: manipulation;
-        }
-        .action-btn:active {
-            transform: scale(0.9);
-            background: #ffaa55;
-            color: #222;
-        }
-
-        /* THROW DISTANCE SLIDER (vertical on left side) */
-        #distance-control {
-            position: absolute;
-            bottom: 140px;
-            left: 30px;
-            width: 50px;
-            height: 180px;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(8px);
-            border-radius: 40px;
-            border: 2px solid #ffaa55;
-            pointer-events: auto;
-            touch-action: none;
-            z-index: 70;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-end;
-        }
-        #distance-slider-thumb {
-            width: 40px;
-            height: 40px;
-            background: #ffaa55;
-            border-radius: 50%;
-            margin-bottom: 8px;
-            cursor: pointer;
-            box-shadow: 0 2px 8px black;
-            transition: 0.02s linear;
-            touch-action: none;
-        }
-        .distance-marks {
-            position: absolute;
-            left: -35px;
-            top: 10px;
-            color: #ffdd99;
-            font-size: 10px;
-            font-weight: bold;
-        }
-
-        #loading-screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, #1a3a1a, #000);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 200;
-            color: #ffcc77;
-            font-size: 28px;
-            font-family: monospace;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        @media (max-width: 700px) {
-            #joystick-base { width: 110px; height: 110px; bottom: 60px; left: 60px; }
-            #joystick-thumb { width: 48px; height: 48px; bottom: 60px; left: 60px; }
-            .action-btn { width: 60px; height: 60px; font-size: 28px; }
-            #distance-control { width: 44px; height: 150px; left: 20px; bottom: 110px; }
-            #distance-slider-thumb { width: 34px; height: 34px; }
-        }
+        #stats { position: absolute; top: 20px; left: 0; width: 100%; text-align: center; color: #ffaa44; font-weight: bold; pointer-events: none; z-index: 20; text-shadow: 2px 2px #000; }
     </style>
 </head>
 <body>
-    <div id="loading-screen">
-        💣 DWARF BOMBER PRO 💣<br>
-        <span>DUAL ZONE | MULTI-TOUCH READY</span>
-    </div>
 
-    <div id="ui-overlay">
-        <div id="crosshair">
-            <div class="ring"></div>
-            <div class="dot"></div>
-            <div class="line-h"></div>
-            <div class="line-v"></div>
-        </div>
-        <div id="info-panel">⚡ DWARF COMMANDO | FREE MOVEMENT | DYNAMIC THROW RANGE</div>
-        <div id="score-panel">🎯 <span id="score">0</span></div>
-        <div id="throw-distance-label">📏 THROW: <span id="dist-value">12.5</span>m</div>
-        
-        <!-- LEFT ZONE: MOVEMENT JOYSTICK -->
-        <div id="left-zone">
-            <div id="joystick-base"></div>
-            <div id="joystick-thumb"></div>
+    <div id="stats">المسافة المستهدفة: <span id="val">12</span> متر</div>
+
+    <div id="ui-layer">
+        <div id="left-region" class="touch-region">
+            <div id="dist-container">
+                <input type="range" id="dist-slider" min="5" max="25" value="12">
+            </div>
+            <div id="joy-base"><div id="joy-stick"></div></div>
         </div>
         
-        <!-- RIGHT ZONE: CAMERA CONTROL (free touch area) -->
-        <div id="right-zone">
-            <div class="camera-hint">🎥 DRAG TO AIM CAMERA</div>
-        </div>
-        
-        <!-- VERTICAL SLIDER for Bomb Throw Distance (left side) -->
-        <div id="distance-control">
-            <div id="distance-slider-thumb"></div>
-            <div class="distance-marks">▲ 20m<br>▾ 5m</div>
-        </div>
-        
-        <!-- ACTION BUTTONS: JUMP (left side of right zone) & THROW (rightmost) -->
-        <div id="action-buttons">
-            <button class="action-btn" id="btn-jump">🦘 JUMP</button>
-            <button class="action-btn" id="btn-throw">💣 THROW</button>
+        <div id="right-region" class="touch-region">
+            <div id="action-container">
+                <button class="btn" id="jump-btn">🆙</button>
+                <button class="btn" id="throw-btn">💣</button>
+            </div>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
     <script>
-        (function(){
-            // ---------- THREE SCENE ----------
-            const scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x0a2f2a);
-            scene.fog = new THREE.FogExp2(0x0a2f2a, 0.007);
-            const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 300);
-            const renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            document.body.appendChild(renderer.domElement);
-            
-            // Lighting
-            const ambient = new THREE.AmbientLight(0x4a5a6a, 0.7);
-            scene.add(ambient);
-            const dirLight = new THREE.DirectionalLight(0xfff5e0, 1.2);
-            dirLight.position.set(12, 20, 8);
-            dirLight.castShadow = true;
-            dirLight.shadow.mapSize.width = 1024;
-            dirLight.shadow.mapSize.height = 1024;
-            scene.add(dirLight);
-            const fillLight = new THREE.PointLight(0x88aaff, 0.45);
-            fillLight.position.set(-5, 12, 6);
-            scene.add(fillLight);
-            
-            // Ground
-            const groundMat = new THREE.MeshStandardMaterial({ color: 0x4a8c4a, roughness: 0.7, metalness: 0.1 });
-            const ground = new THREE.Mesh(new THREE.PlaneGeometry(280, 280), groundMat);
-            ground.rotation.x = -Math.PI/2;
-            ground.position.y = -0.05;
-            ground.receiveShadow = true;
-            scene.add(ground);
-            
-            const grid = new THREE.GridHelper(280, 28, 0xaacc88, 0x558844);
-            grid.position.y = 0.01;
-            grid.material.transparent = true;
-            grid.material.opacity = 0.4;
-            scene.add(grid);
-            
-            // Decorative elements
-            for(let i=0;i<180;i++) {
-                const stone = new THREE.Mesh(new THREE.DodecahedronGeometry(0.2+Math.random()*0.35), new THREE.MeshStandardMaterial({ color: 0x7a6a55, roughness: 0.85 }));
-                stone.position.set((Math.random()-0.5)*260, -0.2, (Math.random()-0.5)*260);
-                stone.scale.set(1, Math.random()*0.5+0.4, 1);
-                stone.castShadow = true;
-                scene.add(stone);
+        // 1. إعداد المشهد (Scene Setup)
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x112211);
+        scene.fog = new THREE.Fog(0x112211, 10, 50);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        // الإضاءة
+        const sun = new THREE.DirectionalLight(0xffffff, 1);
+        sun.position.set(5, 15, 10);
+        sun.castShadow = true;
+        scene.add(sun);
+        scene.add(new THREE.AmbientLight(0x404040, 0.6));
+
+        // 2. بناء العالم (World)
+        const floor = new THREE.Mesh(
+            new THREE.PlaneGeometry(100, 100),
+            new THREE.MeshStandardMaterial({ color: 0x224422 })
+        );
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        const grid = new THREE.GridHelper(100, 40, 0x44ff44, 0x224422);
+        scene.add(grid);
+
+        // 3. بناء اللاعب (Character) - بشكل هندسي لضمان الظهور
+        const player = new THREE.Group();
+        const bodyGeo = new THREE.BoxGeometry(0.8, 1.2, 0.5);
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        body.position.y = 0.6;
+        body.castShadow = true;
+        player.add(body);
+
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.35), new THREE.MeshStandardMaterial({color: 0xffdbac}));
+        head.position.y = 1.3;
+        player.add(head);
+
+        scene.add(player);
+
+        // مؤشر الهدف
+        const targetMarker = new THREE.Mesh(
+            new THREE.RingGeometry(0.4, 0.6, 32),
+            new THREE.MeshBasicMaterial({ color: 0xffaa00, side: THREE.DoubleSide, transparent: true, opacity: 0.6 })
+        );
+        targetMarker.rotation.x = -Math.PI/2;
+        targetMarker.position.y = 0.05;
+        scene.add(targetMarker);
+
+        // 4. نظام التحكم (Logic)
+        let joyPos = { x: 0, y: 0 };
+        let camRot = { yaw: 0, pitch: -0.2 };
+        let distLimit = 12;
+        let isJumping = false;
+        let yVel = 0;
+
+        // اللمس المتعدد
+        const activeTouches = {};
+        
+        document.addEventListener('touchstart', (e) => {
+            for(let t of e.changedTouches) {
+                activeTouches[t.identifier] = { x: t.clientX, y: t.clientY };
             }
-            
-            // Character
-            let character, mixer, animations = {};
-            let currentAction = null;
-            let handBone = null;
-            let bombInHand = null;
-            let isThrowingCooldown = false;
-            
-            const loader = new THREE.GLTFLoader();
-            const modelUrl = 'https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb';
-            loader.load(modelUrl, (gltf) => {
-                character = gltf.scene;
-                character.scale.set(0.55, 0.55, 0.55);
-                character.position.set(0, 0, 0);
-                character.traverse(n => { if(n.isMesh) { n.castShadow = true; n.receiveShadow = true; } });
-                scene.add(character);
-                mixer = new THREE.AnimationMixer(character);
-                gltf.animations.forEach(clip => {
-                    animations[clip.name.toLowerCase()] = mixer.clipAction(clip);
-                });
-                character.traverse(node => {
-                    if(node.isBone && (node.name.includes("Hand") || node.name.includes("hand") || node.name === "mixamorig:RightHand")) {
-                        handBone = node;
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            for(let t of e.changedTouches) {
+                const start = activeTouches[t.identifier];
+                if(!start) continue;
+
+                if(t.clientX < window.innerWidth / 2) {
+                    // حركة الجويستك (يسار)
+                    if(t.target.id === 'joy-stick' || t.target.id === 'joy-base') {
+                        const base = document.getElementById('joy-base').getBoundingClientRect();
+                        const bx = base.left + 60, by = base.top + 60;
+                        const dx = t.clientX - bx, dy = t.clientY - by;
+                        const d = Math.min(Math.hypot(dx, dy), 50);
+                        const angle = Math.atan2(dy, dx);
+                        joyPos.x = (Math.cos(angle) * d) / 50;
+                        joyPos.y = (Math.sin(angle) * d) / 50;
+                        document.getElementById('joy-stick').style.transform = `translate(calc(-50% + ${Math.cos(angle)*d}px), calc(-50% + ${Math.sin(angle)*d}px))`;
                     }
-                });
-                if(!handBone) {
-                    const dummy = new THREE.Group();
-                    character.add(dummy);
-                    handBone = dummy;
-                }
-                if(animations['idle']) {
-                    currentAction = animations['idle'];
-                    currentAction.play();
-                }
-                document.getElementById('loading-screen').style.display = 'none';
-                createHandBomb();
-            });
-            
-            function createHandBomb() {
-                if(bombInHand) return;
-                const bombMesh = new THREE.Mesh(new THREE.SphereGeometry(0.3, 20,20), new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.9, roughness: 0.2 }));
-                const fuse = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.11, 0.35, 6), new THREE.MeshStandardMaterial({ color: 0xff7733 }));
-                fuse.position.y = 0.38;
-                bombMesh.add(fuse);
-                bombMesh.castShadow = true;
-                if(handBone) {
-                    bombMesh.position.set(0.45, -0.12, 0.18);
-                    handBone.add(bombMesh);
                 } else {
-                    character.add(bombMesh);
-                    bombMesh.position.set(0.7, 1.2, 0.5);
-                }
-                bombInHand = bombMesh;
-            }
-            function removeHandBomb() {
-                if(bombInHand) { if(bombInHand.parent) bombInHand.parent.remove(bombInHand); bombInHand = null; }
-            }
-            
-            // ---------- MULTI-TOUCH INPUT (supports simultaneous actions) ----------
-            const input = { moveX: 0, moveZ: 0, jumpRequest: false, throwRequest: false };
-            let keys = {};
-            window.addEventListener('keydown', (e) => {
-                keys[e.code] = true;
-                if(e.code === 'Space') { e.preventDefault(); input.jumpRequest = true; }
-                if(e.code === 'KeyF') { e.preventDefault(); input.throwRequest = true; }
-            });
-            window.addEventListener('keyup', (e) => { keys[e.code] = false; });
-            
-            // --- LEFT ZONE: Enhanced Joystick (ultra smooth, same responsiveness as camera) ---
-            const leftZone = document.getElementById('left-zone');
-            const joystickBase = document.getElementById('joystick-base');
-            const joystickThumb = document.getElementById('joystick-thumb');
-            let joyActive = false;
-            let joyCenterX = 0, joyCenterY = 0;
-            let currentJoyX = 0, currentJoyY = 0;
-            
-            function updateJoystickPosition(clientX, clientY) {
-                let dx = clientX - joyCenterX;
-                let dy = clientY - joyCenterY;
-                let dist = Math.min(Math.hypot(dx, dy), 60);
-                let angle = Math.atan2(dy, dx);
-                let limitedX = Math.cos(angle) * dist;
-                let limitedY = Math.sin(angle) * dist;
-                joystickThumb.style.transform = `translate(calc(-50% + ${limitedX}px), calc(-50% + ${limitedY}px))`;
-                let normX = limitedX / 60;
-                let normY = limitedY / 60;
-                input.moveX = normX;
-                input.moveZ = normY;
-            }
-            
-            leftZone.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                const rect = joystickBase.getBoundingClientRect();
-                joyCenterX = rect.left + rect.width/2;
-                joyCenterY = rect.top + rect.height/2;
-                joyActive = true;
-                const touch = e.touches[0];
-                updateJoystickPosition(touch.clientX, touch.clientY);
-            });
-            window.addEventListener('touchmove', (e) => {
-                if(!joyActive) return;
-                for(let i=0; i<e.touches.length; i++) {
-                    const touch = e.touches[i];
-                    const zoneRect = leftZone.getBoundingClientRect();
-                    if(touch.clientX >= zoneRect.left && touch.clientX <= zoneRect.right && touch.clientY >= zoneRect.top && touch.clientY <= zoneRect.bottom) {
-                        updateJoystickPosition(touch.clientX, touch.clientY);
-                        break;
-                    }
-                }
-            });
-            window.addEventListener('touchend', (e) => {
-                joyActive = false;
-                joystickThumb.style.transform = 'translate(-50%, -50%)';
-                input.moveX = 0;
-                input.moveZ = 0;
-            });
-            
-            // Keyboard movement integrated
-            function updateKeyboardMovement() {
-                let moveFwd = 0, moveSide = 0;
-                if(keys['KeyW']) moveFwd = 1;
-                if(keys['KeyS']) moveFwd = -1;
-                if(keys['KeyA']) moveSide = -1;
-                if(keys['KeyD']) moveSide = 1;
-                if(moveFwd !== 0 || moveSide !== 0) {
-                    input.moveX = moveSide;
-                    input.moveZ = moveFwd;
-                } else if(!joyActive) {
-                    if(input.moveX !== 0 || input.moveZ !== 0) { input.moveX = 0; input.moveZ = 0; }
+                    // تحريك الكاميرا (يمين)
+                    const dx = t.clientX - start.x;
+                    const dy = t.clientY - start.y;
+                    camRot.yaw -= dx * 0.006;
+                    camRot.pitch = Math.max(-0.8, Math.min(0.5, camRot.pitch - dy * 0.006));
+                    start.x = t.clientX;
+                    start.y = t.clientY;
                 }
             }
-            
-            // --- RIGHT ZONE: Camera control (smooth, realistic) ---
-            const rightZone = document.getElementById('right-zone');
-            let camDrag = false, camLastX=0, camLastY=0;
-            let cameraYaw = 0, cameraPitch = 0.2;
-            let targetYaw = 0, targetPitch = 0.2;
-            
-            rightZone.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                camDrag = true;
-                camLastX = e.touches[0].clientX;
-                camLastY = e.touches[0].clientY;
-            });
-            window.addEventListener('touchmove', (e) => {
-                if(!camDrag) return;
-                let dx = e.touches[0].clientX - camLastX;
-                let dy = e.touches[0].clientY - camLastY;
-                targetYaw += dx * 0.007;
-                targetPitch += dy * 0.006;
-                targetPitch = Math.max(-0.85, Math.min(0.75, targetPitch));
-                camLastX = e.touches[0].clientX;
-                camLastY = e.touches[0].clientY;
-            });
-            window.addEventListener('touchend', () => { camDrag = false; });
-            
-            // --- THROW DISTANCE SLIDER (vertical, 5 to 20 meters) ---
-            const sliderContainer = document.getElementById('distance-control');
-            const sliderThumb = document.getElementById('distance-slider-thumb');
-            let throwDistance = 12.5; // meters
-            let sliderActive = false;
-            const minDist = 5, maxDist = 20;
-            
-            function updateSliderFromPosition(clientY, containerRect) {
-                let relativeY = Math.min(containerRect.bottom, Math.max(containerRect.top, clientY));
-                let t = (containerRect.bottom - relativeY) / containerRect.height;
-                t = Math.min(1, Math.max(0, t));
-                throwDistance = minDist + t * (maxDist - minDist);
-                document.getElementById('dist-value').innerText = throwDistance.toFixed(1);
-                let thumbY = t * (containerRect.height - 40);
-                sliderThumb.style.marginBottom = `${thumbY}px`;
-            }
-            
-            sliderContainer.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                sliderActive = true;
-                const rect = sliderContainer.getBoundingClientRect();
-                updateSliderFromPosition(e.touches[0].clientY, rect);
-            });
-            window.addEventListener('touchmove', (e) => {
-                if(!sliderActive) return;
-                const rect = sliderContainer.getBoundingClientRect();
-                updateSliderFromPosition(e.touches[0].clientY, rect);
-            });
-            window.addEventListener('touchend', () => { sliderActive = false; });
-            // init slider position
-            function initSliderPosition() {
-                const rect = sliderContainer.getBoundingClientRect();
-                let t = (throwDistance - minDist)/(maxDist - minDist);
-                let thumbY = t * (rect.height - 40);
-                sliderThumb.style.marginBottom = `${thumbY}px`;
-            }
-            setTimeout(initSliderPosition, 100);
-            
-            // --- BUTTONS: Multi-action support (jump & throw without blocking) ---
-            const jumpBtn = document.getElementById('btn-jump');
-            const throwBtn = document.getElementById('btn-throw');
-            jumpBtn.addEventListener('mousedown', () => { input.jumpRequest = true; });
-            jumpBtn.addEventListener('touchstart', (e) => { e.preventDefault(); input.jumpRequest = true; });
-            throwBtn.addEventListener('mousedown', () => { input.throwRequest = true; });
-            throwBtn.addEventListener('touchstart', (e) => { e.preventDefault(); input.throwRequest = true; });
-            
-            // --- GAME MECHANICS ---
-            let bombs = [];
-            let particles = [];
-            let targets = [];
-            let score = 0;
-            let isJumping = false, jumpCount = 0, velY = 0;
-            let characterSpeed = 0.235; // faster running
-            let characterYawAngle = 0;
-            
-            // Landing predictor (bomb impact point)
-            let landingMarker = null;
-            function createLandingMarker() {
-                const ringGeo = new THREE.RingGeometry(0.5, 0.95, 24);
-                const ringMat = new THREE.MeshStandardMaterial({ color: 0xffaa55, emissive: 0x552200, side: THREE.DoubleSide, transparent: true });
-                const marker = new THREE.Mesh(ringGeo, ringMat);
-                marker.rotation.x = -Math.PI/2;
-                marker.position.y = 0.03;
-                scene.add(marker);
-                return marker;
-            }
-            landingMarker = createLandingMarker();
-            
-            function updateLandingPredictor() {
-                if(!character) return;
-                const startPos = character.position.clone().add(new THREE.Vector3(0, 1.55, 0));
-                const forwardDir = new THREE.Vector3(0, 0, 1).applyQuaternion(character.quaternion);
-                // dynamic throw strength based on slider distance
-                const strength = Math.min(1.8, Math.max(0.9, (throwDistance - 5) / 15 * 1.2 + 0.9));
-                const horizSpeed = 1.35 * strength;
-                const upSpeed = 0.52 + (strength * 0.12);
-                const throwVel = forwardDir.clone().multiplyScalar(horizSpeed).add(new THREE.Vector3(0, upSpeed, 0));
-                let pos = startPos.clone();
-                let vel = throwVel.clone();
-                const gravity = 0.023;
-                let hitPoint = null;
-                for(let i=0;i<180;i++) {
-                    pos.add(vel);
-                    vel.y -= gravity;
-                    if(pos.y <= 0.1) {
-                        hitPoint = pos.clone();
-                        break;
-                    }
-                }
-                if(landingMarker && hitPoint) {
-                    landingMarker.position.set(hitPoint.x, 0.04, hitPoint.z);
-                    landingMarker.material.emissiveIntensity = 0.7 + Math.sin(Date.now()*0.01)*0.2;
-                } else if(landingMarker) {
-                    landingMarker.position.set(character.position.x + forwardDir.x*5, 0.04, character.position.z + forwardDir.z*5);
+        });
+
+        document.addEventListener('touchend', (e) => {
+            for(let t of e.changedTouches) {
+                delete activeTouches[t.identifier];
+                if(t.clientX < window.innerWidth / 2) {
+                    joyPos = { x: 0, y: 0 };
+                    document.getElementById('joy-stick').style.transform = 'translate(-50%, -50%)';
                 }
             }
+        });
+
+        // الأزرار
+        document.getElementById('dist-slider').oninput = (e) => {
+            distLimit = e.target.value;
+            document.getElementById('val').innerText = distLimit;
+        };
+
+        document.getElementById('jump-btn').ontouchstart = () => {
+            if(!isJumping) { isJumping = true; yVel = 0.25; }
+        };
+
+        document.getElementById('throw-btn').ontouchstart = () => {
+            const bomb = new THREE.Mesh(new THREE.SphereGeometry(0.3), new THREE.MeshStandardMaterial({color: 0x222}));
+            bomb.position.copy(player.position).add(new THREE.Vector3(0, 1, 0));
+            scene.add(bomb);
             
-            // Throw bomb using current distance slider
-            function throwBomb() {
-                if(!character || isThrowingCooldown) return;
-                isThrowingCooldown = true;
-                removeHandBomb();
-                const startPos = character.position.clone().add(new THREE.Vector3(0, 1.55, 0));
-                const forwardDir = new THREE.Vector3(0, 0, 1).applyQuaternion(character.quaternion);
-                const strength = Math.min(1.85, Math.max(0.9, (throwDistance - 5) / 15 * 1.25 + 0.9));
-                const horizSpeed = 1.38 * strength;
-                const upSpeed = 0.54 + (strength * 0.1);
-                const vel = forwardDir.multiplyScalar(horizSpeed).add(new THREE.Vector3(0, upSpeed, 0));
-                const bombMesh = new THREE.Mesh(new THREE.SphereGeometry(0.44, 24,24), new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.85, roughness: 0.2 }));
-                const fuse = new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.12,0.4,6), new THREE.MeshStandardMaterial({ color: 0xff8844 }));
-                fuse.position.y = 0.45;
-                bombMesh.add(fuse);
-                bombMesh.position.copy(startPos);
-                bombMesh.castShadow = true;
-                scene.add(bombMesh);
-                bombs.push({ mesh: bombMesh, vel: vel, life: 260 });
+            const start = bomb.position.clone();
+            const end = targetMarker.position.clone();
+            let p = 0;
+            const animateBomb = () => {
+                p += 0.03;
+                if(p >= 1) { scene.remove(bomb); return; }
+                bomb.position.lerpVectors(start, end, p);
+                bomb.position.y += Math.sin(p * Math.PI) * 4;
+                requestAnimationFrame(animateBomb);
+            };
+            animateBomb();
+        };
+
+        // 5. حلقة التحديث (Game Loop)
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // الحركة
+            if(joyPos.x !== 0 || joyPos.y !== 0) {
+                const speed = 0.15;
+                const forward = new THREE.Vector3(Math.sin(camRot.yaw), 0, Math.cos(camRot.yaw));
+                const side = new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0), forward);
                 
-                // animation punch
-                if(animations['punch']) {
-                    if(currentAction) currentAction.fadeOut(0.1);
-                    currentAction = animations['punch'];
-                    currentAction.reset().fadeIn(0.1).play();
-                    setTimeout(() => {
-                        if(animations['idle'] && currentAction === animations['punch']) {
-                            currentAction.fadeOut(0.2);
-                            currentAction = animations['idle'];
-                            currentAction.play();
-                        }
-                    }, 380);
-                }
-                setTimeout(() => { createHandBomb(); isThrowingCooldown = false; }, 280);
+                player.position.addScaledVector(forward, -joyPos.y * speed);
+                player.position.addScaledVector(side, joyPos.x * speed);
+                player.rotation.y = Math.atan2(joyPos.x, -joyPos.y) + camRot.yaw;
             }
-            
-            function explode(pos) {
-                const flash = new THREE.Mesh(new THREE.SphereGeometry(1.9, 12,12), new THREE.MeshBasicMaterial({ color: 0xffaa55, transparent: true }));
-                flash.position.copy(pos);
-                scene.add(flash);
-                setTimeout(()=>scene.remove(flash),120);
-                for(let i=0;i<55;i++) {
-                    const p = new THREE.Mesh(new THREE.SphereGeometry(0.16+Math.random()*0.2), new THREE.MeshStandardMaterial({ color: 0xff8844, emissive: 0xff4400 }));
-                    p.position.copy(pos);
-                    scene.add(p);
-                    particles.push({ mesh: p, vel: new THREE.Vector3((Math.random()-0.5)*2.2, Math.random()*1.4, (Math.random()-0.5)*2.2), life:0, maxLife:60, gravity:0.019 });
-                }
-                for(let i=0;i<targets.length;i++) {
-                    if(targets[i].mesh.position.distanceTo(pos) < 2.6) {
-                        scene.remove(targets[i].mesh);
-                        targets.splice(i,1);
-                        score++;
-                        document.getElementById('score').innerText = score;
-                        spawnTarget();
-                        i--;
-                    }
-                }
+
+            // الجاذبية
+            if(isJumping) {
+                player.position.y += yVel;
+                yVel -= 0.015;
+                if(player.position.y <= 0) { player.position.y = 0; isJumping = false; }
             }
-            
-            function spawnTarget() {
-                const box = new THREE.Mesh(new THREE.BoxGeometry(1.8,1.8,1.8), new THREE.MeshStandardMaterial({ color: 0xdd5555, emissive: 0x331100 }));
-                const angle = Math.random() * Math.PI * 2;
-                const rad = 30 + Math.random() * 70;
-                box.position.set(Math.cos(angle)*rad, 0.9, Math.sin(angle)*rad);
-                box.castShadow = true;
-                scene.add(box);
-                targets.push({ mesh: box });
-            }
-            for(let i=0;i<12;i++) spawnTarget();
-            
-            function updateBombs() {
-                for(let i=bombs.length-1;i>=0;i--) {
-                    const b = bombs[i];
-                    b.mesh.position.add(b.vel);
-                    b.vel.y -= 0.023;
-                    b.mesh.rotation.x += 0.2;
-                    if(b.mesh.position.y < 0.1) { explode(b.mesh.position); scene.remove(b.mesh); bombs.splice(i,1); continue; }
-                    b.life--;
-                    if(b.life<=0) { explode(b.mesh.position); scene.remove(b.mesh); bombs.splice(i,1); }
-                }
-            }
-            
-            function updateParticles() {
-                for(let i=particles.length-1;i>=0;i--) {
-                    const p = particles[i];
-                    p.mesh.position.add(p.vel);
-                    p.vel.y -= p.gravity;
-                    p.life++;
-                    if(p.life>=p.maxLife || p.mesh.position.y<-0.5) { scene.remove(p.mesh); particles.splice(i,1); }
-                }
-            }
-            
-            // Jump system (double jump while moving)
-            function handleJump() {
-                if(input.jumpRequest) {
-                    if(!isJumping && jumpCount < 2) {
-                        velY = 0.52;
-                        isJumping = true;
-                        jumpCount++;
-                    } else if(isJumping && jumpCount === 1 && velY < 0.15) {
-                        velY = 0.49;
-                        jumpCount++;
-                    }
-                    input.jumpRequest = false;
-                }
-                if(isJumping) {
-                    character.position.y += velY;
-                    velY -= 0.024;
-                    if(character.position.y <= 0) {
-                        character.position.y = 0;
-                        isJumping = false;
-                        jumpCount = 0;
-                        velY = 0;
-                    }
-                } else character.position.y = 0;
-            }
-            
-            function updateMovement() {
-                if(!character) return;
-                let moveX = input.moveX;
-                let moveZ = input.moveZ;
-                if(Math.abs(moveX) > 0.05 || Math.abs(moveZ) > 0.05) {
-                    let angle = Math.atan2(moveX, moveZ);
-                    character.rotation.y = angle;
-                    characterYawAngle = angle;
-                    const speed = characterSpeed;
-                    character.position.x += Math.sin(angle) * speed;
-                    character.position.z += Math.cos(angle) * speed;
-                    const limit = 135;
-                    character.position.x = Math.min(limit, Math.max(-limit, character.position.x));
-                    character.position.z = Math.min(limit, Math.max(-limit, character.position.z));
-                    if(animations['walking'] && currentAction !== animations['walking'] && (!currentAction || currentAction !== animations['punch'])) {
-                        if(currentAction) currentAction.fadeOut(0.2);
-                        currentAction = animations['walking'];
-                        currentAction.reset().fadeIn(0.2).play();
-                    }
-                } else {
-                    if(animations['idle'] && currentAction !== animations['idle'] && currentAction !== animations['punch']) {
-                        if(currentAction) currentAction.fadeOut(0.2);
-                        currentAction = animations['idle'];
-                        currentAction.reset().play();
-                    }
-                }
-            }
-            
-            // Smooth camera with realistic lag
-            let smoothYaw = 0, smoothPitch = 0.2;
-            function updateCamera() {
-                if(!character) return;
-                if(!camDrag) {
-                    targetYaw = targetYaw * 0.97 + characterYawAngle * 0.03;
-                    targetPitch = targetPitch * 0.98 + 0.2 * 0.02;
-                }
-                smoothYaw += (targetYaw - smoothYaw) * 0.12;
-                smoothPitch += (targetPitch - smoothPitch) * 0.12;
-                const dist = 9.5;
-                const camX = character.position.x - Math.sin(smoothYaw) * dist * Math.cos(smoothPitch);
-                const camY = character.position.y + 2.6 + Math.sin(smoothPitch) * dist;
-                const camZ = character.position.z - Math.cos(smoothYaw) * dist * Math.cos(smoothPitch);
-                camera.position.set(camX, camY, camZ);
-                camera.lookAt(character.position.clone().add(new THREE.Vector3(0, 1.45, 0)));
-            }
-            
-            // Main Loop
-            let lastTime = 0;
-            const clock = new THREE.Clock();
-            function animate() {
-                requestAnimationFrame(animate);
-                const delta = clock.getDelta();
-                if(!character) return;
-                updateKeyboardMovement();
-                handleJump();
-                updateMovement();
-                updateBombs();
-                updateParticles();
-                updateLandingPredictor();
-                if(input.throwRequest) { throwBomb(); input.throwRequest = false; }
-                updateCamera();
-                if(mixer) mixer.update(delta);
-                renderer.render(scene, camera);
-            }
-            animate();
-            
-            window.addEventListener('resize', () => {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-                initSliderPosition();
-            });
-            
-            // ensure hand bomb
-            setInterval(() => { if(character && handBone && !bombInHand && !isThrowingCooldown) createHandBomb(); }, 400);
-        })();
+
+            // الكاميرا خلف اللاعب
+            const camDist = 7;
+            camera.position.x = player.position.x - Math.sin(camRot.yaw) * camDist;
+            camera.position.z = player.position.z - Math.cos(camRot.yaw) * camDist;
+            camera.position.y = player.position.y + 4 + camRot.pitch * 5;
+            camera.lookAt(player.position.x, player.position.y + 1, player.position.z);
+
+            // تحديث مكان سقوط القنبلة
+            const dir = new THREE.Vector3(0,0,1).applyQuaternion(player.quaternion);
+            targetMarker.position.set(
+                player.position.x + dir.x * distLimit,
+                0.06,
+                player.position.z + dir.z * distLimit
+            );
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
     </script>
 </body>
 </html>
