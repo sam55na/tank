@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Commando Assault - Machine Gun Warfare</title>
+    <title>Commando Assault - Pro Soldier</title>
     <style>
         * {
             margin: 0;
@@ -71,12 +71,10 @@
             background: #ff3333;
             border-radius: 50%;
             transform: translate(-50%, -50%);
-            box-shadow: 0 0 8px #ff3333;
         }
         .crosshair-line {
             position: absolute;
             background: #ff3333;
-            box-shadow: 0 0 4px #ff3333;
         }
         .crosshair-line-top { top: 0; left: 50%; width: 2px; height: 15px; transform: translateX(-50%); }
         .crosshair-line-bottom { bottom: 0; left: 50%; width: 2px; height: 15px; transform: translateX(-50%); }
@@ -87,7 +85,7 @@
             50% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
         }
 
-        /* HUD Elements */
+        /* HUD */
         #score-panel {
             position: absolute;
             top: 20px;
@@ -103,7 +101,6 @@
             pointer-events: none;
             z-index: 150;
             border: 1px solid #ff3333;
-            text-shadow: 0 0 5px rgba(255,51,51,0.5);
         }
         
         #ammo-panel {
@@ -121,21 +118,9 @@
             border: 1px solid #ffaa44;
             text-align: center;
         }
-        .ammo-label {
-            font-size: 11px;
-            color: #aaa;
-            letter-spacing: 2px;
-        }
-        .ammo-count {
-            font-size: 36px;
-            font-weight: bold;
-            color: #ffaa44;
-            text-shadow: 0 0 5px rgba(255,170,68,0.5);
-        }
-        .ammo-max {
-            font-size: 16px;
-            color: #888;
-        }
+        .ammo-label { font-size: 11px; color: #aaa; letter-spacing: 2px; }
+        .ammo-count { font-size: 36px; font-weight: bold; color: #ffaa44; }
+        .ammo-max { font-size: 16px; color: #888; }
         
         #kill-panel {
             position: absolute;
@@ -168,6 +153,37 @@
             opacity: 0;
             transition: opacity 0.2s;
             border: 1px solid #ffaa44;
+        }
+        
+        #roll-cooldown {
+            position: absolute;
+            bottom: 100px;
+            left: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.7);
+            border: 2px solid #ffaa44;
+            pointer-events: none;
+            z-index: 150;
+        }
+        .roll-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,170,68,0.4);
+            border-radius: 50%;
+            transition: height 0.05s linear;
+        }
+        .roll-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            color: #ffaa44;
         }
 
         /* Joystick */
@@ -306,7 +322,6 @@
             border: 3px solid #ff3333;
             color: #ff3333;
             font-size: 28px;
-            box-shadow: 0 0 15px rgba(255,51,51,0.4);
         }
         .fire-btn:active {
             background: #ff3333;
@@ -351,27 +366,19 @@
             .joystick-thumb { width: 44px; height: 44px; }
             .action-btn { width: 50px; height: 50px; font-size: 20px; }
             .fire-btn { width: 60px; height: 60px; font-size: 24px; }
-            .actions-area { bottom: 25px; right: 15px; gap: 12px; }
-            #score-panel { font-size: 26px; padding: 6px 18px; top: 12px; right: 12px; }
             .ammo-count { font-size: 28px; }
-        }
-        
-        @media (max-width: 480px) {
-            .joystick-base { width: 95px; height: 95px; }
-            .joystick-base::before { width: 66px; height: 66px; }
-            .joystick-thumb { width: 38px; height: 38px; }
-            .action-btn { width: 45px; height: 45px; font-size: 18px; }
-            .fire-btn { width: 55px; height: 55px; font-size: 22px; }
+            #roll-cooldown { width: 50px; height: 50px; }
+            .roll-icon { font-size: 20px; }
         }
     </style>
 </head>
 <body>
     <div id="loading-screen">
-        🔫 COMMANDO ASSAULT 🔫
+        🔫 COMMANDO ASSAULT - PRO SOLDIER 🔫
         <div style="width: 250px; height: 3px; background: #2a2a2a; border-radius: 2px; overflow: hidden; margin-top: 12px;">
             <div style="width: 0%; height: 100%; background: #ff3333;" id="loading-bar"></div>
         </div>
-        <div style="font-size: 12px;">Loading Weapon Systems...</div>
+        <div style="font-size: 12px;">Loading Professional Soldier Model...</div>
     </div>
 
     <div id="ui-overlay" style="display: none;">
@@ -391,6 +398,10 @@
             <div class="ammo-max">/ 30</div>
         </div>
         <div id="reload-panel">⟳ RELOADING...</div>
+        <div id="roll-cooldown">
+            <div class="roll-fill" id="roll-fill"></div>
+            <div class="roll-icon">🌀</div>
+        </div>
         <div class="camera-hint">🎥 DRAG TOP-RIGHT TO AIM</div>
         
         <div class="zone-move" id="zone-move">
@@ -404,6 +415,7 @@
                 <button class="action-btn" id="btn-jump">🦘</button>
                 <button class="action-btn fire-btn" id="btn-fire">🔫</button>
                 <button class="action-btn" id="btn-reload">⟳</button>
+                <button class="action-btn" id="btn-roll">🌀</button>
             </div>
         </div>
     </div>
@@ -420,12 +432,15 @@
                 MOVEMENT_SPEED: 22.0,
                 AIR_CONTROL: 0.65,
                 GROUND_DRAG: 8.0,
-                BULLET_SPEED: 45,
-                FIRE_RATE: 0.12,
+                BULLET_SPEED: 55,
+                FIRE_RATE: 0.1,
                 DAMAGE: 34,
                 RELOAD_TIME: 1.2,
                 CLIP_SIZE: 30,
-                ENEMY_HEALTH: 100
+                ENEMY_HEALTH: 100,
+                ROLL_SPEED: 28,
+                ROLL_DURATION: 0.35,
+                ROLL_COOLDOWN: 1.2
             };
             
             // ========== THREE.JS SETUP ==========
@@ -437,6 +452,7 @@
             const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             document.body.appendChild(renderer.domElement);
             
             // Lighting
@@ -449,9 +465,9 @@
             mainLight.shadow.mapSize.height = 2048;
             scene.add(mainLight);
             
-            const rimLight = new THREE.PointLight(0xff6633, 0.5);
-            rimLight.position.set(5, 8, -10);
-            scene.add(rimLight);
+            const fillLight = new THREE.PointLight(0x88aacc, 0.5);
+            fillLight.position.set(-5, 10, 6);
+            scene.add(fillLight);
             
             // Ground
             const groundMat = new THREE.MeshStandardMaterial({ color: 0x2a4a2a, roughness: 0.8 });
@@ -468,7 +484,7 @@
             scene.add(grid);
             
             // Cover objects
-            for(let i = 0; i < 60; i++) {
+            for(let i = 0; i < 50; i++) {
                 const cover = new THREE.Mesh(new THREE.BoxGeometry(0.8 + Math.random() * 1.5, 0.6 + Math.random() * 1.2, 0.8 + Math.random() * 1.5), 
                     new THREE.MeshStandardMaterial({ color: 0x6a5a4a, roughness: 0.7 }));
                 const angle = Math.random() * Math.PI * 2;
@@ -479,81 +495,131 @@
                 scene.add(cover);
             }
             
-            // ========== COMMANDO CHARACTER ==========
+            // ========== PROFESSIONAL SOLDIER CHARACTER (GLTF) ==========
             let character = null;
             let mixer = null;
             let animations = {};
             let currentAction = null;
+            let handBone = null;
             let modelLoaded = false;
+            let isRolling = false;
+            let rollTimer = 0;
+            let rollCooldownTimer = 0;
+            let rollVelocity = { x: 0, z: 0 };
             
-            function createCommandoCharacter() {
+            // Load professional soldier model
+            const loader = new THREE.GLTFLoader();
+            let loadAttempts = 0;
+            
+            function loadSoldierModel() {
+                loader.load('https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb', 
+                    (gltf) => {
+                        character = gltf.scene;
+                        character.scale.set(0.55, 0.55, 0.55);
+                        character.position.set(0, 0, 0);
+                        character.traverse(n => { if(n.isMesh) { n.castShadow = true; n.receiveShadow = true; } });
+                        scene.add(character);
+                        
+                        mixer = new THREE.AnimationMixer(character);
+                        gltf.animations.forEach(clip => {
+                            animations[clip.name.toLowerCase()] = mixer.clipAction(clip);
+                        });
+                        
+                        // Add weapon attachment point
+                        const weaponPoint = new THREE.Group();
+                        character.add(weaponPoint);
+                        weaponPoint.position.set(0.45, 1.05, 0.55);
+                        handBone = weaponPoint;
+                        
+                        // Add visual weapon
+                        const weapon = new THREE.Group();
+                        const barrel = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.7), 
+                            new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.85 }));
+                        barrel.position.set(0, 0, 0.35);
+                        weapon.add(barrel);
+                        const grip = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.22, 0.1), 
+                            new THREE.MeshStandardMaterial({ color: 0x2a2a2a }));
+                        grip.position.set(0, -0.12, 0.15);
+                        weapon.add(grip);
+                        const stock = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.15, 0.3), 
+                            new THREE.MeshStandardMaterial({ color: 0x4a3a2a }));
+                        stock.position.set(0, 0.02, -0.15);
+                        weapon.add(stock);
+                        weaponPoint.add(weapon);
+                        
+                        // Play idle animation
+                        if(animations['idle']) {
+                            currentAction = animations['idle'];
+                            currentAction.play();
+                        }
+                        
+                        modelLoaded = true;
+                        finishLoading();
+                    },
+                    (xhr) => {
+                        const progress = (xhr.loaded / xhr.total) * 100;
+                        document.getElementById('loading-bar').style.width = Math.min(progress, 90) + '%';
+                    },
+                    () => {
+                        loadAttempts++;
+                        if(loadAttempts < 2) {
+                            setTimeout(loadSoldierModel, 800);
+                        } else {
+                            createFallbackSoldier();
+                        }
+                    }
+                );
+            }
+            
+            function createFallbackSoldier() {
                 const group = new THREE.Group();
                 
-                // Body (tactical vest)
+                // Body
                 const body = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.7, 1.35, 8), 
-                    new THREE.MeshStandardMaterial({ color: 0x3a5a3a, roughness: 0.4, metalness: 0.2 }));
+                    new THREE.MeshStandardMaterial({ color: 0x3a5a3a, metalness: 0.2 }));
                 body.castShadow = true;
                 body.position.y = 0.68;
                 group.add(body);
                 
-                // Tactical vest
+                // Vest
                 const vest = new THREE.Mesh(new THREE.CylinderGeometry(0.72, 0.74, 0.85, 6), 
-                    new THREE.MeshStandardMaterial({ color: 0x5a7a5a, roughness: 0.3, metalness: 0.1 }));
+                    new THREE.MeshStandardMaterial({ color: 0x5a7a5a }));
                 vest.position.y = 0.85;
                 vest.castShadow = true;
                 group.add(vest);
                 
-                // Head with helmet
+                // Head
                 const head = new THREE.Mesh(new THREE.SphereGeometry(0.58, 32, 32), 
-                    new THREE.MeshStandardMaterial({ color: 0xddccaa, roughness: 0.3 }));
+                    new THREE.MeshStandardMaterial({ color: 0xddccaa }));
                 head.castShadow = true;
                 head.position.y = 1.42;
                 group.add(head);
                 
                 // Helmet
                 const helmet = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.68, 0.55, 8), 
-                    new THREE.MeshStandardMaterial({ color: 0x5a6a5a, metalness: 0.6, roughness: 0.3 }));
+                    new THREE.MeshStandardMaterial({ color: 0x5a6a5a, metalness: 0.6 }));
                 helmet.position.y = 1.72;
                 helmet.castShadow = true;
                 group.add(helmet);
                 
                 // Visor
                 const visor = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.18, 0.05), 
-                    new THREE.MeshStandardMaterial({ color: 0x3366aa, metalness: 0.8, emissive: 0x004466 }));
+                    new THREE.MeshStandardMaterial({ color: 0x3366aa, metalness: 0.8 }));
                 visor.position.set(0, 1.68, 0.55);
                 group.add(visor);
                 
-                // Weapon (Machine Gun)
-                const weapon = new THREE.Group();
-                const barrel = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.15, 0.8), 
+                // Weapon
+                const weaponPoint = new THREE.Group();
+                weaponPoint.position.set(0.45, 0.95, 0.65);
+                const barrel = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.7), 
                     new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.85 }));
-                barrel.position.set(0.45, 0.95, 0.65);
-                weapon.add(barrel);
-                
-                const grip = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.25, 0.12), 
-                    new THREE.MeshStandardMaterial({ color: 0x2a2a2a, metalness: 0.5 }));
-                grip.position.set(0.42, 0.78, 0.55);
-                weapon.add(grip);
-                
-                const stock = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.18, 0.35), 
-                    new THREE.MeshStandardMaterial({ color: 0x4a3a2a, roughness: 0.6 }));
-                stock.position.set(0.48, 0.92, 0.35);
-                weapon.add(stock);
-                
-                const magazine = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.32, 0.08), 
-                    new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.7 }));
-                magazine.position.set(0.44, 0.72, 0.55);
-                weapon.add(magazine);
-                
-                group.add(weapon);
+                barrel.position.set(0, 0, 0.35);
+                weaponPoint.add(barrel);
+                group.add(weaponPoint);
+                handBone = weaponPoint;
                 
                 scene.add(group);
-                return group;
-            }
-            
-            function loadCommandoCharacter() {
-                // Use fallback commando since GLTF loading can be slow
-                character = createCommandoCharacter();
+                character = group;
                 modelLoaded = true;
                 finishLoading();
             }
@@ -591,7 +657,6 @@
                         return false;
                     }
                     
-                    // Check collision with enemies
                     for(let i = 0; i < enemies.length; i++) {
                         const enemy = enemies[i];
                         const dist = enemy.mesh.position.distanceTo(this.mesh.position);
@@ -601,7 +666,6 @@
                             return false;
                         }
                     }
-                    
                     return true;
                 }
             }
@@ -638,6 +702,7 @@
                     this.patrolAngle = Math.random() * Math.PI * 2;
                     this.centerPos = position.clone();
                     this.alerted = false;
+                    this.attackCooldown = 0;
                     
                     scene.add(this.mesh);
                 }
@@ -651,8 +716,8 @@
                     
                     if(this.alerted) {
                         const direction = new THREE.Vector3().subVectors(playerPos, this.mesh.position).normalize();
-                        this.mesh.position.x += direction.x * 3.5 * delta;
-                        this.mesh.position.z += direction.z * 3.5 * delta;
+                        this.mesh.position.x += direction.x * 3.8 * delta;
+                        this.mesh.position.z += direction.z * 3.8 * delta;
                         const angle = Math.atan2(direction.x, direction.z);
                         this.mesh.rotation.y = angle;
                     } else {
@@ -661,15 +726,15 @@
                         this.mesh.position.z = this.centerPos.z + Math.sin(this.patrolAngle) * 12;
                     }
                     
-                    // Boundary
                     this.mesh.position.x = Math.min(130, Math.max(-130, this.mesh.position.x));
                     this.mesh.position.z = Math.min(130, Math.max(-130, this.mesh.position.z));
+                    
+                    if(this.attackCooldown > 0) this.attackCooldown -= delta;
                 }
                 
                 takeDamage(amount) {
                     this.health -= amount;
                     
-                    // Hit effect
                     const hitFlash = new THREE.Mesh(new THREE.SphereGeometry(0.35, 6, 6), 
                         new THREE.MeshBasicMaterial({ color: 0xffaa44, transparent: true }));
                     hitFlash.position.copy(this.mesh.position);
@@ -686,8 +751,6 @@
                 
                 destroy() {
                     scene.remove(this.mesh);
-                    
-                    // Death effect
                     const explosion = new THREE.Mesh(new THREE.SphereGeometry(0.8, 8, 8), 
                         new THREE.MeshBasicMaterial({ color: 0xff6633, transparent: true }));
                     explosion.position.copy(this.mesh.position);
@@ -704,13 +767,14 @@
                 document.getElementById('kills').innerText = kills;
             }
             
-            for(let i = 0; i < 8; i++) spawnEnemy();
+            for(let i = 0; i < 10; i++) spawnEnemy();
             
             // ========== CONTROLS ==========
             let moveInput = { x: 0, z: 0 };
             let jumpRequested = false;
             let fireRequested = false;
             let reloadRequested = false;
+            let rollRequested = false;
             let playerVelocityX = 0, playerVelocityZ = 0;
             let velocityY = 0, isGrounded = true;
             
@@ -724,6 +788,7 @@
                     case 'KeyD': keys.d = true; break;
                     case 'Space': e.preventDefault(); jumpRequested = true; break;
                     case 'KeyR': e.preventDefault(); reloadRequested = true; break;
+                    case 'KeyQ': e.preventDefault(); rollRequested = true; break;
                 }
             });
             window.addEventListener('keyup', (e) => {
@@ -837,6 +902,7 @@
             const jumpBtn = document.getElementById('btn-jump');
             const fireBtn = document.getElementById('btn-fire');
             const reloadBtn = document.getElementById('btn-reload');
+            const rollBtn = document.getElementById('btn-roll');
             
             jumpBtn.addEventListener('touchstart', (e) => { e.preventDefault(); jumpRequested = true; });
             jumpBtn.addEventListener('touchend', () => setTimeout(() => jumpRequested = false, 100));
@@ -846,6 +912,47 @@
             
             reloadBtn.addEventListener('touchstart', (e) => { e.preventDefault(); reloadRequested = true; });
             reloadBtn.addEventListener('touchend', () => setTimeout(() => reloadRequested = false, 100));
+            
+            rollBtn.addEventListener('touchstart', (e) => { e.preventDefault(); rollRequested = true; });
+            rollBtn.addEventListener('touchend', () => setTimeout(() => rollRequested = false, 100));
+            
+            // Roll System
+            function performRoll() {
+                if(isRolling || rollCooldownTimer > 0 || !isGrounded) return;
+                
+                isRolling = true;
+                rollTimer = CONFIG.ROLL_DURATION;
+                rollCooldownTimer = CONFIG.ROLL_COOLDOWN;
+                
+                // Calculate roll direction
+                const rollDir = { x: moveInput.x, z: moveInput.z };
+                if(rollDir.x === 0 && rollDir.z === 0) {
+                    // Roll forward if no input
+                    const forwardAngle = character.rotation.y;
+                    rollDir.x = Math.sin(forwardAngle);
+                    rollDir.z = Math.cos(forwardAngle);
+                }
+                
+                rollVelocity.x = rollDir.x * CONFIG.ROLL_SPEED;
+                rollVelocity.z = rollDir.z * CONFIG.ROLL_SPEED;
+                
+                // Play roll animation if available
+                if(animations['roll'] || animations['dodge']) {
+                    const rollAnim = animations['roll'] || animations['dodge'];
+                    if(currentAction) currentAction.fadeOut(0.1);
+                    currentAction = rollAnim;
+                    currentAction.reset().play();
+                }
+                
+                // Visual effect
+                const dustRing = new THREE.Mesh(new THREE.RingGeometry(0.4, 0.9, 16), 
+                    new THREE.MeshBasicMaterial({ color: 0xaa8866, transparent: true, side: THREE.DoubleSide }));
+                dustRing.rotation.x = -Math.PI/2;
+                dustRing.position.copy(character.position);
+                dustRing.position.y = 0.05;
+                scene.add(dustRing);
+                setTimeout(() => scene.remove(dustRing), 200);
+            }
             
             // Fire System
             function shoot() {
@@ -859,7 +966,6 @@
                 startPos.y += 1.3;
                 const dir = new THREE.Vector3(Math.sin(cameraAngle + character.rotation.y), 0, Math.cos(cameraAngle + character.rotation.y));
                 
-                // Muzzle flash effect
                 const flash = new THREE.Mesh(new THREE.SphereGeometry(0.12, 6, 6), 
                     new THREE.MeshBasicMaterial({ color: 0xffaa44 }));
                 flash.position.copy(startPos);
@@ -869,6 +975,15 @@
                 setTimeout(() => scene.remove(flash), 50);
                 
                 bullets.push(new Bullet(startPos, dir));
+                
+                // Muzzle flash on weapon
+                if(handBone) {
+                    const muzzle = new THREE.Mesh(new THREE.SphereGeometry(0.08, 4, 4), 
+                        new THREE.MeshBasicMaterial({ color: 0xff6600 }));
+                    muzzle.position.set(0.6, 0, 0.9);
+                    handBone.add(muzzle);
+                    setTimeout(() => handBone.remove(muzzle), 40);
+                }
             }
             
             function reload() {
@@ -890,13 +1005,30 @@
                 
                 let targetVelX = moveInput.x * CONFIG.MOVEMENT_SPEED;
                 let targetVelZ = moveInput.z * CONFIG.MOVEMENT_SPEED;
-                const control = isGrounded ? 1.0 : CONFIG.AIR_CONTROL;
-                playerVelocityX += (targetVelX - playerVelocityX) * 12 * delta * control;
-                playerVelocityZ += (targetVelZ - playerVelocityZ) * 12 * delta * control;
                 
-                if(isGrounded && moveInput.x === 0 && moveInput.z === 0) {
-                    playerVelocityX *= (1 - CONFIG.GROUND_DRAG * delta);
-                    playerVelocityZ *= (1 - CONFIG.GROUND_DRAG * delta);
+                if(isRolling) {
+                    // Override velocity during roll
+                    playerVelocityX = rollVelocity.x;
+                    playerVelocityZ = rollVelocity.z;
+                    rollTimer -= delta;
+                    if(rollTimer <= 0) {
+                        isRolling = false;
+                        // Return to idle animation
+                        if(animations['idle'] && currentAction !== animations['idle']) {
+                            if(currentAction) currentAction.fadeOut(0.1);
+                            currentAction = animations['idle'];
+                            currentAction.reset().play();
+                        }
+                    }
+                } else {
+                    const control = isGrounded ? 1.0 : CONFIG.AIR_CONTROL;
+                    playerVelocityX += (targetVelX - playerVelocityX) * 12 * delta * control;
+                    playerVelocityZ += (targetVelZ - playerVelocityZ) * 12 * delta * control;
+                    
+                    if(isGrounded && moveInput.x === 0 && moveInput.z === 0 && !isRolling) {
+                        playerVelocityX *= (1 - CONFIG.GROUND_DRAG * delta);
+                        playerVelocityZ *= (1 - CONFIG.GROUND_DRAG * delta);
+                    }
                 }
                 
                 character.position.x += playerVelocityX * delta;
@@ -907,12 +1039,29 @@
                 if(Math.abs(playerVelocityX) > 0.1 || Math.abs(playerVelocityZ) > 0.1) {
                     const moveAngle = Math.atan2(playerVelocityX, playerVelocityZ);
                     character.rotation.y = moveAngle;
+                    
+                    if(!isRolling && modelLoaded && animations['walking'] && currentAction !== animations['walking']) {
+                        if(currentAction) currentAction.fadeOut(0.12);
+                        currentAction = animations['walking'];
+                        currentAction.reset().fadeIn(0.12).play();
+                    }
+                } else {
+                    if(!isRolling && modelLoaded && animations['idle'] && currentAction !== animations['idle']) {
+                        if(currentAction) currentAction.fadeOut(0.15);
+                        currentAction = animations['idle'];
+                        currentAction.reset().play();
+                    }
                 }
                 
-                if(jumpRequested && isGrounded) {
+                if(jumpRequested && isGrounded && !isRolling) {
                     velocityY = CONFIG.JUMP_FORCE;
                     isGrounded = false;
                     jumpRequested = false;
+                    
+                    if(animations['jump']) {
+                        animations['jump'].reset().play();
+                        setTimeout(() => { if(animations['jump']) animations['jump'].fadeOut(0.3); }, 400);
+                    }
                 }
                 
                 if(!isGrounded) {
@@ -925,6 +1074,15 @@
                     }
                 } else {
                     character.position.y = 0;
+                }
+                
+                // Update roll cooldown UI
+                if(rollCooldownTimer > 0) {
+                    rollCooldownTimer -= delta;
+                    const percent = (rollCooldownTimer / CONFIG.ROLL_COOLDOWN) * 100;
+                    document.getElementById('roll-fill').style.height = percent + '%';
+                } else {
+                    document.getElementById('roll-fill').style.height = '0%';
                 }
             }
             
@@ -964,13 +1122,13 @@
                 }
             }
             
-            // Cooldown update
             function updateCooldowns(delta) {
                 if(fireCooldown > 0) fireCooldown -= delta;
             }
             
             // Animation loop
             let lastTime = performance.now();
+            let clock = new THREE.Clock();
             
             function animate() {
                 const now = performance.now();
@@ -986,6 +1144,9 @@
                 
                 if(fireRequested) shoot();
                 if(reloadRequested) { reload(); reloadRequested = false; }
+                if(rollRequested) { performRoll(); rollRequested = false; }
+                
+                if(mixer) mixer.update(clock.getDelta());
                 
                 renderer.render(scene, camera);
                 requestAnimationFrame(animate);
@@ -1006,7 +1167,7 @@
                 if(loadProgress >= 100) clearInterval(loadInterval);
             }, 70);
             
-            loadCommandoCharacter();
+            loadSoldierModel();
             animate();
             
             window.addEventListener('resize', () => {
