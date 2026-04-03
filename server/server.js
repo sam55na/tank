@@ -1,1139 +1,1508 @@
+// ============================================
+// 🚀 خادم لعبة Battle Tanks - النسخة النهائية للإنتاج مع جميع التعديلات
+// ============================================
+// Author: Battle Tanks Team
+// Version: 3.7.0
+// Description: خادم متكامل للألعاب متعددة اللاعبين - دعم الاختفاء الجزئي وتأثيرات الدخان
+// ============================================
+
 const express = require('express');
-const cors = require('cors');
+const http = require('http');
+const socketIo = require('socket.io');
 const admin = require('firebase-admin');
-const NodeCache = require('node-cache');
-const rateLimit = require('express-rate-limit');
-const compression = require('compression');
+const cors = require('cors');
 
 // ============================================
-// 1. تهيئة Firebase Admin SDK من متغيرات البيئة
+// 🔥 تهيئة Express و Firebase
 // ============================================
+const app = express();
+app.use(cors());
+app.use(express.json());
 
-const serviceAccount = {
-    type: process.env.FIREBASE_TYPE,
-    project_id: process.env.FIREBASE_PROJECT_ID,
-    private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
-    private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    client_email: process.env.FIREBASE_CLIENT_EMAIL,
-    client_id: process.env.FIREBASE_CLIENT_ID,
-    auth_uri: process.env.FIREBASE_AUTH_URI,
-    token_uri: process.env.FIREBASE_TOKEN_URI,
-    auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_CERT_URL,
-    client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL,
-    universe_domain: process.env.FIREBASE_UNIVERSE_DOMAIN
-};
-
-// التحقق من وجود المتغيرات الضرورية
-if (!process.env.FIREBASE_PROJECT_ID) {
-    console.error('❌ Firebase configuration missing! Please check environment variables.');
-    process.exit(1);
+// Firebase Admin SDK - استخدام متغير البيئة
+let serviceAccount;
+try {
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    console.log('✅ Firebase: Using environment variable');
+} catch (e) {
+    try {
+        serviceAccount = require('./serviceAccountKey.json');
+        console.log('✅ Firebase: Using local file');
+    } catch (err) {
+        console.error('❌ Firebase: No service account found');
+        process.exit(1);
+    }
 }
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL: process.env.FIREBASE_DATABASE_URL,
-    databaseAuthVariableOverride: null
+    databaseURL: "https://boomb-fa3e7-default-rtdb.firebaseio.com"
 });
 
 const db = admin.database();
-const app = express();
-const PORT = process.env.PORT || 3000;
 
 // ============================================
-// 2. إعداد Cache و Rate Limiting
+// 🌐 خادم HTTP و WebSocket
 // ============================================
-
-// Cache للبيانات مع وقت انتهاء مختلف لكل نوع
-const userCache = new NodeCache({ stdTTL: 60, checkperiod: 120 }); // 60 ثانية للمستخدمين
-const codeCache = new NodeCache({ stdTTL: 300, checkperiod: 600 }); // 5 دقائق للكودات
-const tokenCache = new NodeCache({ stdTTL: 300, checkperiod: 600 }); // 5 دقائق للتوكنات
-
-// Rate limiting حسب نوع الـ endpoint
-const strictLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 50, // limit each IP to 50 requests per windowMs
-    message: { success: false, error: 'Too many requests, please try again later.' }
-});
-
-const moderateLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 200, // limit each IP to 200 requests per windowMs
-    message: { success: false, error: 'Too many requests, please try again later.' }
+const server = http.createServer(app);
+const io = socketIo(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"],
+        credentials: true
+    },
+    transports: ['websocket', 'polling'],
+    pingTimeout: 60000,
+    pingInterval: 25000
 });
 
 // ============================================
-// 3. Middleware
+// 📦 الإعدادات العامة والتخزين المؤقت
 // ============================================
+let globalGameSettings = {
+    seatPrice: 1,
+    maxPlayers: 2,
+    gameDuration: 5 * 60 * 1000 // 5 دقائق
+};
 
-app.use(cors({
-    origin: ['https://tank-yf0p.onrender.com', 'http://localhost:3000', 'http://localhost:5500'],
-    credentials: true,
-    optionsSuccessStatus: 200
-}));
-
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(compression());
-
-// تطبيق rate limiting على الـ API routes
-app.use('/api/', moderateLimiter);
-app.use('/api/friends/', strictLimiter);
-app.use('/api/user/update', strictLimiter);
-app.use('/api/user/batch-update', strictLimiter);
-
-// Logging middleware
-app.use((req, res, next) => {
-    console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
-    next();
-});
+const players = new Map();      // socketId -> player data
+const rooms = new Map();        // roomId -> room data
 
 // ============================================
-// 4. Helper Functions محسنة
+// 🏠 نظام الغرف - 10 غرف من كل نوع
 // ============================================
+const ROOM_TYPES = [
+    { name: 'غرفة المبتدئين', maxSeats: 2, seatPrice: 1, prefix: 'beginner' },
+    { name: 'غرفة المتقدمين', maxSeats: 4, seatPrice: 5, prefix: 'advanced' },
+    { name: 'غرفة المحترفين', maxSeats: 6, seatPrice: 10, prefix: 'pro' }
+];
 
-/**
- * التحقق من صحة التوكن مع caching
- */
-async function verifyToken(req) {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) throw new Error('No token provided');
-    
-    // استخدام cache للتوكنات
-    let decoded = tokenCache.get(token);
-    
-    if (!decoded) {
-        try {
-            decoded = await admin.auth().verifyIdToken(token);
-            tokenCache.set(token, decoded, 300); // Cache لمدة 5 دقائق
-        } catch (error) {
-            throw new Error('Invalid token');
+const ROOMS_PER_TYPE = 10; // 10 غرف من كل نوع
+
+// تهيئة 10 غرف من كل نوع
+function initializeRooms() {
+    for (const type of ROOM_TYPES) {
+        for (let i = 1; i <= ROOMS_PER_TYPE; i++) {
+            const roomId = `${type.prefix}_room_${i}`;
+            const room = {
+                id: roomId,
+                name: `${type.name} ${i}`,
+                maxSeats: type.maxSeats,
+                seatPrice: type.seatPrice,
+                players: [],
+                status: 'waiting', // waiting, active, ended
+                createdAt: Date.now(),
+                typeName: type.name,
+                gameInterval: null,
+                startTime: null,
+                roomNumber: i,
+                // نظام القتلة والاختفاء
+                killStreaks: new Map(), // userId -> killStreak data
+                gameData: {
+                    startTime: null,
+                    activePlayers: new Map() // userId -> { kills, lastKillTime, isInvisible, invisibilityEndTime }
+                }
+            };
+            rooms.set(roomId, room);
+            console.log(`🏠 Created room: ${room.name} (${type.maxSeats} players, ${type.seatPrice}$)`);
         }
     }
-    
-    return decoded;
+    console.log(`✅ Total rooms: ${rooms.size} (${ROOM_TYPES.length} types × ${ROOMS_PER_TYPE} rooms each = ${ROOM_TYPES.length * ROOMS_PER_TYPE} rooms)`);
 }
 
-/**
- * جلب بيانات المستخدم مع caching
- */
-async function getUserData(uid, useCache = true) {
-    if (!uid) return null;
+// إعادة تعيين الغرفة بعد انتهاء المعركة وإنشاء غرفة جديدة
+function resetRoom(roomId) {
+    const oldRoom = rooms.get(roomId);
+    if (!oldRoom) return;
     
-    if (useCache) {
-        const cached = userCache.get(uid);
-        if (cached) return cached;
+    // تنظيف الغرفة المنتهية
+    if (oldRoom.gameInterval) {
+        clearInterval(oldRoom.gameInterval);
+        oldRoom.gameInterval = null;
     }
     
-    const snapshot = await db.ref(`users/${uid}`).once('value');
+    // تنظيف بيانات القتلة
+    oldRoom.killStreaks.clear();
+    oldRoom.gameData.activePlayers.clear();
+    
+    // إزالة الغرفة المنتهية
+    rooms.delete(roomId);
+    
+    // إنشاء غرفة جديدة من نفس النوع
+    const type = ROOM_TYPES.find(t => t.name === oldRoom.typeName);
+    if (type) {
+        // البحث عن رقم الغرفة التالي المتاح
+        let roomNumber = 1;
+        let newRoomId = `${type.prefix}_room_${roomNumber}`;
+        
+        // العثور على رقم غرفة غير مستخدم
+        while (rooms.has(newRoomId)) {
+            roomNumber++;
+            newRoomId = `${type.prefix}_room_${roomNumber}`;
+        }
+        
+        const newRoom = {
+            id: newRoomId,
+            name: `${type.name} ${roomNumber}`,
+            maxSeats: type.maxSeats,
+            seatPrice: type.seatPrice,
+            players: [],
+            status: 'waiting',
+            createdAt: Date.now(),
+            typeName: type.name,
+            gameInterval: null,
+            startTime: null,
+            roomNumber: roomNumber,
+            killStreaks: new Map(),
+            gameData: {
+                startTime: null,
+                activePlayers: new Map()
+            }
+        };
+        
+        rooms.set(newRoomId, newRoom);
+        console.log(`🔄 Created new room: ${newRoom.name} (replacing finished room ${oldRoom.name})`);
+        
+        // إخطار اللاعبين بالغرفة الجديدة
+        io.emit('room_created', {
+            roomId: newRoomId,
+            name: newRoom.name,
+            maxSeats: newRoom.maxSeats,
+            seatPrice: newRoom.seatPrice
+        });
+    }
+    
+    // بث تحديث قائمة الغرف
+    broadcastRoomsList();
+    
+    console.log(`✅ Room reset complete: ${oldRoom.name} ended, new room created`);
+}
+
+// استدعاء التهيئة
+initializeRooms();
+
+// ============================================
+// 🔧 دوال مساعدة
+// ============================================
+function generateId() {
+    return Math.random().toString(36).substr(2, 8);
+}
+
+function broadcastRoomsList() {
+    const roomsList = [];
+    for (const [roomId, room] of rooms) {
+        // فقط الغرف في حالة waiting تظهر في اللوبي
+        if (room.status === 'waiting') {
+            roomsList.push({
+                id: roomId,
+                name: room.name,
+                players: room.players.length,
+                maxSeats: room.maxSeats,
+                seatPrice: room.seatPrice,
+                status: room.status,
+                needed: room.maxSeats - room.players.length // عدد اللاعبين المطلوبين
+            });
+        }
+    }
+    io.emit('rooms_list', { rooms: roomsList });
+    console.log(`📢 Broadcast rooms: ${roomsList.length} waiting rooms (total rooms: ${rooms.size})`);
+}
+
+function updateRoom(roomId) {
+    const room = rooms.get(roomId);
+    if (!room) return;
+    
+    io.to(roomId).emit('room_update', {
+        players: room.players.map(p => ({ userId: p.userId, email: p.email })),
+        maxSeats: room.maxSeats,
+        count: room.players.length,
+        seatPrice: room.seatPrice,
+        needed: room.maxSeats - room.players.length
+    });
+    
+    // إذا اكتملت الغرفة ووصل عدد اللاعبين إلى الحد الأقصى، ابدأ المعركة
+    if (room.players.length === room.maxSeats && room.status === 'waiting') {
+        console.log(`🎯 ${room.name} is full (${room.players.length}/${room.maxSeats})! Starting game...`);
+        startGame(roomId);
+    }
+}
+
+// إضافة اللاعب إلى الغرفة مع خصم الرصيد وإرسال إشعار
+async function addPlayerToRoom(socket, player, room) {
+    // التحقق من الرصيد
+    const userRef = db.ref(`users/${player.userId}`);
+    const snapshot = await userRef.once('value');
     const userData = snapshot.val();
+    const balance = userData?.balance || 100;
+    const seatPrice = room.seatPrice || 1;
     
-    if (userData && useCache) {
-        userCache.set(uid, userData, 60); // Cache لمدة 60 ثانية
+    if (balance < seatPrice) {
+        return { success: false, error: `⚠️ رصيدك غير كافٍ! سعر المقعد: ${seatPrice}$` };
     }
     
-    return userData;
+    // خصم الرصيد
+    await userRef.update({ balance: balance - seatPrice });
+    player.balance = balance - seatPrice;
+    
+    // إضافة اللاعب إلى الغرفة مع حفظ المبلغ المدفوع
+    const newPlayer = {
+        userId: player.userId,
+        socketId: socket.id,
+        email: player.email,
+        health: 100,
+        paidAmount: seatPrice,
+        kills: 0,
+        lastKillTime: 0,
+        isInvisible: false,
+        invisibilityEndTime: 0
+    };
+    room.players.push(newPlayer);
+    player.roomId = room.id;
+    
+    socket.join(room.id);
+    
+    return { 
+        success: true, 
+        balance: balance - seatPrice,
+        playersCount: room.players.length,
+        maxSeats: room.maxSeats,
+        needed: room.maxSeats - room.players.length
+    };
 }
 
-/**
- * تحديث بيانات المستخدم ومسح الكاش
- */
-async function updateUserData(uid, updates) {
-    if (!uid || !updates || Object.keys(updates).length === 0) return false;
+// إزالة اللاعب من الغرفة مع إعادة الرصيد
+async function removePlayerFromRoom(socket, player, room) {
+    const index = room.players.findIndex(p => p.socketId === socket.id);
+    if (index !== -1) {
+        const removedPlayer = room.players[index];
+        const paidAmount = removedPlayer.paidAmount || room.seatPrice;
+        
+        // إعادة الرصيد فقط إذا كانت الغرفة لا تزال في حالة انتظار
+        if (room.status === 'waiting' && paidAmount > 0) {
+            try {
+                const userRef = db.ref(`users/${player.userId}`);
+                const snapshot = await userRef.once('value');
+                const userData = snapshot.val();
+                const currentBalance = userData?.balance || 0;
+                await userRef.update({ balance: currentBalance + paidAmount });
+                console.log(`💰 Refunded ${paidAmount}$ to ${player.email} for leaving ${room.name}`);
+                return { success: true, refunded: paidAmount };
+            } catch (error) {
+                console.error('Error refunding balance:', error);
+                return { success: false, refunded: 0 };
+            }
+        }
+        
+        room.players.splice(index, 1);
+        socket.leave(room.id);
+        
+        return { success: true, refunded: 0 };
+    }
+    return { success: false, refunded: 0 };
+}
+
+// معالجة سلسلة القتلات والاختفاء الجزئي
+function handleKillStreak(room, killerId, targetId) {
+    const killer = room.players.find(p => p.userId === killerId);
+    if (!killer) return false;
     
-    const updateObject = {
-        ...updates,
-        lastUpdated: Date.now()
-    };
+    const now = Date.now();
+    let killStreak = 1;
     
-    await db.ref(`users/${uid}`).update(updateObject);
+    // التحقق من السلسلة (قتلان خلال 10 ثوانٍ)
+    if (now - killer.lastKillTime <= 10000) {
+        killer.kills++;
+        killStreak = killer.kills;
+    } else {
+        killer.kills = 1;
+    }
     
-    // مسح الكاش
-    userCache.del(uid);
+    killer.lastKillTime = now;
+    
+    // تفعيل الاختفاء الجزئي عند قتل عدوين متتاليين خلال 10 ثوانٍ
+    if (killStreak >= 2 && !killer.isInvisible) {
+        killer.isInvisible = true;
+        killer.invisibilityEndTime = now + 5000; // 5 ثوانٍ
+        
+        // إرسال إشعار التفعيل للاعب
+        const killerSocket = io.sockets.sockets.get(killer.socketId);
+        if (killerSocket) {
+            killerSocket.emit('invisibility_activated', {
+                duration: 5,
+                message: '👻 أصبحت مخفياً جزئياً لمدة 5 ثوانٍ!'
+            });
+        }
+        
+        console.log(`👻 Player ${killer.userId} activated partial invisibility (${killStreak} kills streak)`);
+    }
+    
+    // إرسال إشعار السلسلة
+    const killerSocket = io.sockets.sockets.get(killer.socketId);
+    if (killerSocket) {
+        let streakMessage = '';
+        if (killStreak === 2) streakMessage = '🔥 DOUBLE KILL! 🔥';
+        else if (killStreak === 3) streakMessage = '💀 TRIPLE KILL! 💀';
+        else if (killStreak >= 4) streakMessage = '👑 GODLIKE! 👑';
+        
+        if (streakMessage) {
+            killerSocket.emit('streak_notification', {
+                message: streakMessage,
+                streak: killStreak
+            });
+        }
+    }
     
     return true;
 }
 
-/**
- * توليد كود فريد للمستخدم
- */
-async function generateUniqueCode() {
-    let userIdCode;
-    let exists = true;
-    let attempts = 0;
-    const maxAttempts = 10;
-    
-    while (exists && attempts < maxAttempts) {
-        userIdCode = Math.floor(1000000000 + Math.random() * 9000000000).toString();
-        const snapshot = await db.ref(`users_by_code/${userIdCode}`).once('value');
-        exists = snapshot.exists();
-        attempts++;
+// تحديث حالة الاختفاء للاعب
+function updateInvisibilityStatus(room, player) {
+    if (player.isInvisible && Date.now() > player.invisibilityEndTime) {
+        player.isInvisible = false;
+        
+        const playerSocket = io.sockets.sockets.get(player.socketId);
+        if (playerSocket) {
+            playerSocket.emit('invisibility_ended', {
+                message: '👁️ تم كشف موقعك!'
+            });
+        }
+        
+        console.log(`👁️ Player ${player.userId} invisibility ended`);
+        return true;
     }
-    
-    if (attempts >= maxAttempts) {
-        throw new Error('Failed to generate unique code');
-    }
-    
-    return userIdCode;
+    return false;
 }
 
-/**
- * جلب بيانات المستخدم كاملة (مع الأصدقاء والطلبات)
- */
-async function getFullUserData(uid) {
-    const userData = await getUserData(uid);
+// بدء اللعبة مع إعدادات الفرق والمواقع
+function startGame(roomId) {
+    const room = rooms.get(roomId);
+    if (!room || room.status !== 'waiting') return;
     
-    if (!userData) {
-        return {
-            user: null,
-            friends: [],
-            friendRequests: []
-        };
+    room.status = 'active';
+    room.startTime = Date.now();
+    room.gameData.startTime = Date.now();
+    
+    const playersList = room.players;
+    const positions = [
+        { x: -120, z: -80, team: 1 },
+        { x: 120, z: 80, team: 2 }
+    ];
+    
+    // تعيين الفرق والمواقع لكل لاعب
+    for (let i = 0; i < playersList.length; i++) {
+        const pos = positions[i % positions.length];
+        playersList[i].team = pos.team;
+        playersList[i].position = { x: pos.x, z: pos.z, y: 0 };
+        playersList[i].rotation = 0;
+        playersList[i].health = 100;
+        playersList[i].kills = 0;
+        playersList[i].lastKillTime = 0;
+        playersList[i].isInvisible = false;
+        playersList[i].invisibilityEndTime = 0;
+        
+        // تسجيل في gameData
+        room.gameData.activePlayers.set(playersList[i].userId, {
+            kills: 0,
+            lastKillTime: 0,
+            isInvisible: false,
+            invisibilityEndTime: 0
+        });
     }
     
-    // جلب الأصدقاء وطلبات الصداقة بشكل متوازي
-    const friendsUids = userData.friends || [];
-    const requestsUids = userData.friendRequests || [];
+    // إرسال بدء اللعبة لكل لاعب مع معلوماته
+    for (const player of playersList) {
+        io.to(player.socketId).emit('game_start', {
+            roomId: roomId,
+            players: playersList.map(p => ({ userId: p.userId, team: p.team })),
+            yourTeam: player.team,
+            startTime: room.startTime,
+            position: player.position,
+            health: player.health
+        });
+    }
     
-    const [friendsData, requestsData] = await Promise.all([
-        Promise.all(friendsUids.map(async (friendUid) => {
-            const friend = await getUserData(friendUid);
-            return friend ? {
-                uid: friendUid,
-                username: friend.username,
-                email: friend.email,
-                userIdCode: friend.userIdCode,
-                balance: friend.balance,
-                isActive: false
-            } : null;
-        })),
-        Promise.all(requestsUids.map(async (requesterUid) => {
-            const requester = await getUserData(requesterUid);
-            return requester ? {
-                uid: requesterUid,
-                username: requester.username,
-                email: requester.email,
-                userIdCode: requester.userIdCode
-            } : null;
-        }))
-    ]);
+    console.log(`🎮 Game started in ${room.name} with ${playersList.length} players`);
     
-    return {
-        user: userData,
-        friends: friendsData.filter(f => f !== null),
-        friendRequests: requestsData.filter(r => r !== null)
-    };
-}
-
-// ============================================
-// 5. API: جلب جميع بيانات المستخدم دفعة واحدة
-// ============================================
-
-/**
- * GET /api/user/full-data
- * جلب جميع بيانات المستخدم (الرصيد، الأصدقاء، الطلبات) في طلب واحد
- */
-app.get('/api/user/full-data', async (req, res) => {
-    try {
-        const { uid } = req.query;
-        const decoded = await verifyToken(req);
-
-        if (!uid || decoded.uid !== uid) {
-            return res.status(403).json({ 
-                success: false, 
-                error: 'Unauthorized access' 
-            });
-        }
-
-        const { user, friends, friendRequests } = await getFullUserData(uid);
-
-        if (!user) {
-            return res.json({
-                success: true,
-                user: {
-                    balance: 100,
-                    gamesPlayed: 0,
-                    wins: 0,
-                    userIdCode: null,
-                    username: null,
-                    email: null
-                },
-                friends: [],
-                friendRequests: []
-            });
-        }
-
-        res.json({
-            success: true,
-            user: {
-                balance: user.balance || 100,
-                gamesPlayed: user.gamesPlayed || 0,
-                wins: user.wins || 0,
-                userIdCode: user.userIdCode,
-                username: user.username,
-                email: user.email
-            },
-            friends: friends,
-            friendRequests: friendRequests
-        });
-
-    } catch (error) {
-        console.error('Error fetching full user data:', error);
-        
-        if (error.message === 'No token provided' || error.message === 'Invalid token') {
-            return res.status(401).json({ success: false, error: 'Authentication required' });
+    // بث أن الغرفة بدأت
+    io.emit('game_started', {
+        roomId: roomId,
+        roomName: room.name,
+        playersCount: playersList.length
+    });
+    
+    // بدء بث حالة اللعبة كل 50ms (20 مرة في الثانية)
+    const gameInterval = setInterval(() => {
+        const currentRoom = rooms.get(roomId);
+        if (!currentRoom || currentRoom.status !== 'active') {
+            clearInterval(gameInterval);
+            return;
         }
         
-        res.status(500).json({ 
-            success: false, 
-            error: 'Internal server error' 
-        });
-    }
-});
-
-// ============================================
-// 6. API: جلب بيانات المستخدم الأساسية
-// ============================================
-
-/**
- * GET /api/user/data
- * جلب بيانات المستخدم الأساسية (متوافق مع الإصدارات القديمة)
- */
-app.get('/api/user/data', async (req, res) => {
-    try {
-        const { uid } = req.query;
-        await verifyToken(req);
-
-        if (!uid) {
-            return res.status(400).json({ success: false, error: 'UID is required' });
-        }
-
-        const userData = await getUserData(uid);
-
-        if (!userData) {
-            return res.json({
-                success: true,
-                balance: 100,
-                gamesPlayed: 0,
-                wins: 0,
-                userIdCode: null,
-                friends: [],
-                friendRequests: []
-            });
-        }
-
-        res.json({
-            success: true,
-            balance: userData.balance || 100,
-            gamesPlayed: userData.gamesPlayed || 0,
-            wins: userData.wins || 0,
-            userIdCode: userData.userIdCode || null,
-            friends: userData.friends || [],
-            friendRequests: userData.friendRequests || []
-        });
-
-    } catch (error) {
-        console.error('Error fetching user data:', error);
-        
-        if (error.message === 'No token provided' || error.message === 'Invalid token') {
-            return res.status(401).json({ success: false, error: 'Authentication required' });
-        }
-        
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// ============================================
-// 7. API: إنشاء مستخدم جديد
-// ============================================
-
-/**
- * POST /api/user/create
- * إنشاء مستخدم جديد في قاعدة البيانات
- */
-app.post('/api/user/create', async (req, res) => {
-    try {
-        const { uid, email, displayName } = req.body;
-        await verifyToken(req);
-
-        if (!uid || !email) {
-            return res.status(400).json({ success: false, error: 'UID and email are required' });
-        }
-
-        // التحقق من وجود المستخدم
-        const existingUser = await getUserData(uid, false);
-        
-        if (existingUser) {
-            return res.json({ 
-                success: true, 
-                message: 'User already exists',
-                userIdCode: existingUser.userIdCode
-            });
-        }
-
-        // توليد كود فريد
-        const userIdCode = await generateUniqueCode();
-        
-        // إنشاء اسم المستخدم
-        const username = displayName || email.split('@')[0];
-        
-        // حفظ بيانات المستخدم
-        const userData = {
-            email: email,
-            username: username,
-            balance: 100,
-            gamesPlayed: 0,
-            wins: 0,
-            userIdCode: userIdCode,
-            friends: [],
-            friendRequests: [],
-            createdAt: Date.now(),
-            lastUpdated: Date.now()
-        };
-        
-        await db.ref(`users/${uid}`).set(userData);
-        await db.ref(`users_by_code/${userIdCode}`).set(uid);
-        
-        // تحديث الكاش
-        userCache.set(uid, userData, 60);
-
-        res.json({ 
-            success: true, 
-            message: 'User created successfully', 
-            userIdCode 
-        });
-
-    } catch (error) {
-        console.error('Error creating user:', error);
-        
-        if (error.message === 'No token provided' || error.message === 'Invalid token') {
-            return res.status(401).json({ success: false, error: 'Authentication required' });
-        }
-        
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// ============================================
-// 8. API: تحديث بيانات المستخدم
-// ============================================
-
-/**
- * POST /api/user/update
- * تحديث بيانات المستخدم
- */
-app.post('/api/user/update', async (req, res) => {
-    try {
-        const { uid, balance, gamesPlayed, wins } = req.body;
-        const decoded = await verifyToken(req);
-
-        if (decoded.uid !== uid) {
-            return res.status(403).json({ success: false, error: 'Unauthorized' });
-        }
-
-        const updates = {};
-        if (balance !== undefined) updates.balance = balance;
-        if (gamesPlayed !== undefined) updates.gamesPlayed = gamesPlayed;
-        if (wins !== undefined) updates.wins = wins;
-        
-        if (Object.keys(updates).length > 0) {
-            await updateUserData(uid, updates);
-        }
-
-        res.json({ success: true, message: 'User updated successfully' });
-
-    } catch (error) {
-        console.error('Error updating user:', error);
-        
-        if (error.message === 'No token provided' || error.message === 'Invalid token') {
-            return res.status(401).json({ success: false, error: 'Authentication required' });
-        }
-        
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// ============================================
-// 9. API: تحديث متعدد (Batch Update)
-// ============================================
-
-/**
- * POST /api/user/batch-update
- * تحديث متعدد الحقول في طلب واحد
- */
-app.post('/api/user/batch-update', async (req, res) => {
-    try {
-        const { uid, updates } = req.body;
-        const decoded = await verifyToken(req);
-
-        if (decoded.uid !== uid) {
-            return res.status(403).json({ success: false, error: 'Unauthorized' });
-        }
-
-        const validUpdates = {};
-        const allowedFields = ['balance', 'gamesPlayed', 'wins', 'username'];
-        
-        for (const field of allowedFields) {
-            if (updates[field] !== undefined) {
-                validUpdates[field] = updates[field];
-            }
-        }
-        
-        if (Object.keys(validUpdates).length > 0) {
-            await updateUserData(uid, validUpdates);
-        }
-
-        res.json({ success: true, message: 'Batch update successful' });
-
-    } catch (error) {
-        console.error('Error in batch update:', error);
-        
-        if (error.message === 'No token provided' || error.message === 'Invalid token') {
-            return res.status(401).json({ success: false, error: 'Authentication required' });
-        }
-        
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// ============================================
-// 10. API: إرسال طلب صداقة
-// ============================================
-
-/**
- * POST /api/friends/request
- * إرسال طلب صداقة لمستخدم
- */
-app.post('/api/friends/request', async (req, res) => {
-    try {
-        const { fromUid, toUserIdCode } = req.body;
-        const decoded = await verifyToken(req);
-
-        if (decoded.uid !== fromUid) {
-            return res.status(403).json({ success: false, error: 'Unauthorized' });
-        }
-
-        // التحقق من الكود
-        const targetUidSnapshot = await db.ref(`users_by_code/${toUserIdCode}`).once('value');
-        const toUid = targetUidSnapshot.val();
-
-        if (!toUid) {
-            return res.status(404).json({ success: false, error: 'User not found' });
-        }
-
-        if (toUid === fromUid) {
-            return res.status(400).json({ success: false, error: 'Cannot add yourself' });
-        }
-
-        // جلب بيانات المستخدمين
-        const [fromUser, toUser] = await Promise.all([
-            getUserData(fromUid),
-            getUserData(toUid)
-        ]);
-
-        if (!fromUser || !toUser) {
-            return res.status(404).json({ success: false, error: 'User not found' });
-        }
-
-        // التحقق من الصداقة
-        if (fromUser.friends?.includes(toUid)) {
-            return res.status(400).json({ success: false, error: 'Already friends' });
-        }
-
-        if (toUser.friendRequests?.includes(fromUid)) {
-            return res.status(400).json({ success: false, error: 'Friend request already sent' });
-        }
-
-        // إضافة الطلب
-        const currentRequests = toUser.friendRequests || [];
-        if (!currentRequests.includes(fromUid)) {
-            currentRequests.push(fromUid);
-            await db.ref(`users/${toUid}`).update({ friendRequests: currentRequests });
-            
-            // مسح الكاش
-            userCache.del(toUid);
-        }
-
-        res.json({ success: true, message: 'Friend request sent' });
-
-    } catch (error) {
-        console.error('Error sending friend request:', error);
-        
-        if (error.message === 'No token provided' || error.message === 'Invalid token') {
-            return res.status(401).json({ success: false, error: 'Authentication required' });
-        }
-        
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// ============================================
-// 11. API: قبول طلب صداقة
-// ============================================
-
-/**
- * POST /api/friends/accept
- * قبول طلب صداقة
- */
-app.post('/api/friends/accept', async (req, res) => {
-    try {
-        const { userUid, requesterUid } = req.body;
-        const decoded = await verifyToken(req);
-
-        if (decoded.uid !== userUid) {
-            return res.status(403).json({ success: false, error: 'Unauthorized' });
-        }
-
-        const [user, requester] = await Promise.all([
-            getUserData(userUid),
-            getUserData(requesterUid)
-        ]);
-
-        if (!user || !requester) {
-            return res.status(404).json({ success: false, error: 'User not found' });
-        }
-
-        if (!user.friendRequests?.includes(requesterUid)) {
-            return res.status(400).json({ success: false, error: 'No friend request found' });
-        }
-
-        // تحديث القوائم
-        const updatedRequests = user.friendRequests.filter(uid => uid !== requesterUid);
-        const userFriends = [...(user.friends || []), requesterUid];
-        const requesterFriends = [...(requester.friends || []), userUid];
-
-        // تنفيذ التحديثات
-        await Promise.all([
-            db.ref(`users/${userUid}`).update({
-                friends: userFriends,
-                friendRequests: updatedRequests
-            }),
-            db.ref(`users/${requesterUid}`).update({
-                friends: requesterFriends
-            })
-        ]);
-        
-        // مسح الكاش
-        userCache.del(userUid);
-        userCache.del(requesterUid);
-
-        res.json({ success: true, message: 'Friend request accepted' });
-
-    } catch (error) {
-        console.error('Error accepting friend request:', error);
-        
-        if (error.message === 'No token provided' || error.message === 'Invalid token') {
-            return res.status(401).json({ success: false, error: 'Authentication required' });
-        }
-        
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// ============================================
-// 12. API: رفض طلب صداقة
-// ============================================
-
-/**
- * POST /api/friends/reject
- * رفض طلب صداقة
- */
-app.post('/api/friends/reject', async (req, res) => {
-    try {
-        const { userUid, requesterUid } = req.body;
-        const decoded = await verifyToken(req);
-
-        if (decoded.uid !== userUid) {
-            return res.status(403).json({ success: false, error: 'Unauthorized' });
-        }
-
-        const user = await getUserData(userUid);
-        
-        if (!user) {
-            return res.status(404).json({ success: false, error: 'User not found' });
-        }
-
-        if (!user.friendRequests?.includes(requesterUid)) {
-            return res.status(400).json({ success: false, error: 'No friend request found' });
-        }
-
-        const updatedRequests = user.friendRequests.filter(uid => uid !== requesterUid);
-        await db.ref(`users/${userUid}`).update({ friendRequests: updatedRequests });
-        
-        userCache.del(userUid);
-
-        res.json({ success: true, message: 'Friend request rejected' });
-
-    } catch (error) {
-        console.error('Error rejecting friend request:', error);
-        
-        if (error.message === 'No token provided' || error.message === 'Invalid token') {
-            return res.status(401).json({ success: false, error: 'Authentication required' });
-        }
-        
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// ============================================
-// 13. API: إزالة صديق
-// ============================================
-
-/**
- * POST /api/friends/remove
- * إزالة صديق من القائمة
- */
-app.post('/api/friends/remove', async (req, res) => {
-    try {
-        const { userUid, friendUid } = req.body;
-        const decoded = await verifyToken(req);
-
-        if (decoded.uid !== userUid) {
-            return res.status(403).json({ success: false, error: 'Unauthorized' });
-        }
-
-        const [user, friend] = await Promise.all([
-            getUserData(userUid),
-            getUserData(friendUid)
-        ]);
-
-        if (!user || !friend) {
-            return res.status(404).json({ success: false, error: 'User not found' });
-        }
-
-        const userFriends = (user.friends || []).filter(uid => uid !== friendUid);
-        const friendFriends = (friend.friends || []).filter(uid => uid !== userUid);
-
-        await Promise.all([
-            db.ref(`users/${userUid}`).update({ friends: userFriends }),
-            db.ref(`users/${friendUid}`).update({ friends: friendFriends })
-        ]);
-
-        userCache.del(userUid);
-        userCache.del(friendUid);
-
-        res.json({ success: true, message: 'Friend removed' });
-
-    } catch (error) {
-        console.error('Error removing friend:', error);
-        
-        if (error.message === 'No token provided' || error.message === 'Invalid token') {
-            return res.status(401).json({ success: false, error: 'Authentication required' });
-        }
-        
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// ============================================
-// 14. API: البحث عن مستخدم بالكود
-// ============================================
-
-/**
- * GET /api/user/bycode/:code
- * البحث عن مستخدم باستخدام الكود
- */
-app.get('/api/user/bycode/:code', async (req, res) => {
-    try {
-        const { code } = req.params;
-        await verifyToken(req);
-
-        // استخدام cache للكودات
-        let userData = codeCache.get(code);
-        
-        if (!userData) {
-            const uidSnapshot = await db.ref(`users_by_code/${code}`).once('value');
-            const uid = uidSnapshot.val();
-
-            if (!uid) {
-                return res.status(404).json({ success: false, error: 'User not found' });
-            }
-
-            const user = await getUserData(uid);
-
-            if (!user) {
-                return res.status(404).json({ success: false, error: 'User not found' });
-            }
-
-            userData = {
-                uid: uid,
-                username: user.username,
-                email: user.email,
-                userIdCode: user.userIdCode
-            };
-            
-            codeCache.set(code, userData, 300); // Cache لمدة 5 دقائق
-        }
-
-        res.json({
-            success: true,
-            user: userData
-        });
-
-    } catch (error) {
-        console.error('Error finding user by code:', error);
-        
-        if (error.message === 'No token provided' || error.message === 'Invalid token') {
-            return res.status(401).json({ success: false, error: 'Authentication required' });
-        }
-        
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// ============================================
-// 15. API: جلب قائمة الأصدقاء
-// ============================================
-
-/**
- * GET /api/friends/list/:uid
- * جلب قائمة الأصدقاء مع بياناتهم
- */
-app.get('/api/friends/list/:uid', async (req, res) => {
-    try {
-        const { uid } = req.params;
-        await verifyToken(req);
-
-        const user = await getUserData(uid);
-
-        if (!user) {
-            return res.status(404).json({ success: false, error: 'User not found' });
-        }
-
-        const friendsUids = user.friends || [];
-        const friendsData = [];
-
-        for (const friendUid of friendsUids) {
-            const friend = await getUserData(friendUid);
-            if (friend) {
-                friendsData.push({
-                    uid: friendUid,
-                    username: friend.username,
-                    email: friend.email,
-                    userIdCode: friend.userIdCode,
-                    balance: friend.balance,
-                    isActive: false
+        // تحديث حالات الاختفاء لجميع اللاعبين
+        for (const player of currentRoom.players) {
+            if (updateInvisibilityStatus(currentRoom, player)) {
+                // إرسال تحديث حالة الاختفاء للجميع
+                io.to(roomId).emit('player_invisibility_update', {
+                    userId: player.userId,
+                    isInvisible: false
                 });
             }
         }
-
-        res.json({ success: true, friends: friendsData });
-
-    } catch (error) {
-        console.error('Error fetching friends list:', error);
         
-        if (error.message === 'No token provided' || error.message === 'Invalid token') {
-            return res.status(401).json({ success: false, error: 'Authentication required' });
-        }
-        
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// ============================================
-// 16. API: جلب طلبات الصداقة
-// ============================================
-
-/**
- * GET /api/friends/requests/:uid
- * جلب طلبات الصداقة الواردة
- */
-app.get('/api/friends/requests/:uid', async (req, res) => {
-    try {
-        const { uid } = req.params;
-        await verifyToken(req);
-
-        const user = await getUserData(uid);
-
-        if (!user) {
-            return res.status(404).json({ success: false, error: 'User not found' });
-        }
-
-        const requestsUids = user.friendRequests || [];
-        const requestsData = [];
-
-        for (const requesterUid of requestsUids) {
-            const requester = await getUserData(requesterUid);
-            if (requester) {
-                requestsData.push({
-                    uid: requesterUid,
-                    username: requester.username,
-                    email: requester.email,
-                    userIdCode: requester.userIdCode
+        // جمع تحديثات اللاعبين (اللاعبين الأحياء فقط)
+        const playersUpdate = [];
+        for (const player of currentRoom.players) {
+            if (player.position && player.health > 0) {
+                playersUpdate.push({
+                    userId: player.userId,
+                    position: player.position,
+                    rotation: player.rotation || 0,
+                    health: player.health || 100,
+                    team: player.team,
+                    isInvisible: player.isInvisible || false
                 });
             }
         }
-
-        res.json({ success: true, requests: requestsData });
-
-    } catch (error) {
-        console.error('Error fetching friend requests:', error);
         
-        if (error.message === 'No token provided' || error.message === 'Invalid token') {
-            return res.status(401).json({ success: false, error: 'Authentication required' });
-        }
-        
-        res.status(500).json({ success: false, error: error.message });
+        // بث التحديثات لجميع اللاعبين في الغرفة
+        io.to(roomId).emit('game_state_update', { players: playersUpdate });
+    }, 50);
+    
+    room.gameInterval = gameInterval;
+    
+    // جدولة نهاية اللعبة
+    setTimeout(() => {
+        endGame(roomId, 'انتهت مدة المعركة!');
+    }, globalGameSettings.gameDuration);
+}
+
+// إنهاء اللعبة وتوزيع المكافآت
+async function endGame(roomId, reason) {
+    const room = rooms.get(roomId);
+    if (!room || room.status === 'ended') return;
+    
+    room.status = 'ended';
+    if (room.gameInterval) {
+        clearInterval(room.gameInterval);
+        room.gameInterval = null;
     }
+    
+    const duration = Math.floor((Date.now() - (room.startTime || Date.now())) / 1000);
+    
+    // تحديد الفائز
+    let winnerTeam = null;
+    let winnerName = null;
+    const alivePlayers = room.players.filter(p => p.health > 0);
+    
+    if (alivePlayers.length === 1) {
+        winnerTeam = alivePlayers[0].team;
+        winnerName = winnerTeam === 1 ? 'فريقك' : 'الفريق الخصم';
+    } else if (alivePlayers.length === 2) {
+        const player1 = alivePlayers[0];
+        const player2 = alivePlayers[1];
+        const health1 = player1.health || 100;
+        const health2 = player2.health || 100;
+        
+        if (health1 > health2) {
+            winnerTeam = player1.team;
+            winnerName = winnerTeam === 1 ? 'فريقك' : 'الفريق الخصم';
+        } else if (health2 > health1) {
+            winnerTeam = player2.team;
+            winnerName = winnerTeam === 1 ? 'فريقك' : 'الفريق الخصم';
+        } else {
+            winnerName = 'تعادل';
+        }
+    } else if (alivePlayers.length === 0) {
+        winnerName = 'تعادل (جميع اللاعبين قضوا)';
+    }
+    
+    const reward = 10;
+    
+    for (const player of room.players) {
+        try {
+            const userRef = db.ref(`users/${player.userId}`);
+            const snapshot = await userRef.once('value');
+            let userData = snapshot.val();
+            let currentBalance = userData?.balance || 100;
+            const isWinner = (player.team === winnerTeam && winnerTeam && player.health > 0);
+            
+            if (isWinner) {
+                currentBalance += reward;
+            }
+            
+            await userRef.update({ 
+                balance: currentBalance,
+                lastGame: Date.now(),
+                gamesPlayed: (userData?.gamesPlayed || 0) + 1,
+                wins: (userData?.wins || 0) + (isWinner ? 1 : 0)
+            });
+            
+            io.to(player.socketId).emit('game_ended', {
+                message: reason || 'انتهت المعركة!',
+                reward: isWinner ? reward : 0,
+                duration: duration,
+                yourBalance: currentBalance,
+                winner: winnerName,
+                yourTeam: player.team === 1 ? 'فريقك' : 'الفريق الخصم',
+                kills: player.kills || 0
+            });
+        } catch (error) {
+            console.error('Error updating balance:', error);
+            io.to(player.socketId).emit('game_ended', {
+                message: 'انتهت المعركة!',
+                reward: 0,
+                duration: duration
+            });
+        }
+    }
+    
+    console.log(`🏆 Game ended in ${room.name}, winner: ${winnerName}`);
+    
+    // إعادة تعيين الغرفة بعد 5 ثوانٍ لتصبح جاهزة لمعركة جديدة
+    setTimeout(() => {
+        resetRoom(roomId);
+    }, 5000);
+    
+    // تحديث قائمة الغرف
+    broadcastRoomsList();
+}
+
+// ============================================
+// 📡 API Routes - نظام الإدارة المتقدم
+// ============================================
+
+// التحقق من صحة الخادم
+app.get('/health', (req, res) => {
+    res.json({ status: 'online', timestamp: Date.now(), version: '3.7.0' });
 });
 
-// ============================================
-// 17. API: تحديث الرصيد (خاص باللعبة)
-// ============================================
-
-/**
- * POST /api/game/update-balance
- * تحديث رصيد المستخدم بعد اللعبة
- */
-app.post('/api/game/update-balance', async (req, res) => {
-    try {
-        const { uid, amount, gameResult } = req.body;
-        const decoded = await verifyToken(req);
-
-        if (decoded.uid !== uid) {
-            return res.status(403).json({ success: false, error: 'Unauthorized' });
-        }
-
-        const user = await getUserData(uid);
-        
-        if (!user) {
-            return res.status(404).json({ success: false, error: 'User not found' });
-        }
-
-        const newBalance = (user.balance || 0) + amount;
-        
-        if (newBalance < 0) {
-            return res.status(400).json({ success: false, error: 'Insufficient balance' });
-        }
-
-        const updates = {
-            balance: newBalance,
-            gamesPlayed: (user.gamesPlayed || 0) + 1
-        };
-        
-        if (gameResult === 'win') {
-            updates.wins = (user.wins || 0) + 1;
-        }
-        
-        await updateUserData(uid, updates);
-
-        res.json({ 
-            success: true, 
-            newBalance: newBalance,
-            message: 'Balance updated successfully'
-        });
-
-    } catch (error) {
-        console.error('Error updating balance:', error);
-        
-        if (error.message === 'No token provided' || error.message === 'Invalid token') {
-            return res.status(401).json({ success: false, error: 'Authentication required' });
-        }
-        
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// ============================================
-// 18. API: الحصول على ترتيب اللاعبين (Leaderboard)
-// ============================================
-
-/**
- * GET /api/leaderboard
- * الحصول على قائمة أفضل اللاعبين
- */
-app.get('/api/leaderboard', async (req, res) => {
-    try {
-        const { limit = 10, sortBy = 'balance' } = req.query;
-        await verifyToken(req);
-
-        // جلب جميع المستخدمين
-        const snapshot = await db.ref('users').once('value');
-        const users = snapshot.val();
-        
-        if (!users) {
-            return res.json({ success: true, leaders: [] });
-        }
-        
-        // تحويل إلى مصفوفة وترتيبها
-        const leaders = Object.entries(users)
-            .map(([uid, data]) => ({
-                uid,
-                username: data.username,
-                balance: data.balance || 0,
-                wins: data.wins || 0,
-                gamesPlayed: data.gamesPlayed || 0
-            }))
-            .sort((a, b) => (b[sortBy] || 0) - (a[sortBy] || 0))
-            .slice(0, parseInt(limit));
-        
-        res.json({ success: true, leaders });
-
-    } catch (error) {
-        console.error('Error fetching leaderboard:', error);
-        
-        if (error.message === 'No token provided' || error.message === 'Invalid token') {
-            return res.status(401).json({ success: false, error: 'Authentication required' });
-        }
-        
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// ============================================
-// 19. API: حذف حساب المستخدم
-// ============================================
-
-/**
- * DELETE /api/user/delete
- * حذف حساب المستخدم وجميع بياناته
- */
-app.delete('/api/user/delete', async (req, res) => {
-    try {
-        const { uid } = req.body;
-        const decoded = await verifyToken(req);
-
-        if (decoded.uid !== uid) {
-            return res.status(403).json({ success: false, error: 'Unauthorized' });
-        }
-
-        const user = await getUserData(uid);
-        
-        if (!user) {
-            return res.status(404).json({ success: false, error: 'User not found' });
-        }
-        
-        // حذف الكود من الفهرس
-        if (user.userIdCode) {
-            await db.ref(`users_by_code/${user.userIdCode}`).remove();
-        }
-        
-        // حذف بيانات المستخدم
-        await db.ref(`users/${uid}`).remove();
-        
-        // مسح الكاش
-        userCache.del(uid);
-        if (user.userIdCode) {
-            codeCache.del(user.userIdCode);
-        }
-        
-        res.json({ success: true, message: 'User deleted successfully' });
-
-    } catch (error) {
-        console.error('Error deleting user:', error);
-        
-        if (error.message === 'No token provided' || error.message === 'Invalid token') {
-            return res.status(401).json({ success: false, error: 'Authentication required' });
-        }
-        
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// ============================================
-// 20. API: اختبار الاتصال والحالة
-// ============================================
-
-/**
- * GET /api/health
- * التحقق من حالة السيرفر
- */
 app.get('/api/health', (req, res) => {
     res.json({ 
-        status: 'ok', 
+        status: 'healthy',
         timestamp: Date.now(),
-        uptime: process.uptime(),
-        cacheStats: {
-            users: userCache.keys().length,
-            codes: codeCache.keys().length,
-            tokens: tokenCache.keys().length
-        }
+        connections: io.engine.clientsCount,
+        rooms: rooms.size
     });
 });
 
-/**
- * GET /api/stats
- * إحصائيات السيرفر (للمطورين فقط)
- */
-app.get('/api/stats', async (req, res) => {
+// الحصول على رصيد المستخدم
+app.get('/api/balance/:userId', async (req, res) => {
     try {
-        // التحقق من التوكن (يمكن إضافة صلاحيات للمطور)
-        await verifyToken(req);
-        
-        const snapshot = await db.ref('users').once('value');
-        const users = snapshot.val();
-        
-        const totalUsers = users ? Object.keys(users).length : 0;
-        let totalBalance = 0;
-        let totalGames = 0;
-        
-        if (users) {
-            Object.values(users).forEach(user => {
-                totalBalance += user.balance || 0;
-                totalGames += user.gamesPlayed || 0;
-            });
-        }
-        
-        res.json({
-            success: true,
-            stats: {
-                totalUsers,
-                totalBalance,
-                totalGames,
-                averageBalance: totalUsers > 0 ? totalBalance / totalUsers : 0,
-                cacheHits: userCache.getStats().hits,
-                cacheMisses: userCache.getStats().misses
-            }
-        });
-        
+        const { userId } = req.params;
+        const snapshot = await db.ref(`users/${userId}`).once('value');
+        const userData = snapshot.val();
+        res.json({ success: true, balance: userData?.balance || 100 });
     } catch (error) {
-        console.error('Error fetching stats:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
 // ============================================
-// 21. معالجة الأخطاء العامة
+// 🏷️ إدارة أنواع الغرف (API)
 // ============================================
 
-// 404 Not Found
-app.use((req, res) => {
-    res.status(404).json({ 
-        success: false, 
-        error: 'API endpoint not found' 
+// الحصول على أنواع الغرف
+app.get('/api/admin/roomTypes', async (req, res) => {
+    try {
+        const { adminToken, userId } = req.query;
+        
+        if (adminToken !== 'authenticated' && adminToken !== process.env.ADMIN_SECRET) {
+            return res.status(403).json({ success: false, error: 'Unauthorized' });
+        }
+        
+        // التحقق من صلاحيات المشرف
+        const adminSnapshot = await db.ref(`users/${userId}`).once('value');
+        if (!adminSnapshot.val()?.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Not admin' });
+        }
+        
+        // إعداد أنواع الغرف مع الإحصائيات الحية
+        const roomTypesWithStats = ROOM_TYPES.map(type => {
+            // حساب عدد الغرف من هذا النوع
+            const typeRooms = Array.from(rooms.values()).filter(r => r.typeName === type.name);
+            const waitingRooms = typeRooms.filter(r => r.status === 'waiting').length;
+            const activeRooms = typeRooms.filter(r => r.status === 'active').length;
+            
+            return {
+                name: type.name,
+                maxSeats: type.maxSeats,
+                seatPrice: type.seatPrice,
+                maxRooms: ROOMS_PER_TYPE,
+                availableRooms: waitingRooms,
+                activeRooms: activeRooms,
+                totalRooms: typeRooms.length
+            };
+        });
+        
+        res.json({ success: true, types: roomTypesWithStats });
+    } catch (error) {
+        console.error('Error fetching room types:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// تحديث إعدادات نوع الغرفة
+app.post('/api/admin/updateRoomType', async (req, res) => {
+    try {
+        const { adminToken, userId, typeName, maxSeats, seatPrice } = req.body;
+        
+        if (adminToken !== 'authenticated' && adminToken !== process.env.ADMIN_SECRET) {
+            return res.status(403).json({ success: false, error: 'Unauthorized' });
+        }
+        
+        // التحقق من صلاحيات المشرف
+        const adminSnapshot = await db.ref(`users/${userId}`).once('value');
+        if (!adminSnapshot.val()?.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Not admin' });
+        }
+        
+        // التحقق من القيم
+        const newMaxSeats = Math.max(2, Math.min(16, maxSeats || 2));
+        const newSeatPrice = Math.max(1, Math.min(1000, seatPrice || 1));
+        
+        // البحث عن نوع الغرفة
+        const roomType = ROOM_TYPES.find(t => t.name === typeName);
+        if (!roomType) {
+            return res.status(404).json({ success: false, error: 'Room type not found' });
+        }
+        
+        // تحديث الإعدادات في ROOM_TYPES
+        roomType.maxSeats = newMaxSeats;
+        roomType.seatPrice = newSeatPrice;
+        
+        // تحديث جميع الغرف من هذا النوع
+        const typeRooms = Array.from(rooms.values()).filter(r => r.typeName === typeName);
+        for (const room of typeRooms) {
+            room.maxSeats = newMaxSeats;
+            room.seatPrice = newSeatPrice;
+            
+            // إرسال إشعار للاعبين في الغرف المنتظرة
+            if (room.status === 'waiting') {
+                io.to(room.id).emit('room_settings_updated', {
+                    maxSeats: newMaxSeats,
+                    seatPrice: newSeatPrice,
+                    message: `تم تحديث إعدادات الغرفة: ${newMaxSeats} لاعبين، ${newSeatPrice}$ للمقعد`
+                });
+            }
+        }
+        
+        // بث تحديث قائمة الغرف
+        broadcastRoomsList();
+        
+        console.log(`📝 Admin updated room type: ${typeName} -> ${newMaxSeats} players, ${newSeatPrice}$ (applied to ${typeRooms.length} rooms)`);
+        res.json({ 
+            success: true, 
+            message: `تم تحديث ${typeName} بنجاح لـ ${typeRooms.length} غرفة`,
+            maxSeats: newMaxSeats,
+            seatPrice: newSeatPrice
+        });
+    } catch (error) {
+        console.error('Error updating room type:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// الحصول على تفاصيل غرفة محددة (للوحة التحكم)
+app.get('/api/admin/room/:roomId', async (req, res) => {
+    try {
+        const { adminToken, userId } = req.query;
+        const { roomId } = req.params;
+        
+        if (adminToken !== 'authenticated' && adminToken !== process.env.ADMIN_SECRET) {
+            return res.status(403).json({ success: false, error: 'Unauthorized' });
+        }
+        
+        // التحقق من صلاحيات المشرف
+        const adminSnapshot = await db.ref(`users/${userId}`).once('value');
+        if (!adminSnapshot.val()?.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Not admin' });
+        }
+        
+        const room = rooms.get(roomId);
+        if (!room) {
+            return res.status(404).json({ success: false, error: 'Room not found' });
+        }
+        
+        res.json({ 
+            success: true, 
+            room: {
+                id: room.id,
+                name: room.name,
+                maxSeats: room.maxSeats,
+                seatPrice: room.seatPrice,
+                status: room.status,
+                players: room.players.map(p => ({
+                    userId: p.userId,
+                    email: p.email,
+                    health: p.health,
+                    team: p.team,
+                    paidAmount: p.paidAmount,
+                    kills: p.kills || 0,
+                    isInvisible: p.isInvisible || false
+                })),
+                createdAt: room.createdAt,
+                startTime: room.startTime
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// إدارة الأرصدة (للمدير)
+app.post('/api/admin/balance', async (req, res) => {
+    try {
+        const { adminToken, userId, adminId, amount, action } = req.body;
+        
+        if (adminToken !== 'authenticated' && adminToken !== process.env.ADMIN_SECRET) {
+            return res.status(403).json({ success: false, error: 'Unauthorized' });
+        }
+        
+        const adminSnapshot = await db.ref(`users/${adminId}`).once('value');
+        if (!adminSnapshot.val()?.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Not admin' });
+        }
+        
+        const userRef = db.ref(`users/${userId}`);
+        const snapshot = await userRef.once('value');
+        let currentBalance = snapshot.val()?.balance || 100;
+        
+        if (action === 'deposit') {
+            currentBalance += amount;
+        } else if (action === 'withdraw') {
+            if (currentBalance < amount) {
+                return res.json({ success: false, error: 'Insufficient balance' });
+            }
+            currentBalance -= amount;
+        } else {
+            return res.json({ success: false, error: 'Invalid action' });
+        }
+        
+        await userRef.update({ balance: currentBalance });
+        
+        const transactionRef = db.ref(`transactions/${userId}`).push();
+        await transactionRef.set({
+            type: action,
+            amount: amount,
+            balanceAfter: currentBalance,
+            timestamp: Date.now(),
+            admin: true,
+            adminId: adminId
+        });
+        
+        res.json({ success: true, newBalance: currentBalance });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// الحصول على إحصائيات اللاعبين
+app.get('/api/admin/stats', async (req, res) => {
+    try {
+        const { adminToken, userId } = req.query;
+        
+        if (adminToken !== 'authenticated' && adminToken !== process.env.ADMIN_SECRET) {
+            return res.status(403).json({ success: false, error: 'Unauthorized' });
+        }
+        
+        const adminSnapshot = await db.ref(`users/${userId}`).once('value');
+        if (!adminSnapshot.val()?.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Not admin' });
+        }
+        
+        const usersSnapshot = await db.ref('users').once('value');
+        const users = usersSnapshot.val();
+        const report = {
+            totalUsers: 0,
+            totalBalance: 0,
+            totalGames: 0,
+            totalWins: 0,
+            users: []
+        };
+        
+        if (users) {
+            for (const [id, data] of Object.entries(users)) {
+                report.totalUsers++;
+                report.totalBalance += data.balance || 0;
+                report.totalGames += data.gamesPlayed || 0;
+                report.totalWins += data.wins || 0;
+                report.users.push({
+                    id: id,
+                    email: data.email,
+                    username: data.username,
+                    balance: data.balance || 100,
+                    gamesPlayed: data.gamesPlayed || 0,
+                    wins: data.wins || 0,
+                    isAdmin: data.isAdmin || false,
+                    lastGame: data.lastGame,
+                    createdAt: data.createdAt
+                });
+            }
+        }
+        
+        res.json({ success: true, report });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// تغيير سعر المقعد
+app.post('/api/admin/setSeatPrice', async (req, res) => {
+    try {
+        const { adminToken, userId, price } = req.body;
+        
+        if (adminToken !== 'authenticated' && adminToken !== process.env.ADMIN_SECRET) {
+            return res.status(403).json({ success: false, error: 'Unauthorized' });
+        }
+        
+        const snapshot = await db.ref(`users/${userId}`).once('value');
+        if (!snapshot.val()?.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Not admin' });
+        }
+        
+        const newPrice = Math.max(1, Math.min(1000, price));
+        globalGameSettings.seatPrice = newPrice;
+        
+        res.json({ success: true, seatPrice: newPrice });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// تغيير عدد اللاعبين في الجولة
+app.post('/api/admin/setMaxPlayers', async (req, res) => {
+    try {
+        const { adminToken, userId, maxPlayers } = req.body;
+        
+        if (adminToken !== 'authenticated' && adminToken !== process.env.ADMIN_SECRET) {
+            return res.status(403).json({ success: false, error: 'Unauthorized' });
+        }
+        
+        const snapshot = await db.ref(`users/${userId}`).once('value');
+        if (!snapshot.val()?.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Not admin' });
+        }
+        
+        const newMax = Math.max(2, Math.min(16, maxPlayers));
+        globalGameSettings.maxPlayers = newMax;
+        
+        res.json({ success: true, maxPlayers: newMax });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// الحصول على الإعدادات الحالية
+app.get('/api/admin/settings', async (req, res) => {
+    try {
+        const { adminToken, userId } = req.query;
+        
+        if (adminToken !== 'authenticated' && adminToken !== process.env.ADMIN_SECRET) {
+            return res.status(403).json({ success: false, error: 'Unauthorized' });
+        }
+        
+        const snapshot = await db.ref(`users/${userId}`).once('value');
+        if (!snapshot.val()?.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Not admin' });
+        }
+        
+        res.json({ 
+            success: true, 
+            settings: {
+                seatPrice: globalGameSettings.seatPrice,
+                maxPlayers: globalGameSettings.maxPlayers,
+                gameDuration: globalGameSettings.gameDuration
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// مسح جميع بيانات اللاعبين
+app.post('/api/admin/resetData', async (req, res) => {
+    try {
+        const { adminToken, userId } = req.body;
+        
+        if (adminToken !== 'authenticated' && adminToken !== process.env.ADMIN_SECRET) {
+            return res.status(403).json({ success: false, error: 'Unauthorized' });
+        }
+        
+        const snapshot = await db.ref(`users/${userId}`).once('value');
+        if (!snapshot.val()?.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Not admin' });
+        }
+        
+        await db.ref('users').remove();
+        await db.ref('transactions').remove();
+        
+        await db.ref('users/admin_default').set({
+            email: 'admin2613857@boomb.com',
+            username: 'Admin',
+            balance: 9999,
+            isAdmin: true,
+            createdAt: Date.now(),
+            gamesPlayed: 0,
+            wins: 0
+        });
+        
+        console.log('🗑️ All user data has been reset by admin');
+        res.json({ success: true, message: 'تم مسح جميع بيانات اللاعبين بنجاح' });
+    } catch (error) {
+        console.error('Reset error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// الحصول على قائمة الغرف (للوحة التحكم)
+app.get('/api/admin/rooms', async (req, res) => {
+    try {
+        const { adminToken, userId } = req.query;
+        
+        if (adminToken !== 'authenticated' && adminToken !== process.env.ADMIN_SECRET) {
+            return res.status(403).json({ success: false, error: 'Unauthorized' });
+        }
+        
+        const snapshot = await db.ref(`users/${userId}`).once('value');
+        if (!snapshot.val()?.isAdmin) {
+            return res.status(403).json({ success: false, error: 'Not admin' });
+        }
+        
+        const roomsList = [];
+        for (const [id, room] of rooms) {
+            roomsList.push({
+                id: id,
+                name: room.name,
+                maxSeats: room.maxSeats,
+                seatPrice: room.seatPrice,
+                status: room.status,
+                playersCount: room.players.length,
+                players: room.players.map(p => ({ userId: p.userId, email: p.email, health: p.health, kills: p.kills || 0 }))
+            });
+        }
+        
+        res.json({ success: true, rooms: roomsList });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============================================
+// 🔌 أحداث Socket.io
+// ============================================
+io.on('connection', (socket) => {
+    console.log(`🔌 New connection: ${socket.id}`);
+    
+    players.set(socket.id, {
+        socketId: socket.id,
+        userId: null,
+        email: null,
+        roomId: null,
+        isAdmin: false,
+        balance: 0,
+        connectedAt: Date.now()
+    });
+    
+    // إضافة حدث ping
+    socket.on('ping', (data) => {
+        socket.emit('pong', { timestamp: data.timestamp });
+    });
+    
+    // ============================================
+    // 🔐 المصادقة
+    // ============================================
+    socket.on('auth', async (data) => {
+        const authTimeout = setTimeout(() => {
+            socket.emit('auth_error', { message: 'Authentication timeout' });
+        }, 15000);
+        
+        try {
+            const { token } = data;
+            if (!token) {
+                clearTimeout(authTimeout);
+                socket.emit('auth_error', { message: 'No token provided' });
+                return;
+            }
+            
+            const decodedToken = await admin.auth().verifyIdToken(token);
+            const userId = decodedToken.uid;
+            const email = decodedToken.email;
+            
+            const player = players.get(socket.id);
+            if (player) {
+                player.userId = userId;
+                player.email = email;
+            }
+            
+            const userRef = db.ref(`users/${userId}`);
+            const snapshot = await userRef.once('value');
+            let userData = snapshot.val();
+            
+            const isAdmin = (email === 'admin@boomb.com' || email === 'admin2613857@boomb.com');
+            
+            if (!userData) {
+                userData = { 
+                    balance: 100, 
+                    username: email.split('@')[0],
+                    email: email,
+                    isAdmin: isAdmin,
+                    createdAt: Date.now(),
+                    gamesPlayed: 0,
+                    wins: 0
+                };
+                await userRef.set(userData);
+            } else if (isAdmin && !userData.isAdmin) {
+                await userRef.update({ isAdmin: true });
+                userData.isAdmin = true;
+            }
+            
+            if (player) {
+                player.isAdmin = userData.isAdmin || false;
+                player.balance = userData.balance || 100;
+            }
+            
+            clearTimeout(authTimeout);
+            
+            socket.emit('auth_success', {
+                userId: userId,
+                email: email,
+                balance: userData.balance || 100,
+                username: userData.username,
+                isAdmin: userData.isAdmin || false,
+                gamesPlayed: userData.gamesPlayed || 0,
+                wins: userData.wins || 0,
+                timestamp: Date.now()
+            });
+            
+            console.log(`✅ User authenticated: ${email} (Admin: ${userData.isAdmin || false})`);
+            
+        } catch (error) {
+            clearTimeout(authTimeout);
+            console.error('❌ Auth error:', error);
+            socket.emit('auth_error', { message: 'Invalid token: ' + error.message });
+        }
+    });
+    
+    // التحقق من حالة اللاعب عند إعادة الاتصال
+    socket.on('check_elimination', async (data) => {
+        const player = players.get(socket.id);
+        if (player && player.userId && player.roomId) {
+            const room = rooms.get(player.roomId);
+            if (room && room.status === 'active') {
+                const roomPlayer = room.players.find(p => p.userId === player.userId);
+                if (roomPlayer && roomPlayer.health <= 0) {
+                    // اللاعب كان مقتولاً
+                    socket.emit('check_elimination_status', {
+                        isEliminated: true,
+                        roomId: room.id
+                    });
+                } else {
+                    socket.emit('check_elimination_status', {
+                        isEliminated: false
+                    });
+                }
+            }
+        }
+    });
+    
+    // ============================================
+    // 🏠 اللوبي والغرف
+    // ============================================
+    socket.on('join_lobby', async () => {
+        const player = players.get(socket.id);
+        if (!player?.userId) {
+            socket.emit('error', { message: 'Not authenticated' });
+            return;
+        }
+        
+        try {
+            const userRef = db.ref(`users/${player.userId}`);
+            const snapshot = await userRef.once('value');
+            const userData = snapshot.val();
+            const balance = userData?.balance || 100;
+            player.balance = balance;
+            
+            socket.emit('lobby_joined', {
+                balance: balance,
+                userId: player.userId,
+                isAdmin: userData?.isAdmin || false,
+                settings: {
+                    seatPrice: globalGameSettings.seatPrice,
+                    maxPlayers: globalGameSettings.maxPlayers
+                }
+            });
+            
+            broadcastRoomsList();
+            console.log(`🏠 ${player.email} joined lobby`);
+        } catch (error) {
+            console.error('Error getting balance:', error);
+            socket.emit('error', { message: 'Could not get user data' });
+        }
+    });
+    
+    socket.on('list_rooms', () => {
+        broadcastRoomsList();
+    });
+    
+    // الانضمام إلى غرفة
+    socket.on('join_room', async (data) => {
+        const player = players.get(socket.id);
+        if (!player?.userId) {
+            socket.emit('error', { message: 'Not authenticated' });
+            return;
+        }
+        
+        const { roomId } = data;
+        const room = rooms.get(roomId);
+        
+        if (!room) {
+            socket.emit('error', { message: 'Room not found' });
+            return;
+        }
+        
+        if (room.status !== 'waiting') {
+            socket.emit('error', { message: 'Game in progress, please wait for next match' });
+            return;
+        }
+        
+        if (room.players.length >= room.maxSeats) {
+            socket.emit('error', { message: 'Room is full' });
+            return;
+        }
+        
+        if (player.roomId) {
+            socket.emit('error', { message: 'You are already in a room. Please leave current room first.' });
+            return;
+        }
+        
+        // إضافة اللاعب إلى الغرفة مع خصم الرصيد
+        const result = await addPlayerToRoom(socket, player, room);
+        
+        if (!result.success) {
+            socket.emit('error', { message: result.error });
+            return;
+        }
+        
+        // إرسال تأكيد الانضمام مع تفاصيل الخصم
+        socket.emit('room_joined', { 
+            roomId: roomId, 
+            balance: result.balance,
+            roomName: room.name,
+            playersCount: result.playersCount,
+            maxSeats: result.maxSeats,
+            seatPrice: room.seatPrice,
+            needed: result.needed,
+            message: `✅ تم الانضمام إلى ${room.name}\n💰 تم خصم ${room.seatPrice}$ من رصيدك\n👥 عدد اللاعبين: ${result.playersCount}/${result.maxSeats}\n⏳ ينتظر ${result.needed} لاعب(ين) لبدء المعركة`
+        });
+        
+        // إرسال إشعار لجميع اللاعبين في الغرفة
+        io.to(roomId).emit('player_joined', {
+            userId: player.userId,
+            username: player.email.split('@')[0],
+            playersCount: room.players.length,
+            maxSeats: room.maxSeats,
+            needed: room.maxSeats - room.players.length
+        });
+        
+        updateRoom(roomId);
+        broadcastRoomsList();
+        
+        console.log(`👥 ${player.email} joined ${room.name} (${room.players.length}/${room.maxSeats}) - Paid: ${room.seatPrice}$`);
+    });
+    
+    // مغادرة الغرفة مع إعادة الرصيد
+    socket.on('leave_room', async () => {
+        const player = players.get(socket.id);
+        if (!player || !player.roomId) {
+            socket.emit('error', { message: 'You are not in any room' });
+            return;
+        }
+        
+        const room = rooms.get(player.roomId);
+        if (!room) {
+            player.roomId = null;
+            socket.emit('error', { message: 'Room not found' });
+            return;
+        }
+        
+        // لا يمكن مغادرة الغرفة أثناء المعركة
+        if (room.status !== 'waiting') {
+            socket.emit('error', { message: 'Cannot leave room during active battle' });
+            return;
+        }
+        
+        // إزالة اللاعب وإعادة الرصيد
+        const result = await removePlayerFromRoom(socket, player, room);
+        
+        if (result.success) {
+            const oldRoomId = player.roomId;
+            player.roomId = null;
+            
+            // إرسال تأكيد المغادرة مع تفاصيل إعادة الرصيد
+            socket.emit('room_left', {
+                roomName: room.name,
+                refunded: result.refunded,
+                message: result.refunded > 0 
+                    ? `🚪 تم مغادرة ${room.name}\n💰 تم إعادة ${result.refunded}$ إلى رصيدك`
+                    : `🚪 تم مغادرة ${room.name}`
+            });
+            
+            // إرسال إشعار لجميع اللاعبين المتبقين
+            io.to(room.id).emit('player_left', {
+                userId: player.userId,
+                username: player.email.split('@')[0],
+                playersCount: room.players.length,
+                maxSeats: room.maxSeats,
+                needed: room.maxSeats - room.players.length
+            });
+            
+            updateRoom(room.id);
+            broadcastRoomsList();
+            
+            console.log(`🚪 ${player.email} left ${room.name} - Refunded: ${result.refunded}$`);
+        } else {
+            socket.emit('error', { message: 'Failed to leave room' });
+        }
+    });
+    
+    // ============================================
+    // 🎮 أحداث اللعبة (مزامنة كاملة مع دعم الاختفاء)
+    // ============================================
+    
+    // حركة اللاعب
+    socket.on('move', (data) => {
+        const player = players.get(socket.id);
+        if (player?.roomId) {
+            const room = rooms.get(player.roomId);
+            if (room && room.status === 'active') {
+                const roomPlayer = room.players.find(p => p.socketId === socket.id);
+                if (roomPlayer && roomPlayer.health > 0) {
+                    roomPlayer.position = data.position;
+                    roomPlayer.rotation = data.rotation;
+                }
+                // إرسال حركة اللاعب مع حالة الاختفاء
+                socket.to(player.roomId).emit('player_moved', {
+                    userId: player.userId,
+                    position: data.position,
+                    rotation: data.rotation,
+                    isInvisible: roomPlayer ? roomPlayer.isInvisible : false,
+                    timestamp: Date.now()
+                });
+            }
+        }
+    });
+    
+    // إطلاق النار
+    socket.on('shoot', (data) => {
+        const player = players.get(socket.id);
+        if (player?.roomId) {
+            const room = rooms.get(player.roomId);
+            if (room && room.status === 'active') {
+                const roomPlayer = room.players.find(p => p.socketId === socket.id);
+                io.to(player.roomId).emit('player_shot', {
+                    userId: player.userId,
+                    position: data.position,
+                    direction: data.direction,
+                    bulletId: data.bulletId,
+                    isInvisible: roomPlayer ? roomPlayer.isInvisible : false,
+                    timestamp: Date.now()
+                });
+            }
+        }
+    });
+    
+    // تحديث الصحة بعد الضرر مع معالجة سلسلة القتلات
+    socket.on('damage', (data) => {
+        const player = players.get(socket.id);
+        if (player?.roomId) {
+            const room = rooms.get(player.roomId);
+            if (room && room.status === 'active') {
+                const targetPlayer = room.players.find(p => p.userId === data.targetId);
+                const killerPlayer = room.players.find(p => p.userId === data.killerId);
+                
+                if (targetPlayer && targetPlayer.health > 0 && killerPlayer) {
+                    const oldHealth = targetPlayer.health || 100;
+                    targetPlayer.health = Math.max(0, oldHealth - data.damage);
+                    
+                    console.log(`💥 Damage: ${data.damage} to ${targetPlayer.userId}. Health: ${oldHealth} -> ${targetPlayer.health}`);
+                    
+                    io.to(player.roomId).emit('health_update', {
+                        userId: targetPlayer.userId,
+                        health: targetPlayer.health
+                    });
+                    
+                    if (targetPlayer.health <= 0) {
+                        targetPlayer.health = 0;
+                        
+                        // معالجة سلسلة القتلات والاختفاء الجزئي
+                        const streakResult = handleKillStreak(room, data.killerId, data.targetId);
+                        
+                        // إرسال تأكيد القتلة
+                        io.to(player.roomId).emit('kill_confirmed', {
+                            killerId: data.killerId,
+                            targetId: data.targetId,
+                            streak: killerPlayer.kills || 1,
+                            isInvisible: killerPlayer.isInvisible || false
+                        });
+                        
+                        // إرسال إشعار الإقصاء
+                        io.to(player.roomId).emit('player_eliminated', {
+                            userId: targetPlayer.userId,
+                            killerId: player.userId,
+                            position: targetPlayer.position
+                        });
+                        
+                        console.log(`💀 Player ${targetPlayer.userId} eliminated by ${data.killerId} (Streak: ${killerPlayer.kills || 1})`);
+                        
+                        const targetSocket = io.sockets.sockets.get(targetPlayer.socketId);
+                        if (targetSocket) {
+                            targetSocket.emit('you_were_eliminated', {
+                                message: 'لقد تم تدمير دبابتك!',
+                                killerId: data.killerId
+                            });
+                        }
+                        
+                        // إرسال تحديث حالة الاختفاء إذا كان القاتل مخفياً
+                        if (killerPlayer.isInvisible) {
+                            io.to(player.roomId).emit('player_invisibility_update', {
+                                userId: data.killerId,
+                                isInvisible: true,
+                                duration: Math.max(0, (killerPlayer.invisibilityEndTime - Date.now()) / 1000)
+                            });
+                        }
+                        
+                        const alivePlayers = room.players.filter(p => p.health > 0);
+                        
+                        if (alivePlayers.length <= 1) {
+                            if (alivePlayers.length === 1) {
+                                const winner = alivePlayers[0];
+                                const winnerName = winner.team === 1 ? 'فريقك' : 'الفريق الخصم';
+                                endGame(player.roomId, `🎉 فوز ${winnerName}! 🎉`);
+                            } else {
+                                endGame(player.roomId, '🤝 تعادل!');
+                            }
+                        } else {
+                            const playersUpdate = [];
+                            for (const p of room.players) {
+                                if (p.position && p.health > 0) {
+                                    playersUpdate.push({
+                                        userId: p.userId,
+                                        position: p.position,
+                                        rotation: p.rotation || 0,
+                                        health: p.health || 100,
+                                        team: p.team,
+                                        isInvisible: p.isInvisible || false
+                                    });
+                                }
+                            }
+                            io.to(player.roomId).emit('players_list_update', { players: playersUpdate });
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    socket.on('game_cleanup', () => {
+        const player = players.get(socket.id);
+        if (player && player.roomId) {
+            const room = rooms.get(player.roomId);
+            if (room && room.status === 'ended') {
+                const index = room.players.findIndex(p => p.socketId === socket.id);
+                if (index !== -1) {
+                    room.players.splice(index, 1);
+                }
+                player.roomId = null;
+                socket.emit('cleanup_complete', { success: true });
+                console.log(`🧹 Player cleaned up after game`);
+            }
+        }
+    });
+    
+    // ============================================
+    // 🔌 انقطاع الاتصال
+    // ============================================
+    socket.on('disconnect', async () => {
+        const player = players.get(socket.id);
+        if (player) {
+            if (player.roomId) {
+                const room = rooms.get(player.roomId);
+                if (room) {
+                    // إعادة الرصيد عند انقطاع الاتصال
+                    if (room.status === 'waiting') {
+                        await removePlayerFromRoom(socket, player, room);
+                    } else {
+                        const index = room.players.findIndex(p => p.socketId === socket.id);
+                        if (index !== -1) {
+                            room.players.splice(index, 1);
+                        }
+                    }
+                    socket.to(player.roomId).emit('player_left', {
+                        userId: player.userId
+                    });
+                    
+                    if (room.status === 'active') {
+                        const alivePlayers = room.players.filter(p => p.health > 0);
+                        if (alivePlayers.length === 1) {
+                            const winner = alivePlayers[0];
+                            endGame(player.roomId, `🎉 فوز ${winner.team === 1 ? 'فريقك' : 'الفريق الخصم'} بسبب انسحاب الخصم! 🎉`);
+                        } else if (alivePlayers.length === 0) {
+                            endGame(player.roomId, 'انتهت المعركة بسبب انسحاب جميع اللاعبين');
+                        }
+                    } else if (room.status === 'waiting') {
+                        updateRoom(player.roomId);
+                        broadcastRoomsList();
+                    }
+                }
+            }
+            players.delete(socket.id);
+            broadcastRoomsList();
+        }
+        console.log(`🔌 Disconnected: ${socket.id}`);
     });
 });
 
-// Error handler
-app.use((err, req, res, next) => {
-    console.error('Unhandled error:', err);
-    res.status(500).json({ 
-        success: false, 
-        error: 'Internal server error' 
-    });
-});
+// تنظيف الغرف المنتهية
+setInterval(() => {
+    broadcastRoomsList();
+}, 10000);
 
 // ============================================
-// 22. تشغيل السيرفر
+// 🚀 تشغيل الخادم
 // ============================================
-
-app.listen(PORT, () => {
-    console.log('\n=================================');
-    console.log('✅ TNT WARS Server Started');
-    console.log('=================================');
-    console.log(`📡 Port: ${PORT}`);
-    console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`💾 Cache: Enabled`);
-    console.log(`🚀 API endpoints ready`);
-    console.log('=================================\n');
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║     🎮 BATTLE TANKS GAME SERVER - READY FOR PRODUCTION v3.7.0 🎮             ║
+║                                                                              ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║  📡 Server running on port: ${PORT}
+║  🌐 WebSocket: Ready
+║  🔥 Firebase: Connected
+║  👑 Admin email: admin@boomb.com
+║  ⏱️  Game duration: ${globalGameSettings.gameDuration / 1000} seconds
+║  🏠 Multi-room system (${ROOMS_PER_TYPE} rooms per type, total ${ROOM_TYPES.length * ROOMS_PER_TYPE} rooms):
+${ROOM_TYPES.map(type => `║     - ${type.name}: ${type.maxSeats} players, ${type.seatPrice}$ (${ROOMS_PER_TYPE} rooms)`).join('\n║     ')}
+║                                                                              ║
+║  ✨ NEW FEATURES v3.7.0:                                                     ║
+║     - 🎯 Kill Streak System (Double Kill, Triple Kill, Godlike)              ║
+║     - 👻 Partial Invisibility after 2 kills within 10 seconds               ║
+║     - 💨 Smoke explosion effect on elimination                              ║
+║     - 🏙️ Abandoned city environment with buildings and towers              ║
+║     - 🎵 Ambient background music during battle                             ║
+║                                                                              ║
+║  🔄 Rooms start when full, new room created after match                     ║
+║  💰 Balance deducted on join, refunded on leave (before game starts)        ║
+║  🛡️ Admin Panel APIs:                                                       ║
+║     - GET /api/admin/stats                                                  ║
+║     - GET /api/admin/rooms                                                  ║
+║     - GET /api/admin/roomTypes                                              ║
+║     - POST /api/admin/balance                                               ║
+║     - POST /api/admin/updateRoomType                                        ║
+║     - POST /api/admin/resetData                                             ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+    `);
 });
-
-// تنظيف الذاكرة عند إغلاق السيرفر
-process.on('SIGTERM', () => {
-    console.log('SIGTERM signal received: closing HTTP server');
-    userCache.flushAll();
-    codeCache.flushAll();
-    tokenCache.flushAll();
-    process.exit(0);
-});
-
-module.exports = app;
